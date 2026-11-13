@@ -998,7 +998,11 @@ private fun LiveTvGuideScreenBody(
         if (now >= landed.startMs && now < landed.stopMs && ch.catchup == null) resetToNow()
     }
 
-    CompositionLocalProvider(LocalLiveSolidHighlight provides settings.solidHighlight, LocalGuideDarkness provides settings.guideInfoBackground) {
+    CompositionLocalProvider(
+        LocalLiveSolidHighlight provides settings.solidHighlight,
+        LocalGuideDarkness provides settings.guideInfoBackground,
+        LocalGuideTiviMate provides settings.guideTiviMateStyle
+    ) {
     val hostActivity = androidx.compose.ui.platform.LocalContext.current as? com.nuvio.tv.MainActivity
     // Where the preview window is (the video view sits there when not full screen).
     var rootBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
@@ -1038,7 +1042,11 @@ private fun LiveTvGuideScreenBody(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .guideBackdrop(settings.guideBackdrop)
+            .then(
+                // TiviMate: a plain near-black screen instead of the colored backdrop.
+                if (settings.guideTiviMateStyle) Modifier.background(TiviMateColors.Background)
+                else Modifier.guideBackdrop(settings.guideBackdrop)
+            )
             .onGloballyPositioned { rootBounds = it.boundsInRoot() }
             .onFocusChanged {
                 if (it.hasFocus && !guideHasFocus) lastKeyAt = System.currentTimeMillis()
@@ -1102,7 +1110,7 @@ private fun LiveTvGuideScreenBody(
             }
     ) {
         // A soft glow in the theme color behind the info panel and preview (fades into the guide).
-        if (settings.showProgramDetails || settings.showPreview) {
+        if ((settings.showProgramDetails || settings.showPreview) && !settings.guideTiviMateStyle) {
             // Stops before the channel rows, so the guide itself keeps the theme's own colors.
             ThemeGlow(Modifier.fillMaxWidth().height(if (settings.smallHeader) 150.dp else 220.dp))
         }
@@ -1179,7 +1187,7 @@ private fun LiveTvGuideScreenBody(
                 if (groupsWidth > 1.dp) androidx.compose.runtime.CompositionLocalProvider(LocalGuideScale provides guideScale(settings)) { GroupColumn(
                     width = groupsWidth,
                     // A channel row's height minus its 2dp above and below.
-                    tileHeight = guideRowHeight(settings) - 4.dp,
+                    tileHeight = guideRowHeight(settings) - if (settings.guideTiviMateStyle) 2.dp else 4.dp,
                     groups = when {
                         groupVisibilityList != null -> groupVisibilityList!!
                         groupReorderMode -> ui.groups.filter { it.special } + groupWorking.map { g ->
@@ -1765,7 +1773,7 @@ private fun LiveTvGuideScreenBody(
         // Rounded corners for the preview. The video surface can't be clipped to a rounded
         // shape on most TVs, so its four corners are painted over in exactly what's behind
         // them (the background and the theme glow), which looks the same.
-        if (!fullscreen && pb != null && rb != null && pb.width > 1f) {
+        if (!fullscreen && pb != null && rb != null && pb.width > 1f && !settings.guideTiviMateStyle) {
             val bg = NuvioTheme.colors.Background
             val backdropResolved = resolveBackdrop(settings.guideBackdrop)
             val accent = NuvioTheme.colors.Secondary
@@ -2504,7 +2512,8 @@ private fun GuideHeader(
             GuideGearButton(Modifier.focusRequester(gearFocus), onOpen = onGear, onDown = onGearDown)
             Spacer(Modifier.width(10.dp))
             Row(
-                modifier = Modifier.glass(guideInfoGlass(settings.guideInfoBackground), RoundedCornerShape(12.dp))
+                modifier = (if (settings.guideTiviMateStyle) Modifier
+                    else Modifier.glass(guideInfoGlass(settings.guideInfoBackground), RoundedCornerShape(12.dp)))
                     .padding(horizontal = 14.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -2521,8 +2530,12 @@ private fun GuideHeader(
             .height(if (small) 116.dp else 176.dp)
             .padding(start = 56.dp, end = 24.dp, top = if (small) 12.dp else 20.dp, bottom = if (small) 4.dp else 6.dp)
             .onGloballyPositioned { onGlassBounds(it.boundsInRoot()) }
-            .glass(guideInfoGlass(settings.guideInfoBackground), RoundedCornerShape(if (small) 16.dp else 20.dp))
-            .padding(horizontal = 18.dp, vertical = if (small) 8.dp else 14.dp),
+            .then(
+                // TiviMate: no card, the info sits straight on the screen (preview top right).
+                if (settings.guideTiviMateStyle) Modifier
+                else Modifier.glass(guideInfoGlass(settings.guideInfoBackground), RoundedCornerShape(if (small) 16.dp else 20.dp))
+            )
+            .padding(horizontal = if (settings.guideTiviMateStyle) 8.dp else 18.dp, vertical = if (small) 8.dp else 14.dp),
         horizontalArrangement = Arrangement.spacedBy(if (small) 16.dp else 20.dp)
     ) {
         // Posters off: just the channel logo, in a logo-shaped space (not a poster box).
@@ -2761,7 +2774,7 @@ private fun GuideRow(
         modifier = Modifier
             .fillMaxWidth()
             .height(rowHeight)
-            .padding(vertical = 2.dp)
+            .padding(vertical = if (settings.guideTiviMateStyle) 1.dp else 2.dp)
             .graphicsLayer { alpha = if (visible == false) 0.45f else 1f }
             .then(if (onToggleVisibility != null) Modifier.clickable(onClick = onToggleVisibility) else Modifier)
     ) {
@@ -2774,15 +2787,15 @@ private fun GuideRow(
         val playingMark = isPlaying && settings.markPlayingChannel && !reorderMode && !moving && !nameFocused
         // The channel picked up to move: its own color (gold), apart from the highlight.
         val cell = if (moving) LiveCellColors(NuvioTheme.colors.Rating, NuvioTheme.colors.Rating, Color.Black)
-            else liveCellColors(focused = nameFocused, idle = guideSurface())
+            else liveCellColors(focused = nameFocused, idle = if (settings.guideTiviMateStyle) TiviMateColors.Channel else guideSurface())
         Row(
             modifier = Modifier
                 .width(channelColWidth)
                 .fillMaxHeight()
-                .padding(end = 6.dp)
+                .padding(end = if (settings.guideTiviMateStyle) 2.dp else 6.dp)
                 .glassTile(
                     cell.background,
-                    if (playingMark) NuvioTheme.colors.Error else if (cell.border == Color.Transparent) GuideGlassEdge else cell.border,
+                    if (playingMark) NuvioTheme.colors.Error else if (cell.border == Color.Transparent) guideEdge() else cell.border,
                     cellShape,
                     // Same as the group tiles: thin, and thicker only when highlighted (the red
                     // playing outline stays thick so it can still be seen).
@@ -2902,10 +2915,10 @@ private fun GuideRow(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 3.dp)
+                        .padding(horizontal = if (settings.guideTiviMateStyle) 1.dp else 3.dp)
                         .clip(cellShape)
                         .background(emptyColors.background)
-                        .border(2.dp, if (emptyColors.border == Color.Transparent) Color.White.copy(alpha = 0.09f) else emptyColors.border, cellShape)
+                        .border(2.dp, if (emptyColors.border == Color.Transparent) (if (settings.guideTiviMateStyle) Color.Transparent else Color.White.copy(alpha = 0.09f)) else emptyColors.border, cellShape)
                         .padding(horizontal = 12.dp),
                     contentAlignment = Alignment.CenterStart
                 ) {
@@ -2923,8 +2936,12 @@ private fun GuideRow(
             }
             // Every show (and gap) but the highlighted one is painted in one go (see GuideRowStrip);
             // the highlighted show stays a full block, so its title can scroll.
-            val gapFill = guideSurface().copy(alpha = 0.55f)
+            val tivimate = settings.guideTiviMateStyle
+            val gapFill = if (tivimate) TiviMateColors.Gap else guideSurface().copy(alpha = 0.55f)
             val idleFill = guideSurface()
+            // TiviMate lifts what's on now a shade above the rest of the row.
+            val nowFill = if (tivimate) guideSurfaceVariant() else idleFill
+            val edge = guideEdge()
             val strip = ArrayList<StripItem>()
             if (visible.isNotEmpty()) {
                 // Gaps in a channel's listings (nothing listed for a while, then shows again).
@@ -2936,7 +2953,7 @@ private fun GuideRow(
                         // Something is on; the guide just doesn't say what.
                         title = if (gw > 90.dp) "No information" else "",
                         subtitle = null,
-                        fill = gapFill, edge = Color.White.copy(alpha = 0.09f),
+                        fill = gapFill, edge = if (tivimate) Color.Transparent else Color.White.copy(alpha = 0.09f),
                         text = NuvioTheme.colors.TextTertiary, italic = true
                     )
                 }
@@ -2985,7 +3002,7 @@ private fun GuideRow(
                         title = (if (p.startMs < windowStart) "‹ " else "") + marks.title,
                         subtitle = subtitle,
                         // One color for every show (the progress bar already marks what's on now).
-                        fill = idleFill, edge = GuideGlassEdge,
+                        fill = if (live) nowFill else idleFill, edge = edge,
                         text = if (past) NuvioTheme.colors.TextSecondary else NuvioTheme.colors.TextPrimary,
                         progress = if (live) p.progress(now) else null,
                         liveTag = marks.live && !past,
@@ -3069,9 +3086,9 @@ private fun ProgramBlock(
             .offset(x = x)
             .width(width)
             .fillMaxHeight()
-            .padding(horizontal = 3.dp)
+            .padding(horizontal = if (LocalGuideTiviMate.current) 1.dp else 3.dp)
             // A soft glass edge on every tile (not focused ones only), to match the bar and header.
-            .glassTile(colors.background, if (colors.border == Color.Transparent) GuideGlassEdge else colors.border, shape, clipChildren = progress != null)
+            .glassTile(colors.background, if (colors.border == Color.Transparent) guideEdge() else colors.border, shape, clipChildren = progress != null)
     ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp),
@@ -3144,7 +3161,7 @@ private fun ProgramBlock(
                         // Solid highlight fills the block with the accent color, so the bar would
                         // vanish into it: there it takes the highlighted text's color instead.
                         .background(
-                            if (focused && LocalLiveSolidHighlight.current) colors.text.copy(alpha = 0.9f)
+                            if (focused && (LocalLiveSolidHighlight.current || LocalGuideTiviMate.current)) colors.text.copy(alpha = 0.9f)
                             else NuvioTheme.colors.Secondary.copy(alpha = 0.9f)
                         )
                 )
@@ -3594,7 +3611,7 @@ private fun GroupItem(
                 when {
                     focused -> colors.border
                     selected -> NuvioTheme.colors.Secondary.copy(alpha = 0.8f)
-                    else -> GuideGlassEdge
+                    else -> guideEdge()
                 },
                 shape
             )

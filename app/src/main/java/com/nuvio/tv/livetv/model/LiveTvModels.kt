@@ -490,6 +490,8 @@ data class LiveTvSettings(
     val showPlaylistInInfo: Boolean = true,
     /** The vertical line marking the current time in the guide. */
     val showNowLine: Boolean = true,
+    /** TiviMate-style guide: flat opaque cells, square corners, thin separators, light highlight. */
+    val guideTiviMateStyle: Boolean = true,
     /** Send Dolby / DTS audio untouched to the TV or speaker (off: the app decodes it). */
     val audioPassthrough: Boolean = true,
     /** Show posters for what's on; off: just the channel logo (no poster lookups at all). */

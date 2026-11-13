@@ -76,6 +76,7 @@ internal fun GuideRowStrip(
     val density = LocalDensity.current
     val base = androidx.compose.material3.LocalTextStyle.current
     val corner = liveCorner()
+    val tivimate = LocalGuideTiviMate.current
     val bell = rememberVectorPainter(Icons.Default.Notifications)
     val replay = rememberVectorPainter(Icons.Default.History)
     val secondary = NuvioTheme.colors.Secondary
@@ -89,7 +90,8 @@ internal fun GuideRowStrip(
         )
     }
     Canvas(Modifier.fillMaxSize()) {
-        val outer = 3.dp.toPx()
+        // TiviMate: cells nearly touch, the 1 dp gap either side reads as a thin separator.
+        val outer = (if (tivimate) 1.dp else 3.dp).toPx()
         val pad = 10.dp.toPx()
         val gap = 6.dp.toPx()
         val stroke = 2.dp.toPx()
@@ -114,6 +116,7 @@ private class StripStyles(val title: TextStyle, val italic: TextStyle, val small
 
 private fun DrawScope.drawTile(item: StripItem, left: Float, w: Float, h: Float, r: Float, stroke: Float) {
     drawRoundRect(item.fill, topLeft = Offset(left, 0f), size = Size(w, h), cornerRadius = CornerRadius(r, r))
+    if (item.edge.alpha == 0f) return
     // The glass edge, inside the tile (as the tiles' own outline was).
     val ir = r
     drawRoundRect(

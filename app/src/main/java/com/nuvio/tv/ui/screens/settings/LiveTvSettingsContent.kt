@@ -1012,6 +1012,12 @@ internal fun LiveTvSettingsContent(
                         { update { it.copy(showEpisodeNumbers = !it.showEpisodeNumbers) } }
                     )
                     SettingsToggleRow(
+                        context.getString(R.string.iptv_settings_tivimate_style_guide),
+                        context.getString(R.string.iptv_settings_tivimate_style_guide_desc),
+                        s.guideTiviMateStyle,
+                        { update { it.copy(guideTiviMateStyle = !it.guideTiviMateStyle) } }
+                    )
+                    SettingsToggleRow(
                         context.getString(R.string.iptv_settings_show_the_now_line),
                         context.getString(R.string.iptv_settings_the_line_that_marks_the_current_time_across),
                         s.showNowLine,

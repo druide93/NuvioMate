@@ -175,6 +175,7 @@ class LiveTvPreferences @Inject constructor(
         val browseByChannelName = booleanPreferencesKey("browse_by_channel_name")
         val showPlaylistInInfo = booleanPreferencesKey("show_playlist_in_info")
         val showNowLine = booleanPreferencesKey("show_now_line")
+        val guideTiviMateStyle = booleanPreferencesKey("guide_tivimate_style")
         val audioPassthrough = booleanPreferencesKey("audio_passthrough")
         val showPosters = booleanPreferencesKey("show_posters")
         val vodMergeDuplicates = booleanPreferencesKey("vod_merge_duplicates")
@@ -486,6 +487,7 @@ class LiveTvPreferences @Inject constructor(
             browseByChannelName = p[Keys.browseByChannelName] ?: d.browseByChannelName,
             showPlaylistInInfo = p[Keys.showPlaylistInInfo] ?: d.showPlaylistInInfo,
             showNowLine = p[Keys.showNowLine] ?: d.showNowLine,
+            guideTiviMateStyle = p[Keys.guideTiviMateStyle] ?: d.guideTiviMateStyle,
             audioPassthrough = p[Keys.audioPassthrough] ?: d.audioPassthrough,
             showPosters = p[Keys.showPosters] ?: d.showPosters,
             vodMergeDuplicates = p[Keys.vodMergeDuplicates] ?: d.vodMergeDuplicates,
@@ -823,6 +825,7 @@ class LiveTvPreferences @Inject constructor(
         p[Keys.browseByChannelName] = s.browseByChannelName
         p[Keys.showPlaylistInInfo] = s.showPlaylistInInfo
         p[Keys.showNowLine] = s.showNowLine
+        p[Keys.guideTiviMateStyle] = s.guideTiviMateStyle
         p[Keys.audioPassthrough] = s.audioPassthrough
         p[Keys.showPosters] = s.showPosters
         p[Keys.vodMergeDuplicates] = s.vodMergeDuplicates

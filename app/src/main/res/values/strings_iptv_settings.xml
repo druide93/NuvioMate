@@ -250,6 +250,8 @@
     <string name="iptv_settings_each_show_s_start_and_end_time_under">"Each show\'s start and end time under its title (rows get a little taller)"</string>
     <string name="iptv_settings_show_episode_numbers">"Show Episode Numbers"</string>
     <string name="iptv_settings_episode_numbers_like_s2_e5_after_show_titles">"Episode numbers like \"S2 E5\" after show titles, in the guide, show info and the player"</string>
+    <string name="iptv_settings_tivimate_style_guide">"TiviMate-Style Guide"</string>
+    <string name="iptv_settings_tivimate_style_guide_desc">"Flat, square guide cells with thin separators and a light highlight, like TiviMate"</string>
     <string name="iptv_settings_show_the_now_line">"Show the \"Now\" Line"</string>
     <string name="iptv_settings_the_line_that_marks_the_current_time_across">"The line that marks the current time across the guide"</string>
     <string name="iptv_settings_quality_badges">"Quality Badges"</string>

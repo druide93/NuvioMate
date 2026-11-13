@@ -78,6 +78,20 @@ internal val LocalLiveSolidHighlight = staticCompositionLocalOf { false }
 /** "Guide darkness" setting ("standard" = Lightest, "darker" = Standard, "solid" = Darkest): the guide bars follow it. */
 internal val LocalGuideDarkness = staticCompositionLocalOf { "darker" }
 
+/** "TiviMate-Style Guide" setting: flat opaque cells, square corners, thin separators, light highlight. */
+internal val LocalGuideTiviMate = staticCompositionLocalOf { false }
+
+/** TiviMate-style palette: near-black screen, flat charcoal cells, a lighter cell for what's on now. */
+internal object TiviMateColors {
+    val Background = Color(0xFF0F1012)
+    val Channel = Color(0xFF1A1B1F)
+    val Cell = Color(0xFF1E1F23)
+    val CellNow = Color(0xFF2A2C31)
+    val Gap = Color(0xFF16171A)
+    val Focus = Color(0xFFE9E9EC)
+    val FocusText = Color(0xFF0F1012)
+}
+
 private val TEXT_OVER_PICTURE = androidx.compose.ui.graphics.Shadow(
     color = Color.Black.copy(alpha = 0.55f),
     offset = androidx.compose.ui.geometry.Offset(0f, 1.5f),
@@ -320,6 +334,7 @@ internal fun androidx.compose.ui.graphics.drawscope.DrawScope.drawGuideBackdrop(
  */
 @Composable
 internal fun guideSurface(): Color {
+    if (LocalGuideTiviMate.current) return TiviMateColors.Cell
     // The same dark, see-through glass as the info panel at the top (glassColor): the theme's
     // background, not its lighter "elevated" grey, which read as a different, flatter material
     // next to it. The tiles also get a soft white edge (see ProgramBlock/channel cell) — the
@@ -332,6 +347,7 @@ internal fun guideSurface(): Color {
 /** Shows on now, and the group on screen: a step lighter than [guideSurface] (same glass, lifted with white). */
 @Composable
 internal fun guideSurfaceVariant(): Color {
+    if (LocalGuideTiviMate.current) return TiviMateColors.CellNow
     val c = NuvioTheme.colors.Background
     val base = if (c.luminance() < 0.003f) Color(0xFF0E0E12) else c
     val alpha = when (LocalGuideDarkness.current) { "solid" -> 0.96f; "standard" -> 0.58f; else -> 0.72f }
@@ -341,12 +357,18 @@ internal fun guideSurfaceVariant(): Color {
 /** The faint edge every glass surface in the guide shares (tiles, groups, the info panel). */
 internal val GuideGlassEdge = Color.White.copy(alpha = 0.10f)
 
+/** The edge for guide tiles: the glass edge, or none in the TiviMate style (the gaps are the separators). */
+@Composable
+internal fun guideEdge(): Color = if (LocalGuideTiviMate.current) Color.Transparent else GuideGlassEdge
+
 /** Background / border / text colors for a focused or unfocused guide cell. */
 internal data class LiveCellColors(val background: Color, val border: Color, val text: Color)
 
 @Composable
 internal fun liveCellColors(focused: Boolean, idle: Color, idleText: Color = NuvioTheme.colors.TextPrimary): LiveCellColors {
     if (!focused) return LiveCellColors(idle, Color.Transparent, idleText)
+    // TiviMate: the highlighted cell is a solid light fill with dark text.
+    if (LocalGuideTiviMate.current) return LiveCellColors(TiviMateColors.Focus, Color.Transparent, TiviMateColors.FocusText)
     return if (LocalLiveSolidHighlight.current) {
         LiveCellColors(NuvioTheme.colors.Secondary, Color.Transparent, NuvioTheme.colors.OnSecondary)
     } else {
@@ -857,6 +879,8 @@ internal object LiveCorners {
 /** The corner rounding for Live TV's cards and tiles (the same as Nuvio's posters). */
 @Composable
 internal fun liveCorner(): androidx.compose.ui.unit.Dp {
+    // TiviMate's guide is all square cells.
+    if (LocalGuideTiviMate.current) return 0.dp
     val context = androidx.compose.ui.platform.LocalContext.current
     androidx.compose.runtime.remember { LiveCorners.start(context) }
     return LiveCorners.radius.collectAsState().value.dp
