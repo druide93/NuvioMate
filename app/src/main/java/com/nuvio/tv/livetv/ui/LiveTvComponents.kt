@@ -90,6 +90,8 @@ internal object TiviMateColors {
     val Gap = Color(0xFF16171A)
     val Focus = Color(0xFFE9E9EC)
     val FocusText = Color(0xFF0F1012)
+    /** The date above the channels and the now line. */
+    val Accent = Color(0xFF4DA3E8)
 }
 
 private val TEXT_OVER_PICTURE = androidx.compose.ui.graphics.Shadow(
@@ -762,6 +764,10 @@ internal fun formatDayClock(ms: Long, now: Long, use24h: Boolean): String {
 
 internal fun minutesLeftLabel(stopMs: Long, now: Long): String {
     val min = ((stopMs - now) / 60_000L).coerceAtLeast(0)
+    // In French on a French device ("1h 23min restantes").
+    if (java.util.Locale.getDefault().language == "fr") {
+        return if (min >= 60) "${min / 60}h ${min % 60}min restantes" else "$min min restantes"
+    }
     return if (min >= 60) "${min / 60}h ${min % 60}m left" else "${min}m left"
 }
 
@@ -879,8 +885,8 @@ internal object LiveCorners {
 /** The corner rounding for Live TV's cards and tiles (the same as Nuvio's posters). */
 @Composable
 internal fun liveCorner(): androidx.compose.ui.unit.Dp {
-    // TiviMate's guide is all square cells.
-    if (LocalGuideTiviMate.current) return 0.dp
+    // TiviMate's guide cells have small rounded corners.
+    if (LocalGuideTiviMate.current) return 5.dp
     val context = androidx.compose.ui.platform.LocalContext.current
     androidx.compose.runtime.remember { LiveCorners.start(context) }
     return LiveCorners.radius.collectAsState().value.dp

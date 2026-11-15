@@ -91,7 +91,7 @@ internal fun GuideRowStrip(
     }
     Canvas(Modifier.fillMaxSize()) {
         // TiviMate: cells nearly touch, the 1 dp gap either side reads as a thin separator.
-        val outer = (if (tivimate) 1.dp else 3.dp).toPx()
+        val outer = (if (tivimate) 2.dp else 3.dp).toPx()
         val pad = 10.dp.toPx()
         val gap = 6.dp.toPx()
         val stroke = 2.dp.toPx()

@@ -74,6 +74,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.layout
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.draw.clip
@@ -1123,6 +1125,16 @@ private fun LiveTvGuideScreenBody(
                 )
         ) {
             // ---------------------------------------------------------------- header
+            var tmHeaderPx by remember { mutableStateOf(0) }
+            var tmGroupsShift by remember { mutableStateOf(0.dp) }
+            // TiviMate: with the group list open it runs the whole height at the left, and the
+            // info and preview move over beside it.
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { tmHeaderPx = it.size.height }
+                    .padding(start = if (settings.guideTiviMateStyle) tmGroupsShift else 0.dp)
+            ) {
             GuideHeader(
                 channel = headerChannel,
                 block = headerBlock,
@@ -1152,13 +1164,15 @@ private fun LiveTvGuideScreenBody(
                 catchupTitle = playback.catchupTitle,
                 status = status.message.takeIf { settings.showImportProgress && status.loading && !status.silent }
             )
+            }
 
             // ---------------------------------------------------------------- groups + guide
             Row(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(start = 56.dp)
+                    // TiviMate: a narrow margin at the left.
+                    .padding(start = if (settings.guideTiviMateStyle) 16.dp else 56.dp)
             ) {
                 // As wide as the longest group name needs, up to the full width (190dp) and never
                 // below a small minimum. Based on every group, so it doesn't move while browsing.
@@ -1184,10 +1198,11 @@ private fun LiveTvGuideScreenBody(
                     animationSpec = androidx.compose.animation.core.tween(220),
                     label = "groupsWidth"
                 )
-                if (groupsWidth > 1.dp) androidx.compose.runtime.CompositionLocalProvider(LocalGuideScale provides guideScale(settings)) { GroupColumn(
+                androidx.compose.runtime.SideEffect { tmGroupsShift = if (groupsWidth > 1.dp) groupsWidth else 0.dp }
+                if (groupsWidth > 1.dp) TiviMateFullHeight(settings.guideTiviMateStyle, tmHeaderPx) { androidx.compose.runtime.CompositionLocalProvider(LocalGuideScale provides guideScale(settings)) { GroupColumn(
                     width = groupsWidth,
                     // A channel row's height minus its 2dp above and below.
-                    tileHeight = guideRowHeight(settings) - if (settings.guideTiviMateStyle) 2.dp else 4.dp,
+                    tileHeight = guideRowHeight(settings) - 4.dp,
                     groups = when {
                         groupVisibilityList != null -> groupVisibilityList!!
                         groupReorderMode -> ui.groups.filter { it.special } + groupWorking.map { g ->
@@ -1262,7 +1277,8 @@ private fun LiveTvGuideScreenBody(
                         groupReorderFocus = null
                     },
                     selectedId = ui.selectedGroupId,
-                    showCounts = settings.showGroupCounts,
+                    // TiviMate: group names only.
+                    showCounts = settings.showGroupCounts && !settings.guideTiviMateStyle,
                     listState = groupsListState,
                     focusRequester = groupsFocus,
                     onFocusGroup = { g -> pendingGroupId = g.id },
@@ -1293,7 +1309,7 @@ private fun LiveTvGuideScreenBody(
                         nameFocus = settings.browseByChannelName
                         runCatching { gridFocus.requestFocus() }
                     }
-                ) }
+                ) } }
                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
                     // ---------------------------------------------------------------- time ruler
                     val channelColWidth = channelColumnWidth(settings)
@@ -1305,14 +1321,20 @@ private fun LiveTvGuideScreenBody(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(34.dp * guideScale(settings).coerceAtLeast(1f))
-                            .padding(end = 24.dp, bottom = 4.dp),
+                            .padding(end = if (settings.guideTiviMateStyle) 0.dp else 24.dp, bottom = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         // Date and time above the channels (like TiviMate), or the Unassigned filter.
                         Box(Modifier.width(channelColWidth).padding(start = 8.dp)) {
                             LiveText(
-                                if (epgUnassignedOnly) "Unassigned channels" else guideDayLabel(windowStart, now),
-                                color = NuvioTheme.colors.TextPrimary,
+                                when {
+                                    epgUnassignedOnly -> "Unassigned channels"
+                                    // TiviMate: the date and the time now, in blue ("Sun 15 Nov, 14:20").
+                                    settings.guideTiviMateStyle -> java.text.SimpleDateFormat("EEE d MMM", java.util.Locale.getDefault()).format(java.util.Date(now)) +
+                                        ", " + formatClock(now, settings.use24HourClock)
+                                    else -> guideDayLabel(windowStart, now)
+                                },
+                                color = if (settings.guideTiviMateStyle && !epgUnassignedOnly) TiviMateColors.Accent else NuvioTheme.colors.TextPrimary,
                                 size = (13f * guideScale(settings)).sp,
                                 weight = FontWeight.Bold
                             )
@@ -1335,8 +1357,9 @@ private fun LiveTvGuideScreenBody(
                                     size = (13f * guideScale(settings)).sp
                                 )
                             }
-                            // The current time at the right end (past the last time label).
-                            LiveText(
+                            // The current time at the right end (past the last time label); in the
+                            // TiviMate style it's with the date on the left instead.
+                            if (!settings.guideTiviMateStyle) LiveText(
                                 formatClock(now, settings.use24HourClock),
                                 modifier = Modifier
                                     .align(Alignment.CenterEnd)
@@ -1367,7 +1390,8 @@ private fun LiveTvGuideScreenBody(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth()
-                            .padding(end = 24.dp, bottom = 12.dp)
+                            // TiviMate: the grid runs to the right edge of the screen.
+                            .padding(end = if (settings.guideTiviMateStyle) 0.dp else 24.dp, bottom = 12.dp)
                             .focusRequester(gridFocus)
                             .focusRequester(contentFocus)
                             .onFocusChanged {
@@ -1715,20 +1739,25 @@ private fun LiveTvGuideScreenBody(
                                             .padding(start = channelColWidth)
                                     ) {
                                         val x = maxWidth * ((now - windowStart) / guideWindowMs(settings).toFloat())
+                                        // TiviMate: a thin blue line with a small dot on top.
+                                        val tm = settings.guideTiviMateStyle
+                                        val lineColor = if (tm) TiviMateColors.Accent else NuvioTheme.colors.Secondary
+                                        val lineW = if (tm) 1.5.dp else 2.dp
+                                        val dot = if (tm) 8.dp else 10.dp
                                         Box(
                                             modifier = Modifier
                                                 .offset(x = x)
-                                                .width(2.dp)
+                                                .width(lineW)
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(1.dp))
-                                                .background(NuvioTheme.colors.Secondary.copy(alpha = 0.9f))
+                                                .background(lineColor.copy(alpha = 0.9f))
                                         )
                                         Box(
                                             modifier = Modifier
-                                                .offset(x = x - 4.dp)
-                                                .size(10.dp)
+                                                .offset(x = x + lineW / 2 - dot / 2)
+                                                .size(dot)
                                                 .clip(RoundedCornerShape(50))
-                                                .background(NuvioTheme.colors.Secondary)
+                                                .background(lineColor)
                                         )
                                     }
                                 }
@@ -2524,22 +2553,26 @@ private fun GuideHeader(
     }
     // Standard or small ("Small info & preview"): the small one leaves room for more channels.
     val small = settings.smallHeader
+    // TiviMate: a bigger preview at the left, the show's info beside it, no poster.
+    val tivimate = settings.guideTiviMateStyle
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(if (small) 116.dp else 176.dp)
-            .padding(start = 56.dp, end = 24.dp, top = if (small) 12.dp else 20.dp, bottom = if (small) 4.dp else 6.dp)
+            // TiviMate: a 16:9 preview 180 dp high, close to the top of the screen.
+            .height(if (small) 116.dp else if (tivimate) 200.dp else 176.dp)
+            .padding(start = if (tivimate) 8.dp else 56.dp, end = 24.dp, top = if (small || tivimate) 12.dp else 20.dp, bottom = if (small) 4.dp else if (tivimate) 8.dp else 6.dp)
             .onGloballyPositioned { onGlassBounds(it.boundsInRoot()) }
             .then(
                 // TiviMate: no card, the info sits straight on the screen (preview top right).
                 if (settings.guideTiviMateStyle) Modifier
                 else Modifier.glass(guideInfoGlass(settings.guideInfoBackground), RoundedCornerShape(if (small) 16.dp else 20.dp))
             )
-            .padding(horizontal = if (settings.guideTiviMateStyle) 8.dp else 18.dp, vertical = if (small) 8.dp else 14.dp),
+            .padding(horizontal = if (settings.guideTiviMateStyle) 8.dp else 18.dp, vertical = if (small) 8.dp else if (tivimate) 0.dp else 14.dp),
         horizontalArrangement = Arrangement.spacedBy(if (small) 16.dp else 20.dp)
     ) {
+        if (tivimate) GuidePreviewWindow(showPreview, playingKey, playbackBuffering, playbackError, catchupTitle, onPreviewBounds)
         // Posters off: just the channel logo, in a logo-shaped space (not a poster box).
-        if (settings.showProgramDetails && channel != null && !settings.showPosters) {
+        if (settings.showProgramDetails && channel != null && !settings.showPosters && !tivimate) {
             Box(
                 modifier = Modifier.width(if (small) 96.dp else 130.dp).fillMaxHeight(),
                 contentAlignment = Alignment.Center
@@ -2548,7 +2581,7 @@ private fun GuideHeader(
             }
         }
         // Poster of the highlighted show (channel logo when there isn't one).
-        if (settings.showProgramDetails && channel != null && settings.showPosters) {
+        if (settings.showProgramDetails && channel != null && settings.showPosters && !tivimate) {
             val posterShape = RoundedCornerShape(liveCorner())
             Box(
                 modifier = Modifier
@@ -2609,8 +2642,8 @@ private fun GuideHeader(
                     LiveText(
                         text = p?.title?.let { titleMarks(it).title } ?: channel.name,
                         modifier = Modifier.fillMaxWidth(),
-                        size = if (small) 22.sp else 28.sp,
-                        weight = FontWeight.ExtraBold,
+                        size = if (small) 22.sp else if (tivimate) 23.sp else 28.sp,
+                        weight = if (tivimate) FontWeight.Bold else FontWeight.ExtraBold,
                         maxLines = 1,
                         marquee = true
                     )
@@ -2627,8 +2660,28 @@ private fun GuideHeader(
                         // The small info panel has no channel line, so the playlist goes here.
                         if (small) playlistName?.let { add(it) }
                     }.joinToString("  ·  ")
-                    if (meta.isNotBlank()) LiveText(meta, color = NuvioTheme.colors.TextSecondary, size = if (small) 13.sp else 14.sp)
-                    if (GuideInfoPart.PROGRESS !in hid && now in block.startMs until block.stopMs) {
+                    val onNow = now in block.startMs until block.stopMs
+                    if (tivimate && !small) {
+                        // TiviMate: "13:30 — 14:30  ▬▬▬  10 min" on one line.
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (GuideInfoPart.TIME !in hid) LiveText(
+                                formatDayClock(block.startMs, now, settings.use24HourClock) + " — " + formatClock(block.stopMs, settings.use24HourClock),
+                                color = NuvioTheme.colors.TextSecondary, size = 15.sp
+                            )
+                            if (GuideInfoPart.PROGRESS !in hid && onNow) {
+                                Spacer(Modifier.width(14.dp))
+                                ProgressBar(
+                                    fraction = ((now - block.startMs).toFloat() / (block.stopMs - block.startMs).coerceAtLeast(1)).coerceIn(0f, 1f),
+                                    modifier = Modifier.width(56.dp)
+                                )
+                            }
+                            if (GuideInfoPart.LEFT !in hid && onNow) {
+                                Spacer(Modifier.width(14.dp))
+                                LiveText(minutesLeftLabel(block.stopMs, now), color = NuvioTheme.colors.TextSecondary, size = 15.sp)
+                            }
+                        }
+                    } else if (meta.isNotBlank()) LiveText(meta, color = NuvioTheme.colors.TextSecondary, size = if (small) 13.sp else 14.sp)
+                    if (!(tivimate && !small) && GuideInfoPart.PROGRESS !in hid && now in block.startMs until block.stopMs) {
                         Spacer(Modifier.height(if (small) 4.dp else 6.dp))
                         ProgressBar(fraction = ((now - block.startMs).toFloat() / (block.stopMs - block.startMs).coerceAtLeast(1)).coerceIn(0f, 1f))
                     }
@@ -2670,6 +2723,21 @@ private fun GuideHeader(
             GuideGearButton(Modifier.focusRequester(gearFocus), onOpen = onGear, onDown = onGearDown)
         }
         // Preview only (info panel off): keep it at the right, as usual.
+        if (!tivimate) GuidePreviewWindow(showPreview, playingKey, playbackBuffering, playbackError, catchupTitle, onPreviewBounds)
+    }
+}
+
+/** The guide's preview window (the video itself is drawn by the guide over this spot). */
+@Composable
+private fun GuidePreviewWindow(
+    showPreview: Boolean,
+    playingKey: String?,
+    playbackBuffering: Boolean,
+    playbackError: String?,
+    catchupTitle: String?,
+    onPreviewBounds: (androidx.compose.ui.geometry.Rect?) -> Unit
+) {
+    run {
         if (showPreview) {
             Box(
                 modifier = Modifier
@@ -2774,7 +2842,7 @@ private fun GuideRow(
         modifier = Modifier
             .fillMaxWidth()
             .height(rowHeight)
-            .padding(vertical = if (settings.guideTiviMateStyle) 1.dp else 2.dp)
+            .padding(vertical = 2.dp)
             .graphicsLayer { alpha = if (visible == false) 0.45f else 1f }
             .then(if (onToggleVisibility != null) Modifier.clickable(onClick = onToggleVisibility) else Modifier)
     ) {
@@ -2787,7 +2855,10 @@ private fun GuideRow(
         val playingMark = isPlaying && settings.markPlayingChannel && !reorderMode && !moving && !nameFocused
         // The channel picked up to move: its own color (gold), apart from the highlight.
         val cell = if (moving) LiveCellColors(NuvioTheme.colors.Rating, NuvioTheme.colors.Rating, Color.Black)
-            else liveCellColors(focused = nameFocused, idle = if (settings.guideTiviMateStyle) TiviMateColors.Channel else guideSurface())
+            // TiviMate: no box behind the channels.
+            else liveCellColors(focused = nameFocused, idle = if (settings.guideTiviMateStyle) Color.Transparent else guideSurface())
+        // TiviMate marks the channel playing with a blue name and ▶ instead of a red outline.
+        val tmPlaying = playingMark && settings.guideTiviMateStyle
         Row(
             modifier = Modifier
                 .width(channelColWidth)
@@ -2795,7 +2866,7 @@ private fun GuideRow(
                 .padding(end = if (settings.guideTiviMateStyle) 2.dp else 6.dp)
                 .glassTile(
                     cell.background,
-                    if (playingMark) NuvioTheme.colors.Error else if (cell.border == Color.Transparent) guideEdge() else cell.border,
+                    if (tmPlaying) Color.Transparent else if (playingMark) NuvioTheme.colors.Error else if (cell.border == Color.Transparent) guideEdge() else cell.border,
                     cellShape,
                     // Same as the group tiles: thin, and thicker only when highlighted (the red
                     // playing outline stays thick so it can still be seen).
@@ -2827,9 +2898,9 @@ private fun GuideRow(
                 LiveText(
                     channel.name,
                     modifier = Modifier.weight(1f),
-                    color = cell.text,
+                    color = if (tmPlaying) TiviMateColors.Accent else cell.text,
                     size = gsp(14f),
-                    weight = if (isPlaying) FontWeight.Bold else FontWeight.Normal,
+                    weight = if (isPlaying || settings.guideTiviMateStyle) FontWeight.Bold else FontWeight.Normal,
                     // The row you're on scrolls a long name (also when the name itself has the highlight).
                     marquee = focusColumn != null || nameFocused || moving
                 )
@@ -2849,6 +2920,10 @@ private fun GuideRow(
                     weight = FontWeight.Bold
                 )
                 Spacer(Modifier.width(4.dp))
+            }
+            if (tmPlaying) {
+                Icon(Icons.Default.PlayArrow, contentDescription = "Playing", tint = TiviMateColors.Accent, modifier = Modifier.size(gdp(18f)))
+                Spacer(Modifier.width(3.dp))
             }
             // Catch-up available on this channel (not while managing visibility, like quality).
             if (channel.catchup != null && !reorderMode && !moving && visible == null) {
@@ -2915,7 +2990,7 @@ private fun GuideRow(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = if (settings.guideTiviMateStyle) 1.dp else 3.dp)
+                        .padding(horizontal = if (settings.guideTiviMateStyle) 2.dp else 3.dp)
                         .clip(cellShape)
                         .background(emptyColors.background)
                         .border(2.dp, if (emptyColors.border == Color.Transparent) (if (settings.guideTiviMateStyle) Color.Transparent else Color.White.copy(alpha = 0.09f)) else emptyColors.border, cellShape)
@@ -2938,9 +3013,9 @@ private fun GuideRow(
             // the highlighted show stays a full block, so its title can scroll.
             val tivimate = settings.guideTiviMateStyle
             val gapFill = if (tivimate) TiviMateColors.Gap else guideSurface().copy(alpha = 0.55f)
-            val idleFill = guideSurface()
-            // TiviMate lifts what's on now a shade above the rest of the row.
-            val nowFill = if (tivimate) guideSurfaceVariant() else idleFill
+            // TiviMate: the row you're on is a shade lighter, every show in it the same.
+            val idleFill = if (tivimate && focusColumn != null) TiviMateColors.CellNow else guideSurface()
+            val nowFill = idleFill
             val edge = guideEdge()
             val strip = ArrayList<StripItem>()
             if (visible.isNotEmpty()) {
@@ -2966,7 +3041,10 @@ private fun GuideRow(
                 val past = p.stopMs <= now
                 val isFocused = focusColumn != null && focusedBlock?.program == p
                 val marks = titleMarks(p.title)
-                val subtitle = if (settings.showProgramTimes && w > 64.dp) formatRange(p.startMs, p.stopMs, settings.use24HourClock) else null
+                // TiviMate: the title alone in each cell (times are in the info at the top).
+                val subtitle = if (settings.showProgramTimes && w > 64.dp && !tivimate) formatRange(p.startMs, p.stopMs, settings.use24HourClock) else null
+                // TiviMate: no progress bar in the cells (the now line shows where you are).
+                val progress = if (live && !tivimate) p.progress(now) else null
                 val episode = p.episode?.takeIf { settings.showEpisodeNumbers && it.length <= 12 }
                 val reminder = p.startMs in reminderStarts
                 val recording = (recordingSpan != null && p.stopMs > recordingSpan.first && p.startMs < recordingSpan.second) ||
@@ -2986,8 +3064,8 @@ private fun GuideRow(
                             x = x, width = w,
                             colors = colors,
                             focused = true,
-                            progress = if (live) p.progress(now) else null,
-                            continuesLeft = p.startMs < windowStart,
+                            progress = progress,
+                            continuesLeft = p.startMs < windowStart && !tivimate,
                             liveTag = marks.live && !past,
                             newTag = marks.isNew,
                             episode = episode,
@@ -2999,12 +3077,12 @@ private fun GuideRow(
                 } else {
                     strip += StripItem(
                         x = x, width = w,
-                        title = (if (p.startMs < windowStart) "‹ " else "") + marks.title,
+                        title = (if (p.startMs < windowStart && !tivimate) "‹ " else "") + marks.title,
                         subtitle = subtitle,
                         // One color for every show (the progress bar already marks what's on now).
                         fill = if (live) nowFill else idleFill, edge = edge,
                         text = if (past) NuvioTheme.colors.TextSecondary else NuvioTheme.colors.TextPrimary,
-                        progress = if (live) p.progress(now) else null,
+                        progress = progress,
                         liveTag = marks.live && !past,
                         newTag = marks.isNew,
                         episode = episode,
@@ -3086,7 +3164,7 @@ private fun ProgramBlock(
             .offset(x = x)
             .width(width)
             .fillMaxHeight()
-            .padding(horizontal = if (LocalGuideTiviMate.current) 1.dp else 3.dp)
+            .padding(horizontal = if (LocalGuideTiviMate.current) 2.dp else 3.dp)
             // A soft glass edge on every tile (not focused ones only), to match the bar and header.
             .glassTile(colors.background, if (colors.border == Color.Transparent) guideEdge() else colors.border, shape, clipChildren = progress != null)
     ) {
@@ -3554,15 +3632,20 @@ private fun PlaylistHeader(
 @Composable
 private fun GroupSearchButton(modifier: Modifier, onFocusChange: (Boolean) -> Unit = {}, onClick: () -> Unit) {
     var focused by remember { mutableStateOf(false) }
-    val shape = RoundedCornerShape(liveCorner())
-    val colors = liveCellColors(focused = focused, idle = guideSurface(), idleText = NuvioTheme.colors.TextPrimary)
+    val tivimate = LocalGuideTiviMate.current
+    val shape = if (tivimate) RoundedCornerShape(8.dp) else RoundedCornerShape(liveCorner())
+    val colors = liveCellColors(focused = focused, idle = if (tivimate) Color.Transparent else guideSurface(), idleText = NuvioTheme.colors.TextPrimary)
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(gdp(30f))
             .clip(shape)
             .background(colors.background)
-            .border(if (focused) 2.dp else 1.dp, if (focused) colors.border else NuvioTheme.colors.Border, shape)
+            .then(
+                // TiviMate: no box, like the group names under it.
+                if (tivimate) Modifier
+                else Modifier.border(if (focused) 2.dp else 1.dp, if (focused) colors.border else NuvioTheme.colors.Border, shape)
+            )
             .onFocusChanged { focused = it.isFocused; onFocusChange(it.isFocused) }
             .combinedClickable(
                 interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
@@ -3593,12 +3676,19 @@ private fun GroupItem(
     onLongClick: (() -> Unit)?
 ) {
     var focused by remember { mutableStateOf(false) }
-    val shape = RoundedCornerShape(liveCorner())
+    // TiviMate: a plain list on the screen (no tiles), the highlighted group a light pill and
+    // the group on screen a faint one.
+    val tivimate = LocalGuideTiviMate.current
+    val shape = if (tivimate) RoundedCornerShape(8.dp) else RoundedCornerShape(liveCorner())
     // Tiles like the channel rows; the group on screen is tinted, with a thin accent outline.
     val colors = liveCellColors(
         focused = focused,
-        idle = if (selected) NuvioTheme.colors.FocusBackground else guideSurface(),
-        idleText = if (selected) NuvioTheme.colors.TextPrimary else NuvioTheme.colors.TextSecondary
+        idle = when {
+            tivimate -> if (selected) TiviMateColors.CellNow else Color.Transparent
+            selected -> NuvioTheme.colors.FocusBackground
+            else -> guideSurface()
+        },
+        idleText = if (selected || tivimate) NuvioTheme.colors.TextPrimary else NuvioTheme.colors.TextSecondary
     )
     Row(
         modifier = modifier
@@ -3606,14 +3696,17 @@ private fun GroupItem(
             .height(tileHeight)
             .clip(shape)
             .background(colors.background)
-            .border(
-                if (focused) 2.dp else 1.dp,
-                when {
-                    focused -> colors.border
-                    selected -> NuvioTheme.colors.Secondary.copy(alpha = 0.8f)
-                    else -> guideEdge()
-                },
-                shape
+            .then(
+                if (tivimate) Modifier
+                else Modifier.border(
+                    if (focused) 2.dp else 1.dp,
+                    when {
+                        focused -> colors.border
+                        selected -> NuvioTheme.colors.Secondary.copy(alpha = 0.8f)
+                        else -> guideEdge()
+                    },
+                    shape
+                )
             )
             .onFocusChanged {
                 focused = it.isFocused
@@ -3628,12 +3721,12 @@ private fun GroupItem(
             .padding(end = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(if (tivimate) 20.dp else 12.dp))
         LiveText(
             group.title,
             modifier = Modifier.weight(1f),
             color = colors.text,
-            size = gsp(14f),
+            size = gsp(if (tivimate) 15f else 14f),
             weight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             marquee = focused
         )
@@ -5070,4 +5163,23 @@ private fun LogoFromPhoneDialog(channelName: String, onDismiss: () -> Unit, onUr
         Spacer(Modifier.height(12.dp))
         MenuItem("Close", onClick = onDismiss)
     }
+}
+
+
+/**
+ * TiviMate style: the group list runs from the top of the screen (over the header's height,
+ * which moves aside for it) instead of starting below the header.
+ */
+@Composable
+private fun TiviMateFullHeight(on: Boolean, extraPx: Int, content: @Composable () -> Unit) {
+    Box(
+        Modifier.fillMaxHeight().then(
+            if (!on || extraPx <= 0) Modifier
+            else Modifier.layout { measurable, c ->
+                val h = if (c.hasBoundedHeight) c.maxHeight + extraPx else c.maxHeight
+                val placeable = measurable.measure(c.copy(minHeight = 0, maxHeight = h))
+                layout(placeable.width, c.maxHeight) { placeable.place(0, -extraPx) }
+            }
+        )
+    ) { content() }
 }
