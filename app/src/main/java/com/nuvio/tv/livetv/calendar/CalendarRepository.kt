@@ -437,7 +437,7 @@ class CalendarRepository @Inject constructor(
             val mine = ev.sides.firstOrNull { f.followsTeam(ev.leagueId, it.team.id) }
             if (mine == null && ev.leagueId !in eventLeagues) continue
             h = 31 * h + java.util.Objects.hash(
-                ev.id, ev.startMs, ev.endMs, ev.hasTime, ev.state, ev.status, ev.title, ev.broadcasts.firstOrNull(), mine?.team?.logo,
+                ev.id, ev.startMs, ev.endMs, ev.hasTime, ev.state, ev.status, ev.title, ev.broadcasts.firstOrNull(), mine?.team?.logo, ev.sessions,
                 ev.sides.map { listOf(it.team.name, it.team.logo, it.team.color, it.team.altColor, it.score) },
                 matches[ev.id]?.firstOrNull()?.channel?.let { listOf(it.key, it.name, it.logo) }
             )
@@ -478,11 +478,17 @@ class CalendarRepository @Inject constructor(
         val to = today.plusDays(120)
         val zone = ZoneId.systemDefault()
         val matches = sports.matches.value
-        return sports.known.value.mapNotNull { ev ->
+        return sports.known.value.flatMap { ev ->
             val mine = ev.sides.firstOrNull { f.followsTeam(ev.leagueId, it.team.id) }
-            if (mine == null && ev.leagueId !in eventLeagues) return@mapNotNull null
+            if (mine == null && ev.leagueId !in eventLeagues) return@flatMap emptyList()
             val day = Instant.ofEpochMilli(ev.startMs).atZone(zone).toLocalDate()
-            if (day.isBefore(from) || day.isAfter(to)) return@mapNotNull null
+            // A tournament that runs for days (golf, tennis): on every day it's on, so it's still
+            // there on its last day, not only on the day it started. (No time: Sports gives none.)
+            val lastDay = ev.endMs?.takeIf { !ev.hasTime }
+                ?.let { Instant.ofEpochMilli(it).atZone(zone).toLocalDate() }
+                ?.takeIf { it.isAfter(day) && !it.isAfter(day.plusDays(30)) } ?: day
+            if (lastDay.isBefore(from) || day.isAfter(to)) return@flatMap emptyList()
+            val days = generateSequence(day) { it.plusDays(1) }.takeWhile { !it.isAfter(lastDay) }.toList()
             val league = com.nuvio.tv.livetv.sports.SportsCatalog.league(ev.leagueId)
             val sport = league?.sport
             val sides = if (sport != null) ev.ordered(sport) else ev.sides
@@ -498,34 +504,74 @@ class CalendarRepository @Inject constructor(
             }
             val end = com.nuvio.tv.livetv.sports.endEstimate(ev)
             val channel = matches[ev.id]?.firstOrNull()?.channel
-            CalendarEntry(
-                key = "game|${ev.id}",
-                kind = CalendarKind.GAME,
-                contentId = "game|${ev.id}",
-                type = "game",
-                title = title,
-                poster = mine?.team?.logo ?: com.nuvio.tv.livetv.sports.SportsFeeds.leagueLogos[ev.leagueId],
-                background = null,
-                airMs = ev.startMs.takeIf { ev.hasTime },
-                day = day,
-                network = ev.broadcasts.firstOrNull() ?: league?.short,
-                reasons = setOf(CalendarReason.TEAM),
-                runtimeMin = ((end - ev.startMs) / 60_000L).toInt().takeIf { it > 0 },
-                guide = channel?.let { CalendarGuideHit(it.key, it.name, it.logo, ev.startMs, end, title) },
-                eventId = ev.id,
-                league = league?.name,
-                score = score,
-                live = ev.state == com.nuvio.tv.livetv.sports.GameState.LIVE,
-                teams = if (sides.size == 2) sides.map { sd ->
-                    CalendarTeam(
-                        name = sd.team.name,
-                        abbr = sd.team.abbr.ifBlank { null },
-                        logo = sd.team.logo,
-                        color = readableColor(sd.team.color, sd.team.altColor),
-                        score = sd.score.takeIf { !ss.hideScores && ev.hasScore && ev.state != com.nuvio.tv.livetv.sports.GameState.PRE }
+            // A race weekend: each session (practice, qualifying, sprint, race) on its own day, at its own time.
+            if (ev.sessions.size > 1) {
+                val nowMs = System.currentTimeMillis()
+                return@flatMap ev.sessions.withIndex().mapNotNull { (i, s) ->
+                    val d = Instant.ofEpochMilli(s.startMs).atZone(zone).toLocalDate()
+                    if (d.isBefore(from) || d.isAfter(to)) return@mapNotNull null
+                    val sEnd = s.startMs + s.minutes * 60_000L
+                    val on = nowMs in s.startMs until sEnd
+                    CalendarEntry(
+                        key = if (i == 0) "game|${ev.id}" else "game|${ev.id}|s$i",
+                        kind = CalendarKind.GAME,
+                        contentId = "game|${ev.id}",
+                        type = "game",
+                        title = title,
+                        poster = com.nuvio.tv.livetv.sports.SportsFeeds.leagueLogos[ev.leagueId],
+                        background = null,
+                        airMs = s.startMs,
+                        day = d,
+                        note = s.label,
+                        network = ev.broadcasts.firstOrNull() ?: league?.short,
+                        reasons = setOf(CalendarReason.TEAM),
+                        runtimeMin = s.minutes,
+                        guide = channel?.let { CalendarGuideHit(it.key, it.name, it.logo, s.startMs, sEnd, title) },
+                        eventId = ev.id,
+                        league = league?.name,
+                        score = when {
+                            on -> "Live"
+                            s.race && ev.state == com.nuvio.tv.livetv.sports.GameState.POST -> "Final"
+                            else -> null
+                        },
+                        live = on
                     )
-                } else emptyList()
-            )
+                }
+            }
+            val multi = days.size > 1
+            days.filter { !it.isBefore(from) && !it.isAfter(to) }.map { d ->
+                // Each day of a tournament: "Day 2 of 4"; live / result only on today's (result also on its last day).
+                val now = !multi || d == today || (d == lastDay && ev.state == com.nuvio.tv.livetv.sports.GameState.POST)
+                CalendarEntry(
+                    key = if (d == day) "game|${ev.id}" else "game|${ev.id}|$d",
+                    kind = CalendarKind.GAME,
+                    contentId = "game|${ev.id}",
+                    type = "game",
+                    title = title,
+                    poster = mine?.team?.logo ?: com.nuvio.tv.livetv.sports.SportsFeeds.leagueLogos[ev.leagueId],
+                    background = null,
+                    airMs = ev.startMs.takeIf { ev.hasTime },
+                    day = d,
+                    note = if (multi) "Day ${days.indexOf(d) + 1} of ${days.size}" else null,
+                    network = ev.broadcasts.firstOrNull() ?: league?.short,
+                    reasons = setOf(CalendarReason.TEAM),
+                    runtimeMin = ((end - ev.startMs) / 60_000L).toInt().takeIf { it > 0 },
+                    guide = channel?.let { CalendarGuideHit(it.key, it.name, it.logo, ev.startMs, end, title) },
+                    eventId = ev.id,
+                    league = league?.name,
+                    score = score.takeIf { now },
+                    live = now && ev.state == com.nuvio.tv.livetv.sports.GameState.LIVE,
+                    teams = if (sides.size == 2) sides.map { sd ->
+                        CalendarTeam(
+                            name = sd.team.name,
+                            abbr = sd.team.abbr.ifBlank { null },
+                            logo = sd.team.logo,
+                            color = readableColor(sd.team.color, sd.team.altColor),
+                            score = sd.score.takeIf { !ss.hideScores && ev.hasScore && ev.state != com.nuvio.tv.livetv.sports.GameState.PRE }
+                        )
+                    } else emptyList()
+                )
+            }
         }
     }
 

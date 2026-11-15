@@ -133,8 +133,11 @@ class SportsRepository @Inject constructor(
     @Volatile private var timedCopies: Map<SportsEvent, SportsEvent> = java.util.IdentityHashMap()
 
     /** The newest data, before Score Delay: only [events] reads it. */
-    private val withChannels: StateFlow<List<SportsEvent>> = combine(plainEvents(), tvData, tvCountries) { ev, tv, countries ->
-        runCatching { SportsTvListings.addChannels(ev, tv, countries, tvCache) }.getOrDefault(ev)
+    private val withChannels: StateFlow<List<SportsEvent>> = combine(plainEvents(), tvData, tvCountries, TeamColors.version) { ev, tv, countries, _ ->
+        val listed = runCatching { SportsTvListings.addChannels(ev, tv, countries, tvCache) }.getOrDefault(ev)
+        // Each team in the same colours everywhere (see TeamColors).
+        TeamColors.learnAll(listed)
+        TeamColors.paintAll(listed)
     }.stateIn(scope, SharingStarted.Eagerly, emptyList())
 
     /** Score Delay (Sports settings), see [SportsScoreDelay]. */
@@ -200,7 +203,16 @@ class SportsRepository @Inject constructor(
                     else sameFight.isEmpty()
                 }
             }
-            else same.none { dayOf(it.startMs) == dayOf(fx.startMs) }
+            else {
+                // A date only: anything of its league that day stands in for it, except for a fight
+                // (a Zuffa card, say), which only gives way to a listing of the same fight.
+                val sides = if (SportsCatalog.league(fx.leagueId)?.sport == Sport.FIGHTING) SportsCatalog.fightSides(fx.title) else null
+                same.none { gEv ->
+                    dayOf(gEv.startMs) == dayOf(fx.startMs) && (sides == null || SportsCatalog.norm(gEv.title + " " + (gEv.subtitle ?: "")).let { text ->
+                        sides.first.any { SportsCatalog.hasWord(text, it) } && sides.second.any { SportsCatalog.hasWord(text, it) }
+                    })
+                }
+            }
         }
         val espn = l.values.flatMap { it.events } + w.values.flatMap { it.events }
         // A match ESPN lists, found again in the guide (or a schedule file) under a guide-only
@@ -258,13 +270,21 @@ class SportsRepository @Inject constructor(
      * Everything we know, for My Teams: the page's days plus your teams' whole seasons and the
      * non-league seasons. A game in both counts once (the fresher copy, from the page's days).
      */
-    val known: StateFlow<List<SportsEvent>> = combine(events, scheduleData, tsdbData, aheadData, lookedUp) { ev, s, t, a, lu ->
-        val seen = HashSet<String>(ev.size * 2)
-        ev.forEach { seen += dedupeKey(it) }
-        val extra = (a.values.flatMap { it.events } + s.values.flatMap { it.events } + t.values.flatMap { it.events } + lu.values.flatMap { it.events })
-            .filter { seen.add(dedupeKey(it)) }
-        ev + extra
-    }.stateIn(scope, SharingStarted.Eagerly, emptyList())
+    val known: StateFlow<List<SportsEvent>> = combine(
+        combine(events, scheduleData, tsdbData, aheadData, lookedUp) { ev, s, t, a, lu ->
+            val seen = HashSet<String>(ev.size * 2)
+            ev.forEach { seen += dedupeKey(it) }
+            val extra = (a.values.flatMap { it.events } + s.values.flatMap { it.events } + t.values.flatMap { it.events } + lu.values.flatMap { it.events })
+                .filter { seen.add(dedupeKey(it)) }
+            ev + extra
+        },
+        TeamColors.version
+    ) { all, _ ->
+        // Games further ahead come from team schedules and season files, which often have no
+        // colours: the same ones as the page's own days and the rest of the app.
+        TeamColors.learnAll(all)
+        TeamColors.paintAll(all)
+    }.flowOn(Dispatchers.Default).stateIn(scope, SharingStarted.Eagerly, emptyList())
 
     /**
      * The same weekly wrestling show in the schedule file and in your guide, up to a day and a
@@ -477,14 +497,15 @@ class SportsRepository @Inject constructor(
 
     /** A followed team's game on now (by the clock, from the saved scores), with Scoring Alerts on. */
     private fun followedGameOn(): Boolean {
-        if (!settings.value.scoringAlerts) return false
         val f = follows.value
-        if (f.teams.isEmpty()) return false
+        val alerts = settings.value.scoringAlerts && f.teams.isNotEmpty()
+        val picked = f.alertGames.mapTo(HashSet()) { it.eventId }
+        if (!alerts && picked.isEmpty()) return false
         val now = System.currentTimeMillis()
         return (leagueData.value.values + weekData.value.values).any { d ->
             d.events.any { ev ->
                 ev.hasTime && ev.state != GameState.POST && now >= ev.startMs - 5 * MINUTE && now < endEstimate(ev) &&
-                    ev.sides.any { f.followsTeam(ev.leagueId, it.team.id) }
+                    (ev.id in picked || (alerts && ev.sides.any { f.followsTeam(ev.leagueId, it.team.id) }))
             }
         }
     }
@@ -498,7 +519,7 @@ class SportsRepository @Inject constructor(
             // Nothing matched yet (or not for a while): do it now, don't wait for the next round.
             // (or one was put off while the app was away / video was playing, or the last one is
             // hours old).
-            if (_matches.value.isEmpty() || matchMissed || System.currentTimeMillis() - lastMatchAt > SAFETY_ROUND) matchKick.value++
+            if (_matches.value.isEmpty() || matchMissed || System.currentTimeMillis() - lastMatchAt > SAFETY_ROUND) kickMatch("Sports page opened")
         }
     }
 
@@ -507,7 +528,7 @@ class SportsRepository @Inject constructor(
         if (on) {
             kick.value++
             // Something changed while the app was away: find channels for it now.
-            if (matchMissed) matchKick.value++
+            if (matchMissed) kickMatch("app back in front")
         }
     }
 
@@ -550,7 +571,14 @@ class SportsRepository @Inject constructor(
         return out
     }
 
-    private fun isMine(l: League, f: SportsFollows) = l.id in followedLeagueIds(f)
+    private fun isMine(l: League, f: SportsFollows) = l.id in followedLeagueIds(f) || l.id in alertLeagueIds(f)
+
+    /** Leagues of single games with score alerts on that haven't long finished (kept as up to date as your teams'). */
+    private fun alertLeagueIds(f: SportsFollows): Set<String> {
+        if (f.alertGames.isEmpty()) return emptySet()
+        val since = System.currentTimeMillis() - ALERT_GAME_KEEP
+        return f.alertGames.filter { it.startMs > since }.mapTo(HashSet()) { it.leagueId }
+    }
 
     // ------------------------------------------------------------------ updates
 
@@ -558,6 +586,7 @@ class SportsRepository @Inject constructor(
         var lastKick = -1
         var lastFixtures = 0L
         var lastTv = 0L
+        var lastColors = 0L
         var extrasJob: kotlinx.coroutines.Job? = null
         while (true) {
             val active = foreground.value && (settings.value.showInSidebar || viewers.value > 0)
@@ -574,6 +603,10 @@ class SportsRepository @Inject constructor(
                 if (System.currentTimeMillis() - lastTv > 4 * HOUR) {
                     lastTv = System.currentTimeMillis()
                     runCatching { updateTv() }
+                }
+                if (System.currentTimeMillis() - lastColors > 12 * HOUR) {
+                    lastColors = System.currentTimeMillis()
+                    runCatching { updateTeamColors() }
                 }
                 if (System.currentTimeMillis() - lastFixtures > 12 * HOUR) {
                     lastFixtures = System.currentTimeMillis()
@@ -614,7 +647,7 @@ class SportsRepository @Inject constructor(
                 viewing && (live || nearNow) -> age > (if (live) 30_000 else 5 * MINUTE)
                 viewing && fastLeague(l) -> age > (if (live) 30_000 else 5 * MINUTE)
                 l.id in playingLeagues && s.scoreOnInfoBar -> age > 60_000
-                mine && live -> age > (if (s.scoringAlerts) 45_000 else 90_000)
+                mine && live -> age > (if (s.scoringAlerts || l.id in alertLeagueIds(f)) 45_000 else 90_000)
                 mine -> age > 30 * MINUTE
                 // Nobody's watching it and it isn't yours: a slow trickle through the shared
                 // cache keeps it from staying empty forever once someone does browse to it.
@@ -1064,18 +1097,22 @@ class SportsRepository @Inject constructor(
         // filled in from the league's team list and today's games, so every card has its colours.
         val known = HashMap<String, TeamInfo>()
         fun learn(t: TeamInfo) {
-            if (t.color == null && t.altColor == null) return
+            // Only real colours: the feed's stand-in for a team it gave none for doesn't count.
+            if (!TeamColors.isReal(t)) return
+            TeamColors.learn(t)
             known.putIfAbsent(SportsCatalog.teamFamily(t.leagueId) + "|" + t.id, t)
         }
         raws.map { it.first }.distinctBy { it.id }.forEach { l -> cachedTeams(l).forEach(::learn) }
         (leagueData.value.values + weekData.value.values).forEach { d -> d.events.forEach { ev -> ev.sides.forEach { learn(it.team) } } }
         synchronized(teamCache) { teamCache.values.toList() }.forEach { list -> list.forEach(::learn) }
         fun fill(side: Side?): Side? {
-            if (side == null || side.team.color != null) return side
+            // The schedule has no colours, so each team got a stand-in from its name: replaced
+            // with the real ones whenever the league's list or today's games have them.
+            if (side == null || TeamColors.isReal(side.team)) return side
             val k = known[SportsCatalog.teamFamily(side.team.leagueId) + "|" + side.team.id] ?: return side
             return side.copy(team = side.team.copy(color = k.color, altColor = k.altColor, logo = side.team.logo ?: k.logo))
         }
-        return byId.values.map { ev -> if (ev.sides.all { it.team.color != null }) ev else ev.copy(away = fill(ev.away), home = fill(ev.home)) }
+        return byId.values.map { ev -> if (ev.sides.all { TeamColors.isReal(it.team) }) ev else ev.copy(away = fill(ev.away), home = fill(ev.home)) }
             .sortedBy { it.startMs }
     }
 
@@ -1229,6 +1266,12 @@ class SportsRepository @Inject constructor(
 
     private suspend fun coroutineScopeFetch(list: List<League>, block: suspend (League) -> Unit) {
         kotlinx.coroutines.coroutineScope { list.map { l -> async { block(l) } }.awaitAll() }
+    }
+
+    /** TheSportsDB's team colours (nuvio-data's sportsdb/colors.json); the saved copy when it can't be reached. */
+    private fun updateTeamColors() {
+        val raw = runCatching { feeds.teamColorsRaw() }.getOrNull() ?: return
+        if (TeamColors.loadFile(raw)) runCatching { File(dir, "team_colors.json").writeText(raw) }
     }
 
     /** TheSportsDB's TV listings (a few hundred games' channels in many countries); the last saved copy when the file can't be reached. */
@@ -1395,6 +1438,7 @@ class SportsRepository @Inject constructor(
                 if (list.isNotEmpty()) tvData.value = list
             }
         }
+        runCatching { File(dir, "team_colors.json").takeIf { it.exists() }?.readText()?.let { TeamColors.loadFile(it) } }
     }
 
     // ------------------------------------------------------------------ matching channels
@@ -1412,17 +1456,21 @@ class SportsRepository @Inject constructor(
     @OptIn(FlowPreview::class)
     private suspend fun matchLoop() {
         val trigger = combine(
-            // The games: only what changes the search (not scores or clocks). A number instead of
-            // a list of ~1000 strings each time the feed updates.
+            // The games: only what changes the search (not scores or clocks). Numbers instead of
+            // a list of ~1000 strings each time the feed updates: which games there are, and their
+            // details (start times, how many networks listed). The details move often while games
+            // are on (a network added, a time nudged), so on their own they only get a quick match.
             events.map { list ->
-                var h = 17L
+                var games = 17L
+                var details = 17L
                 var n = 0
                 for (e in list) {
                     if (e.source == EventSource.GUIDE) continue
-                    h = h * 31 + e.id.hashCode(); h = h * 31 + e.startMs; h = h * 31 + e.broadcasts.size
+                    games = games * 31 + e.id.hashCode()
+                    details = details * 31 + e.startMs; details = details * 31 + e.broadcasts.size
                     n++
                 }
-                n to h
+                GamesKey(n, games, details)
             }.distinctUntilChanged(),
             // Your channels (any added, removed or renamed in a playlist update).
             channelStore.displayChannels.map { list ->
@@ -1440,20 +1488,20 @@ class SportsRepository @Inject constructor(
             // Safety net: a round every few hours, in case something changed that we didn't hear about.
             while (true) {
                 delay(15 * MINUTE)
-                if (System.currentTimeMillis() - lastRun > SAFETY_ROUND) matchKick.value++
+                if (System.currentTimeMillis() - lastRun > SAFETY_ROUND) kickMatch("a few hours since the last search")
             }
         }
         scope.launch {
             // A new day: "yesterday to tomorrow" moves on, so other games come into range.
             while (true) {
                 delay((dayStart(1) + MINUTE - System.currentTimeMillis()).coerceAtLeast(MINUTE))
-                matchKick.value++
+                kickMatch("a new day")
             }
         }
         scope.launch {
             // A round put off because Live TV was busy updating: run it once the update is done.
             liveRepo.status.map { it.loading }.distinctUntilChanged().collect { loading ->
-                if (!loading && matchMissed) matchKick.value++
+                if (!loading && matchMissed) kickMatch("Live TV update done")
             }
         }
         // Last time's matches straight away (the games, the channels), so the page isn't empty
@@ -1472,7 +1520,12 @@ class SportsRepository @Inject constructor(
         }
         // Not before the saved games are read: a search with no games found nothing, then ran again.
         cacheLoaded.first { it }
-        combine(trigger, matchKick) { t, k -> t to k }.debounce { if (_matches.value.isEmpty()) 0L else 1_500L }.collect {
+        // What the last full search was run for, to tell a real change from games' details moving.
+        var lastFullKey: List<Any?>? = null
+        var lastFullKick = -1
+        var lastFullAt = 0L
+        var lastQuickAt = 0L
+        combine(trigger, matchKick) { t, k -> t to k }.debounce { if (_matches.value.isEmpty()) 0L else 1_500L }.collect { (key, kick) ->
             // Put off (not lost): it runs when the app is back in front / the update is done.
             if (!foreground.value && viewers.value == 0) { matchMissed = true; return@collect }
             if (!settings.value.showInSidebar && viewers.value == 0) { matchMissed = true; return@collect }
@@ -1482,7 +1535,8 @@ class SportsRepository @Inject constructor(
             // match against a guide that isn't fully there yet (so real channels get missed).
             if (!status.loadedOnce) { matchMissed = true; return@collect }
             if (status.loading && !status.quiet && _matches.value.isNotEmpty() && !pickPending) { matchMissed = true; return@collect }
-            pickPending = false
+            // Cleared when the full search starts (below), so a pick made while it waits still counts.
+            val picked = pickPending
             val firstSearch = _matches.value.isEmpty()
             // The first guide build can take minutes. Show simple matches for live games
             // as soon as the playlist is ready, then wait for the guide to finish.
@@ -1516,17 +1570,66 @@ class SportsRepository @Inject constructor(
             // Not while video is playing full screen (unless you're on the Sports page).
             awaitNotWatching()
             matchMissed = false
+            // Only the details of games already listed moved (a score update brought a network or
+            // a nudged start time): the quick match (no guide read), at most every 2 minutes. The
+            // next full search picks the details up. A full search for every such wiggle ran one
+            // after another all afternoon on busy sports days, keeping slower boxes busy.
+            val games = key.firstOrNull() as? GamesKey
+            val lastGames = lastFullKey?.firstOrNull() as? GamesKey
+            val sameAsLastFull = lastFullKey != null && kick == lastFullKick &&
+                key.drop(1) == lastFullKey?.drop(1) && games?.count == lastGames?.count && games?.games == lastGames?.games
+            if (!firstSearch && !picked && sameAsLastFull) {
+                if (System.currentTimeMillis() - lastQuickAt >= QUICK_MATCH_GAP) {
+                    lastQuickAt = System.currentTimeMillis()
+                    runCatching { runMatch(quickOnly = true) }.onFailure { Log.w(TAG, "Sports quick matching failed", it) }
+                }
+                return@collect
+            }
+            val why = when {
+                firstSearch -> "first search"
+                picked -> "a channel pick"
+                lastFullKey == null -> kickReason ?: "app start"
+                kick != lastFullKick -> kickReason ?: "asked again"
+                games?.count != lastGames?.count || games?.games != lastGames?.games -> "games added or removed"
+                key.getOrNull(1) != lastFullKey?.getOrNull(1) -> "your channels changed"
+                key.getOrNull(2) != lastFullKey?.getOrNull(2) -> "Sports settings changed"
+                key.getOrNull(3) != lastFullKey?.getOrNull(3) -> "follows changed"
+                else -> "new guide"
+            }
+            // A real change soon after the last full search: quick channels now, the full search
+            // once 10 minutes have passed since the last one (a channel pick doesn't wait).
+            val wait = MIN_FULL_MATCH_GAP - (System.currentTimeMillis() - lastFullAt)
+            if (!firstSearch && !picked && lastFullAt > 0L && wait > 0L) {
+                if (System.currentTimeMillis() - lastQuickAt >= QUICK_MATCH_GAP) {
+                    lastQuickAt = System.currentTimeMillis()
+                    runCatching { runMatch(quickOnly = true) }.onFailure { Log.w(TAG, "Sports quick matching failed", it) }
+                }
+                val until = System.currentTimeMillis() + wait
+                while (System.currentTimeMillis() < until && !pickPending) delay(1_000)
+                if (!foreground.value && viewers.value == 0) { matchMissed = true; return@collect }
+                awaitNotWatching()
+            }
+            lastFullKey = key
+            lastFullKick = kick
+            lastFullAt = System.currentTimeMillis()
+            lastQuickAt = lastFullAt
+            pickPending = false
             lastRun = System.currentTimeMillis()
             val t0 = System.currentTimeMillis()
             runCatching { com.nuvio.tv.livetv.data.BackgroundWork.heavy { runMatch() } }.onFailure { Log.w(TAG, "Sports matching failed", it) }
             lastMatchAt = System.currentTimeMillis()
             val took = lastMatchAt - t0
-            if (took > 2_000) LiveTvLoadReport.add("Sports matching took ${took / 1000.0} s (page open: ${viewers.value > 0})")
+            if (took > 2_000) LiveTvLoadReport.add("Sports matching took ${took / 1000.0} s (page open: ${viewers.value > 0}; for: $why)")
             runCatching { saveMatches() }
         }
     }
 
+    /** The games, for telling a new or removed game from details moving (see [matchLoop]). */
+    private data class GamesKey(val count: Int, val games: Long, val details: Long)
     private val matchKick = MutableStateFlow(0)
+    /** What asked for the next search (shown in the start-up report). */
+    @Volatile private var kickReason: String? = null
+    private fun kickMatch(reason: String) { kickReason = reason; matchKick.value++ }
     @Volatile private var lastMatchAt = 0L
     /** A round was put off (app in the background, Live TV updating): run it at the next chance. */
     @Volatile private var matchMissed = false
@@ -1590,12 +1693,11 @@ class SportsRepository @Inject constructor(
     /** The channels Sports may show: not hidden or locked (channels you picked yourself always count). */
     private fun matchChannels(live: com.nuvio.tv.livetv.model.LiveTvSettings, user: com.nuvio.tv.livetv.model.LiveUserState,
                               sp: SportsSettings = settings.value): List<LiveChannel> {
-        // Channels you picked yourself (Fix Channel) count even in a hidden group.
-        val picked = HashSet<String>().apply {
-            sp.eventChannels.values.forEach { add(it.substringBeforeLast('|')) }
-            addAll(sp.networkChannels.values); addAll(sp.teamChannels.values); addAll(sp.leagueChannels.values)
-        }
-        return channelStore.displayChannels.value.filter { ch ->
+        // Channels you picked yourself (Fix Channel) count even in a hidden group (also
+        // after the provider renamed them).
+        val all = channelStore.displayChannels.value
+        val picked = SportsPickedChannels.keys(SportsPickedChannels.resolve(sp, all))
+        return all.filter { ch ->
             (ch.key in picked || (ch.key !in user.hiddenChannels && ch.groupId !in user.hiddenGroups)) &&
                 !ParentalControls.isLocked(ch.groupId, ch.group, live, user.lockedGroups) &&
                 !(ParentalControls.enabled(live) && live.lockAdultContent && ParentalControls.isAdult(ch.name))
@@ -1634,7 +1736,9 @@ class SportsRepository @Inject constructor(
         try {
             val now = System.currentTimeMillis()
             val shift = live.epgOffsetMinutes * MINUTE
-            val s = settings.value
+            val saved = settings.value
+            // Your picks on channels the provider has since renamed: on the renamed channel.
+            val s = SportsPickedChannels.resolve(saved, channelStore.displayChannels.value)
             val f = follows.value
             // Sports ESPN doesn't cover, from the guide: yesterday to tomorrow, every one of
             // them, not just your region's (this is a local guide search, not an API call, so
@@ -1707,7 +1811,7 @@ class SportsRepository @Inject constructor(
                     rebuildLiveScores()
                 }
             )
-            _matches.value = result.matches
+            _matches.value = keepPicksMadeMeanwhile(result.matches, saved)
             if (result.summary != lastSummary) {
                 lastSummary = result.summary
                 LiveTvLoadReport.add(result.summary)
@@ -1716,6 +1820,34 @@ class SportsRepository @Inject constructor(
         } finally {
             _matching.value = false
         }
+    }
+
+    /**
+     * A channel you fixed (or said isn't showing a game) while a search was already running:
+     * that search started before your fix, so its results put the old channels back and your
+     * fix looked wiped until the next search, which waits while video plays full screen.
+     * Your fixes made since [before] go back on top of the results straight away.
+     */
+    private fun keepPicksMadeMeanwhile(found: Map<String, List<ChannelMatch>>, before: SportsSettings): Map<String, List<ChannelMatch>> {
+        val latest = settings.value
+        if (latest.eventChannels == before.eventChannels && latest.blocked == before.blocked) return found
+        val channels = channelStore.displayChannels.value
+        val now = SportsPickedChannels.resolve(latest, channels)
+        val byKey = channels.associateBy { it.key }
+        val out = HashMap(found)
+        for ((id, v) in now.eventChannels) {
+            if (before.eventChannels[id] == latest.eventChannels[id]) continue
+            val ch = byKey[v.substringBeforeLast('|')] ?: continue
+            val mine = ChannelMatch(ch, 200, "Your pick", null, SportsMatcher.nameQuality(ch.name), false)
+            out[id] = listOf(mine) + out[id].orEmpty().filter { it.channel.key != ch.key }
+        }
+        val newlyBlocked = latest.blocked - before.blocked
+        for (b in newlyBlocked) {
+            val id = out.keys.firstOrNull { b.startsWith("$it|") } ?: continue
+            val key = b.removePrefix("$id|")
+            out[id] = out[id].orEmpty().filter { it.channel.key != key }
+        }
+        return out
     }
 
     // ------------------------------------------------------------------ scores elsewhere in the app
@@ -1768,7 +1900,7 @@ class SportsRepository @Inject constructor(
                 val now = list.associateBy { it.id }
                 if (scoreDelayMs.value > 0 && before.isNotEmpty()) {
                     runCatching { rebuildLiveScores() }
-                    list.filter { ev -> before[ev.id].let { it != null && it !== ev && it.sides != ev.sides } }
+                    list.filter { ev -> before[ev.id].let { it != null && it !== ev && (it.sides != ev.sides || it.state != ev.state) } }
                         .groupBy { it.leagueId }
                         .forEach { (leagueId, changed) ->
                             val league = SportsCatalog.league(leagueId) ?: return@forEach
@@ -1780,17 +1912,32 @@ class SportsRepository @Inject constructor(
         }
     }
 
-    /** A team you follow scored: tell the app (Scoring Alerts). */
+    /**
+     * A team you follow (or a game you asked alerts for) scored, or its game just finished:
+     * tell the app (Scoring Alerts; full time comes with the final score).
+     */
     private fun noticeScoring(league: League, before: List<SportsEvent>, after: List<SportsEvent>) {
-        if (!settings.value.scoringAlerts) return
         val f = follows.value
+        val alerts = settings.value.scoringAlerts
+        val picked = f.alertGames.mapTo(HashSet()) { it.eventId }
+        if (!alerts && picked.isEmpty()) return
         val old = before.associateBy { it.id }
         for (ev in after) {
-            if (ev.state != GameState.LIVE || !ev.hasScore) continue
             val prev = old[ev.id] ?: continue
+            val chosen = ev.id in picked
+            fun mine(teamId: String) = alerts && (f.followsTeam(league.id, teamId) || league.id in f.leagues)
+            // Full time: once, as the game goes from live to finished.
+            if (ev.state == GameState.POST && prev.state == GameState.LIVE) {
+                if (ev.hasScore && (chosen || ev.sides.any { mine(it.team.id) })) {
+                    val side = ev.sides.firstOrNull { mine(it.team.id) } ?: ev.sides.firstOrNull() ?: continue
+                    SportsLive.alert(SportsAlert(ev, side.team, league, final = true))
+                }
+                continue
+            }
+            if (ev.state != GameState.LIVE || !ev.hasScore) continue
             if (!prev.hasScore) continue
             for (side in ev.sides) {
-                if (!f.followsTeam(league.id, side.team.id) && league.id !in f.leagues) continue
+                if (!chosen && !mine(side.team.id)) continue
                 val was = prev.sides.firstOrNull { it.team.id == side.team.id }?.score?.toDoubleOrNull() ?: continue
                 val nowScore = side.score?.toDoubleOrNull() ?: continue
                 if (nowScore > was) SportsLive.alert(SportsAlert(ev, side.team, league))
@@ -2146,6 +2293,17 @@ class SportsRepository @Inject constructor(
 
     fun dropReminder(eventId: String) = updateFollows { f -> f.copy(reminders = f.reminders.filterNot { it.eventId == eventId }) }
 
+    /** Score alerts for just this game (its scores and the final result), without following its teams. */
+    fun toggleGameAlerts(ev: SportsEvent) = updateFollows { f ->
+        val since = System.currentTimeMillis() - ALERT_GAME_KEEP
+        if (f.alertGames.any { it.eventId == ev.id }) f.copy(alertGames = f.alertGames.filterNot { it.eventId == ev.id })
+        else f.copy(alertGames = f.alertGames.filter { it.startMs > since } + GameAlertPick(ev.id, ev.leagueId, ev.startMs))
+    }
+
+    /** Whether this game's scores come as alerts already: a team or league you follow, with Scoring Alerts on. */
+    fun alertsFromFollows(ev: SportsEvent, f: SportsFollows = follows.value): Boolean =
+        settings.value.scoringAlerts && (ev.leagueId in f.leagues || ev.sides.any { f.followsTeam(ev.leagueId, it.team.id) })
+
     /**
      * "This is the right channel" for [ev]. With [forNetwork] (one of its networks), also for
      * every game that network has from now on (FOX on your FOX 4K channel, say).
@@ -2167,7 +2325,7 @@ class SportsRepository @Inject constructor(
             _matches.value = _matches.value + (ev.id to (listOf(mine) + _matches.value[ev.id].orEmpty().filter { it.channel.key != channelKey }))
         }
         pickPending = true
-        matchKick.value++
+        kickMatch("a channel pick")
     }
 
     /** "Not this channel" for [ev] (and it stops being used for its network). */
@@ -2182,7 +2340,7 @@ class SportsRepository @Inject constructor(
     }.also {
         _matches.value[ev.id]?.let { l -> _matches.value = _matches.value + (ev.id to l.filter { it.channel.key != channelKey }) }
         pickPending = true
-        matchKick.value++
+        kickMatch("a channel pick")
     }
 
     /** Your channel links: forget one (games of it go back to finding their channel by themselves). */
@@ -2198,7 +2356,7 @@ class SportsRepository @Inject constructor(
             if (link.kind == ChannelLink.Kind.GAME) _matches.value = _matches.value + (link.key to l.filter { it.score < 150 })
         }
         pickPending = true
-        matchKick.value++
+        kickMatch("a channel pick")
     }
 
     /**
@@ -2303,7 +2461,13 @@ class SportsRepository @Inject constructor(
         private const val FIRST_ROUND_FALLBACK = 55_000L
         /** The safety-net round: this long after the last one. */
         private const val SAFETY_ROUND = 4 * HOUR
+        /** Full channel searches (they read the whole guide) at most this often, except a channel pick. */
+        private const val MIN_FULL_MATCH_GAP = 10 * MINUTE
+        /** Quick matches (names and networks only) for games' details moving, at most this often. */
+        private const val QUICK_MATCH_GAP = 2 * MINUTE
         private const val DAY = 24 * HOUR
+        /** A single game's score alerts are dropped this long after it started. */
+        private const val ALERT_GAME_KEEP = 12 * HOUR
         /** The page's days run from this many days back to [DAYS_AHEAD] ahead. */
         const val DAYS_AHEAD = 7
         const val DAYS_BACK = 7
@@ -2312,8 +2476,8 @@ class SportsRepository @Inject constructor(
     }
 }
 
-/** A team you follow just scored (shown for a few seconds wherever you are). */
-data class SportsAlert(val event: SportsEvent, val team: TeamInfo, val league: League, val id: Long = System.nanoTime())
+/** A team you follow just scored, or its game finished ([final]) (shown for a few seconds wherever you are). */
+data class SportsAlert(val event: SportsEvent, val team: TeamInfo, val league: League, val final: Boolean = false, val id: Long = System.nanoTime())
 
 /** Sports data the rest of the app shows: scores on Live TV's info bar, scoring alerts. */
 /** A "maybe" channel match good enough to show its game's score when nothing else could be on it. */
@@ -2323,8 +2487,16 @@ object SportsLive {
     val byChannel = MutableStateFlow<Map<String, SportsEvent>>(emptyMap())
     /** Channel key -> the live game on it (with or without a score), for the card on the info panel. */
     val cardByChannel = MutableStateFlow<Map<String, SportsEvent>>(emptyMap())
+    /** The alert on screen now; others wait their turn (several games can score or finish in one update). */
     val alerts = MutableStateFlow<SportsAlert?>(null)
-    fun alert(a: SportsAlert) { alerts.value = a }
+    private val waiting = ArrayDeque<SportsAlert>()
+    fun alert(a: SportsAlert) = synchronized(waiting) {
+        if (alerts.value == null) alerts.value = a else if (waiting.size < 8) waiting.addLast(a)
+    }
+    /** [a] has been on screen long enough: the next one, if any. */
+    fun done(a: SportsAlert) = synchronized(waiting) {
+        if (alerts.value == a) alerts.value = waiting.removeFirstOrNull()
+    }
 
     /** Games pinned to the corner (event ids, oldest first). Kept in memory only: a new start clears them. */
     val pins = MutableStateFlow<List<String>>(emptyList())

@@ -1710,7 +1710,8 @@ private fun LiveTvGuideScreenBody(
                                             windowStart = windowStart,
                                             now = now,
                                             isFavorite = if (favoritesMode) ch.key in pendingFavorites else ch.key in user.favorites,
-                                            isPlaying = ch.key == playback.channelKey,
+                                            // Preview window off: nothing plays behind the guide, so mark the channel last watched.
+                                            isPlaying = ch.key == (playback.channelKey ?: if (!settings.showPreview) user.lastChannelKey else null),
                                             focusColumn = if (index == row && (gridFocused || epgPickerFor != null || logoPickerFor != null) && !nameFocus && !reorderActive) column else null,
                                             focusedBlock = if (index == row) focusedBlock else null,
                                             visible = if (visibilityMode) ch.key !in pendingHidden else null,
@@ -2062,9 +2063,13 @@ private fun LiveTvGuideScreenBody(
             LaunchedEffect(fc?.key, gridFocused) {
                 if (gridFocused && fc != null && fc.key != ch.key) epgPickerFor = fc
             }
+            // Only the guides switched on for this channel's playlist (its Guides settings).
+            val chSources = remember(epgSources, ch.sourceId) {
+                epgSources.filter { it.playlistIds == null || ch.sourceId in it.playlistIds }
+            }
             EpgSidePanel(
                 channel = ch,
-                sources = epgSources,
+                sources = chSources,
                 current = user.epgOverrides[ch.key],
                 automatic = epgAutoMatches[ch.key],
                 loading = status.loading || epgListsLoading,
@@ -2895,14 +2900,19 @@ private fun GuideRow(
                 Spacer(Modifier.width(8.dp))
             }
             if (settings.showChannelNames) {
+                val twoLines = settings.twoLineChannelNames
                 LiveText(
                     channel.name,
                     modifier = Modifier.weight(1f),
                     color = if (tmPlaying) TiviMateColors.Accent else cell.text,
                     size = gsp(14f),
                     weight = if (isPlaying || settings.guideTiviMateStyle) FontWeight.Bold else FontWeight.Normal,
+                    // "Two-line channel names": a long name wraps onto a second line instead of
+                    // being cut off (no scrolling then, both lines already show).
+                    maxLines = if (twoLines) 2 else 1,
+                    lineHeight = if (twoLines) gsp(16f) else androidx.compose.ui.unit.TextUnit.Unspecified,
                     // The row you're on scrolls a long name (also when the name itself has the highlight).
-                    marquee = focusColumn != null || nameFocused || moving
+                    marquee = !twoLines && (focusColumn != null || nameFocused || moving)
                 )
             } else {
                 Spacer(Modifier.weight(1f))
@@ -4723,11 +4733,22 @@ private const val OK_WITH_ARROW_MS = 250L
 internal const val LONG_PRESS_MS = 550L
 
 /** How tall each channel row is: compact or normal, taller when show times are shown. */
-private fun guideRowHeight(s: LiveTvSettings): Dp = when (s.effectiveGuideSize) {
-    "COMPACT" -> if (s.showProgramTimes) 44.dp else 32.dp
-    "LARGE" -> if (s.showProgramTimes) 64.dp else 47.dp
-    "XLARGE" -> if (s.showProgramTimes) 76.dp else 56.dp
-    else -> if (s.showProgramTimes) 52.dp else 38.dp
+private fun guideRowHeight(s: LiveTvSettings): Dp {
+    val h = when (s.effectiveGuideSize) {
+        "COMPACT" -> if (s.showProgramTimes) 44.dp else 32.dp
+        "LARGE" -> if (s.showProgramTimes) 64.dp else 47.dp
+        "XLARGE" -> if (s.showProgramTimes) 76.dp else 56.dp
+        else -> if (s.showProgramTimes) 52.dp else 38.dp
+    }
+    // Two-line channel names need room for two lines of the name.
+    if (!s.twoLineChannelNames || !s.showChannelNames) return h
+    val twoLineMin = when (s.effectiveGuideSize) {
+        "COMPACT" -> 40.dp
+        "LARGE" -> 50.dp
+        "XLARGE" -> 58.dp
+        else -> 44.dp
+    }
+    return maxOf(h, twoLineMin)
 }
 
 /** Guide Size: how much bigger (or smaller) the guide's text is than Standard. */
