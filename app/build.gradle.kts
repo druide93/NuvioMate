@@ -223,7 +223,12 @@ android {
 
     buildTypes {
         debug {
-            signingConfig = signingConfigs.getByName("release")
+            // Local builds without the project's keystore: fall back to the standard debug key.
+            signingConfig = if (signingConfigs.getByName("release").storeFile?.exists() == true) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
             isDebuggable = parseBooleanProperty(providers.gradleProperty("debuggable").orNull)
             isMinifyEnabled = false
 
@@ -419,7 +424,11 @@ if (livetvIsTestBuild) {
 androidComponents {
     onVariants(selector().withBuildType("debug")) { variant ->
         val isPlaystore = variant.productFlavors.any { it.second == "playstore" }
-        variant.applicationId.set(if (isPlaystore) "com.nuvio.appdebug" else "com.nuvio.livetv")
+        // Local builds without the release keystore can't update the installed app (different
+        // signature), so they get their own ID and install next to it instead.
+        val hasReleaseKeystore = (releaseStoreFilePath?.let(::file) ?: file("../nuviotv.jks")).exists()
+        val livetvDebugId = if (hasReleaseKeystore) "com.nuvio.livetv" else "com.nuvio.livetv.debug"
+        variant.applicationId.set(if (isPlaystore) "com.nuvio.appdebug" else livetvDebugId)
     }
     // Live TV fork: release builds get their own app ID too, so they install next to official
     // Nuvio and update the fork's earlier builds in place.
