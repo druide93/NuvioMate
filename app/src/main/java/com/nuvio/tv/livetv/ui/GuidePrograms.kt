@@ -30,3 +30,33 @@ internal fun prepareGuidePrograms(ch: LiveChannel, list: List<EpgProgram>, nowMs
     while (cursor + HOUR_BLOCK_MS <= to) { extra += EpgProgram(cursor, cursor + HOUR_BLOCK_MS, NO_GUIDE_TITLE); cursor += HOUR_BLOCK_MS }
     return if (extra.isEmpty()) list else (list + extra).sortedBy { it.startMs }
 }
+
+/**
+ * A channel's listings with no two shows at the same time, for the guide (its tiles and moving
+ * through them). Some guides list a show twice a minute or two apart (two sources merged:
+ * "French Pop" 18:58–19:51 and 18:59–19:53), or a show running into the next:
+ *  - the same show listed twice is one entry, from the earlier start to the later end;
+ *  - otherwise a show ends where the next one starts, and one left under a minute long (or
+ *    starting at the same time as another) is left out.
+ * Listings that don't overlap come back unchanged.
+ */
+internal fun withoutOverlaps(list: List<EpgProgram>): List<EpgProgram> {
+    if (list.size < 2) return list
+    val sorted = list.sortedWith(compareBy<EpgProgram> { it.startMs }.thenByDescending { it.stopMs })
+    if ((1 until sorted.size).none { sorted[it].startMs < sorted[it - 1].stopMs }) return list
+    val out = ArrayList<EpgProgram>(sorted.size)
+    for (p in sorted) {
+        val prev = out.lastOrNull()
+        if (prev != null && p.startMs < prev.stopMs) {
+            if (p.title.trim().equals(prev.title.trim(), ignoreCase = true)) {
+                if (p.stopMs > prev.stopMs) out[out.lastIndex] = prev.copy(stopMs = p.stopMs)
+                continue
+            }
+            if (p.startMs <= prev.startMs) continue
+            if (p.startMs - prev.startMs < 60_000L) out.removeAt(out.lastIndex)
+            else out[out.lastIndex] = prev.copy(stopMs = p.startMs)
+        }
+        out += p
+    }
+    return out
+}

@@ -139,7 +139,7 @@ private const val HOUR_BLOCK_MS = 60L * 60L * 1000L
 @Composable
 private fun rememberGuidePrograms(ch: LiveChannel?, list: List<EpgProgram>, nowMs: Long, pastHours: Int): List<EpgProgram> =
     remember(ch?.key, ch?.catchup?.days, list, Math.floorDiv(nowMs, HOUR_BLOCK_MS), pastHours) {
-        if (ch == null) emptyList() else prepareGuidePrograms(ch, list, nowMs, pastHours)
+        if (ch == null) emptyList() else prepareGuidePrograms(ch, withoutOverlaps(list), nowMs, pastHours)
     }
 
 /** "Today", "Tomorrow", "Yesterday", or the day ("Sat, Oct 10") for the guide's time ruler. */
@@ -3036,10 +3036,14 @@ private fun GuideRow(
             var focusedShow: (@Composable () -> Unit)? = null
             visible.forEach { p ->
                 val x = xOf(p.startMs)
-                val w = (xOf(p.stopMs) - x).coerceAtLeast(2.dp)
+                val isFocused = focusColumn != null && focusedBlock?.program == p
+                // The highlighted show keeps its whole length (drawn over any it overlaps); the
+                // others end where the next one starts, and a sliver too thin to read is left out.
+                val shownW = xOf(if (isFocused) p.stopMs else laid.endOf(p)) - x
+                if (!isFocused && shownW < 6.dp) return@forEach
+                val w = shownW.coerceAtLeast(2.dp)
                 val live = now >= p.startMs && now < p.stopMs
                 val past = p.stopMs <= now
-                val isFocused = focusColumn != null && focusedBlock?.program == p
                 val marks = titleMarks(p.title)
                 // TiviMate: the title alone in each cell (times are in the info at the top).
                 val subtitle = if (settings.showProgramTimes && w > 64.dp && !tivimate) formatRange(p.startMs, p.stopMs, settings.use24HourClock) else null
@@ -3108,20 +3112,44 @@ private fun GuideRow(
     }
 }
 
-/** A row's shows inside the time window, and the gaps between them (nothing listed). */
-private class RowLayout(val visible: List<EpgProgram>, val gaps: List<Pair<Long, Long>>)
+/**
+ * A row's shows inside the time window, where each one ends on screen, and the gaps between them
+ * (nothing listed).
+ */
+private class RowLayout(
+    val visible: List<EpgProgram>,
+    val gaps: List<Pair<Long, Long>>,
+    private val ends: java.util.IdentityHashMap<EpgProgram, Long> = java.util.IdentityHashMap()
+) {
+    /** Where [p]'s tile ends: cut short where the next show starts when the guide has them overlap. */
+    fun endOf(p: EpgProgram): Long = ends[p] ?: p.stopMs
+}
 
 private fun layOutRow(programs: List<EpgProgram>, windowStart: Long, windowEnd: Long): RowLayout {
-    val visible = programs.filter { it.stopMs > windowStart && it.startMs < windowEnd }
-    if (visible.isEmpty()) return RowLayout(visible, emptyList())
+    val inWindow = programs.filter { it.stopMs > windowStart && it.startMs < windowEnd }
+    if (inWindow.isEmpty()) return RowLayout(inWindow, emptyList())
+    // Some guides list shows that overlap (two listings for one slot, or a show running into the
+    // next): their tiles were drawn on top of each other, titles over titles. Each show now ends
+    // where the next one starts, and a second listing starting at the same time is left out.
+    val ends = java.util.IdentityHashMap<EpgProgram, Long>()
+    val visible = ArrayList<EpgProgram>(inWindow.size)
+    for (p in inWindow.sortedWith(compareBy<EpgProgram> { it.startMs }.thenByDescending { it.stopMs })) {
+        val prev = visible.lastOrNull()
+        if (prev != null && p.startMs < (ends[prev] ?: prev.stopMs)) {
+            if (p.startMs <= prev.startMs) continue
+            ends[prev] = p.startMs
+        }
+        ends[p] = p.stopMs
+        visible += p
+    }
     val gaps = ArrayList<Pair<Long, Long>>()
     var cursor = windowStart
-    for (p in visible.sortedBy { it.startMs }) {
+    for (p in visible) {
         if (p.startMs - cursor > 60_000L) gaps += cursor to p.startMs
-        cursor = maxOf(cursor, p.stopMs)
+        cursor = maxOf(cursor, ends[p] ?: p.stopMs)
     }
     if (windowEnd - cursor > 60_000L) gaps += cursor to windowEnd
-    return RowLayout(visible, gaps)
+    return RowLayout(visible, gaps, ends)
 }
 
 /**

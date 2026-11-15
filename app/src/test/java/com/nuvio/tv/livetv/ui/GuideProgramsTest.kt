@@ -140,6 +140,26 @@ class GuideProgramsTest {
         }
     }
 
+    @Test fun `the same show listed twice a minute apart becomes one entry`() {
+        val m = 60_000L
+        val a = EpgProgram(1000 * m, 1053 * m, "French Pop")
+        val b = EpgProgram(1001 * m, 1055 * m, "French Pop")
+        val c = EpgProgram(1055 * m, 1100 * m, "Hot Ones")
+        val out = withoutOverlaps(listOf(c, b, a))
+        assertEquals(listOf(EpgProgram(1000 * m, 1055 * m, "French Pop"), c), out)
+    }
+
+    @Test fun `an overlapping show ends where the next starts and slivers are left out`() {
+        val m = 60_000L
+        val long = EpgProgram(0, 20 * m, "Long")
+        val sliver = EpgProgram(5 * m, 5 * m + 30_000L, "Sliver")
+        val next = EpgProgram(5 * m + 20_000L, 10 * m, "Next")
+        val out = withoutOverlaps(listOf(long, sliver, next))
+        assertEquals(listOf(long.copy(stopMs = 5 * m), next), out)
+        val clean = listOf(EpgProgram(0, m, "A"), EpgProgram(m, 2 * m, "B"))
+        assertSame(clean, withoutOverlaps(clean))
+    }
+
     // Pre-change implementation, retained as a reference for ordering and gap behaviour.
     private fun referencePrograms(ch: LiveChannel, list: List<EpgProgram>, nowMs: Long, pastHours: Int): List<EpgProgram> {
         val cu = ch.catchup ?: return list
