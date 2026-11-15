@@ -893,6 +893,8 @@ object LiveTvLoadReport {
     private val startedAt = System.currentTimeMillis()
     val lines = kotlinx.coroutines.flow.MutableStateFlow<List<String>>(emptyList())
     fun add(text: String) {
+        // Also in the system log (adb logcat -s NuvioReport), to follow it from a computer.
+        android.util.Log.i("NuvioReport", text)
         val t = (System.currentTimeMillis() - startedAt) / 100 / 10.0
         lines.value = (lines.value + "+${t}s  $text").takeLast(160)
     }

@@ -109,17 +109,27 @@ class LiveTvTimeshift(private val context: Context) {
         savedMs = 0L
         firstBatchMs = 0L
         recording = true
-        val s = if (isHls) {
-            val local = File(dir, "index.m3u8")
-            Session(Kind.HLS, now, Uri.fromFile(local), dir).also { job = scope.launch { recordHls(url, headers, dir, local, keepMinutes ?: 24 * 60, live = reconnect, leadMs = leadMs, audioLanguage = audioLanguage, label = label, refreshStream = refreshStream, initialPolicy = policy) } }
-        } else {
-            val local = File(dir, "index.m3u8")
-            Session(Kind.TS, now, Uri.fromFile(local), dir).also { job = scope.launch { recordTs(url, headers, dir, keepMinutes, reconnect, label, refreshStream, policy) } }
-        }
+        val local = File(dir, "index.m3u8")
+        // The session is set before its recording starts: a recording carries on only while
+        // it's still this one (see [alive]).
+        val s = Session(if (isHls) Kind.HLS else Kind.TS, now, Uri.fromFile(local), dir)
         session = s
         ACTIVE += s.dir
+        job = if (isHls) {
+            scope.launch { recordHls(url, headers, dir, local, keepMinutes ?: 24 * 60, live = reconnect, leadMs = leadMs, audioLanguage = audioLanguage, label = label, refreshStream = refreshStream, initialPolicy = policy) }
+        } else {
+            scope.launch { recordTs(url, headers, dir, keepMinutes, reconnect, label, refreshStream, policy) }
+        }
         return s
     }
+
+    /**
+     * This recording (the one saving into [dir]) is still the one wanted. A new one (another
+     * replay, say) used to set the shared flag back on, so the old one carried on writing into
+     * its deleted folder, and when it finally stopped it switched the new one off with it
+     * ("finished after 2s, 0s recorded", then 30 s or more before the replay played).
+     */
+    private fun alive(dir: File): Boolean = recording && session?.dir == dir
 
     /** Stops recording and deletes it. */
     fun stop() {
@@ -168,7 +178,9 @@ class LiveTvTimeshift(private val context: Context) {
         initialPolicy: StalkerMediaPolicy? = null,
     ) {
         // Pieces past the time limit are dropped as new ones come in (it records on, behind you).
-        val segmenter = TsSegmenter(dir, keepSec = keepMinutes?.let { it * 60.0 }) { _ -> }
+        // A replay (kept whole): a 10 s target, so playback close to what's saved sees new
+        // pieces within seconds instead of freezing up to 20 s.
+        val segmenter = TsSegmenter(dir, keepSec = keepMinutes?.let { it * 60.0 }, fixedTargetSec = if (keepMinutes == null) 10 else null) { _ -> }
         val report = com.nuvio.tv.livetv.model.LiveTvLoadReport
         val began = System.currentTimeMillis()
         // The player has only just let go of its connection: give the provider a moment, or
@@ -181,11 +193,15 @@ class LiveTvTimeshift(private val context: Context) {
         var totalBytes = 0L
         var knownLength = -1L
         var resumeTries = 0
+        // Whether the provider carries a replay on from the middle of the file (null: not
+        // known yet), and when the last new connection for full speed was asked for.
+        var rangeWorks: Boolean? = null
+        var lastBoostAt = 0L
         try {
             // Keeps going until you go live or change channel: a dropped connection is opened
             // again, with the gap marked, instead of ending the buffer (which sent you back to
             // live after half a minute or so).
-            while (scope.isActive && recording) {
+            while (scope.isActive && alive(dir)) {
                 // A replay cut off part way: ask for the rest of the same file (from the byte it
                 // stopped at), so it carries on seamlessly instead of the save ending there and
                 // playback stopping at that point.
@@ -198,12 +214,11 @@ class LiveTvTimeshift(private val context: Context) {
                 val t0 = System.currentTimeMillis()
                 var bytes = 0L
                 var complete = false
-                var cantResume = false
                 val why = try {
                     // Stalker: a fresh link is the live one, so not for carrying on a replay.
                     val fresh = if (attempt > 1 && !resuming) refreshStream?.invoke() else null
                     if (fresh?.mimeType == StalkerMimeProbe.DASH || fresh?.mimeType == StalkerMimeProbe.HLS) {
-                        recording = false
+                        if (session?.dir == dir) recording = false
                         throw java.io.IOException("The Stalker stream changed its buffer format. Retry playback.")
                     }
                     if (fresh != null) { if (policy !== fresh.policy) policy?.retire(); policy = fresh.policy }
@@ -212,10 +227,18 @@ class LiveTvTimeshift(private val context: Context) {
                     val code = c.responseCode
                     when {
                         resuming && code == 416 -> { c.disconnect(); complete = true; "all of it is saved" }
-                        // The provider sent the replay from its start again: it can't carry on.
-                        resuming && code == 200 -> { c.disconnect(); cantResume = true; "the provider can't carry on from where it stopped" }
                         code !in 200..299 -> { c.disconnect(); "HTTP $code" }
                         else -> {
+                            // The provider sent the replay from its start again (it can't carry on
+                            // from the middle): what's already saved is read again and skipped.
+                            var skip = if (resuming && code == 200) totalBytes else 0L
+                            if (resuming) {
+                                rangeWorks = code == 206
+                                report.add(
+                                    if (code == 206) "$label: the provider carries on from ${totalBytes / 1024 / 1024} MB"
+                                    else "$label: the provider can't carry on from the middle; reading the first ${totalBytes / 1024 / 1024} MB again"
+                                )
+                            }
                             if (knownLength < 0) knownLength = when (code) {
                                 200 -> c.contentLengthLong
                                 206 -> c.getHeaderField("Content-Range")?.substringAfterLast('/')?.trim()?.toLongOrNull() ?: -1L
@@ -224,16 +247,63 @@ class LiveTvTimeshift(private val context: Context) {
                             c.inputStream.use { input ->
                                 val buf = ByteArray(64 * 1024)
                                 var end = "the provider ended the stream"
-                                while (scope.isActive && recording) {
+                                var lastNote = System.currentTimeMillis()
+                                var noteBytes = totalBytes
+                                var noteSaved = savedMs
+                                // Speed check for a replay: the provider sends the start at full
+                                // speed, then slows to about real time (seen: 17x, then 1.2x after
+                                // about 16 minutes), so the saved part hardly gets ahead of
+                                // playback. A new connection, carrying on from the same byte, may
+                                // get full speed again.
+                                var checkAt = System.currentTimeMillis()
+                                var checkSaved = savedMs
+                                // The fastest this connection went: a new one is only asked for
+                                // when it came fast and then slowed right down (a provider that's
+                                // simply slow gains nothing from it; each new connection costs a
+                                // couple of seconds, and playback froze catching up).
+                                var peakRate = 0.0
+                                while (scope.isActive && alive(dir)) {
                                     val n = input.read(buf)
                                     if (n < 0) break
-                                    bytes += n
-                                    totalBytes += n
-                                    segmenter.write(buf, 0, n)
+                                    var off = 0
+                                    if (skip > 0) {
+                                        off = minOf(n.toLong(), skip).toInt()
+                                        skip -= off
+                                        if (off == n) continue
+                                        checkAt = System.currentTimeMillis(); checkSaved = savedMs
+                                    }
+                                    val m = n - off
+                                    bytes += m
+                                    totalBytes += m
+                                    segmenter.write(buf, off, m)
                                     trimmedMs = (segmenter.trimmedSec * 1000).toLong()
                                     savedMs = (segmenter.totalSec * 1000).toLong()
+                                    // A replay: how fast it's coming in, every 30 s (seconds of
+                                    // show saved per second, and the speed), to see a provider
+                                    // slowing it to real time or a stall.
+                                    val nowMs = System.currentTimeMillis()
+                                    if (!reconnect && nowMs - lastNote >= 30_000) {
+                                        val secs = (nowMs - lastNote) / 1000.0
+                                        report.add(
+                                            "$label: ${savedMs / 1000}s saved (${totalBytes / 1024 / 1024} MB), " +
+                                                "last ${secs.toInt()}s: ${String.format(java.util.Locale.US, "%.1f", (savedMs - noteSaved) / 1000.0 / secs)}x real time, " +
+                                                "${(totalBytes - noteBytes) / 1024 / secs.toLong().coerceAtLeast(1)} KB/s"
+                                        )
+                                        lastNote = nowMs; noteBytes = totalBytes; noteSaved = savedMs
+                                    }
+                                    if (!reconnect && nowMs - checkAt >= 20_000) {
+                                        val rate = (savedMs - checkSaved) / (nowMs - checkAt).toDouble()
+                                        checkAt = nowMs; checkSaved = savedMs
+                                        val throttled = peakRate >= 4.0 && rate < 2.0 && rate < peakRate * 0.4
+                                        if (rate > peakRate) peakRate = rate
+                                        if (throttled && rangeWorks != false && nowMs - lastBoostAt >= 60_000) {
+                                            lastBoostAt = nowMs
+                                            end = "slowed to ${String.format(java.util.Locale.US, "%.1f", rate)}x real time; new connection for full speed"
+                                            break
+                                        }
+                                    }
                                 }
-                                if (!recording) end = "stopped"
+                                if (!alive(dir)) end = "stopped"
                                 // Asked for the rest and there was none: it was all there.
                                 if (resuming && code == 206 && bytes == 0L) complete = true
                                 end
@@ -245,13 +315,13 @@ class LiveTvTimeshift(private val context: Context) {
                 } catch (e: Exception) {
                     if (refreshStream != null) "Stalker stream unavailable" else e.message ?: e.javaClass.simpleName
                 }
-                if (!recording) break
+                if (!alive(dir)) break
                 if (!reconnect) {
                     if (knownLength > 0 && totalBytes >= knownLength) complete = true
                     if (bytes > 0) resumeTries = 0 else if (resuming) resumeTries++
                     // Saved to its end, or it can't be carried on (playback then asks the provider
                     // again from where it got to): the save ends here.
-                    if (complete || cantResume || resumeTries >= 6 || (totalBytes == 0L && attempt >= 2)) {
+                    if (complete || resumeTries >= 6 || (totalBytes == 0L && attempt >= 2)) {
                         report.add("$label: ${totalBytes / 1024 / 1024} MB saved ($why)")
                         break
                     }
@@ -270,7 +340,7 @@ class LiveTvTimeshift(private val context: Context) {
             report.add("$label finished after ${(System.currentTimeMillis() - began) / 1000}s (${segmenter.totalSec.toInt()}s recorded)")
             runCatching { segmenter.finish(ended = true) }
             if (session?.dir == dir) savedMs = (segmenter.totalSec * 1000).toLong()
-            recording = false
+            if (session?.dir == dir) recording = false
         }
     }
 
@@ -310,7 +380,7 @@ class LiveTvTimeshift(private val context: Context) {
             if (vm.encrypted || am?.encrypted == true) {
                 Log.w(TAG, "Encrypted HLS: not recorded")
                 report.add("$label: encrypted stream, can't be saved")
-                recording = false
+                if (session?.dir == dir) recording = false
                 return
             }
             if (audio != null) report.add("$label: saving picture and sound separately (sound: ${choice?.audioLanguage ?: "default"})")
@@ -332,7 +402,7 @@ class LiveTvTimeshift(private val context: Context) {
                 if (vm.encrypted || am?.encrypted == true) throw IllegalStateException("Encrypted portal streams cannot be buffered.")
                 lastProgressAt = System.currentTimeMillis()
             }
-            while (scope.isActive && recording) {
+            while (scope.isActive && alive(dir)) {
                 // Live: from about where you are (players play a few pieces behind the newest).
                 val lead = if (live) (leadMs ?: (vm.target * 3_000L)) else null
                 video.saveNew(vm) { m -> if (lead == null) 0 else HlsPieces.startIndex(m.pieces, lead) }
@@ -375,7 +445,7 @@ class LiveTvTimeshift(private val context: Context) {
             Log.w(TAG, "HLS recording stopped: $problem")
             report.add("$label: HLS saving stopped ($problem)")
         } finally {
-            recording = false
+            if (session?.dir == dir) recording = false
         }
     }
 

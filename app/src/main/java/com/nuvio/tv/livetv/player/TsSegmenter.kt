@@ -21,6 +21,12 @@ class TsSegmenter(
     private val dir: File,
     private val targetSec: Double = 6.0,
     private val keepSec: Double? = null,
+    /**
+     * A fixed target length for the playlist (null: at least 20 s). The player looks at a
+     * growing list again only about once per target length, so with 20 s a replay played close
+     * to what's saved froze for up to 20 s before it saw the next pieces.
+     */
+    private val fixedTargetSec: Int? = null,
     /** A piece was saved (its length in seconds); the playlist is already updated. */
     private val onSegment: (Double) -> Unit = {}
 ) {
@@ -195,7 +201,7 @@ class TsSegmenter(
         // A steady target length from the start (pieces can run longer than planned when the
         // stream rarely marks a clean cut): a target that grows mid-way, or pieces longer than
         // it, made the player think the playlist had stalled and give up.
-        val target = maxOf(20, kotlin.math.ceil(pieces.maxOf { it.durationSec }).toInt())
+        val target = fixedTargetSec ?: maxOf(20, kotlin.math.ceil(pieces.maxOf { it.durationSec }).toInt())
         val sb = StringBuilder()
         sb.append("#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:").append(target).append('\n')
         sb.append("#EXT-X-MEDIA-SEQUENCE:").append(pieces.first().seq).append('\n')

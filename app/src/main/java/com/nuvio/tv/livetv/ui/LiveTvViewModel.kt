@@ -895,11 +895,25 @@ class LiveTvViewModel @Inject constructor(
         if (playback.seekArchiveTo(s.program.startMs, target)) return
         val p = playback.player
         val inStream = target - s.baseOffsetMs
+        // Saved on this box: any point between where the copy starts and what's saved so far is
+        // a plain move within it. Goes by what's saved, not by what the player last read of the
+        // copy's list (it's played as a growing "live" list, whose length and seekable flag
+        // lagged behind or weren't set, so a skip inside the copy asked the provider again).
+        val saved = playback.replaySavedMs()
+        if (p != null && saved != null && inStream >= 0 && inStream <= saved) {
+            p.seekTo(inStream)
+            return
+        }
         if (p != null && playback.catchupSeekInStream() && p.isCurrentMediaItemSeekable && p.duration != androidx.media3.common.C.TIME_UNSET &&
             inStream >= 0 && inStream <= p.duration
         ) {
             p.seekTo(inStream)
         } else {
+            com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
+                "Catch-up: skip to ${target / 60_000} min asks the provider again " +
+                    "(copy starts at ${s.baseOffsetMs / 60_000} min, saved ${saved?.let { "${it / 60_000} min" } ?: "none"}, " +
+                    "player length ${p?.duration?.takeIf { it != androidx.media3.common.C.TIME_UNSET }?.let { "${it / 60_000} min" } ?: "unknown"})"
+            )
             playCatchup(s.channel, s.program, target)
         }
     }
