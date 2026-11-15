@@ -1374,7 +1374,7 @@ private fun LiveTvGuideScreenBody(
                                 val dayName = java.text.SimpleDateFormat("EEE", java.util.Locale.getDefault()).format(java.util.Date(midnight))
                                 val isTomorrow = midnight - now in 0..(24 * 3_600_000L)
                                 LiveTag(
-                                    if (isTomorrow) "TOMORROW · ${dayName.uppercase()}" else dayName.uppercase(),
+                                    if (isTomorrow) "TOMORROW".tr() + " · ${dayName.uppercase()}" else dayName.uppercase(),
                                     NuvioTheme.colors.FocusBackground,
                                     NuvioTheme.colors.FocusRing,
                                     Modifier
@@ -1873,7 +1873,7 @@ private fun LiveTvGuideScreenBody(
                     playback.error?.let { PlayerStatusMessage("Reconnecting…", it, compact = true) }
                     playback.catchupTitle?.let {
                         LiveText(
-                            "ARCHIVE · $it",
+                            "ARCHIVE".tr() + " · $it",
                             modifier = Modifier.align(Alignment.TopStart).padding(8.dp)
                                 .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp),
@@ -2656,7 +2656,7 @@ private fun GuideHeader(
                         p?.episode?.takeIf { settings.showEpisodeNumbers }?.let { add(it) }
                         if (GuideInfoPart.CATEGORY !in hid) p?.category?.let { add(it) }
                         // The standard panel shows catch-up as a tag; the small one has no room for it.
-                        if (small && channel.catchup != null) add("Catch-up")
+                        if (small && channel.catchup != null) add("Catch-up".tr())
                         // The small info panel has no channel line, so the playlist goes here.
                         if (small) playlistName?.let { add(it) }
                     }.joinToString("  ·  ")
@@ -2764,7 +2764,7 @@ private fun GuidePreviewWindow(
                 }
                 catchupTitle?.let {
                     LiveText(
-                        "ARCHIVE · $it",
+                        "ARCHIVE".tr() + " · $it",
                         modifier = Modifier.align(Alignment.TopStart).padding(8.dp)
                             .background(Color.Black.copy(alpha = 0.6f)).padding(horizontal = 6.dp, vertical = 2.dp),
                         size = 12.sp
@@ -3026,7 +3026,7 @@ private fun GuideRow(
                     if (gw > 4.dp) strip += StripItem(
                         x = gx, width = gw,
                         // Something is on; the guide just doesn't say what.
-                        title = if (gw > 90.dp) "No information" else "",
+                        title = if (gw > 90.dp) "No information".tr() else "",
                         subtitle = null,
                         fill = gapFill, edge = if (tivimate) Color.Transparent else Color.White.copy(alpha = 0.09f),
                         text = NuvioTheme.colors.TextTertiary, italic = true
@@ -3062,7 +3062,7 @@ private fun GuideRow(
                     )
                     focusedShow = {
                         ProgramBlock(
-                            title = marks.title,
+                            title = marks.title.tr(),
                             // "Show times in the guide": start and end under the title.
                             subtitle = subtitle,
                             x = x, width = w,
@@ -3081,7 +3081,7 @@ private fun GuideRow(
                 } else {
                     strip += StripItem(
                         x = x, width = w,
-                        title = (if (p.startMs < windowStart && !tivimate) "‹ " else "") + marks.title,
+                        title = (if (p.startMs < windowStart && !tivimate) "‹ " else "") + marks.title.tr(),
                         subtitle = subtitle,
                         // One color for every show (the progress bar already marks what's on now).
                         fill = if (live) nowFill else idleFill, edge = edge,
@@ -3103,7 +3103,7 @@ private fun GuideRow(
                 val x = xOf(focusedBlock.startMs)
                 val w = (xOf(focusedBlock.stopMs) - x).coerceAtLeast(2.dp)
                 ProgramBlock(
-                    title = "No information", subtitle = null, x = x, width = w,
+                    title = "No information".tr(), subtitle = null, x = x, width = w,
                     colors = liveCellColors(focused = true, idle = guideSurface()),
                     focused = true, progress = null, continuesLeft = false
                 )

@@ -1,0 +1,1265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Live TV words written in the code, and their translations (see LiveTvTexts). Generated: keep both lists in the same order. -->
+<resources>
+    <string-array name="livetv_texts">
+        <item>" · Maintenir OK : 1 autre flux"</item>
+        <item>"+  Ajouter un groupe de playlist…"</item>
+        <item>"+ Nouvel enregistrement"</item>
+        <item>"+ Nouveau groupe"</item>
+        <item>". Patientez quelques secondes."</item>
+        <item>". Vous savez sur quelle chaîne ? Choisissez-la maintenant, elle sera mémorisée."</item>
+        <item>". Connu pour "</item>
+        <item>"Un disque non branché"</item>
+        <item>"Un match"</item>
+        <item>"Un message une minute avant, avec Regarder"</item>
+        <item>"Un joueur, pilote, combattant ou une équipe"</item>
+        <item>"A-League masculine"</item>
+        <item>"A-League féminine"</item>
+        <item>"Coupe d’Asie de l’AFC"</item>
+        <item>"Ligue des champions de l’AFC"</item>
+        <item>"Ligue des champions de l’AFC Elite"</item>
+        <item>"Ligue des champions de l’AFC Two"</item>
+        <item>"REPLAY"</item>
+        <item>"Actions : Bas vers le premier · Haut vers le dernier"</item>
+        <item>"Actif"</item>
+        <item>"Ajouter"</item>
+        <item>"Ajouter une chaîne"</item>
+        <item>"Ajoutez une playlist dans les réglages TV en direct pour regarder d’ici."</item>
+        <item>"Ajoutez une playlist dans les réglages TV en direct pour regarder les matchs d’ici. Les scores et horaires restent affichés."</item>
+        <item>"Ajoutez une playlist M3U, un compte Xtream ou un guide XMLTV dans Réglages › TV en direct."</item>
+        <item>"Ajouter une fenêtre"</item>
+        <item>"Ajouter au Multiview"</item>
+        <item>"Ajouter aux favoris"</item>
+        <item>"Ajouter au groupe…"</item>
+        <item>"Coupe d’Afrique des nations"</item>
+        <item>"Après un changement de chaîne ou un appui sur OK"</item>
+        <item>"Diffusé"</item>
+        <item>"Diffusé aujourd’hui"</item>
+        <item>"Tous"</item>
+        <item>"Tous les événements"</item>
+        <item>"Tous les réglages TV en direct"</item>
+        <item>"Toutes les chaînes"</item>
+        <item>"Toute la journée"</item>
+        <item>"Tous les guides"</item>
+        <item>"Toutes les régions"</item>
+        <item>"Tous leurs matchs"</item>
+        <item>"Tout vu"</item>
+        <item>"Déplacement des enregistrements déjà en cours : attendez la fin"</item>
+        <item>"Aussi généré en arrière-plan pendant la lecture, une fois la vidéo bien préchargée"</item>
+        <item>"Toujours affiché en pause"</item>
+        <item>"Football américain"</item>
+        <item>"N’importe quel groupe de n’importe quelle playlist, y compris les vôtres"</item>
+        <item>"S’applique à toutes les chaînes"</item>
+        <item>"S’applique à cette chaîne"</item>
+        <item>"Arabe"</item>
+        <item>"Bleu arctique"</item>
+        <item>"Argentine"</item>
+        <item>"Organiser mes sports"</item>
+        <item>"Coupe d’Asie"</item>
+        <item>"Attribuer l’EPG"</item>
+        <item>"Listes d’attribution EPG :"</item>
+        <item>"Attribuer l’EPG : listes de chaînes du guide pas prêtes, tous les guides ont donc été lus"</item>
+        <item>"Attribué : "</item>
+        <item>"À la maison"</item>
+        <item>"Affluence : %,d"</item>
+        <item>"Football australien"</item>
+        <item>"Australie"</item>
+        <item>"Australie et Nouvelle-Zélande"</item>
+        <item>"Autriche"</item>
+        <item>"Bundesliga autrichienne"</item>
+        <item>"Automatique"</item>
+        <item>"Automatique : "</item>
+        <item>"Automatique : aucun guide trouvé"</item>
+        <item>"Tests d’automne"</item>
+        <item>"Extérieur"</item>
+        <item>"AVANT CE PLANTAGE :"</item>
+        <item>"MEILLEUR CHOIX"</item>
+        <item>"PAR MI-TEMPS"</item>
+        <item>"PAR MANCHE"</item>
+        <item>"PAR PÉRIODE"</item>
+        <item>"PAR QUART-TEMPS"</item>
+        <item>"Revenir au direct"</item>
+        <item>"Retour : enregistrer"</item>
+        <item>"Retour : enregistrer et terminer"</item>
+        <item>"Retour : enregistrer et revenir"</item>
+        <item>"Couleur de fond"</item>
+        <item>"Sauvegardes"</item>
+        <item>"Opacité de la barre"</item>
+        <item>"Comportement et options"</item>
+        <item>"Derrière le guide et Sports"</item>
+        <item>"Pro League belge"</item>
+        <item>"Belgique"</item>
+        <item>"Cloche"</item>
+        <item>"Cloche activée"</item>
+        <item>"Primera bolivienne"</item>
+        <item>"Bas "</item>
+        <item>"Boxe"</item>
+        <item>"Brésil"</item>
+        <item>"En mémoire tampon"</item>
+        <item>"Intégré"</item>
+        <item>"Bulgarie"</item>
+        <item>"Threads les plus actifs (% d’un cœur sur 5 s) :"</item>
+        <item>"Ligue des champions de la CAF"</item>
+        <item>"Coupe de la Confédération de la CAF"</item>
+        <item>"REPLAY"</item>
+        <item>"À VENIR"</item>
+        <item>"Coupe des champions de la CONCACAF"</item>
+        <item>"Ligue des nations de la CONCACAF"</item>
+        <item>"PLANTAGE DANS LE CODE NATIF (décodeur vidéo, graphismes ou bibliothèque)"</item>
+        <item>"Calendrier"</item>
+        <item>"Déplaçable"</item>
+        <item>"Fournisseur injoignable pour le moment"</item>
+        <item>"Impossible d’accéder à ce flux. Vérifiez la connexion ou réessayez."</item>
+        <item>"Annuler"</item>
+        <item>"Annuler l’enregistrement"</item>
+        <item>"Annuler l’enregistrement"</item>
+        <item>"Annuler le rappel"</item>
+        <item>"Annuler l’enregistrement"</item>
+        <item>"Annuler le rappel"</item>
+        <item>"Annulé"</item>
+        <item>"Sous-titres"</item>
+        <item>"Sous-titres désactivés"</item>
+        <item>"Sous-titres activés"</item>
+        <item>"Sous-titres : "</item>
+        <item>"Série des Caraïbes"</item>
+        <item>"Replay"</item>
+        <item>"Le replay n’a pas démarré : le fournisseur n’a rien envoyé pour ce programme"</item>
+        <item>"Sauvegarde du replay"</item>
+        <item>"Catégorie"</item>
+        <item>"Coupe centraméricaine"</item>
+        <item>"Ligue des champions"</item>
+        <item>"Changer le logo"</item>
+        <item>"Changer le numéro de chaîne"</item>
+        <item>"Changer le logo"</item>
+        <item>"Changer de flux"</item>
+        <item>"Changer la chaîne de ce programme"</item>
+        <item>"Les changements s’affichent immédiatement"</item>
+        <item>"Chaîne"</item>
+        <item>"Nom de la chaîne"</item>
+        <item>"Nom et logo de la chaîne"</item>
+        <item>"Nom ou ID de la chaîne"</item>
+        <item>"Nom ou numéro de la chaîne"</item>
+        <item>"Numéro de chaîne"</item>
+        <item>"Chaînes"</item>
+        <item>"Chaînes de"</item>
+        <item>"Chaînes que vous avez imposées au Calendrier, pour un réseau ou un programme. OK en oublie une : le Calendrier choisit de nouveau la chaîne lui-même."</item>
+        <item>"Vérifiez votre connexion et réessayez."</item>
+        <item>"Vérification…"</item>
+        <item>"Chili"</item>
+        <item>"Primera chilienne"</item>
+        <item>"Chine"</item>
+        <item>"Super League chinoise"</item>
+        <item>"Choisir les ligues  ›"</item>
+        <item>"Choisir une chaîne pour…"</item>
+        <item>"Choisissez d’abord un match pour cette fenêtre."</item>
+        <item>"Choisir une version"</item>
+        <item>"Choisir la chaîne"</item>
+        <item>"Effacer"</item>
+        <item>"Qualifié"</item>
+        <item>"Qualifié pour les playoffs"</item>
+        <item>"Assuré de la 1re place de la conférence"</item>
+        <item>"Assuré de la 1re place de la ligue"</item>
+        <item>"Presidents’ Trophy assuré"</item>
+        <item>"Titre de division assuré"</item>
+        <item>"Horloge"</item>
+        <item>"Fermer"</item>
+        <item>"Fermer (le changement a quand même lieu)"</item>
+        <item>"Sous-titres codés"</item>
+        <item>"Sous-titres codés (CC2)"</item>
+        <item>"Sous-titres codés (CC3)"</item>
+        <item>"Sous-titres codés (CC4)"</item>
+        <item>"Sous-titres codés (numériques)"</item>
+        <item>"Matchs amicaux de clubs"</item>
+        <item>"Match amical de clubs"</item>
+        <item>"Coupe du monde des clubs"</item>
+        <item>"Baseball universitaire"</item>
+        <item>"Basketball universitaire"</item>
+        <item>"Hockey sur gazon universitaire"</item>
+        <item>"Football américain universitaire"</item>
+        <item>"Hockey universitaire"</item>
+        <item>"Lacrosse universitaire"</item>
+        <item>"Football universitaire"</item>
+        <item>"Softball universitaire"</item>
+        <item>"Volleyball universitaire"</item>
+        <item>"Colombie"</item>
+        <item>"Primera A colombienne"</item>
+        <item>"Combiner les deux"</item>
+        <item>"À venir"</item>
+        <item>"Coupe centraméricaine de la Concacaf"</item>
+        <item>"Coupe de la Confédération"</item>
+        <item>"Conférence"</item>
+        <item>"Ligue Conférence"</item>
+        <item>"Connectez ce téléviseur au Wi-Fi pour envoyer un logo depuis votre téléphone."</item>
+        <item>"Copie vers l’emplacement choisi, vérifie la copie, puis la supprime de son emplacement d’origine. "</item>
+        <item>"Cuivre"</item>
+        <item>"Copier la chaîne…"</item>
+        <item>"Primera costaricienne"</item>
+        <item>"Impossible d’enregistrer le cache des chaînes Stalker."</item>
+        <item>"Impossible d’enregistrer le cache du guide Stalker."</item>
+        <item>"Enregistrement impossible"</item>
+        <item>"Impossible d’obtenir les équipes de cette ligue. Réessayez dans un moment."</item>
+        <item>"Impossible d’obtenir ce classement pour le moment. Nouvel essai à votre retour."</item>
+        <item>"Impossible d’obtenir les programmes du jour. Vérifiez votre connexion."</item>
+        <item>"Impossible de charger le calendrier"</item>
+        <item>"Impossible de charger les programmes du jour"</item>
+        <item>"Impossible de savoir sur quelle chaîne c’est diffusé"</item>
+        <item>"Pays : suivez-en un pour voir tous ses matchs, des amicaux et de la Ligue des nations jusqu’à l’Euro et la Coupe du monde."</item>
+        <item>"Pays : suivez-en un pour voir tous ses matchs, des qualifications et de la Ligue des nations aux amicaux, à la Coupe du monde et à l’Euro."</item>
+        <item>"Pays : suivez-en un pour voir tous ses matchs, du Tournoi des Six Nations et du Nations Championship jusqu’à la Coupe du monde."</item>
+        <item>"Croatie"</item>
+        <item>"Cyclisme"</item>
+        <item>"Tchéquie"</item>
+        <item>"N’A PAS DÉMARRÉ"</item>
+        <item>"Superliga danoise"</item>
+        <item>"Plus sombre"</item>
+        <item>"Fléchettes"</item>
+        <item>"Jour"</item>
+        <item>"Par défaut"</item>
+        <item>"Supprimer"</item>
+        <item>"Tout supprimer"</item>
+        <item>"Supprimer tous les épisodes"</item>
+        <item>"Supprimer le groupe"</item>
+        <item>"Danemark"</item>
+        <item>"Tout désélectionner"</item>
+        <item>"Détails"</item>
+        <item>"Numérique (708)"</item>
+        <item>"Découvrir"</item>
+        <item>"Ignorer"</item>
+        <item>"Ligue d’hiver dominicaine"</item>
+        <item>"Ne pas enregistrer"</item>
+        <item>"Ne pas l’enregistrer quand il est dans mon guide"</item>
+        <item>"Ne pas me le rappeler quand il est dans mon guide"</item>
+        <item>"Ne pas y basculer"</item>
+        <item>"Terminé"</item>
+        <item>"Néerlandais"</item>
+        <item>"La chaîne propre à chaque ligue, trouvée par son nom dans vos playlists."</item>
+        <item>"Chaque nouvel épisode, dès qu’il apparaît dans votre guide (hors rediffusions)"</item>
+        <item>"Modifier la chaîne"</item>
+        <item>"Égypte"</item>
+        <item>"Émeraude"</item>
+        <item>"Réponse vide"</item>
+        <item>"Les flux chiffrés du portail ne peuvent pas être mis en mémoire tampon."</item>
+        <item>"Les flux chiffrés du portail ne peuvent pas être enregistrés."</item>
+        <item>"Terminé"</item>
+        <item>"Anglais"</item>
+        <item>"Anglais (Royaume-Uni, États-Unis, Irlande, Canada, Australie)"</item>
+        <item>"Saisissez votre code PIN pour retirer le verrou"</item>
+        <item>"Épisode"</item>
+        <item>"Numéro d’épisode"</item>
+        <item>"Épisodes"</item>
+        <item>"Épisodes à conserver"</item>
+        <item>"Épisodes à conserver : "</item>
+        <item>"Épisodes, et vos sources pour regarder à la demande"</item>
+        <item>"Erreurs"</item>
+        <item>"Qualifications pour l’Euro"</item>
+        <item>"Qualifications pour l’Euro"</item>
+        <item>"Ligue Europa"</item>
+        <item>"Championnat d’Europe"</item>
+        <item>"Qualifications européennes"</item>
+        <item>"Événements"</item>
+        <item>"Chaque nouvel épisode sur "</item>
+        <item>"Tout ce que vous suivez, du plus proche au plus lointain"</item>
+        <item>"Quitter"</item>
+        <item>"FA Cup (qualifications)"</item>
+        <item>"ÉCHEC DU DÉMARRAGE"</item>
+        <item>"Coupe du monde de la FIFA"</item>
+        <item>"CARTE DES COMBATS"</item>
+        <item>"CLASSEMENT FINAL"</item>
+        <item>"SUIVI · OK POUR NE PLUS SUIVRE"</item>
+        <item>"FORME · 5 DERNIERS"</item>
+        <item>"FIGÉE (Android l’a fermée car elle ne répondait plus)"</item>
+        <item>"TRACE COMPLÈTE :"</item>
+        <item>"Mises en jeu gagnées"</item>
+        <item>"Favori"</item>
+        <item>"Chaînes favorites"</item>
+        <item>"Chaînes favorites, chaînes masquées et ordre des groupes."</item>
+        <item>"Favoris"</item>
+        <item>"Favoris et groupes"</item>
+        <item>"Favoris et groupes"</item>
+        <item>"Récupération des matchs du jour et recherche de leurs chaînes. La première fois, cela peut prendre un moment."</item>
+        <item>"Hockey sur gazon"</item>
+        <item>"Sports de combat"</item>
+        <item>"Films réalisés par "</item>
+        <item>"Films avec "</item>
+        <item>"Terminé"</item>
+        <item>"Terminé · "</item>
+        <item>"Trouver et regarder dans Nuvio"</item>
+        <item>"Trouver des sources pour cet épisode"</item>
+        <item>"Recherche des chaînes des matchs du jour…"</item>
+        <item>"Recherche des logos…"</item>
+        <item>"Finlande"</item>
+        <item>"Première liste"</item>
+        <item>"Corriger la chaîne"</item>
+        <item>"Corriger l’affiche"</item>
+        <item>"Corriger la chaîne"</item>
+        <item>"Calendrier et résultats de TheSportsDB. Les jours de match, les scores sont mis à jour environ toutes les 15 minutes."</item>
+        <item>"Replié"</item>
+        <item>"Suivre"</item>
+        <item>"Suivre des équipes et des ligues"</item>
+        <item>"Suivre un nom"</item>
+        <item>"Suivez une équipe ou une ligue pour afficher son classement ici."</item>
+        <item>"Suivez-la pour les voir dans Mes sports. Suivez un nom (un joueur, une équipe) pour repérer les programmes qui le mentionnent."</item>
+        <item>"Suivre : ses nouveaux épisodes sur l’Accueil et ici"</item>
+        <item>"Suivez d’abord des équipes ou des ligues."</item>
+        <item>"Suivez des équipes et des ligues pour voir leurs matchs ici."</item>
+        <item>"Suivez la série, ou ajoutez le film à votre Calendrier"</item>
+        <item>"Séries suivies et masquées."</item>
+        <item>"Équipes et ligues suivies, et Choisir les ligues."</item>
+        <item>"Suivi"</item>
+        <item>"Pour une chaîne introuvable : elle sera désormais utilisée pour cette série"</item>
+        <item>"Oublié : le Calendrier retrouve de nouveau la chaîne lui-même"</item>
+        <item>"Oublié : le Calendrier choisit de nouveau la chaîne lui-même"</item>
+        <item>"Formule 1"</item>
+        <item>"Trouvé sur 1 de vos chaînes · ou rechercher dans toutes"</item>
+        <item>"Fréquence d’images"</item>
+        <item>"Français"</item>
+        <item>"Amical"</item>
+        <item>"Début "</item>
+        <item>"Depuis le Replay"</item>
+        <item>"Désormais : chaque nouvel épisode, dès qu’il apparaît dans votre guide (hors rediffusions)"</item>
+        <item>"Depuis le téléphone"</item>
+        <item>"Depuis votre guide"</item>
+        <item>"Depuis vos guides"</item>
+        <item>"Depuis vos playlists"</item>
+        <item>"Analyse complète"</item>
+        <item>"Plein écran"</item>
+        <item>"+/-"</item>
+        <item>"DIFF. DE BUTS"</item>
+        <item>"MJ"</item>
+        <item>"Sports gaéliques"</item>
+        <item>"Match"</item>
+        <item>"Infos du match"</item>
+        <item>"Infos du match ›"</item>
+        <item>"Matchs"</item>
+        <item>"Allemand"</item>
+        <item>"Coupe d’Allemagne"</item>
+        <item>"Allemagne"</item>
+        <item>"Chargement du classement…"</item>
+        <item>"Chargement des équipes…"</item>
+        <item>"Chargement de leurs matchs…"</item>
+        <item>"Chargement des matchs du jour…"</item>
+        <item>"Chargement des programmes du jour…"</item>
+        <item>"Revenir au direct"</item>
+        <item>"But"</item>
+        <item>"Grèce"</item>
+        <item>"Super League grecque"</item>
+        <item>"Coupe Grey"</item>
+        <item>"Nom du groupe"</item>
+        <item>"Groupe introuvable"</item>
+        <item>"Impossible d’enregistrer le guide : il reste tel quel jusqu’à la prochaine mise à jour"</item>
+        <item>"Assombrissement du guide"</item>
+        <item>"Affichage du guide"</item>
+        <item>"Affichage du guide (panneau d’infos, aperçu…)"</item>
+        <item>"Les guides sont encore en cours de chargement…"</item>
+        <item>"HTTP 404 : rien à cette adresse (vérifiez le serveur, le port et le lien)"</item>
+        <item>"HTTP 429 : trop de requêtes, réessayez dans quelques minutes"</item>
+        <item>"HTTP 884 : le fournisseur a bloqué cette application (essayez de définir un user agent)"</item>
+        <item>"Masqués"</item>
+        <item>"Séries masquées"</item>
+        <item>"Masquer et organiser"</item>
+        <item>"Masquer la chaîne"</item>
+        <item>"Masquer le groupe"</item>
+        <item>"Les mieux notés"</item>
+        <item>"Sélectionnez un jour avec une image pour voir les sorties"</item>
+        <item>"Sélectionnez un élément pour voir ses détails ici"</item>
+        <item>"Temps forts"</item>
+        <item>"Coups sûrs"</item>
+        <item>"Maintenir OK  Plus d’options"</item>
+        <item>"Maintenez OK sur un match pour le regarder ici pendant que vous naviguez. OK ouvre les infos du match."</item>
+        <item>"Maintenez OK sur un match, ou ouvrez-le et choisissez une chaîne"</item>
+        <item>"Maintenir OK : sélectionner ou désélectionner un autre élément"</item>
+        <item>"Maintenir OK : en sélectionner plusieurs à déplacer ensemble"</item>
+        <item>"Accueil"</item>
+        <item>"Coups de circuit"</item>
+        <item>"Courses hippiques"</item>
+        <item>"Assombrissement de la barre de lecture"</item>
+        <item>"Fréquence d’actualisation des listes et des guides, options d’enregistrement et de Replay, tri, sources de recherche et choix du Calendrier. L’apparence n’en fait pas partie, ces réglages sont donc aussi partagés avec votre téléphone."</item>
+        <item>"Hongrie"</item>
+        <item>"UTILISÉ"</item>
+        <item>"Islande"</item>
+        <item>"Importation des films et séries…"</item>
+        <item>"En développement"</item>
+        <item>"En développement"</item>
+        <item>"Dans le guide TV en direct, appuyez longuement sur un programme et choisissez Enregistrer ou Enregistrer la série. Pendant la lecture, ouvrez le menu et choisissez Enregistrer ce programme. Pour une chaîne sans programme, utilisez + Nouvel enregistrement."</item>
+        <item>"Au cinéma"</item>
+        <item>"Au cinéma "</item>
+        <item>"Utilisé"</item>
+        <item>"Inde"</item>
+        <item>"Durée du bandeau d’infos"</item>
+        <item>"Panneau d’infos"</item>
+        <item>"Informations"</item>
+        <item>"Cricket international"</item>
+        <item>"Matchs amicaux internationaux"</item>
+        <item>"Match amical international"</item>
+        <item>"Irlande"</item>
+        <item>"Israël"</item>
+        <item>"Récupérable dans Masqués"</item>
+        <item>"Une confirmation sera demandée avant de changer"</item>
+        <item>"Passage au match une minute avant son début"</item>
+        <item>"L’enregistrement est en cours. Cette action l’arrête et supprime ce qui a déjà été enregistré."</item>
+        <item>"Italien"</item>
+        <item>"Italie"</item>
+        <item>"Ses épisodes sont regardés et enregistrés sur la chaîne choisie, quel que soit leur nom dans votre guide."</item>
+        <item>"D’origine"</item>
+        <item>"Japon"</item>
+        <item>"Ce match uniquement"</item>
+        <item>"Coupe KNVB"</item>
+        <item>"Garder tous les épisodes"</item>
+        <item>"Tout garder"</item>
+        <item>"Garder votre configuration TV en direct sur tous vos appareils ?"</item>
+        <item>"Coupe du Roi"</item>
+        <item>"Coupe du Roi (Arabie saoudite)"</item>
+        <item>"Vous savez où le regarder ? Choisissez une chaîne, elle sera mémorisée."</item>
+        <item>"5 DERNIERS"</item>
+        <item>"DERNIÈRES CONFRONTATIONS"</item>
+        <item>"DERNIERS POINTS"</item>
+        <item>"COMPOSITIONS"</item>
+        <item>"LISTES · OK active ou désactive, les flèches déplacent"</item>
+        <item>"DIRECT "</item>
+        <item>"EN DIRECT"</item>
+        <item>"TV EN DIRECT"</item>
+        <item>"TV EN DIRECT · ÉPISODE SUIVANT"</item>
+        <item>"TV EN DIRECT · CET ÉPISODE"</item>
+        <item>"Les grandes playlists et les gros guides peuvent prendre plusieurs minutes la première fois. Le chargement continue si vous quittez cet écran, et la prochaine fois l’ouverture est immédiate."</item>
+        <item>"Dernière rencontre "</item>
+        <item>"Dernière utilisée"</item>
+        <item>"La semaine dernière"</item>
+        <item>"Plus tard aujourd’hui"</item>
+        <item>"Rangées du lanceur :"</item>
+        <item>"Disposition"</item>
+        <item>"Ligue"</item>
+        <item>"Coupe de la Ligue"</item>
+        <item>"Chaînes des ligues"</item>
+        <item>"Chaîne de la ligue"</item>
+        <item>"Ligues et événements"</item>
+        <item>"Ligues dans Tous les événements"</item>
+        <item>"Laissez vide pour utiliser le nom de la playlist"</item>
+        <item>"Laissez vide pour utiliser le numéro de la playlist"</item>
+        <item>"Laissez l’application ouverte jusqu’à la fin."</item>
+        <item>"Exclues de votre Calendrier"</item>
+        <item>"Laissés sur les buts"</item>
+        <item>"Gauche : tout masquer"</item>
+        <item>"Gauche : tout retirer"</item>
+        <item>"Durée"</item>
+        <item>"Bibliothèque"</item>
+        <item>"Liga 1 (Pérou)"</item>
+        <item>"Liga Profesional (Argentine)"</item>
+        <item>"LigaPro (Équateur)"</item>
+        <item>"Le plus clair"</item>
+        <item>"Tournée des Lions"</item>
+        <item>"Liste"</item>
+        <item>"Direct"</item>
+        <item>"Direct "</item>
+        <item>"En direct et à venir"</item>
+        <item>"En direct"</item>
+        <item>"En direct dans Sports"</item>
+        <item>"Courses en direct"</item>
+        <item>"TV en direct"</item>
+        <item>"TV en direct  ·  À la demande  ·  Streaming"</item>
+        <item>"TV en direct en plein écran"</item>
+        <item>"Guide TV en direct"</item>
+        <item>"Options TV en direct"</item>
+        <item>"Options TV en direct (enregistrer, rappel, chaîne…)"</item>
+        <item>"Réglages TV en direct"</item>
+        <item>"Matchs en direct"</item>
+        <item>"Direct · "</item>
+        <item>"En direct, tel que diffusé"</item>
+        <item>"Direct, Replay"</item>
+        <item>"Direct, qualité, son, Replay"</item>
+        <item>"Chargement des détails…"</item>
+        <item>"Chargement des matchs…"</item>
+        <item>"Chargement des chaînes du guide…"</item>
+        <item>"Chargement…"</item>
+        <item>"Verrouiller avec un code PIN"</item>
+        <item>"Verrouillé"</item>
+        <item>"Échec de la connexion : vérifiez le nom d’utilisateur et le mot de passe"</item>
+        <item>"Sources des logos"</item>
+        <item>"Logo depuis votre téléphone"</item>
+        <item>"Bibliothèques de logos"</item>
+        <item>"Apparence et disposition"</item>
+        <item>"Recherche dans les bibliothèques de logos et TMDB…"</item>
+        <item>"Recherche dans vos add-ons de sport…"</item>
+        <item>"Recherche dans vos chaînes…"</item>
+        <item>"Recherche de vos séries…"</item>
+        <item>"INFOS DU MATCH"</item>
+        <item>"Le thread principal était bloqué à :"</item>
+        <item>"Création des miniatures…"</item>
+        <item>"Gérer les groupes VOD"</item>
+        <item>"Gérer la visibilité des groupes"</item>
+        <item>"Gérer la visibilité"</item>
+        <item>"Tout marquer comme vu"</item>
+        <item>"Marquer comme non vu"</item>
+        <item>"Marquer comme vu"</item>
+        <item>"Selon le thème"</item>
+        <item>"Adapter la fréquence d’images : %.3f Hz demandés mais l’écran est resté à %.3f Hz (le boîtier n’a pas changé : vérifiez ses propres réglages d’affichage, p. ex. Adapter la fréquence d’images du contenu)"</item>
+        <item>"Adapter la fréquence d’images : en attente d’un minutage d’images exploitable ; nouvel essai pendant la lecture ("</item>
+        <item>"Adapter la fréquence d’images : vidéo %.3f i/s, écran %.3f Hz → %.3f Hz"</item>
+        <item>"Journée "</item>
+        <item>"Basket universitaire masculin"</item>
+        <item>"Hockey universitaire masculin"</item>
+        <item>"Lacrosse universitaire masculin"</item>
+        <item>"Football universitaire masculin"</item>
+        <item>"Volley universitaire masculin"</item>
+        <item>"Hockey sur glace masculin"</item>
+        <item>"Ligue mexicaine du Pacifique"</item>
+        <item>"Mexique"</item>
+        <item>"Mois"</item>
+        <item>"Plus de sports"</item>
+        <item>"Autres pistes de sous-titres"</item>
+        <item>"Plus de chaînes affichées"</item>
+        <item>"Tout déplacer vers…"</item>
+        <item>"Déplacer vers…"</item>
+        <item>"Descendre"</item>
+        <item>"Descendre dans les favoris"</item>
+        <item>"Descendre dans ce groupe"</item>
+        <item>"Monter"</item>
+        <item>"Monter dans les favoris"</item>
+        <item>"Monter dans ce groupe"</item>
+        <item>"Film"</item>
+        <item>"Films"</item>
+        <item>"En déplacement"</item>
+        <item>"Déplacement des enregistrements"</item>
+        <item>"Mes sports"</item>
+        <item>"Mon calendrier"</item>
+        <item>"Mon groupe"</item>
+        <item>"Mes groupes"</item>
+        <item>"NBL (Australie)"</item>
+        <item>"Baseball NCAA"</item>
+        <item>"Basket NCAA"</item>
+        <item>"Football américain NCAA"</item>
+        <item>"Hockey NCAA"</item>
+        <item>"Lacrosse NCAA"</item>
+        <item>"Volley masculin NCAA"</item>
+        <item>"Football NCAA"</item>
+        <item>"Softball NCAA"</item>
+        <item>"Volley NCAA"</item>
+        <item>"Hockey féminin NCAA"</item>
+        <item>"Lacrosse féminin NCAA"</item>
+        <item>"Football féminin NCAA"</item>
+        <item>"NPC (Nouvelle-Zélande)"</item>
+        <item>"Nom"</item>
+        <item>"Ligue des nations"</item>
+        <item>"Chaînes"</item>
+        <item>"Nouveaux"</item>
+        <item>"Nouvel enregistrement"</item>
+        <item>"Nouvelle-Zélande"</item>
+        <item>"Nouveau groupe"</item>
+        <item>"Sortie la plus récente"</item>
+        <item>"Infos et talk-shows"</item>
+        <item>"Épisode suivant"</item>
+        <item>"Épisode suivant (final)"</item>
+        <item>"La semaine prochaine"</item>
+        <item>"À suivre : "</item>
+        <item>"Aucun guide des programmes disponible"</item>
+        <item>"Aucune URL définie"</item>
+        <item>"Aucun addon n’est installé et activé : il n’y a rien à rechercher."</item>
+        <item>"Aucune chaîne disponible. Ajoutez une playlist dans les réglages TV en direct."</item>
+        <item>"Aucun flux disponible pour ce match pour le moment. Choisissez un autre match ou consultez ses diffusions sur la page Sports."</item>
+        <item>"Aucune chaîne de secours pour cette chaîne"</item>
+        <item>"Aucune cloche activée pour l’instant"</item>
+        <item>"Aucun sous-titre sur cette chaîne"</item>
+        <item>"Aucun nom de chaîne ne correspond."</item>
+        <item>"Aucune chaîne ici pour l’instant"</item>
+        <item>"Aucune chaîne dans ce groupe"</item>
+        <item>"Aucun détail de plantage n’a été enregistré."</item>
+        <item>"Aucun plantage ni blocage enregistré pour l’instant."</item>
+        <item>"Pas encore de date de sortie à la maison"</item>
+        <item>"Aucune description disponible."</item>
+        <item>"Pas encore de favoris ni de chaînes récentes."</item>
+        <item>"Aucun de leurs matchs n’est connu pour le moment."</item>
+        <item>"Aucun groupe pour l’instant. Ajoutez d’abord une playlist."</item>
+        <item>"Aucune chaîne du guide ne correspond."</item>
+        <item>"Aucune info du guide"</item>
+        <item>"Aucun guide chargé. Ajoutez une source EPG dans les réglages TV en direct."</item>
+        <item>"Aucune série masquée."</item>
+        <item>"Pas d’information"</item>
+        <item>"Aucune ligue ne correspond à cette recherche."</item>
+        <item>"Aucun match en direct disponible"</item>
+        <item>"Pas de score en direct pour cet événement. La barre de temps part de l’heure de début."</item>
+        <item>"Aucun logo trouvé pour cette chaîne. Essayez Rechercher avec un autre nom."</item>
+        <item>"Aucune chaîne associée"</item>
+        <item>"Aucune chaîne associée à ce match. Choisissez d’abord une diffusion sur la page Sports."</item>
+        <item>"Aucune chaîne correspondante."</item>
+        <item>"Aucun nouvel épisode annoncé pour l’instant"</item>
+        <item>"Aucun nouvel épisode trouvé pour aujourd’hui."</item>
+        <item>"Aucun autre flux pour ce match pour le moment."</item>
+        <item>"Aucune playlist pour l’instant"</item>
+        <item>"Pas encore de chaîne précédente"</item>
+        <item>"Pas d’information sur le programme"</item>
+        <item>"Pas d’information sur les programmes de cette chaîne"</item>
+        <item>"Aucun enregistrement pour l’instant"</item>
+        <item>"Pas encore de replay de ce match dans vos add-ons sport. "</item>
+        <item>"Pas de replay sur cette chaîne"</item>
+        <item>"Rien de marqué pour l’instant"</item>
+        <item>"Aucune série à enregistrer"</item>
+        <item>"Aucun serveur défini"</item>
+        <item>"Pas encore de guide enregistré"</item>
+        <item>"Aucun flux disponible"</item>
+        <item>"Aucun flux disponible pour ce match."</item>
+        <item>"Pas de miniatures pour la TV en direct ou le replay"</item>
+        <item>"Pas de miniatures pour les liens en streaming"</item>
+        <item>"Pas de miniatures pour ce type de lien"</item>
+        <item>"Pas de miniatures pour les torrents"</item>
+        <item>"Aucune piste disponible"</item>
+        <item>"Aucun"</item>
+        <item>"Aucun pour ce match"</item>
+        <item>"Rien trouvé dans ce flux"</item>
+        <item>"Aucun de vos add-ons ne le fait encore : installez-en un dans Add-ons et ils apparaîtront ici."</item>
+        <item>"Aucune de vos chaînes ne la diffuse dans votre guide. Recherchez la chaîne ci-dessous : elle sera utilisée pour cette série désormais."</item>
+        <item>"Aucune de vos ligues n’a de classement (coupes, golf, tennis et combats n’en ont pas)."</item>
+        <item>"Aucune de vos séries n’est dans votre guide TV en direct pour le moment. Votre guide couvre généralement les prochains jours."</item>
+        <item>"Norvège"</item>
+        <item>"Pas maintenant"</item>
+        <item>"Ce n’est pas une playlist (pas de #EXTM3U)"</item>
+        <item>"Ce n’est pas une playlist (trop volumineux : un flux envoyé sur un lien de playlist ?)"</item>
+        <item>"Ce n’est pas une réponse de l’API Xtream"</item>
+        <item>"Non vérifié pour ce type de flux"</item>
+        <item>"Espace de stockage insuffisant pour enregistrer"</item>
+        <item>"Introuvable"</item>
+        <item>"Introuvable dans votre guide : rechercher dans toutes vos chaînes"</item>
+        <item>"Introuvable. OK pour choisir une chaîne"</item>
+        <item>"Absent des guides de vos chaînes pour le moment. Les guides se mettent à jour dans la journée : revenez plus près du début. "</item>
+        <item>"Absent de vos playlists pour le moment"</item>
+        <item>"Pas encore connu"</item>
+        <item>"Pas sur votre Hub par défaut"</item>
+        <item>"Pas encore disponible à la maison"</item>
+        <item>"Pas cette chaîne"</item>
+        <item>"Remarque"</item>
+        <item>"Rien n’a été diffusé au cours du dernier mois."</item>
+        <item>"Rien d’annoncé pour l’instant"</item>
+        <item>"Rien de prévu dans les quatre prochains mois."</item>
+        <item>"Rien de prévu pour l’instant."</item>
+        <item>"Rien n’a pu être enregistré sur cette chaîne"</item>
+        <item>"Aucun match de vos équipes ce jour-là."</item>
+        <item>"Rien ici avec ce filtre."</item>
+        <item>"Rien ici pour l’instant. Les séries que vous regardez, votre Bibliothèque et les séries pour lesquelles vous avez activé la cloche apparaissent ici avec leurs nouveaux épisodes."</item>
+        <item>"Rien à l’antenne pour le moment."</item>
+        <item>"Rien ce jour-là."</item>
+        <item>"Rien de sorti"</item>
+        <item>"Aucune lecture en cours"</item>
+        <item>"Rien d’enregistré pour l’instant"</item>
+        <item>"Rien d’enregistré."</item>
+        <item>"Rien de programmé"</item>
+        <item>"Rien à envoyer."</item>
+        <item>"Rien à afficher ici pour l’instant"</item>
+        <item>"Rien à afficher pour l’instant"</item>
+        <item>"Rien pour l’instant : choisissez une équipe ci-dessous."</item>
+        <item>"Désormais disponible à la maison"</item>
+        <item>"En ce moment : "</item>
+        <item>"Rapport de plantage Nuvio + IPTV"</item>
+        <item>"Nuvio + IPTV s’est arrêté"</item>
+        <item>"OK  Options TV en direct"</item>
+        <item>"OK  Ouvrir dans Sports"</item>
+        <item>"OK  Page de la série"</item>
+        <item>"OK POUR SUIVRE"</item>
+        <item>"OK sur une équipe : sa fiche"</item>
+        <item>"OK sur une équipe : sa fiche  ·  ◀ ▶ sur les ligues : un autre classement"</item>
+        <item>"OK sur un élément pour ne plus le suivre"</item>
+        <item>"OK l’enregistre sur cette chaîne"</item>
+        <item>"OK pour choisir une chaîne"</item>
+        <item>"OK pour choisir un match"</item>
+        <item>"OK pour lire maintenant · Retour pour arrêter"</item>
+        <item>"OK pour remplacer ou relancer ce panneau"</item>
+        <item>"OK active ou désactive une ligue, et ouvre ou ferme un sport. Les ligues que vous suivez s’affichent toujours."</item>
+        <item>"OK utilise cette copie."</item>
+        <item>"OK pour le regarder (ou l’enregistrer s’il n’a pas encore commencé sur cette chaîne) · Maintenir OK pour enregistrer"</item>
+        <item>"OK · CLASSEMENT COMPLET ›"</item>
+        <item>"OK : ajouter ou retirer ★"</item>
+        <item>"OK : appliquer · Retour : fermer"</item>
+        <item>"OK : choisir · Retour : matchs"</item>
+        <item>"OK : oublier"</item>
+        <item>"OK : l’oublier (le Calendrier choisit à nouveau la chaîne lui-même)"</item>
+        <item>"OK : infos du match  ·  Maintenir OK : le regarder"</item>
+        <item>"OK : infos du match  ·  Maintenir OK : le regarder  ·  ◀ ▶ : parcourir une ligne"</item>
+        <item>"OK : infos du match  ·  Maintenir OK : le regarder dans la fenêtre"</item>
+        <item>"OK : infos du match  ·  Maintenir OK : le regarder dans la fenêtre  ·  ◀ ▶ : parcourir une ligne"</item>
+        <item>"OK : choisir un autre match"</item>
+        <item>"OK : le saisir pour le déplacer"</item>
+        <item>"OK : le placer ici"</item>
+        <item>"OK : lire ici, OK à nouveau : plein écran  ·  Maintenir OK : autres copies, choisir une chaîne"</item>
+        <item>"OK : le déposer"</item>
+        <item>"OK : le sélectionner pour le déplacer"</item>
+        <item>"OK : l’afficher à nouveau dans le Calendrier"</item>
+        <item>"OK : afficher ou masquer la chaîne"</item>
+        <item>"OK : afficher ou masquer le groupe"</item>
+        <item>"OK : regarder  ·  Maintenir OK : autres copies, choisir une chaîne"</item>
+        <item>"EN CE MOMENT"</item>
+        <item>"Désactivé"</item>
+        <item>"Désactivé : tout est masqué"</item>
+        <item>"Désactivé : icônes d’origine de Nuvio, dans la couleur choisie"</item>
+        <item>"Désactivé : logo de la chaîne"</item>
+        <item>"Sortie la plus ancienne"</item>
+        <item>"Football olympique"</item>
+        <item>"Hockey olympique"</item>
+        <item>"Hockey olympique féminin"</item>
+        <item>"Activé"</item>
+        <item>"À la demande"</item>
+        <item>"À la TV"</item>
+        <item>"À la TV : "</item>
+        <item>"En DVD/Blu-ray"</item>
+        <item>"En DVD/Blu-ray "</item>
+        <item>"En DVD/Blu-ray depuis "</item>
+        <item>"Ajouté"</item>
+        <item>"Sur ma TV"</item>
+        <item>"En ce moment"</item>
+        <item>"Sur la barre et dans les listes de secours"</item>
+        <item>"Dans votre Calendrier"</item>
+        <item>"Activé : l’icône et la bannière Nuvio + IPTV dans la couleur choisie"</item>
+        <item>"Uniquement en pause ou en avance/retour"</item>
+        <item>"Ouvrir"</item>
+        <item>"Ouvrir dans Sports"</item>
+        <item>"Ouvrir la page du film"</item>
+        <item>"Ouvrir la page de la série"</item>
+        <item>"Ouvrir la page de la série à cet épisode"</item>
+        <item>"Ouvrir la page du match ; Retour revient ici"</item>
+        <item>"S’ouvre sur"</item>
+        <item>"Ou choisissez la chaîne ci-dessous"</item>
+        <item>"Autre"</item>
+        <item>"Autres copies…"</item>
+        <item>"Autres flux"</item>
+        <item>"Autres"</item>
+        <item>"Disponible à la maison depuis "</item>
+        <item>"Hors playoffs"</item>
+        <item>"Disponible à la maison"</item>
+        <item>"Disponible à la maison "</item>
+        <item>"DIRECT EN PAUSE"</item>
+        <item>"Panneau"</item>
+        <item>"Primera (Paraguay)"</item>
+        <item>"Collez l’adresse web du logo (un lien d’image se terminant par .png, .jpg, .svg…), puis appuyez sur Envoyer à la TV."</item>
+        <item>"Mémoire tampon de pause"</item>
+        <item>"En pause"</item>
+        <item>"Minutes de pénalité"</item>
+        <item>"Choisir une chaîne"</item>
+        <item>"Choisir une autre chaîne…"</item>
+        <item>"Choisissez un match à regarder ici"</item>
+        <item>"Choisir une autre diffusion de ce match"</item>
+        <item>"Choisir des favoris"</item>
+        <item>"Choisir des favoris dans ce groupe…"</item>
+        <item>"Choisir des favoris…"</item>
+        <item>"Choisir la bonne chaîne…"</item>
+        <item>"Lire"</item>
+        <item>"Lire "</item>
+        <item>"Disposition de la barre de lecture"</item>
+        <item>"Lire depuis le début"</item>
+        <item>"Lire depuis l’archive"</item>
+        <item>"Lire l’enregistrement"</item>
+        <item>"Play-in"</item>
+        <item>"Lecture en pause. Sélectionnez un panneau pour relancer le son."</item>
+        <item>"Joueurs"</item>
+        <item>"En lecture"</item>
+        <item>"Lecture d’une chaîne qui ne diffuse aucun match de cette page."</item>
+        <item>"En lecture ici"</item>
+        <item>"Nom de la playlist"</item>
+        <item>"Playlists et identifiants"</item>
+        <item>"Playlists : "</item>
+        <item>"Limite des playoffs"</item>
+        <item>"Pologne"</item>
+        <item>"Polonais"</item>
+        <item>"Portugais"</item>
+        <item>"Affiche"</item>
+        <item>"Reporté"</item>
+        <item>"Supériorité numérique"</item>
+        <item>"Essais"</item>
+        <item>"Première Ligue (féminine)"</item>
+        <item>"Appuyez sur OK"</item>
+        <item>"Appuyez sur OK sur Rechercher dans la liste des groupes, ou sur la touche de recherche de votre télécommande."</item>
+        <item>"Appuyez sur OK sur une chaîne pour la prévisualiser"</item>
+        <item>"Appuyez sur OK pour ouvrir les réglages TV en direct"</item>
+        <item>"Appuyez à gauche pour choisir un autre groupe."</item>
+        <item>"Fenêtre d’aperçu"</item>
+        <item>"Chaîne précédente"</item>
+        <item>"Primera B (Argentine)"</item>
+        <item>"Primera División (Salvador)"</item>
+        <item>"Primera Nacional (Argentine)"</item>
+        <item>"Infos du programme"</item>
+        <item>"Barre de progression"</item>
+        <item>"Impossible de préparer le flux protégé"</item>
+        <item>"Le fournisseur signale trop de requêtes (HTTP 429) : recherches de replay suspendues pendant 5 minutes"</item>
+        <item>"Ordre du fournisseur"</item>
+        <item>"Ligue d’hiver de Porto Rico"</item>
+        <item>"Qualifications"</item>
+        <item>"Chaînes rapides"</item>
+        <item>"Onglet Chaînes rapides"</item>
+        <item>"MÉMOIRE INSUFFISANTE (Android l’a fermée pour libérer de la mémoire)"</item>
+        <item>"ENREGISTRER · CHOISIR LA CHAÎNE"</item>
+        <item>"REPLAYS &amp; RÉSUMÉS"</item>
+        <item>"ORDRE DE PASSAGE"</item>
+        <item>"Course"</item>
+        <item>"Course · En direct"</item>
+        <item>"Courses"</item>
+        <item>"Lecture des listes de chaînes des guides…"</item>
+        <item>"Ajoutés récemment"</item>
+        <item>"Vus récemment"</item>
+        <item>"Chaînes vues récemment"</item>
+        <item>"Diffusés récemment"</item>
+        <item>"Vus récemment"</item>
+        <item>"Vus récemment effacés"</item>
+        <item>"Reconnexion…"</item>
+        <item>"Enregistrer"</item>
+        <item>"Enregistrer chaque nouvel épisode"</item>
+        <item>"Enregistrer pendant"</item>
+        <item>"Enregistrer dès que c’est dans mon guide"</item>
+        <item>"Enregistrer la série"</item>
+        <item>"Enregistré"</item>
+        <item>"Enregistrement"</item>
+        <item>"Enregistrement de la TV en direct"</item>
+        <item>"En cours d’enregistrement"</item>
+        <item>"Enregistrement annulé"</item>
+        <item>"Nom de l’enregistrement"</item>
+        <item>"Enregistre les nouveaux épisodes"</item>
+        <item>"Enregistrement en cours"</item>
+        <item>"Enregistrement programmé"</item>
+        <item>"Enregistrement arrêté. Il est dans Enregistrements."</item>
+        <item>"Enregistrements"</item>
+        <item>"Les enregistrements déjà effectués sont conservés"</item>
+        <item>"Enregistre dès que c’est dans votre guide"</item>
+        <item>"Actualiser"</item>
+        <item>"Recharger le flux"</item>
+        <item>"Me le rappeler"</item>
+        <item>"Me le rappeler au début"</item>
+        <item>"Me prévenir dès que c’est dans mon guide"</item>
+        <item>"Rappel annulé"</item>
+        <item>"Rappel programmé"</item>
+        <item>"Les rappels et Regarder maintenant les utilisent aussi en premier. Les autres sont à un clic."</item>
+        <item>"Retirer la copie de ce groupe"</item>
+        <item>"Retirer des favoris"</item>
+        <item>"Retirer de ce groupe"</item>
+        <item>"Retirer le verrou"</item>
+        <item>"Retirer le panneau"</item>
+        <item>"Retirer le contrôle parental"</item>
+        <item>"Renommer la chaîne"</item>
+        <item>"Renommer le groupe"</item>
+        <item>"Réorganiser les chaînes"</item>
+        <item>"Réorganiser les groupes"</item>
+        <item>"Revoir depuis le début"</item>
+        <item>"Les replays et résumés proviennent des add-ons sport qui les proposent (HighFly Premium, StremVerse…). "</item>
+        <item>"Rétablir par défaut"</item>
+        <item>"Revenir en automatique"</item>
+        <item>"Rétablir par défaut"</item>
+        <item>"Résolution"</item>
+        <item>"Redémarrer l’app"</item>
+        <item>"Reprendre"</item>
+        <item>"Reprendre "</item>
+        <item>"Réessayer"</item>
+        <item>"Immédiatement"</item>
+        <item>"Droite : tout ajouter"</item>
+        <item>"Droite : tout afficher"</item>
+        <item>"Activer la cloche"</item>
+        <item>"Activez la cloche sur la page d’une série, dans TV en direct ou dans Rechercher (maintenir OK) pour la suivre."</item>
+        <item>"Activer la cloche : suivre cette série"</item>
+        <item>"Activer la cloche : ajouter ce film à votre Calendrier"</item>
+        <item>"Roumanie"</item>
+        <item>"Or rose"</item>
+        <item>"Rugby à XIII"</item>
+        <item>"Tests-matchs de rugby"</item>
+        <item>"Rugby à XV"</item>
+        <item>"Coupe du monde de rugby"</item>
+        <item>"Points"</item>
+        <item>"Russie"</item>
+        <item>"Russe"</item>
+        <item>"LE DIFFUSE"</item>
+        <item>"Arabie saoudite"</item>
+        <item>"Enregistrer"</item>
+        <item>"Sauvegarder ma configuration"</item>
+        <item>"Ajouter aux Enregistrements"</item>
+        <item>"Enregistrer vos modifications ?"</item>
+        <item>"Enregistré"</item>
+        <item>"Chaînes enregistrées"</item>
+        <item>"La liste de chaînes enregistrée contenait des chaînes d’une playlist désactivée : elles sont retirées"</item>
+        <item>"Chaînes et guide enregistrés affichés pendant la mise à jour de la liste des chaînes"</item>
+        <item>"Enregistré le"</item>
+        <item>"Enregistrement depuis le replay en cours"</item>
+        <item>"Programmer"</item>
+        <item>"Programme + votre guide"</item>
+        <item>"Programmer un enregistrement"</item>
+        <item>"Programmer un enregistrement…"</item>
+        <item>"Programmé"</item>
+        <item>"Score épinglé dans le coin"</item>
+        <item>"Score épinglé dans le coin pendant le visionnage"</item>
+        <item>"Score détaché"</item>
+        <item>"Les scores sont masqués"</item>
+        <item>"Les scores sont masqués (réglages Sports)."</item>
+        <item>"Coupe d’Écosse"</item>
+        <item>"Coupe de la Ligue écossaise"</item>
+        <item>"Taille de l’écran"</item>
+        <item>"Rechercher"</item>
+        <item>"Rechercher dans toutes mes chaînes…"</item>
+        <item>"Rechercher des chaînes"</item>
+        <item>"Rechercher les chaînes du guide"</item>
+        <item>"Rechercher des ligues"</item>
+        <item>"Rechercher des logos"</item>
+        <item>"Rechercher équipes et ligues"</item>
+        <item>"Recherche d’équipes…"</item>
+        <item>"Fin de saison"</item>
+        <item>"Début de saison"</item>
+        <item>"Tout voir"</item>
+        <item>"Tout voir"</item>
+        <item>"Voir ce qui passe aujourd’hui"</item>
+        <item>"Miniatures de navigation suspendues pour garder une lecture fluide (mémoire faible)"</item>
+        <item>"Tout sélectionner"</item>
+        <item>"Envoyé. Regardez votre TV."</item>
+        <item>"Serbie"</item>
+        <item>"Serie A Brésil"</item>
+        <item>"Serie B Brésil"</item>
+        <item>"Séries"</item>
+        <item>"Fin de série"</item>
+        <item>"Début de série"</item>
+        <item>"Séance"</item>
+        <item>"Définir"</item>
+        <item>"Choisir la chaîne de cette série"</item>
+        <item>"Réglages"</item>
+        <item>"Synchro de la configuration"</item>
+        <item>"Format"</item>
+        <item>"Tirs"</item>
+        <item>"Série"</item>
+        <item>"Afficher \"+ IPTV\" sur l’icône"</item>
+        <item>"Logos de séries et de films (TMDB)"</item>
+        <item>"Afficher les chaînes de"</item>
+        <item>"Afficher le panneau d’infos"</item>
+        <item>"Page de la série"</item>
+        <item>"Afficher les affiches"</item>
+        <item>"Afficher les chaînes rapides"</item>
+        <item>"Titre de l’émission"</item>
+        <item>"Affichez, masquez, triez, renommez et réorganisez les groupes de cette page."</item>
+        <item>"1 ligue affichée"</item>
+        <item>"Affiché"</item>
+        <item>"Affiché pendant un enregistrement de la TV en direct"</item>
+        <item>"Séries"</item>
+        <item>"Affiche uniquement les chaînes de cette région pour chaque match (pratique pour les commentaires dans votre langue). "</item>
+        <item>"Aléatoire"</item>
+        <item>"Côte à côte"</item>
+        <item>"Singapour"</item>
+        <item>"Matchs individuels"</item>
+        <item>"Taille"</item>
+        <item>"Veille "</item>
+        <item>"Minuterie de veille"</item>
+        <item>"Minuterie de veille désactivée"</item>
+        <item>"Slovaquie"</item>
+        <item>"Slovénie"</item>
+        <item>"Petite vidéo en direct"</item>
+        <item>"En-tête réduit"</item>
+        <item>"Ailleurs"</item>
+        <item>"Trier "</item>
+        <item>"Afrique du Sud"</item>
+        <item>"Premiership sud-africaine"</item>
+        <item>"Corée du Sud"</item>
+        <item>"Espagne"</item>
+        <item>"Espagnol"</item>
+        <item>"Qualifications sprint"</item>
+        <item>"Superposés"</item>
+        <item>"Portail Stalker"</item>
+        <item>"Les portails Stalker nécessitent la protection VPN HTTP + HTTPS ou Toute l’app. Changez le mode de protection VPN et réessayez."</item>
+        <item>"Flux Stalker indisponible"</item>
+        <item>"Classement"</item>
+        <item>"Heure de début"</item>
+        <item>"Heure de début – fin"</item>
+        <item>"Commencé à "</item>
+        <item>"Ça commence"</item>
+        <item>"Commence dans une minute"</item>
+        <item>"Commence maintenant"</item>
+        <item>"Commence bientôt"</item>
+        <item>"Démarrage de l’enregistrement…"</item>
+        <item>"Démarrage…"</item>
+        <item>"Début"</item>
+        <item>"Commence maintenant"</item>
+        <item>"Commence aujourd’hui"</item>
+        <item>"Arrêter"</item>
+        <item>"Arrêter l’enregistrement"</item>
+        <item>"Arrêter l’enregistrement de la série"</item>
+        <item>"Arrêter l’enregistrement"</item>
+        <item>"Ne plus enregistrer les nouveaux épisodes"</item>
+        <item>"Arrêter l’enregistrement de la série"</item>
+        <item>"Arrêter de regarder"</item>
+        <item>"Arrêté avant tout enregistrement"</item>
+        <item>"Arrête la lecture après"</item>
+        <item>"Stockage plein, arrêté plus tôt"</item>
+        <item>"Le guide enregistré n’a aucun programme pour l’instant : relecture des guides"</item>
+        <item>"Guide enregistré affiché tel quel pendant sa mise à jour"</item>
+        <item>"Flux terminé"</item>
+        <item>"Infos du flux"</item>
+        <item>"Flux introuvable (HTTP 404). Essayez un autre format de flux dans les réglages de la playlist"</item>
+        <item>"Flux indisponible"</item>
+        <item>"Flux indisponible · appuyez sur OK pour réessayer"</item>
+        <item>"Flux"</item>
+        <item>"Retraits sur prises"</item>
+        <item>"Sous-titres"</item>
+        <item>"Tournée d’été"</item>
+        <item>"Supercoupe"</item>
+        <item>"Suède"</item>
+        <item>"Changer maintenant"</item>
+        <item>"Passer à cette copie"</item>
+        <item>"Suisse"</item>
+        <item>"Synchro : la configuration de l’autre TV est identique"</item>
+        <item>"STATS DES ÉQUIPES"</item>
+        <item>"LA CHAÎNE DE CETTE SÉRIE"</item>
+        <item>"CET ÉPISODE"</item>
+        <item>"CETTE SEMAINE"</item>
+        <item>"TMDB n’a pas répondu"</item>
+        <item>"DEMAIN"</item>
+        <item>"MEILLEURS JOUEURS"</item>
+        <item>"Guide TV"</item>
+        <item>"Classements"</item>
+        <item>"Les classements sont masqués quand Masquer les scores est activé (réglages Sports), pour ne pas révéler les résultats."</item>
+        <item>"Étiquettes"</item>
+        <item>"Retirer de votre calendrier"</item>
+        <item>"Retirer ce film de votre calendrier"</item>
+        <item>"Retirez les mauvaises chaînes de la liste, ou choisissez la bonne."</item>
+        <item>"Talk-show"</item>
+        <item>"Équipes"</item>
+        <item>"Équipes : leurs matchs, rappels et alertes de score. Ligues : leur calendrier dans Mes sports."</item>
+        <item>"Test-match"</item>
+        <item>"Cette chaîne n’est plus dans votre playlist"</item>
+        <item>"Impossible de lire cet enregistrement"</item>
+        <item>"Cet enregistrement n’existe plus"</item>
+        <item>"Cette émission est déjà passée"</item>
+        <item>"Cette heure est déjà passée. Choisissez un jour ou une heure plus tard."</item>
+        <item>"Le replay HLS n’a rien envoyé"</item>
+        <item>"Pays-Bas"</item>
+        <item>"Le portail et le flux Stalker utilisent des routes VPN différentes. Utilisez un portail distant et une protection VPN cohérente, puis réessayez."</item>
+        <item>"La source Stalker a changé. Relancez la lecture."</item>
+        <item>"La source Stalker ou la route VPN a changé. Relancez la lecture."</item>
+        <item>"Le flux Stalker a tenté une redirection non sécurisée. La lecture a été arrêtée."</item>
+        <item>"Le flux Stalker a changé de format de tampon. Relancez la lecture."</item>
+        <item>"La connexion au flux Stalker a été coupée"</item>
+        <item>"Impossible d’ouvrir le flux Stalker. Vérifiez la protection VPN et réessayez."</item>
+        <item>"L’app s’est fermée avant tout enregistrement"</item>
+        <item>"L’app s’est fermée avant la fin, l’enregistrement s’arrête plus tôt"</item>
+        <item>"La barre s’actualise au fil de vos choix"</item>
+        <item>"Le disque d’enregistrement a été retiré"</item>
+        <item>"Le guide s’actualise au fil de vos choix"</item>
+        <item>"Le choix le plus léger : rien n’est généré pendant la lecture"</item>
+        <item>"La liste affichée en premier"</item>
+        <item>"Le nom du film ou de la série, et l’année si vous la connaissez, par ex. Dune (2021). Laissez vide pour revenir au mode automatique."</item>
+        <item>"L’ordre des rangées dans Mes sports. En direct et à venir apparaît toujours en premier."</item>
+        <item>"Le téléchargement de l’archive du portail s’est arrêté avant que tout le programme soit enregistré."</item>
+        <item>"Le portail a changé de format audio pendant l’enregistrement."</item>
+        <item>"Le portail a changé de format audio."</item>
+        <item>"Le portail a changé de format de flux pendant l’enregistrement. Lancez un nouvel enregistrement."</item>
+        <item>"Le fournisseur a interrompu le téléchargement"</item>
+        <item>"Le fournisseur n’a pas pu ouvrir ce flux. Réessayez."</item>
+        <item>"Le fournisseur n’indique aucun épisode."</item>
+        <item>"Le fournisseur n’a pas le flux de cette chaîne pour le moment"</item>
+        <item>"Le fournisseur rencontre des problèmes. Réessayez plus tard."</item>
+        <item>"Le fournisseur ne diffuse pas correctement cette chaîne pour le moment"</item>
+        <item>"Le fournisseur a refusé ce flux. Vérifiez le compte ou essayez une autre chaîne."</item>
+        <item>"Le fournisseur n’a renvoyé aucune chaîne en direct"</item>
+        <item>"Le fournisseur a envoyé une redirection de flux invalide."</item>
+        <item>"Le fournisseur a cessé d’envoyer ce programme. Réessayez, ou passez à un autre moment"</item>
+        <item>"Le fournisseur a mis trop de temps à répondre (délai dépassé). Il est peut-être surchargé ; réessayez plus tard."</item>
+        <item>"La limite de connexions du fournisseur est atteinte. Retirez un écran ou réessayez."</item>
+        <item>"Le serveur n’a pas envoyé de miniatures"</item>
+        <item>"L’onglet sous la barre (▼ l’ouvre)"</item>
+        <item>"Toute la vidéo, depuis le début, dès l’ouverture. Consomme le plus de données"</item>
+        <item>"Thèmes, menu, styles de cartes et autres options visuelles, identiques sur vos TV. Désactivez pour que chaque TV garde les siens."</item>
+        <item>"Ils sont souvent ajoutés quelques heures après la fin du match."</item>
+        <item>"Ce format de licence DRM n’est pas disponible en Multiview"</item>
+        <item>"Ce système DRM n’est pas disponible en Multiview"</item>
+        <item>"Cet appareil"</item>
+        <item>"Ce flux Stalker DASH peut être lu, mais l’enregistrement et la mise en pause ne sont pas disponibles."</item>
+        <item>"Cette TV ne peut pas décoder ce flux en plus des autres. Retirez un écran ou choisissez une autre chaîne."</item>
+        <item>"Cette TV n’a pas pu lire l’image ou le son de cette chaîne"</item>
+        <item>"Cette TV n’a pas pu lancer ce flux. Essayez une autre chaîne."</item>
+        <item>"Cette TV a aussi sa propre configuration. Combiner conserve les playlists et guides des deux. Utiliser la configuration enregistrée remplace celle de cette TV."</item>
+        <item>"Cette semaine"</item>
+        <item>"Cette action est irréversible."</item>
+        <item>"Cette chaîne ne permet pas de le revoir depuis le début"</item>
+        <item>"Impossible d’enregistrer cette chaîne pour la mettre en pause, retour au direct"</item>
+        <item>"Cette chaîne est chiffrée et ne peut pas être enregistrée"</item>
+        <item>"Cette chaîne est protégée et n’a pas pu être déverrouillée"</item>
+        <item>"Cette chaîne ne diffuse rien pour le moment"</item>
+        <item>"Impossible de lire le flux de cette chaîne"</item>
+        <item>"Cet épisode n’est pas dans votre guide"</item>
+        <item>"Ce film a déjà été diffusé"</item>
+        <item>"Cette chaîne protégée n’a pas pu être déverrouillée. Essayez une autre chaîne."</item>
+        <item>"Impossible de lire cet enregistrement"</item>
+        <item>"Cette émission"</item>
+        <item>"Ce flux n’a pas pu être lu. Réessayez ou choisissez une autre chaîne."</item>
+        <item>"Ce format de flux n’est pas disponible en Multiview"</item>
+        <item>"Ce flux est terminé. Réessayez ou choisissez une autre chaîne."</item>
+        <item>"Ce flux n’est plus disponible pour ce profil."</item>
+        <item>"Ce flux est indisponible. Essayez une autre chaîne."</item>
+        <item>"Impossible d’ouvrir cette vidéo pour les miniatures"</item>
+        <item>"Le format de cette vidéo ne permet pas de générer des miniatures sur cet appareil"</item>
+        <item>"Cette semaine"</item>
+        <item>"Miniatures en pause : mémoire insuffisante"</item>
+        <item>"Les miniatures ne fonctionnent plus pour cette vidéo"</item>
+        <item>"Temps restant"</item>
+        <item>"Heure à confirmer"</item>
+        <item>"Heures dans votre fuseau horaire"</item>
+        <item>"À déterminer"</item>
+        <item>"Pour envoyer ce rapport : connectez votre téléphone au même Wi-Fi que cette TV, scannez le code avec "</item>
+        <item>"Aujourd’hui"</item>
+        <item>"Demain"</item>
+        <item>"Haut "</item>
+        <item>"Turquie"</item>
+        <item>"Turc"</item>
+        <item>"Désactiver la cloche"</item>
+        <item>"Désactiver la cloche pour cette série"</item>
+        <item>"Activez À la demande pour une playlist dans Réglages → TV en direct, ou affichez des groupes avec le bouton des réglages."</item>
+        <item>"Tapez une partie du nom de la chaîne"</item>
+        <item>"Coupe du monde U-17"</item>
+        <item>"Qualifications Euro U-21"</item>
+        <item>"CM U17"</item>
+        <item>"Euro U21"</item>
+        <item>"Euro UEFA"</item>
+        <item>"Supercoupe de l’UEFA"</item>
+        <item>"À SUIVRE"</item>
+        <item>"TROP DE RESSOURCES UTILISÉES (Android l’a fermée)"</item>
+        <item>"Dissocier"</item>
+        <item>"Non attribué"</item>
+        <item>"Chaînes non attribuées"</item>
+        <item>"Non attribuée : aucun guide (Automatique le rétablit)"</item>
+        <item>"Indisponible"</item>
+        <item>"Sans catégorie"</item>
+        <item>"Coupe du monde des moins de 17 ans"</item>
+        <item>"Moins de 21 ans"</item>
+        <item>"Émirats arabes unis"</item>
+        <item>"Royaume-Uni"</item>
+        <item>"États-Unis"</item>
+        <item>"Inconnu"</item>
+        <item>"Déverrouiller"</item>
+        <item>"Jusqu’à "</item>
+        <item>"Non vus uniquement"</item>
+        <item>"À suivre"</item>
+        <item>"À venir"</item>
+        <item>"Mise à jour demandée : fin de la mise à jour en cours d’abord"</item>
+        <item>"Vérification des mises à jour lancée"</item>
+        <item>"Vérification des mises à jour en attente tant qu’une chaîne est en plein écran ou que le lecteur Nuvio est ouvert"</item>
+        <item>"Mettre à jour playlists et EPG"</item>
+        <item>"Mise à jour lancée"</item>
+        <item>"Mise à jour de la TV en direct…"</item>
+        <item>"Primera uruguayenne"</item>
+        <item>"Taille réelle"</item>
+        <item>"Format du flux"</item>
+        <item>"Utiliser la configuration enregistrée"</item>
+        <item>"Réutiliser les chaînes du guide"</item>
+        <item>"Nom d’utilisateur et mot de passe requis"</item>
+        <item>"Utilise son propre logo"</item>
+        <item>"Utilise votre choix"</item>
+        <item>"Configurations VPN, profil sélectionné et étendue de la protection automatique."</item>
+        <item>"Profils VPN et protection"</item>
+        <item>"Le profil utilisateur VPN n’est pas prêt. Rouvrez l’app avant d’utiliser un portail Stalker."</item>
+        <item>"Primera vénézuélienne"</item>
+        <item>"Ligue d’hiver vénézuélienne"</item>
+        <item>"Lieu"</item>
+        <item>"Vidéo"</item>
+        <item>"Débit vidéo"</item>
+        <item>"Voir dans l’espace Sports"</item>
+        <item>"Visiteur"</item>
+        <item>"Volley-ball"</item>
+        <item>"AMICAL F"</item>
+        <item>"EN ATTENTE DU GUIDE"</item>
+        <item>"À VOIR SUR VOS CHAÎNES"</item>
+        <item>"REGARDER · CHOISIR LA CHAÎNE"</item>
+        <item>"EN COURS SUR"</item>
+        <item>"ÉMISSION HEBDOMADAIRE"</item>
+        <item>"PROBABILITÉ DE VICTOIRE"</item>
+        <item>"COUPE DU MONDE"</item>
+        <item>"En attente d’une nouvelle saison"</item>
+        <item>"Pas encore sorti"</item>
+        <item>"Buts sur balles"</item>
+        <item>"Sorti au cinéma le "</item>
+        <item>"Regarder"</item>
+        <item>"Regarder la chaîne maintenant"</item>
+        <item>"Regarder depuis le début"</item>
+        <item>"Regarder depuis le début"</item>
+        <item>"Regarder depuis le début de l’enregistrement"</item>
+        <item>"Regarder en plein écran"</item>
+        <item>"Regarder cette chaîne maintenant"</item>
+        <item>"Vu"</item>
+        <item>"En cours"</item>
+        <item>"Nous vous préviendrons avant le début"</item>
+        <item>"Météo"</item>
+        <item>"Semaine"</item>
+        <item>"Semaine "</item>
+        <item>"Semaine ›"</item>
+        <item>"Ce qui est affiché et dans quel ordre"</item>
+        <item>"Quand il est introuvable dans votre guide, ou sur la mauvaise chaîne"</item>
+        <item>"Où Changer le logo effectue sa recherche. Désactivez ceux que vous ne voulez pas dans la liste."</item>
+        <item>"Pendant la lecture"</item>
+        <item>"Ligue des champions féminine"</item>
+        <item>"Basket universitaire féminin"</item>
+        <item>"Hockey universitaire féminin"</item>
+        <item>"Lacrosse universitaire féminin"</item>
+        <item>"Football universitaire féminin"</item>
+        <item>"Volley universitaire féminin"</item>
+        <item>"Euro féminin"</item>
+        <item>"Europa Cup féminine"</item>
+        <item>"Championnat d’Europe féminin"</item>
+        <item>"FA Cup féminine"</item>
+        <item>"Match amical féminin"</item>
+        <item>"Hockey sur glace féminin"</item>
+        <item>"International féminin"</item>
+        <item>"Matchs amicaux internationaux féminins"</item>
+        <item>"League Cup féminine"</item>
+        <item>"Ligue des nations féminine"</item>
+        <item>"Hockey olympique féminin"</item>
+        <item>"Coupe du monde de rugby féminine"</item>
+        <item>"Coupe du monde féminine U-17"</item>
+        <item>"Coupe du monde féminine"</item>
+        <item>"Qualification Coupe du monde féminine"</item>
+        <item>"Qualifications Coupe du monde féminine (Europe)"</item>
+        <item>"Coupe du monde"</item>
+        <item>"Qualification Coupe du monde"</item>
+        <item>"Qualifications Coupe du monde"</item>
+        <item>"Qualifications Coupe du monde (Afrique)"</item>
+        <item>"Qualifications Coupe du monde (Asie)"</item>
+        <item>"Qualifications Coupe du monde (CONCACAF)"</item>
+        <item>"Qualifications Coupe du monde (Europe)"</item>
+        <item>"Qualifications Coupe du monde (Océanie)"</item>
+        <item>"Qualifications Coupe du monde (Amérique du Sud)"</item>
+        <item>"Catch"</item>
+        <item>"Code PIN incorrect, réessayez"</item>
+        <item>"VOTRE CHAÎNE"</item>
+        <item>"Hier"</item>
+        <item>"Vous avez modifié certains groupes. Les enregistrer avant de partir ?"</item>
+        <item>"Vous avez une configuration TV en direct enregistrée"</item>
+        <item>"Vous êtes à jour."</item>
+        <item>"Vous ne suivez encore aucune équipe."</item>
+        <item>"Vos liens IPTV, noms d’utilisateur et mots de passe. Stockés chiffrés."</item>
+        <item>"Vos matchs apparaissent ici quand ils sont en direct ou sur le point de commencer."</item>
+        <item>"Vos chaînes sont vérifiées pour ce match à partir de "</item>
+        <item>"Vos favoris et chaînes récentes. Pour toute autre chaîne, appuyez longuement dessus dans le guide et choisissez Programmer un enregistrement."</item>
+        <item>"Votre groupe"</item>
+        <item>"Votre guide ne couvre pas encore cette date : ce sera programmé dès qu’il la couvrira"</item>
+        <item>"Vos guides"</item>
+        <item>"Votre propre guide TV est aussi consulté pour trouver la chaîne qui le diffuse. Suivez-le pour voir chaque diffusion dans Mes sports."</item>
+        <item>"Votre choix"</item>
+        <item>"Vos playlists"</item>
+        <item>"Vos playlists (identifiants compris), guides, favoris, choix Sports et Calendrier et réglages TV en direct sont enregistrés, pour que chaque TV où vous vous connectez ait la même configuration. Un téléphone garde son propre aspect et sa disposition. Vous pouvez changer ce qui est inclus, ou désactiver la fonction, à tout moment dans Réglages → TV en direct → Synchro de la configuration."</item>
+        <item>"Votre fournisseur propose ce titre plusieurs fois."</item>
+        <item>"[Flux Stalker]"</item>
+        <item>"‹  Ajouter un groupe de playlists"</item>
+        <item>"‹  Retour"</item>
+        <item>"‹  Disposition de la barre de lecture"</item>
+        <item>"‹  Chaînes rapides"</item>
+        <item>"‹  Taille de l’écran"</item>
+        <item>"‹ Semaine"</item>
+        <item>"↕  Organiser"</item>
+        <item>"⏩  Changement auto"</item>
+        <item>"⏩  Changement auto activé"</item>
+        <item>"⏮  Depuis le début"</item>
+        <item>"⏰ RAPPEL"</item>
+        <item>"▲ Haut pour parcourir"</item>
+        <item>"▶  Regarder"</item>
+        <item>"▶ EN LECTURE"</item>
+        <item>"▶ ENREGISTRÉ"</item>
+        <item>"●  En cours : "</item>
+        <item>"●  Enregistrer"</item>
+        <item>"● DIRECT"</item>
+        <item>"● EN DIRECT"</item>
+        <item>"● SÉRIE"</item>
+        <item>"★  Suivi"</item>
+        <item>"★ ÉVÉNEMENT PREMIUM EN DIRECT"</item>
+        <item>"☆  Suivre"</item>
+        <item>"✎  Suivre équipes et ligues"</item>
+        <item>"✓  Terminé"</item>
+        <item>"✓ VU"</item>
+        <item>"＋  Suivre un nom…"</item>
+        <item>"📌  Épingler le score"</item>
+        <item>"📌  Épinglé"</item>
+        <item>"📡 À la demande"</item>
+        <item>"🔔  Me le rappeler"</item>
+        <item>"🔔  Rappel programmé"</item>
+    </string-array>
+</resources>

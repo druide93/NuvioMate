@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="playback_section_seek_thumbnails">Miniatures de navigation</string>
+    <string name="playback_section_seek_thumbnails_desc">Affiche des aperçus au-dessus de la barre de progression quand vous avancez ou reculez</string>
+</resources>

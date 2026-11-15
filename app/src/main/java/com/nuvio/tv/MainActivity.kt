@@ -421,6 +421,8 @@ open class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        // Live TV's own on-screen words in the app's language.
+        com.nuvio.tv.livetv.ui.LiveTvTexts.init(this)
         // Live TV fork: a fresh open of the app (not a rebuild of the same screen), so "Start in
         // Full Screen" runs again even if Android kept the app running in the background.
         if (savedInstanceState == null) com.nuvio.tv.livetv.ui.LiveTvAppOpens.count++

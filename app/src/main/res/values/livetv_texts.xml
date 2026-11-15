@@ -1,0 +1,2526 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Live TV words written in the code, and their translations (see LiveTvTexts). Generated: keep both lists in the same order. -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string-array name="livetv_texts_en" translatable="false">
+        <item>" · Hold OK: 1 other stream"</item>
+        <item>"+  Add a playlist group…"</item>
+        <item>"+ New Recording"</item>
+        <item>"+ New group"</item>
+        <item>". Give it a few seconds."</item>
+        <item>". Know where it's on? Pick a channel now and it's remembered."</item>
+        <item>". Known for "</item>
+        <item>"A drive that isn't plugged in"</item>
+        <item>"A game"</item>
+        <item>"A message a minute before, with Watch"</item>
+        <item>"A player, driver, fighter or team"</item>
+        <item>"A-League Men"</item>
+        <item>"A-League Women"</item>
+        <item>"AFC Asian Cup"</item>
+        <item>"AFC Champions League"</item>
+        <item>"AFC Champions League Elite"</item>
+        <item>"AFC Champions League Two"</item>
+        <item>"ARCHIVE"</item>
+        <item>"Actions: Down to first · Up to last"</item>
+        <item>"Active"</item>
+        <item>"Add"</item>
+        <item>"Add a channel"</item>
+        <item>"Add a playlist in Live TV settings to watch from here."</item>
+        <item>"Add a playlist in Live TV settings to watch games from here. Scores and times still show."</item>
+        <item>"Add an M3U playlist, Xtream login or XMLTV guide in Settings › Live TV."</item>
+        <item>"Add pane"</item>
+        <item>"Add to Multiview"</item>
+        <item>"Add to favorites"</item>
+        <item>"Add to group…"</item>
+        <item>"Africa Cup of Nations"</item>
+        <item>"After changing channel or pressing OK"</item>
+        <item>"Aired"</item>
+        <item>"Airing today"</item>
+        <item>"All"</item>
+        <item>"All Events"</item>
+        <item>"All Live TV settings"</item>
+        <item>"All channels"</item>
+        <item>"All day"</item>
+        <item>"All guides"</item>
+        <item>"All regions"</item>
+        <item>"All their games"</item>
+        <item>"All watched"</item>
+        <item>"Already moving recordings: wait for it to finish"</item>
+        <item>"Also made in the background while the video plays, when it has loaded well ahead"</item>
+        <item>"Always shown while paused"</item>
+        <item>"American Football"</item>
+        <item>"Any group from any playlist, your own too"</item>
+        <item>"Applies to every channel"</item>
+        <item>"Applies to this channel"</item>
+        <item>"Arabic"</item>
+        <item>"Arctic Blue"</item>
+        <item>"Argentina"</item>
+        <item>"Arrange My Sports"</item>
+        <item>"Asian Cup"</item>
+        <item>"Assign EPG"</item>
+        <item>"Assign EPG lists:"</item>
+        <item>"Assign EPG: guide channel lists not ready, so every guide was read"</item>
+        <item>"Assigned: "</item>
+        <item>"At home"</item>
+        <item>"Attendance: %,d"</item>
+        <item>"Aussie Rules"</item>
+        <item>"Australia"</item>
+        <item>"Australia &amp; New Zealand"</item>
+        <item>"Austria"</item>
+        <item>"Austrian Bundesliga"</item>
+        <item>"Automatic"</item>
+        <item>"Automatic: "</item>
+        <item>"Automatic: no guide found"</item>
+        <item>"Autumn Internationals"</item>
+        <item>"Away"</item>
+        <item>"BEFORE THAT CRASH:"</item>
+        <item>"BEST MATCH"</item>
+        <item>"BY HALF"</item>
+        <item>"BY INNING"</item>
+        <item>"BY PERIOD"</item>
+        <item>"BY QUARTER"</item>
+        <item>"Back to live"</item>
+        <item>"Back: save"</item>
+        <item>"Back: save and finish"</item>
+        <item>"Back: save and return"</item>
+        <item>"Background color"</item>
+        <item>"Backups"</item>
+        <item>"Bar darkness"</item>
+        <item>"Behavior and options"</item>
+        <item>"Behind the guide and Sports"</item>
+        <item>"Belgian Pro League"</item>
+        <item>"Belgium"</item>
+        <item>"Bell"</item>
+        <item>"Bell on"</item>
+        <item>"Bolivian Primera"</item>
+        <item>"Bot "</item>
+        <item>"Boxing"</item>
+        <item>"Brazil"</item>
+        <item>"Buffered"</item>
+        <item>"Built in"</item>
+        <item>"Bulgaria"</item>
+        <item>"Busiest threads (% of one core over 5 s):"</item>
+        <item>"CAF Champions League"</item>
+        <item>"CAF Confederation Cup"</item>
+        <item>"CATCH-UP"</item>
+        <item>"COMING UP"</item>
+        <item>"CONCACAF Champions Cup"</item>
+        <item>"CONCACAF Nations League"</item>
+        <item>"CRASHED IN NATIVE CODE (video decoder, graphics or a library)"</item>
+        <item>"Calendar"</item>
+        <item>"Can be moved"</item>
+        <item>"Can't reach the provider right now"</item>
+        <item>"Can't reach this stream. Check the connection or try again."</item>
+        <item>"Cancel"</item>
+        <item>"Cancel Recording"</item>
+        <item>"Cancel recording"</item>
+        <item>"Cancel reminder"</item>
+        <item>"Cancel the recording"</item>
+        <item>"Cancel the reminder"</item>
+        <item>"Cancelled"</item>
+        <item>"Captions"</item>
+        <item>"Captions off"</item>
+        <item>"Captions on"</item>
+        <item>"Captions: "</item>
+        <item>"Caribbean Series"</item>
+        <item>"Catch-up"</item>
+        <item>"Catch-up didn't start: the provider sent nothing for this show"</item>
+        <item>"Catch-up save"</item>
+        <item>"Category"</item>
+        <item>"Central American Cup"</item>
+        <item>"Champions League"</item>
+        <item>"Change Logo"</item>
+        <item>"Change channel number"</item>
+        <item>"Change logo"</item>
+        <item>"Change stream"</item>
+        <item>"Change the channel for this show"</item>
+        <item>"Changes show right away"</item>
+        <item>"Channel"</item>
+        <item>"Channel name"</item>
+        <item>"Channel name &amp; logo"</item>
+        <item>"Channel name or ID"</item>
+        <item>"Channel name or number"</item>
+        <item>"Channel number"</item>
+        <item>"Channels"</item>
+        <item>"Channels from"</item>
+        <item>"Channels you told the Calendar to use, for a network or for one show. OK forgets one: the Calendar picks the channel itself again."</item>
+        <item>"Check your connection and try again."</item>
+        <item>"Checking…"</item>
+        <item>"Chile"</item>
+        <item>"Chilean Primera"</item>
+        <item>"China"</item>
+        <item>"Chinese Super League"</item>
+        <item>"Choose Leagues  ›"</item>
+        <item>"Choose a channel for…"</item>
+        <item>"Choose a game for this pane first."</item>
+        <item>"Choose a version"</item>
+        <item>"Choose the channel"</item>
+        <item>"Clear"</item>
+        <item>"Clinched"</item>
+        <item>"Clinched a playoff place"</item>
+        <item>"Clinched first in the conference"</item>
+        <item>"Clinched first in the league"</item>
+        <item>"Clinched the Presidents' Trophy"</item>
+        <item>"Clinched the division"</item>
+        <item>"Clock"</item>
+        <item>"Close"</item>
+        <item>"Close (it still switches)"</item>
+        <item>"Closed captions"</item>
+        <item>"Closed captions (CC2)"</item>
+        <item>"Closed captions (CC3)"</item>
+        <item>"Closed captions (CC4)"</item>
+        <item>"Closed captions (digital)"</item>
+        <item>"Club Friendlies"</item>
+        <item>"Club Friendly"</item>
+        <item>"Club World Cup"</item>
+        <item>"College Baseball"</item>
+        <item>"College Basketball"</item>
+        <item>"College Field Hockey"</item>
+        <item>"College Football"</item>
+        <item>"College Hockey"</item>
+        <item>"College Lacrosse"</item>
+        <item>"College Soccer"</item>
+        <item>"College Softball"</item>
+        <item>"College Volleyball"</item>
+        <item>"Colombia"</item>
+        <item>"Colombian Primera A"</item>
+        <item>"Combine Both"</item>
+        <item>"Coming Up"</item>
+        <item>"Concacaf Central American Cup"</item>
+        <item>"Confederation Cup"</item>
+        <item>"Conference"</item>
+        <item>"Conference League"</item>
+        <item>"Connect this TV to Wi-Fi to send a logo from your phone."</item>
+        <item>"Copies to the place you choose, checks the copy, then removes it from where it was. "</item>
+        <item>"Copper"</item>
+        <item>"Copy channel…"</item>
+        <item>"Costa Rica Primera"</item>
+        <item>"Could not save the Stalker channel cache."</item>
+        <item>"Could not save the Stalker guide cache."</item>
+        <item>"Couldn't be recorded"</item>
+        <item>"Couldn't get this league's teams. Try again in a little while."</item>
+        <item>"Couldn't get this table right now. It'll try again when you come back."</item>
+        <item>"Couldn't get today's shows. Check your connection."</item>
+        <item>"Couldn't load the calendar"</item>
+        <item>"Couldn't load today's shows"</item>
+        <item>"Couldn't tell which channel this is on"</item>
+        <item>"Countries: follow one to see all its games, from friendlies and the Nations League to the Euros and the World Cup."</item>
+        <item>"Countries: follow one to see all its games, from qualifiers and the Nations League to friendlies, the World Cup and the Euros."</item>
+        <item>"Countries: follow one to see all its games, from the Six Nations and the Nations Championship to the World Cup."</item>
+        <item>"Croatia"</item>
+        <item>"Cycling"</item>
+        <item>"Czechia"</item>
+        <item>"DIDN'T START"</item>
+        <item>"Danish Superliga"</item>
+        <item>"Darkest"</item>
+        <item>"Darts"</item>
+        <item>"Day"</item>
+        <item>"Default"</item>
+        <item>"Delete"</item>
+        <item>"Delete All"</item>
+        <item>"Delete All Episodes"</item>
+        <item>"Delete group"</item>
+        <item>"Denmark"</item>
+        <item>"Deselect all"</item>
+        <item>"Details"</item>
+        <item>"Digital (708)"</item>
+        <item>"Discover"</item>
+        <item>"Dismiss"</item>
+        <item>"Dominican Winter League"</item>
+        <item>"Don't Save"</item>
+        <item>"Don't record it when it's in my guide"</item>
+        <item>"Don't remind me when it's in my guide"</item>
+        <item>"Don't switch to it"</item>
+        <item>"Done"</item>
+        <item>"Dutch"</item>
+        <item>"Each league's own channel, found in your playlists by name."</item>
+        <item>"Each new one, as it shows up in your guide (not repeats)"</item>
+        <item>"Edit channel"</item>
+        <item>"Egypt"</item>
+        <item>"Emerald"</item>
+        <item>"Empty response"</item>
+        <item>"Encrypted portal streams cannot be buffered."</item>
+        <item>"Encrypted portal streams cannot be recorded."</item>
+        <item>"Ended"</item>
+        <item>"English"</item>
+        <item>"English (UK, US, Ireland, Canada, Australia)"</item>
+        <item>"Enter your PIN to remove the lock"</item>
+        <item>"Episode"</item>
+        <item>"Episode number"</item>
+        <item>"Episodes"</item>
+        <item>"Episodes to Keep"</item>
+        <item>"Episodes to Keep: "</item>
+        <item>"Episodes, and your sources to watch on demand"</item>
+        <item>"Errors"</item>
+        <item>"Euro Qualifier"</item>
+        <item>"Euro Qualifying"</item>
+        <item>"Europa League"</item>
+        <item>"European Championship"</item>
+        <item>"European Qualifier"</item>
+        <item>"Events"</item>
+        <item>"Every new episode on "</item>
+        <item>"Everything you follow, soonest first"</item>
+        <item>"Exit"</item>
+        <item>"FA Cup Qualifying"</item>
+        <item>"FAILED TO START"</item>
+        <item>"FIFA World Cup"</item>
+        <item>"FIGHT CARD"</item>
+        <item>"FINAL LEADERBOARD"</item>
+        <item>"FOLLOWING · OK TO UNFOLLOW"</item>
+        <item>"FORM · LAST FIVE"</item>
+        <item>"FROZE (Android closed it for not responding)"</item>
+        <item>"FULL TRACE:"</item>
+        <item>"Faceoffs Won"</item>
+        <item>"Favorite"</item>
+        <item>"Favorite Channels"</item>
+        <item>"Favorite channels, hidden channels and group order."</item>
+        <item>"Favorites"</item>
+        <item>"Favorites &amp; groups"</item>
+        <item>"Favorites and groups"</item>
+        <item>"Fetching today's games and finding their channels. The first time can take a moment."</item>
+        <item>"Field Hockey"</item>
+        <item>"Fighting"</item>
+        <item>"Films directed by "</item>
+        <item>"Films with "</item>
+        <item>"Final"</item>
+        <item>"Final · "</item>
+        <item>"Find &amp; stream in Nuvio"</item>
+        <item>"Find sources for this episode"</item>
+        <item>"Finding channels for today's games…"</item>
+        <item>"Finding logos…"</item>
+        <item>"Finland"</item>
+        <item>"First list"</item>
+        <item>"Fix channel"</item>
+        <item>"Fix poster"</item>
+        <item>"Fix the channel"</item>
+        <item>"Fixtures and results from TheSportsDB. On match days, scores update about every 15 minutes."</item>
+        <item>"Folded"</item>
+        <item>"Follow"</item>
+        <item>"Follow Teams &amp; Leagues"</item>
+        <item>"Follow a name"</item>
+        <item>"Follow a team or a league and its table shows here."</item>
+        <item>"Follow it to see them on My Sports. Follow a name (a player, a team) to catch shows that mention it."</item>
+        <item>"Follow it: its new episodes on Home and here"</item>
+        <item>"Follow some teams or leagues first."</item>
+        <item>"Follow teams and leagues to see their games here."</item>
+        <item>"Follow the show, or put the movie on your Calendar"</item>
+        <item>"Followed and hidden shows."</item>
+        <item>"Followed teams and leagues, and Choose Leagues."</item>
+        <item>"Following"</item>
+        <item>"For a channel that wasn't found: it's used for this show from now on"</item>
+        <item>"Forgotten: the Calendar finds the channel itself again"</item>
+        <item>"Forgotten: the Calendar picks the channel itself again"</item>
+        <item>"Formula 1"</item>
+        <item>"Found on 1 of your channels · or search all of them"</item>
+        <item>"Frame rate"</item>
+        <item>"French"</item>
+        <item>"Friendly"</item>
+        <item>"From "</item>
+        <item>"From catch-up"</item>
+        <item>"From now on: each new one, as it shows up in your guide (not repeats)"</item>
+        <item>"From phone"</item>
+        <item>"From your guide"</item>
+        <item>"From your guides"</item>
+        <item>"From your playlists"</item>
+        <item>"Full scan"</item>
+        <item>"Full screen"</item>
+        <item>"GD"</item>
+        <item>"GOAL DIFF"</item>
+        <item>"GP"</item>
+        <item>"Gaelic Games"</item>
+        <item>"Game"</item>
+        <item>"Game info"</item>
+        <item>"Game info ›"</item>
+        <item>"Games"</item>
+        <item>"German"</item>
+        <item>"German Cup"</item>
+        <item>"Germany"</item>
+        <item>"Getting the table…"</item>
+        <item>"Getting the teams…"</item>
+        <item>"Getting their games…"</item>
+        <item>"Getting today's games…"</item>
+        <item>"Getting today's shows…"</item>
+        <item>"Go live"</item>
+        <item>"Goal"</item>
+        <item>"Greece"</item>
+        <item>"Greek Super League"</item>
+        <item>"Grey Cup"</item>
+        <item>"Group name"</item>
+        <item>"Group not found"</item>
+        <item>"Guide couldn't be stored: the guide stays as it was until the next update"</item>
+        <item>"Guide darkness"</item>
+        <item>"Guide display"</item>
+        <item>"Guide display (info panel, preview…)"</item>
+        <item>"Guides are still loading…"</item>
+        <item>"HTTP 404: nothing at that address (check the server, port and link)"</item>
+        <item>"HTTP 429: too many requests, try again in a few minutes"</item>
+        <item>"HTTP 884: the provider blocked this app (try setting a user agent)"</item>
+        <item>"Hidden"</item>
+        <item>"Hidden shows"</item>
+        <item>"Hide &amp; arrange"</item>
+        <item>"Hide channel"</item>
+        <item>"Hide group"</item>
+        <item>"Highest Rated"</item>
+        <item>"Highlight a day with a picture to see what's out"</item>
+        <item>"Highlight something to see its details here"</item>
+        <item>"Highlights"</item>
+        <item>"Hits"</item>
+        <item>"Hold OK  More options"</item>
+        <item>"Hold OK on a game to watch it here while you browse. OK opens the game info."</item>
+        <item>"Hold OK on a game, or open it and pick a channel"</item>
+        <item>"Hold OK: select or unselect another"</item>
+        <item>"Hold OK: select several to move together"</item>
+        <item>"Home"</item>
+        <item>"Home Runs"</item>
+        <item>"Horse Racing"</item>
+        <item>"How dark the play bar is"</item>
+        <item>"How often lists and guides refresh, recording and catch-up options, sorting, search sources and Calendar choices. Not the look, so it is shared with your phone too."</item>
+        <item>"Hungary"</item>
+        <item>"IN USE"</item>
+        <item>"Iceland"</item>
+        <item>"Importing movies and series…"</item>
+        <item>"In Development"</item>
+        <item>"In development"</item>
+        <item>"In the Live TV guide, long-press a show and choose Record or Record series. While watching, open the menu and choose Record this show. For a channel with no listings, use + New Recording."</item>
+        <item>"In theaters"</item>
+        <item>"In theaters "</item>
+        <item>"In use"</item>
+        <item>"India"</item>
+        <item>"Info bar stays for"</item>
+        <item>"Info panel"</item>
+        <item>"Information"</item>
+        <item>"International Cricket"</item>
+        <item>"International Friendlies"</item>
+        <item>"International Friendly"</item>
+        <item>"Ireland"</item>
+        <item>"Israel"</item>
+        <item>"It comes back from Hidden"</item>
+        <item>"It'll ask before switching"</item>
+        <item>"It'll switch to the game a minute before it starts"</item>
+        <item>"It's still recording. This stops it and deletes what's been recorded."</item>
+        <item>"Italian"</item>
+        <item>"Italy"</item>
+        <item>"Its episodes are watched and recorded on the channel you pick, whatever your guide calls them."</item>
+        <item>"Its own"</item>
+        <item>"Japan"</item>
+        <item>"Just this game"</item>
+        <item>"KNVB Cup"</item>
+        <item>"Keep All Episodes"</item>
+        <item>"Keep all"</item>
+        <item>"Keep your Live TV setup on all your devices?"</item>
+        <item>"King's Cup"</item>
+        <item>"King's Cup (Saudi)"</item>
+        <item>"Know where it's on? Pick a channel and it's remembered."</item>
+        <item>"LAST 5"</item>
+        <item>"LAST MEETINGS"</item>
+        <item>"LATEST SCORING"</item>
+        <item>"LINE-UPS"</item>
+        <item>"LISTS · OK turns one on or off, the arrows move it"</item>
+        <item>"LIVE "</item>
+        <item>"LIVE NOW"</item>
+        <item>"LIVE TV"</item>
+        <item>"LIVE TV · NEXT EPISODE"</item>
+        <item>"LIVE TV · THIS EPISODE"</item>
+        <item>"Large playlists and guides can take several minutes the first time. It keeps going if you leave this screen, and next time it opens straight away."</item>
+        <item>"Last met "</item>
+        <item>"Last one used"</item>
+        <item>"Last week"</item>
+        <item>"Later today"</item>
+        <item>"Launcher rows:"</item>
+        <item>"Layout"</item>
+        <item>"League"</item>
+        <item>"League Cup"</item>
+        <item>"League Networks"</item>
+        <item>"League network"</item>
+        <item>"Leagues and events"</item>
+        <item>"Leagues on All Events"</item>
+        <item>"Leave empty to use the playlist name"</item>
+        <item>"Leave empty to use the playlist number"</item>
+        <item>"Leave the app open until it finishes."</item>
+        <item>"Left off your Calendar"</item>
+        <item>"Left on Base"</item>
+        <item>"Left: hide all"</item>
+        <item>"Left: remove all"</item>
+        <item>"Length"</item>
+        <item>"Library"</item>
+        <item>"Liga 1 (Peru)"</item>
+        <item>"Liga Profesional (Argentina)"</item>
+        <item>"LigaPro (Ecuador)"</item>
+        <item>"Lightest"</item>
+        <item>"Lions Tour"</item>
+        <item>"List"</item>
+        <item>"Live"</item>
+        <item>"Live "</item>
+        <item>"Live &amp; Upcoming"</item>
+        <item>"Live Now"</item>
+        <item>"Live Now in Sports"</item>
+        <item>"Live Racing"</item>
+        <item>"Live TV"</item>
+        <item>"Live TV  ·  On Demand  ·  Streaming"</item>
+        <item>"Live TV full screen"</item>
+        <item>"Live TV guide"</item>
+        <item>"Live TV options"</item>
+        <item>"Live TV options (record, remind, channel…)"</item>
+        <item>"Live TV settings"</item>
+        <item>"Live games"</item>
+        <item>"Live · "</item>
+        <item>"Live, as it aired"</item>
+        <item>"Live, catch-up"</item>
+        <item>"Live, quality, sound, catch-up"</item>
+        <item>"Loading details…"</item>
+        <item>"Loading games…"</item>
+        <item>"Loading guide channels…"</item>
+        <item>"Loading…"</item>
+        <item>"Lock with PIN"</item>
+        <item>"Locked"</item>
+        <item>"Login failed: check the username and password"</item>
+        <item>"Logo Sources"</item>
+        <item>"Logo from your phone"</item>
+        <item>"Logo libraries"</item>
+        <item>"Look and layout"</item>
+        <item>"Looking in the logo libraries and TMDB…"</item>
+        <item>"Looking in your sports add-ons…"</item>
+        <item>"Looking through your channels…"</item>
+        <item>"Looking up your shows…"</item>
+        <item>"MATCH INFO"</item>
+        <item>"Main thread was stuck at:"</item>
+        <item>"Making thumbnails…"</item>
+        <item>"Manage VOD Groups"</item>
+        <item>"Manage group visibility"</item>
+        <item>"Manage visibility"</item>
+        <item>"Mark All as Watched"</item>
+        <item>"Mark as Unwatched"</item>
+        <item>"Mark as Watched"</item>
+        <item>"Match Theme"</item>
+        <item>"Match frame rate: asked for %.3f Hz but the display stayed at %.3f Hz (the box didn't switch: check its own display settings, e.g. Match content frame rate)"</item>
+        <item>"Match frame rate: still waiting for usable frame timing; will retry while playing ("</item>
+        <item>"Match frame rate: video %.3f fps, display %.3f Hz → %.3f Hz"</item>
+        <item>"Matchday "</item>
+        <item>"Men's College Basketball"</item>
+        <item>"Men's College Hockey"</item>
+        <item>"Men's College Lacrosse"</item>
+        <item>"Men's College Soccer"</item>
+        <item>"Men's College Volleyball"</item>
+        <item>"Men's Ice Hockey"</item>
+        <item>"Mexican Pacific League"</item>
+        <item>"Mexico"</item>
+        <item>"Month"</item>
+        <item>"More Sports"</item>
+        <item>"More caption tracks"</item>
+        <item>"More channels fit"</item>
+        <item>"Move All to…"</item>
+        <item>"Move To…"</item>
+        <item>"Move down"</item>
+        <item>"Move down in favorites"</item>
+        <item>"Move down in this group"</item>
+        <item>"Move up"</item>
+        <item>"Move up in favorites"</item>
+        <item>"Move up in this group"</item>
+        <item>"Movie"</item>
+        <item>"Movies"</item>
+        <item>"Moving"</item>
+        <item>"Moving recordings"</item>
+        <item>"My Sports"</item>
+        <item>"My calendar"</item>
+        <item>"My group"</item>
+        <item>"My groups"</item>
+        <item>"NBL (Australia)"</item>
+        <item>"NCAA Baseball"</item>
+        <item>"NCAA Basketball"</item>
+        <item>"NCAA Football"</item>
+        <item>"NCAA Hockey"</item>
+        <item>"NCAA Lacrosse"</item>
+        <item>"NCAA Men's Volleyball"</item>
+        <item>"NCAA Soccer"</item>
+        <item>"NCAA Softball"</item>
+        <item>"NCAA Volleyball"</item>
+        <item>"NCAA Women's Hockey"</item>
+        <item>"NCAA Women's Lacrosse"</item>
+        <item>"NCAA Women's Soccer"</item>
+        <item>"NPC (New Zealand)"</item>
+        <item>"Name"</item>
+        <item>"Nations League"</item>
+        <item>"Networks"</item>
+        <item>"New"</item>
+        <item>"New Recording"</item>
+        <item>"New Zealand"</item>
+        <item>"New group"</item>
+        <item>"Newest Release"</item>
+        <item>"News &amp; talk shows"</item>
+        <item>"Next episode"</item>
+        <item>"Next episode (finale)"</item>
+        <item>"Next week"</item>
+        <item>"Next: "</item>
+        <item>"No Program Guide Available"</item>
+        <item>"No URL set"</item>
+        <item>"No addons are installed and enabled, so there's nothing to search."</item>
+        <item>"No available channels. Add a playlist in Live TV settings."</item>
+        <item>"No available stream for this game right now. Choose another game or check its broadcasts on the Sports page."</item>
+        <item>"No backup channels for this channel"</item>
+        <item>"No bells rung yet"</item>
+        <item>"No captions on this channel"</item>
+        <item>"No channel names match."</item>
+        <item>"No channels here yet"</item>
+        <item>"No channels in this group"</item>
+        <item>"No crash details were saved."</item>
+        <item>"No crash or freeze has been saved yet."</item>
+        <item>"No date yet to watch at home"</item>
+        <item>"No description available."</item>
+        <item>"No favorites or recent channels yet."</item>
+        <item>"No games of theirs known right now."</item>
+        <item>"No groups yet. Add a playlist first."</item>
+        <item>"No guide channels match."</item>
+        <item>"No guide info"</item>
+        <item>"No guides loaded. Add an EPG source in Live TV settings."</item>
+        <item>"No hidden shows."</item>
+        <item>"No information"</item>
+        <item>"No leagues match that search."</item>
+        <item>"No live games available"</item>
+        <item>"No live score for this event. The time bar runs from the start time."</item>
+        <item>"No logos found for this channel. Try Search with another name."</item>
+        <item>"No matched channel"</item>
+        <item>"No matched channel for this game. Choose a broadcast on the Sports page first."</item>
+        <item>"No matching channels."</item>
+        <item>"No new episodes announced yet"</item>
+        <item>"No new episodes found for today."</item>
+        <item>"No other streams for this game right now."</item>
+        <item>"No playlists yet"</item>
+        <item>"No previous channel yet"</item>
+        <item>"No program information"</item>
+        <item>"No program information for this channel"</item>
+        <item>"No recordings yet"</item>
+        <item>"No replay of this game in your sports add-ons yet. "</item>
+        <item>"No replay on this channel"</item>
+        <item>"No scoring yet"</item>
+        <item>"No series set to record"</item>
+        <item>"No server set"</item>
+        <item>"No stored guide yet"</item>
+        <item>"No streams available"</item>
+        <item>"No streams available for this game."</item>
+        <item>"No thumbnails for Live TV or catch-up"</item>
+        <item>"No thumbnails for streamed links"</item>
+        <item>"No thumbnails for this kind of link"</item>
+        <item>"No thumbnails for torrents"</item>
+        <item>"No tracks available"</item>
+        <item>"None"</item>
+        <item>"None for this game"</item>
+        <item>"None found in this stream"</item>
+        <item>"None of your add-ons do yet: install one in Add-ons and they'll show here."</item>
+        <item>"None of your channels were found showing it in your guide. Search for the channel below: it's used for this show from now on."</item>
+        <item>"None of your leagues has a table (cups, golf, tennis and fights don't)."</item>
+        <item>"None of your shows are in your Live TV guide right now. Your guide usually covers the next few days."</item>
+        <item>"Norway"</item>
+        <item>"Not Now"</item>
+        <item>"Not a playlist (no #EXTM3U)"</item>
+        <item>"Not a playlist (too big: a stream sent on a playlist link?)"</item>
+        <item>"Not an Xtream API response"</item>
+        <item>"Not checked for this stream type"</item>
+        <item>"Not enough storage space to record"</item>
+        <item>"Not found"</item>
+        <item>"Not found in your guide: search all your channels"</item>
+        <item>"Not found. OK to choose a channel"</item>
+        <item>"Not in your channels' guides right now. Guides update during the day, so check back closer to the start. "</item>
+        <item>"Not in your playlists right now"</item>
+        <item>"Not known yet"</item>
+        <item>"Not on your Hub by default"</item>
+        <item>"Not out to watch at home yet"</item>
+        <item>"Not this channel"</item>
+        <item>"Note"</item>
+        <item>"Nothing aired in the last month."</item>
+        <item>"Nothing announced yet"</item>
+        <item>"Nothing coming up in the next four months."</item>
+        <item>"Nothing coming up yet."</item>
+        <item>"Nothing could be recorded from this channel"</item>
+        <item>"Nothing from your teams on this day."</item>
+        <item>"Nothing here with this filter."</item>
+        <item>"Nothing here yet. Shows you watch, your Library and shows you ring the bell on show up here with their new episodes."</item>
+        <item>"Nothing on right now."</item>
+        <item>"Nothing on this day."</item>
+        <item>"Nothing out"</item>
+        <item>"Nothing playing"</item>
+        <item>"Nothing recorded yet"</item>
+        <item>"Nothing saved."</item>
+        <item>"Nothing scheduled"</item>
+        <item>"Nothing to send."</item>
+        <item>"Nothing to show here yet"</item>
+        <item>"Nothing to show yet"</item>
+        <item>"Nothing yet: pick a team below."</item>
+        <item>"Now out to watch at home"</item>
+        <item>"Now: "</item>
+        <item>"Nuvio + IPTV crash report"</item>
+        <item>"Nuvio + IPTV stopped"</item>
+        <item>"OK  Live TV options"</item>
+        <item>"OK  Open in Sports"</item>
+        <item>"OK  Show page"</item>
+        <item>"OK TO FOLLOW"</item>
+        <item>"OK on a team: its card"</item>
+        <item>"OK on a team: its card  ·  ◀ ▶ on the leagues: another table"</item>
+        <item>"OK on one to stop following it"</item>
+        <item>"OK records it on that channel"</item>
+        <item>"OK to pick a channel"</item>
+        <item>"OK to pick a game"</item>
+        <item>"OK to play now · Back to stop"</item>
+        <item>"OK to replace or retry this pane"</item>
+        <item>"OK turns a league on or off, and opens or closes a sport. Leagues you follow always show."</item>
+        <item>"OK uses that copy."</item>
+        <item>"OK watches it (or records it, if it hasn't started there) · Hold OK to record"</item>
+        <item>"OK · FULL TABLE ›"</item>
+        <item>"OK: add or remove ★"</item>
+        <item>"OK: apply · Back: close"</item>
+        <item>"OK: choose · Back: games"</item>
+        <item>"OK: forget"</item>
+        <item>"OK: forget it (the Calendar picks the channel itself again)"</item>
+        <item>"OK: game info  ·  Hold OK: watch it"</item>
+        <item>"OK: game info  ·  Hold OK: watch it  ·  ◀ ▶ through a row"</item>
+        <item>"OK: game info  ·  Hold OK: watch it in the window"</item>
+        <item>"OK: game info  ·  Hold OK: watch it in the window  ·  ◀ ▶ through a row"</item>
+        <item>"OK: pick another game"</item>
+        <item>"OK: pick it up to move"</item>
+        <item>"OK: place it here"</item>
+        <item>"OK: play here, OK again: full screen  ·  Hold OK: other copies, pick a channel"</item>
+        <item>"OK: put it down"</item>
+        <item>"OK: select it to move"</item>
+        <item>"OK: show it on the Calendar again"</item>
+        <item>"OK: show or hide channel"</item>
+        <item>"OK: show or hide group"</item>
+        <item>"OK: watch  ·  Hold OK: other copies, pick a channel"</item>
+        <item>"ON NOW"</item>
+        <item>"Off"</item>
+        <item>"Off hides all of it"</item>
+        <item>"Off: Nuvio's original icons, in your chosen color"</item>
+        <item>"Off: channel logo"</item>
+        <item>"Oldest Release"</item>
+        <item>"Olympic Football"</item>
+        <item>"Olympic Hockey"</item>
+        <item>"Olympic Women's Hockey"</item>
+        <item>"On"</item>
+        <item>"On Demand"</item>
+        <item>"On TV"</item>
+        <item>"On TV: "</item>
+        <item>"On disc"</item>
+        <item>"On disc "</item>
+        <item>"On disc since "</item>
+        <item>"On it"</item>
+        <item>"On my TV"</item>
+        <item>"On now"</item>
+        <item>"On the bar and in the backups lists"</item>
+        <item>"On your Calendar"</item>
+        <item>"On: the Nuvio + IPTV icon and banner in your chosen color"</item>
+        <item>"Only When Paused or Seeking"</item>
+        <item>"Open"</item>
+        <item>"Open in Sports"</item>
+        <item>"Open movie page"</item>
+        <item>"Open show page"</item>
+        <item>"Open show page at this episode"</item>
+        <item>"Open the game's page; Back returns here"</item>
+        <item>"Opens on"</item>
+        <item>"Or choose the channel below"</item>
+        <item>"Other"</item>
+        <item>"Other copies…"</item>
+        <item>"Other streams"</item>
+        <item>"Others"</item>
+        <item>"Out at home since "</item>
+        <item>"Out of the playoffs"</item>
+        <item>"Out to watch at home"</item>
+        <item>"Out to watch at home "</item>
+        <item>"PAUSED LIVE"</item>
+        <item>"Pane"</item>
+        <item>"Paraguayan Primera"</item>
+        <item>"Paste the web address of the logo (a picture link ending in .png, .jpg, .svg…), then tap Send to TV."</item>
+        <item>"Pause buffer"</item>
+        <item>"Paused"</item>
+        <item>"Penalty Minutes"</item>
+        <item>"Pick a channel"</item>
+        <item>"Pick a different channel…"</item>
+        <item>"Pick a game to watch here"</item>
+        <item>"Pick another broadcast of this game"</item>
+        <item>"Pick favorites"</item>
+        <item>"Pick favorites in this group…"</item>
+        <item>"Pick favorites…"</item>
+        <item>"Pick the right channel…"</item>
+        <item>"Play"</item>
+        <item>"Play "</item>
+        <item>"Play bar layout"</item>
+        <item>"Play from Beginning"</item>
+        <item>"Play from archive"</item>
+        <item>"Play the recording"</item>
+        <item>"Play-In"</item>
+        <item>"Playback paused. Select a pane to retry sound."</item>
+        <item>"Players"</item>
+        <item>"Playing"</item>
+        <item>"Playing a channel that isn't showing a game from this page."</item>
+        <item>"Playing here"</item>
+        <item>"Playlist name"</item>
+        <item>"Playlists and logins"</item>
+        <item>"Playlists: "</item>
+        <item>"Playoff line"</item>
+        <item>"Poland"</item>
+        <item>"Polish"</item>
+        <item>"Portuguese"</item>
+        <item>"Poster"</item>
+        <item>"Postponed"</item>
+        <item>"Power Play"</item>
+        <item>"Practice"</item>
+        <item>"Première Ligue (Women)"</item>
+        <item>"Press OK"</item>
+        <item>"Press OK on Search in the group list, or the search key on your remote."</item>
+        <item>"Press OK on a channel to preview"</item>
+        <item>"Press OK to open Live TV settings"</item>
+        <item>"Press left to pick another group."</item>
+        <item>"Preview window"</item>
+        <item>"Previous channel"</item>
+        <item>"Primera B (Argentina)"</item>
+        <item>"Primera División (El Salvador)"</item>
+        <item>"Primera Nacional (Argentina)"</item>
+        <item>"Program info"</item>
+        <item>"Progress bar"</item>
+        <item>"Protected stream could not be prepared"</item>
+        <item>"Provider said too many requests (HTTP 429): catch-up lookups paused for 5 minutes"</item>
+        <item>"Provider's Order"</item>
+        <item>"Puerto Rican Winter League"</item>
+        <item>"Qualifying"</item>
+        <item>"Quick channels"</item>
+        <item>"Quick channels tab"</item>
+        <item>"RAN OUT OF MEMORY (Android closed it to free memory)"</item>
+        <item>"RECORD · CHOOSE THE CHANNEL"</item>
+        <item>"REPLAYS &amp; HIGHLIGHTS"</item>
+        <item>"RUNNING ORDER"</item>
+        <item>"Race"</item>
+        <item>"Race · Live"</item>
+        <item>"Racing"</item>
+        <item>"Reading the guides' channel lists…"</item>
+        <item>"Recently Added"</item>
+        <item>"Recently Watched"</item>
+        <item>"Recently Watched Channels"</item>
+        <item>"Recently aired"</item>
+        <item>"Recently watched"</item>
+        <item>"Recently watched cleared"</item>
+        <item>"Reconnecting…"</item>
+        <item>"Record"</item>
+        <item>"Record every new episode"</item>
+        <item>"Record for"</item>
+        <item>"Record it when it's in my guide"</item>
+        <item>"Record series"</item>
+        <item>"Recorded"</item>
+        <item>"Recording"</item>
+        <item>"Recording Live TV"</item>
+        <item>"Recording Now"</item>
+        <item>"Recording cancelled"</item>
+        <item>"Recording name"</item>
+        <item>"Recording new episodes"</item>
+        <item>"Recording now"</item>
+        <item>"Recording set"</item>
+        <item>"Recording stopped. It's in Recordings."</item>
+        <item>"Recordings"</item>
+        <item>"Recordings already made are kept"</item>
+        <item>"Records when it's in your guide"</item>
+        <item>"Refresh"</item>
+        <item>"Reload stream"</item>
+        <item>"Remind me"</item>
+        <item>"Remind me when it starts"</item>
+        <item>"Remind me when it's in my guide"</item>
+        <item>"Reminder cancelled"</item>
+        <item>"Reminder set"</item>
+        <item>"Reminders and Watch now use them first too. The others are one click away."</item>
+        <item>"Remove copy from this group"</item>
+        <item>"Remove from favorites"</item>
+        <item>"Remove from this group"</item>
+        <item>"Remove lock"</item>
+        <item>"Remove pane"</item>
+        <item>"Remove parental lock"</item>
+        <item>"Rename channel"</item>
+        <item>"Rename group"</item>
+        <item>"Reorder channels"</item>
+        <item>"Reorder groups"</item>
+        <item>"Replay from the start"</item>
+        <item>"Replays and highlights come from sports add-ons that offer them (HighFly Premium, StremVerse…). "</item>
+        <item>"Reset to Default"</item>
+        <item>"Reset to automatic"</item>
+        <item>"Reset to default"</item>
+        <item>"Resolution"</item>
+        <item>"Restart app"</item>
+        <item>"Resume"</item>
+        <item>"Resume "</item>
+        <item>"Retry"</item>
+        <item>"Right Away"</item>
+        <item>"Right: add all"</item>
+        <item>"Right: show all"</item>
+        <item>"Ring the bell"</item>
+        <item>"Ring the bell on a show's page, in Live TV or in Search (hold OK) to follow it."</item>
+        <item>"Ring the bell: follow this show"</item>
+        <item>"Ring the bell: put this movie on your Calendar"</item>
+        <item>"Romania"</item>
+        <item>"Rose Gold"</item>
+        <item>"Rugby League"</item>
+        <item>"Rugby Test Matches"</item>
+        <item>"Rugby Union"</item>
+        <item>"Rugby World Cup"</item>
+        <item>"Runs"</item>
+        <item>"Russia"</item>
+        <item>"Russian"</item>
+        <item>"SHOWING IT"</item>
+        <item>"Saudi Arabia"</item>
+        <item>"Save"</item>
+        <item>"Save My Setup"</item>
+        <item>"Save to Recordings"</item>
+        <item>"Save your changes?"</item>
+        <item>"Saved"</item>
+        <item>"Saved Channels"</item>
+        <item>"Saved channel list had channels from a turned-off playlist: taking them out"</item>
+        <item>"Saved channels and stored guide shown while the channel list is brought up to date"</item>
+        <item>"Saved on"</item>
+        <item>"Saving from catch-up now"</item>
+        <item>"Schedule"</item>
+        <item>"Schedule + your guide"</item>
+        <item>"Schedule a Recording"</item>
+        <item>"Schedule a recording…"</item>
+        <item>"Scheduled"</item>
+        <item>"Score pinned to the corner"</item>
+        <item>"Score pinned to the corner while you watch"</item>
+        <item>"Score unpinned"</item>
+        <item>"Scores are hidden"</item>
+        <item>"Scores are hidden (Sports settings)."</item>
+        <item>"Scottish Cup"</item>
+        <item>"Scottish League Cup"</item>
+        <item>"Screen size"</item>
+        <item>"Search"</item>
+        <item>"Search all my channels…"</item>
+        <item>"Search channels"</item>
+        <item>"Search guide channels"</item>
+        <item>"Search leagues"</item>
+        <item>"Search logos"</item>
+        <item>"Search teams and leagues"</item>
+        <item>"Searching teams…"</item>
+        <item>"Season finale"</item>
+        <item>"Season premiere"</item>
+        <item>"See Everything"</item>
+        <item>"See all"</item>
+        <item>"See what's airing today"</item>
+        <item>"Seek thumbnails paused to keep playback smooth (low memory)"</item>
+        <item>"Select all"</item>
+        <item>"Sent. Look at your TV."</item>
+        <item>"Serbia"</item>
+        <item>"Serie A Brazil"</item>
+        <item>"Serie B Brazil"</item>
+        <item>"Series"</item>
+        <item>"Series finale"</item>
+        <item>"Series premiere"</item>
+        <item>"Session"</item>
+        <item>"Set"</item>
+        <item>"Set the channel for this show"</item>
+        <item>"Settings"</item>
+        <item>"Setup Sync"</item>
+        <item>"Shape"</item>
+        <item>"Shots"</item>
+        <item>"Show"</item>
+        <item>"Show \"+ IPTV\" on the icon"</item>
+        <item>"Show &amp; movie logos (TMDB)"</item>
+        <item>"Show channels from"</item>
+        <item>"Show info panel"</item>
+        <item>"Show page"</item>
+        <item>"Show posters"</item>
+        <item>"Show quick channels"</item>
+        <item>"Show title"</item>
+        <item>"Show, hide, sort, rename and reorder the groups on this page."</item>
+        <item>"Showing 1 league"</item>
+        <item>"Shown"</item>
+        <item>"Shown while Live TV is recording"</item>
+        <item>"Shows"</item>
+        <item>"Shows only that region's channels for every game (handy for commentary in your language). "</item>
+        <item>"Shuffle"</item>
+        <item>"Side by side"</item>
+        <item>"Singapore"</item>
+        <item>"Single games"</item>
+        <item>"Size"</item>
+        <item>"Sleep "</item>
+        <item>"Sleep timer"</item>
+        <item>"Sleep timer off"</item>
+        <item>"Slovakia"</item>
+        <item>"Slovenia"</item>
+        <item>"Small live video"</item>
+        <item>"Smaller top"</item>
+        <item>"Somewhere else"</item>
+        <item>"Sort "</item>
+        <item>"South Africa"</item>
+        <item>"South African Premiership"</item>
+        <item>"South Korea"</item>
+        <item>"Spain"</item>
+        <item>"Spanish"</item>
+        <item>"Sprint Qualifying"</item>
+        <item>"Stacked"</item>
+        <item>"Stalker portal"</item>
+        <item>"Stalker portals require HTTP + HTTPS or Full app VPN protection. Change the VPN protection mode and retry."</item>
+        <item>"Stalker stream unavailable"</item>
+        <item>"Standings"</item>
+        <item>"Start time"</item>
+        <item>"Start – end time"</item>
+        <item>"Started "</item>
+        <item>"Starting"</item>
+        <item>"Starting in a minute"</item>
+        <item>"Starting now"</item>
+        <item>"Starting soon"</item>
+        <item>"Starting the recording…"</item>
+        <item>"Starting…"</item>
+        <item>"Starts"</item>
+        <item>"Starts now"</item>
+        <item>"Starts today"</item>
+        <item>"Stop"</item>
+        <item>"Stop Recording"</item>
+        <item>"Stop Recording Series"</item>
+        <item>"Stop recording"</item>
+        <item>"Stop recording new episodes"</item>
+        <item>"Stop recording series"</item>
+        <item>"Stop watching"</item>
+        <item>"Stopped before anything was recorded"</item>
+        <item>"Stops playback after"</item>
+        <item>"Storage ran out, so it stopped early"</item>
+        <item>"Stored guide has no listings for now: reading the guides again"</item>
+        <item>"Stored guide shown as it was while it's brought up to date"</item>
+        <item>"Stream ended"</item>
+        <item>"Stream info"</item>
+        <item>"Stream not found (HTTP 404). Try another stream format in the playlist's settings"</item>
+        <item>"Stream unavailable"</item>
+        <item>"Stream unavailable · press OK to retry"</item>
+        <item>"Streams"</item>
+        <item>"Strikeouts"</item>
+        <item>"Subtitles"</item>
+        <item>"Summer Tour"</item>
+        <item>"Super Cup"</item>
+        <item>"Sweden"</item>
+        <item>"Switch now"</item>
+        <item>"Switch to this copy"</item>
+        <item>"Switzerland"</item>
+        <item>"Sync: other TV's setup is the same"</item>
+        <item>"TEAM STATS"</item>
+        <item>"THE CHANNEL FOR THIS SHOW"</item>
+        <item>"THIS EPISODE"</item>
+        <item>"THIS WEEK"</item>
+        <item>"TMDB didn't answer"</item>
+        <item>"TOMORROW"</item>
+        <item>"TOP PERFORMERS"</item>
+        <item>"TV Guide"</item>
+        <item>"Tables"</item>
+        <item>"Tables are hidden while Hide Scores is on (Sports settings), so they don't give results away."</item>
+        <item>"Tags"</item>
+        <item>"Take it off your Calendar"</item>
+        <item>"Take this movie off your Calendar"</item>
+        <item>"Take wrong channels off the list, or pick the right one."</item>
+        <item>"Talk Show"</item>
+        <item>"Teams"</item>
+        <item>"Teams: their games, reminders and scoring alerts. Leagues: their schedule on My Sports."</item>
+        <item>"Test Match"</item>
+        <item>"That channel is no longer in your playlist"</item>
+        <item>"That recording can't be played"</item>
+        <item>"That recording isn't there any more"</item>
+        <item>"That show has already been on"</item>
+        <item>"That time has already passed. Pick a later day or time."</item>
+        <item>"The HLS replay sent nothing"</item>
+        <item>"The Netherlands"</item>
+        <item>"The Stalker portal and stream use different VPN routes. Use a remote portal and consistent VPN protection, then retry."</item>
+        <item>"The Stalker source changed. Retry playback."</item>
+        <item>"The Stalker source or VPN route changed. Retry playback."</item>
+        <item>"The Stalker stream attempted an insecure redirect. Playback was stopped."</item>
+        <item>"The Stalker stream changed its buffer format. Retry playback."</item>
+        <item>"The Stalker stream connection dropped"</item>
+        <item>"The Stalker stream could not be opened. Check VPN protection and retry."</item>
+        <item>"The app closed before anything was recorded"</item>
+        <item>"The app closed before it finished, so it stops early"</item>
+        <item>"The bar changes as you go"</item>
+        <item>"The drive it was recording to was removed"</item>
+        <item>"The guide changes as you go"</item>
+        <item>"The lightest choice: nothing is made while the video just plays"</item>
+        <item>"The list it shows first"</item>
+        <item>"The movie or series name, and the year if you know it, like Dune (2021). Leave it empty to go back to automatic."</item>
+        <item>"The order of the rows on My Sports. Live &amp; Upcoming always comes first."</item>
+        <item>"The portal archive download ended before the whole programme was saved."</item>
+        <item>"The portal changed its audio format during recording."</item>
+        <item>"The portal changed its audio format."</item>
+        <item>"The portal changed stream format during recording. Start a new recording."</item>
+        <item>"The provider closed the download early"</item>
+        <item>"The provider couldn't open this stream. Try again."</item>
+        <item>"The provider didn't list any episodes."</item>
+        <item>"The provider doesn't have this channel's stream right now"</item>
+        <item>"The provider is having trouble. Try again later."</item>
+        <item>"The provider isn't sending this channel properly right now"</item>
+        <item>"The provider refused this stream. Check the account or try another channel."</item>
+        <item>"The provider returned no live channels"</item>
+        <item>"The provider sent an invalid stream redirect."</item>
+        <item>"The provider stopped sending this show. Try again, or skip to another point"</item>
+        <item>"The provider took too long to answer (timeout). It may be busy; try again later."</item>
+        <item>"The provider's connection limit was reached. Remove a pane or try again."</item>
+        <item>"The server didn't send thumbnail pictures"</item>
+        <item>"The tab under the bar (▼ opens it)"</item>
+        <item>"The whole video, from the start, as soon as it opens. Uses the most data"</item>
+        <item>"Themes, menu, card styles and other visual options, kept the same on your TVs. Turn off to keep each TV its own."</item>
+        <item>"They're often added a few hours after the game ends."</item>
+        <item>"This DRM license format is unavailable in Multiview"</item>
+        <item>"This DRM scheme is unavailable in Multiview"</item>
+        <item>"This Device"</item>
+        <item>"This Stalker DASH stream can be played, but recording and pause buffering are unavailable."</item>
+        <item>"This TV can't decode this stream alongside the others. Remove a pane or choose another channel."</item>
+        <item>"This TV couldn't play this channel's picture or sound"</item>
+        <item>"This TV couldn't start this stream. Try another channel."</item>
+        <item>"This TV has its own setup too. Combine keeps the playlists and guides from both. Use the saved setup replaces what is on this TV."</item>
+        <item>"This Week"</item>
+        <item>"This can't be undone."</item>
+        <item>"This channel can't replay it from the start"</item>
+        <item>"This channel couldn't be recorded to pause it, so it's back to live"</item>
+        <item>"This channel is encrypted and can't be recorded"</item>
+        <item>"This channel is protected and couldn't be unlocked"</item>
+        <item>"This channel isn't playing right now"</item>
+        <item>"This channel's stream couldn't be read"</item>
+        <item>"This episode isn't in your guide"</item>
+        <item>"This movie has already aired"</item>
+        <item>"This protected channel couldn't be unlocked. Try another channel."</item>
+        <item>"This recording couldn't be played"</item>
+        <item>"This show"</item>
+        <item>"This stream couldn't play. Retry or choose another channel."</item>
+        <item>"This stream format is unavailable in Multiview"</item>
+        <item>"This stream has ended. Retry or choose another channel."</item>
+        <item>"This stream is no longer available for this profile."</item>
+        <item>"This stream is unavailable. Try another channel."</item>
+        <item>"This video couldn't be opened for thumbnails"</item>
+        <item>"This video's format can't make thumbnails on this device"</item>
+        <item>"This week"</item>
+        <item>"Thumbnails paused: low memory"</item>
+        <item>"Thumbnails stopped working for this video"</item>
+        <item>"Time left"</item>
+        <item>"Time to be confirmed"</item>
+        <item>"Times in your time zone"</item>
+        <item>"To Be Determined"</item>
+        <item>"To send this report: put your phone on the same Wi-Fi as this TV, scan the code with "</item>
+        <item>"Today"</item>
+        <item>"Tomorrow"</item>
+        <item>"Top "</item>
+        <item>"Turkey"</item>
+        <item>"Turkish"</item>
+        <item>"Turn off the bell"</item>
+        <item>"Turn off the bell for this show"</item>
+        <item>"Turn on On Demand for a playlist in Settings → Live TV, or show some groups with the settings button."</item>
+        <item>"Type part of the channel's name"</item>
+        <item>"U-17 World Cup"</item>
+        <item>"U-21 Euro Qualifying"</item>
+        <item>"U17 WC"</item>
+        <item>"U21 Euro"</item>
+        <item>"UEFA Euro"</item>
+        <item>"UEFA Super Cup"</item>
+        <item>"UP NEXT"</item>
+        <item>"USED TOO MUCH OF THE DEVICE (Android closed it)"</item>
+        <item>"Unassign"</item>
+        <item>"Unassigned"</item>
+        <item>"Unassigned channels"</item>
+        <item>"Unassigned: no guide (Automatic puts it back)"</item>
+        <item>"Unavailable"</item>
+        <item>"Uncategorized"</item>
+        <item>"Under-17 World Cup"</item>
+        <item>"Under-21"</item>
+        <item>"United Arab Emirates"</item>
+        <item>"United Kingdom"</item>
+        <item>"United States"</item>
+        <item>"Unknown"</item>
+        <item>"Unlock"</item>
+        <item>"Until "</item>
+        <item>"Unwatched only"</item>
+        <item>"Up next"</item>
+        <item>"Upcoming"</item>
+        <item>"Update asked for: finishing the update already running first"</item>
+        <item>"Update check started"</item>
+        <item>"Update check waiting while a channel is playing full screen or Nuvio's player is open"</item>
+        <item>"Update playlists &amp; EPG"</item>
+        <item>"Update started"</item>
+        <item>"Updating Live TV…"</item>
+        <item>"Uruguayan Primera"</item>
+        <item>"Use real size"</item>
+        <item>"Use stream's shape"</item>
+        <item>"Use the Saved Setup"</item>
+        <item>"Use the guide's channels again"</item>
+        <item>"Username and password are required"</item>
+        <item>"Using its own logo"</item>
+        <item>"Using your pick"</item>
+        <item>"VPN configurations, selected profile and automatic protection scope."</item>
+        <item>"VPN profiles and protection"</item>
+        <item>"VPN user profile is not ready. Reopen the app before using a Stalker portal."</item>
+        <item>"Venezuelan Primera"</item>
+        <item>"Venezuelan Winter League"</item>
+        <item>"Venue"</item>
+        <item>"Video"</item>
+        <item>"Video bitrate"</item>
+        <item>"View in Sports hub"</item>
+        <item>"Visitor"</item>
+        <item>"Volleyball"</item>
+        <item>"W FRIEND"</item>
+        <item>"WAITING FOR GUIDE"</item>
+        <item>"WATCH ON YOUR CHANNELS"</item>
+        <item>"WATCH · CHOOSE THE CHANNEL"</item>
+        <item>"WATCHING ON"</item>
+        <item>"WEEKLY SHOW"</item>
+        <item>"WIN PROBABILITY"</item>
+        <item>"WORLD CUP"</item>
+        <item>"Waiting for news of another season"</item>
+        <item>"Waiting to come out"</item>
+        <item>"Walks"</item>
+        <item>"Was in theaters "</item>
+        <item>"Watch"</item>
+        <item>"Watch channel now"</item>
+        <item>"Watch from the beginning"</item>
+        <item>"Watch from the start"</item>
+        <item>"Watch from the start of the recording"</item>
+        <item>"Watch full screen"</item>
+        <item>"Watch this channel now"</item>
+        <item>"Watched"</item>
+        <item>"Watching"</item>
+        <item>"We'll remind you before it starts"</item>
+        <item>"Weather"</item>
+        <item>"Week"</item>
+        <item>"Week "</item>
+        <item>"Week ›"</item>
+        <item>"What it shows and in what order"</item>
+        <item>"When it isn't found in your guide, or on the wrong channel"</item>
+        <item>"Where Change Logo looks. Turn off the ones you don't want in the list."</item>
+        <item>"While Watching"</item>
+        <item>"Women's Champions League"</item>
+        <item>"Women's College Basketball"</item>
+        <item>"Women's College Hockey"</item>
+        <item>"Women's College Lacrosse"</item>
+        <item>"Women's College Soccer"</item>
+        <item>"Women's College Volleyball"</item>
+        <item>"Women's Euro"</item>
+        <item>"Women's Europa Cup"</item>
+        <item>"Women's European Championship"</item>
+        <item>"Women's FA Cup"</item>
+        <item>"Women's Friendly"</item>
+        <item>"Women's Ice Hockey"</item>
+        <item>"Women's International"</item>
+        <item>"Women's International Friendlies"</item>
+        <item>"Women's League Cup"</item>
+        <item>"Women's Nations League"</item>
+        <item>"Women's Olympic Hockey"</item>
+        <item>"Women's Rugby World Cup"</item>
+        <item>"Women's U-17 World Cup"</item>
+        <item>"Women's World Cup"</item>
+        <item>"Women's World Cup Qualifier"</item>
+        <item>"Women's World Cup Qualifying (Europe)"</item>
+        <item>"World Cup"</item>
+        <item>"World Cup Qualifier"</item>
+        <item>"World Cup Qualifying"</item>
+        <item>"World Cup Qualifying (Africa)"</item>
+        <item>"World Cup Qualifying (Asia)"</item>
+        <item>"World Cup Qualifying (CONCACAF)"</item>
+        <item>"World Cup Qualifying (Europe)"</item>
+        <item>"World Cup Qualifying (Oceania)"</item>
+        <item>"World Cup Qualifying (South America)"</item>
+        <item>"Wrestling"</item>
+        <item>"Wrong PIN, try again"</item>
+        <item>"YOUR CHANNEL"</item>
+        <item>"Yesterday"</item>
+        <item>"You changed some of your groups. Save them before you go?"</item>
+        <item>"You have a saved Live TV setup"</item>
+        <item>"You're all caught up."</item>
+        <item>"You're not following any teams yet."</item>
+        <item>"Your IPTV links, usernames and passwords. Stored encrypted."</item>
+        <item>"Your Sports games appear here when they are live or about to start."</item>
+        <item>"Your channels are checked for this game from "</item>
+        <item>"Your favorites and recent channels. For any other channel, long-press it in the guide and choose Schedule a Recording."</item>
+        <item>"Your group"</item>
+        <item>"Your guide doesn't go that far ahead yet: it's set the moment it does"</item>
+        <item>"Your guides"</item>
+        <item>"Your own TV guide is checked too, to find the channel it's on. Follow it to see every show on My Sports."</item>
+        <item>"Your pick"</item>
+        <item>"Your playlists"</item>
+        <item>"Your playlists (including their logins), guides, favorites, Sports and Calendar choices and Live TV settings are saved, so every TV you sign in on has the same setup. A phone keeps its own look and layout. You can change what's included, or turn it off, any time in Settings → Live TV → Setup Sync."</item>
+        <item>"Your provider has this title more than once."</item>
+        <item>"[Stalker stream]"</item>
+        <item>"‹  Add a playlist group"</item>
+        <item>"‹  Back"</item>
+        <item>"‹  Play bar layout"</item>
+        <item>"‹  Quick channels"</item>
+        <item>"‹  Screen size"</item>
+        <item>"‹ Week"</item>
+        <item>"↕  Arrange"</item>
+        <item>"⏩  Auto-switch"</item>
+        <item>"⏩  Auto-switch on"</item>
+        <item>"⏮  From start"</item>
+        <item>"⏰ REMINDER"</item>
+        <item>"▲ Up to seek"</item>
+        <item>"▶  Watch now"</item>
+        <item>"▶ PLAYING"</item>
+        <item>"▶ RECORDED"</item>
+        <item>"●  Now watching: "</item>
+        <item>"●  Record"</item>
+        <item>"● LIVE"</item>
+        <item>"● LIVE NOW"</item>
+        <item>"● SERIES"</item>
+        <item>"★  Following"</item>
+        <item>"★ PREMIUM LIVE EVENT"</item>
+        <item>"☆  Follow"</item>
+        <item>"✎  Follow Teams &amp; Leagues"</item>
+        <item>"✓  Done"</item>
+        <item>"✓ WATCHED"</item>
+        <item>"＋  Follow a Name…"</item>
+        <item>"📌  Pin score"</item>
+        <item>"📌  Pinned"</item>
+        <item>"📡 On Demand"</item>
+        <item>"🔔  Remind me"</item>
+        <item>"🔔  Reminder set"</item>
+    </string-array>
+    <string-array name="livetv_texts" tools:ignore="MissingTranslation">
+        <item>" · Hold OK: 1 other stream"</item>
+        <item>"+  Add a playlist group…"</item>
+        <item>"+ New Recording"</item>
+        <item>"+ New group"</item>
+        <item>". Give it a few seconds."</item>
+        <item>". Know where it's on? Pick a channel now and it's remembered."</item>
+        <item>". Known for "</item>
+        <item>"A drive that isn't plugged in"</item>
+        <item>"A game"</item>
+        <item>"A message a minute before, with Watch"</item>
+        <item>"A player, driver, fighter or team"</item>
+        <item>"A-League Men"</item>
+        <item>"A-League Women"</item>
+        <item>"AFC Asian Cup"</item>
+        <item>"AFC Champions League"</item>
+        <item>"AFC Champions League Elite"</item>
+        <item>"AFC Champions League Two"</item>
+        <item>"ARCHIVE"</item>
+        <item>"Actions: Down to first · Up to last"</item>
+        <item>"Active"</item>
+        <item>"Add"</item>
+        <item>"Add a channel"</item>
+        <item>"Add a playlist in Live TV settings to watch from here."</item>
+        <item>"Add a playlist in Live TV settings to watch games from here. Scores and times still show."</item>
+        <item>"Add an M3U playlist, Xtream login or XMLTV guide in Settings › Live TV."</item>
+        <item>"Add pane"</item>
+        <item>"Add to Multiview"</item>
+        <item>"Add to favorites"</item>
+        <item>"Add to group…"</item>
+        <item>"Africa Cup of Nations"</item>
+        <item>"After changing channel or pressing OK"</item>
+        <item>"Aired"</item>
+        <item>"Airing today"</item>
+        <item>"All"</item>
+        <item>"All Events"</item>
+        <item>"All Live TV settings"</item>
+        <item>"All channels"</item>
+        <item>"All day"</item>
+        <item>"All guides"</item>
+        <item>"All regions"</item>
+        <item>"All their games"</item>
+        <item>"All watched"</item>
+        <item>"Already moving recordings: wait for it to finish"</item>
+        <item>"Also made in the background while the video plays, when it has loaded well ahead"</item>
+        <item>"Always shown while paused"</item>
+        <item>"American Football"</item>
+        <item>"Any group from any playlist, your own too"</item>
+        <item>"Applies to every channel"</item>
+        <item>"Applies to this channel"</item>
+        <item>"Arabic"</item>
+        <item>"Arctic Blue"</item>
+        <item>"Argentina"</item>
+        <item>"Arrange My Sports"</item>
+        <item>"Asian Cup"</item>
+        <item>"Assign EPG"</item>
+        <item>"Assign EPG lists:"</item>
+        <item>"Assign EPG: guide channel lists not ready, so every guide was read"</item>
+        <item>"Assigned: "</item>
+        <item>"At home"</item>
+        <item>"Attendance: %,d"</item>
+        <item>"Aussie Rules"</item>
+        <item>"Australia"</item>
+        <item>"Australia &amp; New Zealand"</item>
+        <item>"Austria"</item>
+        <item>"Austrian Bundesliga"</item>
+        <item>"Automatic"</item>
+        <item>"Automatic: "</item>
+        <item>"Automatic: no guide found"</item>
+        <item>"Autumn Internationals"</item>
+        <item>"Away"</item>
+        <item>"BEFORE THAT CRASH:"</item>
+        <item>"BEST MATCH"</item>
+        <item>"BY HALF"</item>
+        <item>"BY INNING"</item>
+        <item>"BY PERIOD"</item>
+        <item>"BY QUARTER"</item>
+        <item>"Back to live"</item>
+        <item>"Back: save"</item>
+        <item>"Back: save and finish"</item>
+        <item>"Back: save and return"</item>
+        <item>"Background color"</item>
+        <item>"Backups"</item>
+        <item>"Bar darkness"</item>
+        <item>"Behavior and options"</item>
+        <item>"Behind the guide and Sports"</item>
+        <item>"Belgian Pro League"</item>
+        <item>"Belgium"</item>
+        <item>"Bell"</item>
+        <item>"Bell on"</item>
+        <item>"Bolivian Primera"</item>
+        <item>"Bot "</item>
+        <item>"Boxing"</item>
+        <item>"Brazil"</item>
+        <item>"Buffered"</item>
+        <item>"Built in"</item>
+        <item>"Bulgaria"</item>
+        <item>"Busiest threads (% of one core over 5 s):"</item>
+        <item>"CAF Champions League"</item>
+        <item>"CAF Confederation Cup"</item>
+        <item>"CATCH-UP"</item>
+        <item>"COMING UP"</item>
+        <item>"CONCACAF Champions Cup"</item>
+        <item>"CONCACAF Nations League"</item>
+        <item>"CRASHED IN NATIVE CODE (video decoder, graphics or a library)"</item>
+        <item>"Calendar"</item>
+        <item>"Can be moved"</item>
+        <item>"Can't reach the provider right now"</item>
+        <item>"Can't reach this stream. Check the connection or try again."</item>
+        <item>"Cancel"</item>
+        <item>"Cancel Recording"</item>
+        <item>"Cancel recording"</item>
+        <item>"Cancel reminder"</item>
+        <item>"Cancel the recording"</item>
+        <item>"Cancel the reminder"</item>
+        <item>"Cancelled"</item>
+        <item>"Captions"</item>
+        <item>"Captions off"</item>
+        <item>"Captions on"</item>
+        <item>"Captions: "</item>
+        <item>"Caribbean Series"</item>
+        <item>"Catch-up"</item>
+        <item>"Catch-up didn't start: the provider sent nothing for this show"</item>
+        <item>"Catch-up save"</item>
+        <item>"Category"</item>
+        <item>"Central American Cup"</item>
+        <item>"Champions League"</item>
+        <item>"Change Logo"</item>
+        <item>"Change channel number"</item>
+        <item>"Change logo"</item>
+        <item>"Change stream"</item>
+        <item>"Change the channel for this show"</item>
+        <item>"Changes show right away"</item>
+        <item>"Channel"</item>
+        <item>"Channel name"</item>
+        <item>"Channel name &amp; logo"</item>
+        <item>"Channel name or ID"</item>
+        <item>"Channel name or number"</item>
+        <item>"Channel number"</item>
+        <item>"Channels"</item>
+        <item>"Channels from"</item>
+        <item>"Channels you told the Calendar to use, for a network or for one show. OK forgets one: the Calendar picks the channel itself again."</item>
+        <item>"Check your connection and try again."</item>
+        <item>"Checking…"</item>
+        <item>"Chile"</item>
+        <item>"Chilean Primera"</item>
+        <item>"China"</item>
+        <item>"Chinese Super League"</item>
+        <item>"Choose Leagues  ›"</item>
+        <item>"Choose a channel for…"</item>
+        <item>"Choose a game for this pane first."</item>
+        <item>"Choose a version"</item>
+        <item>"Choose the channel"</item>
+        <item>"Clear"</item>
+        <item>"Clinched"</item>
+        <item>"Clinched a playoff place"</item>
+        <item>"Clinched first in the conference"</item>
+        <item>"Clinched first in the league"</item>
+        <item>"Clinched the Presidents' Trophy"</item>
+        <item>"Clinched the division"</item>
+        <item>"Clock"</item>
+        <item>"Close"</item>
+        <item>"Close (it still switches)"</item>
+        <item>"Closed captions"</item>
+        <item>"Closed captions (CC2)"</item>
+        <item>"Closed captions (CC3)"</item>
+        <item>"Closed captions (CC4)"</item>
+        <item>"Closed captions (digital)"</item>
+        <item>"Club Friendlies"</item>
+        <item>"Club Friendly"</item>
+        <item>"Club World Cup"</item>
+        <item>"College Baseball"</item>
+        <item>"College Basketball"</item>
+        <item>"College Field Hockey"</item>
+        <item>"College Football"</item>
+        <item>"College Hockey"</item>
+        <item>"College Lacrosse"</item>
+        <item>"College Soccer"</item>
+        <item>"College Softball"</item>
+        <item>"College Volleyball"</item>
+        <item>"Colombia"</item>
+        <item>"Colombian Primera A"</item>
+        <item>"Combine Both"</item>
+        <item>"Coming Up"</item>
+        <item>"Concacaf Central American Cup"</item>
+        <item>"Confederation Cup"</item>
+        <item>"Conference"</item>
+        <item>"Conference League"</item>
+        <item>"Connect this TV to Wi-Fi to send a logo from your phone."</item>
+        <item>"Copies to the place you choose, checks the copy, then removes it from where it was. "</item>
+        <item>"Copper"</item>
+        <item>"Copy channel…"</item>
+        <item>"Costa Rica Primera"</item>
+        <item>"Could not save the Stalker channel cache."</item>
+        <item>"Could not save the Stalker guide cache."</item>
+        <item>"Couldn't be recorded"</item>
+        <item>"Couldn't get this league's teams. Try again in a little while."</item>
+        <item>"Couldn't get this table right now. It'll try again when you come back."</item>
+        <item>"Couldn't get today's shows. Check your connection."</item>
+        <item>"Couldn't load the calendar"</item>
+        <item>"Couldn't load today's shows"</item>
+        <item>"Couldn't tell which channel this is on"</item>
+        <item>"Countries: follow one to see all its games, from friendlies and the Nations League to the Euros and the World Cup."</item>
+        <item>"Countries: follow one to see all its games, from qualifiers and the Nations League to friendlies, the World Cup and the Euros."</item>
+        <item>"Countries: follow one to see all its games, from the Six Nations and the Nations Championship to the World Cup."</item>
+        <item>"Croatia"</item>
+        <item>"Cycling"</item>
+        <item>"Czechia"</item>
+        <item>"DIDN'T START"</item>
+        <item>"Danish Superliga"</item>
+        <item>"Darkest"</item>
+        <item>"Darts"</item>
+        <item>"Day"</item>
+        <item>"Default"</item>
+        <item>"Delete"</item>
+        <item>"Delete All"</item>
+        <item>"Delete All Episodes"</item>
+        <item>"Delete group"</item>
+        <item>"Denmark"</item>
+        <item>"Deselect all"</item>
+        <item>"Details"</item>
+        <item>"Digital (708)"</item>
+        <item>"Discover"</item>
+        <item>"Dismiss"</item>
+        <item>"Dominican Winter League"</item>
+        <item>"Don't Save"</item>
+        <item>"Don't record it when it's in my guide"</item>
+        <item>"Don't remind me when it's in my guide"</item>
+        <item>"Don't switch to it"</item>
+        <item>"Done"</item>
+        <item>"Dutch"</item>
+        <item>"Each league's own channel, found in your playlists by name."</item>
+        <item>"Each new one, as it shows up in your guide (not repeats)"</item>
+        <item>"Edit channel"</item>
+        <item>"Egypt"</item>
+        <item>"Emerald"</item>
+        <item>"Empty response"</item>
+        <item>"Encrypted portal streams cannot be buffered."</item>
+        <item>"Encrypted portal streams cannot be recorded."</item>
+        <item>"Ended"</item>
+        <item>"English"</item>
+        <item>"English (UK, US, Ireland, Canada, Australia)"</item>
+        <item>"Enter your PIN to remove the lock"</item>
+        <item>"Episode"</item>
+        <item>"Episode number"</item>
+        <item>"Episodes"</item>
+        <item>"Episodes to Keep"</item>
+        <item>"Episodes to Keep: "</item>
+        <item>"Episodes, and your sources to watch on demand"</item>
+        <item>"Errors"</item>
+        <item>"Euro Qualifier"</item>
+        <item>"Euro Qualifying"</item>
+        <item>"Europa League"</item>
+        <item>"European Championship"</item>
+        <item>"European Qualifier"</item>
+        <item>"Events"</item>
+        <item>"Every new episode on "</item>
+        <item>"Everything you follow, soonest first"</item>
+        <item>"Exit"</item>
+        <item>"FA Cup Qualifying"</item>
+        <item>"FAILED TO START"</item>
+        <item>"FIFA World Cup"</item>
+        <item>"FIGHT CARD"</item>
+        <item>"FINAL LEADERBOARD"</item>
+        <item>"FOLLOWING · OK TO UNFOLLOW"</item>
+        <item>"FORM · LAST FIVE"</item>
+        <item>"FROZE (Android closed it for not responding)"</item>
+        <item>"FULL TRACE:"</item>
+        <item>"Faceoffs Won"</item>
+        <item>"Favorite"</item>
+        <item>"Favorite Channels"</item>
+        <item>"Favorite channels, hidden channels and group order."</item>
+        <item>"Favorites"</item>
+        <item>"Favorites &amp; groups"</item>
+        <item>"Favorites and groups"</item>
+        <item>"Fetching today's games and finding their channels. The first time can take a moment."</item>
+        <item>"Field Hockey"</item>
+        <item>"Fighting"</item>
+        <item>"Films directed by "</item>
+        <item>"Films with "</item>
+        <item>"Final"</item>
+        <item>"Final · "</item>
+        <item>"Find &amp; stream in Nuvio"</item>
+        <item>"Find sources for this episode"</item>
+        <item>"Finding channels for today's games…"</item>
+        <item>"Finding logos…"</item>
+        <item>"Finland"</item>
+        <item>"First list"</item>
+        <item>"Fix channel"</item>
+        <item>"Fix poster"</item>
+        <item>"Fix the channel"</item>
+        <item>"Fixtures and results from TheSportsDB. On match days, scores update about every 15 minutes."</item>
+        <item>"Folded"</item>
+        <item>"Follow"</item>
+        <item>"Follow Teams &amp; Leagues"</item>
+        <item>"Follow a name"</item>
+        <item>"Follow a team or a league and its table shows here."</item>
+        <item>"Follow it to see them on My Sports. Follow a name (a player, a team) to catch shows that mention it."</item>
+        <item>"Follow it: its new episodes on Home and here"</item>
+        <item>"Follow some teams or leagues first."</item>
+        <item>"Follow teams and leagues to see their games here."</item>
+        <item>"Follow the show, or put the movie on your Calendar"</item>
+        <item>"Followed and hidden shows."</item>
+        <item>"Followed teams and leagues, and Choose Leagues."</item>
+        <item>"Following"</item>
+        <item>"For a channel that wasn't found: it's used for this show from now on"</item>
+        <item>"Forgotten: the Calendar finds the channel itself again"</item>
+        <item>"Forgotten: the Calendar picks the channel itself again"</item>
+        <item>"Formula 1"</item>
+        <item>"Found on 1 of your channels · or search all of them"</item>
+        <item>"Frame rate"</item>
+        <item>"French"</item>
+        <item>"Friendly"</item>
+        <item>"From "</item>
+        <item>"From catch-up"</item>
+        <item>"From now on: each new one, as it shows up in your guide (not repeats)"</item>
+        <item>"From phone"</item>
+        <item>"From your guide"</item>
+        <item>"From your guides"</item>
+        <item>"From your playlists"</item>
+        <item>"Full scan"</item>
+        <item>"Full screen"</item>
+        <item>"GD"</item>
+        <item>"GOAL DIFF"</item>
+        <item>"GP"</item>
+        <item>"Gaelic Games"</item>
+        <item>"Game"</item>
+        <item>"Game info"</item>
+        <item>"Game info ›"</item>
+        <item>"Games"</item>
+        <item>"German"</item>
+        <item>"German Cup"</item>
+        <item>"Germany"</item>
+        <item>"Getting the table…"</item>
+        <item>"Getting the teams…"</item>
+        <item>"Getting their games…"</item>
+        <item>"Getting today's games…"</item>
+        <item>"Getting today's shows…"</item>
+        <item>"Go live"</item>
+        <item>"Goal"</item>
+        <item>"Greece"</item>
+        <item>"Greek Super League"</item>
+        <item>"Grey Cup"</item>
+        <item>"Group name"</item>
+        <item>"Group not found"</item>
+        <item>"Guide couldn't be stored: the guide stays as it was until the next update"</item>
+        <item>"Guide darkness"</item>
+        <item>"Guide display"</item>
+        <item>"Guide display (info panel, preview…)"</item>
+        <item>"Guides are still loading…"</item>
+        <item>"HTTP 404: nothing at that address (check the server, port and link)"</item>
+        <item>"HTTP 429: too many requests, try again in a few minutes"</item>
+        <item>"HTTP 884: the provider blocked this app (try setting a user agent)"</item>
+        <item>"Hidden"</item>
+        <item>"Hidden shows"</item>
+        <item>"Hide &amp; arrange"</item>
+        <item>"Hide channel"</item>
+        <item>"Hide group"</item>
+        <item>"Highest Rated"</item>
+        <item>"Highlight a day with a picture to see what's out"</item>
+        <item>"Highlight something to see its details here"</item>
+        <item>"Highlights"</item>
+        <item>"Hits"</item>
+        <item>"Hold OK  More options"</item>
+        <item>"Hold OK on a game to watch it here while you browse. OK opens the game info."</item>
+        <item>"Hold OK on a game, or open it and pick a channel"</item>
+        <item>"Hold OK: select or unselect another"</item>
+        <item>"Hold OK: select several to move together"</item>
+        <item>"Home"</item>
+        <item>"Home Runs"</item>
+        <item>"Horse Racing"</item>
+        <item>"How dark the play bar is"</item>
+        <item>"How often lists and guides refresh, recording and catch-up options, sorting, search sources and Calendar choices. Not the look, so it is shared with your phone too."</item>
+        <item>"Hungary"</item>
+        <item>"IN USE"</item>
+        <item>"Iceland"</item>
+        <item>"Importing movies and series…"</item>
+        <item>"In Development"</item>
+        <item>"In development"</item>
+        <item>"In the Live TV guide, long-press a show and choose Record or Record series. While watching, open the menu and choose Record this show. For a channel with no listings, use + New Recording."</item>
+        <item>"In theaters"</item>
+        <item>"In theaters "</item>
+        <item>"In use"</item>
+        <item>"India"</item>
+        <item>"Info bar stays for"</item>
+        <item>"Info panel"</item>
+        <item>"Information"</item>
+        <item>"International Cricket"</item>
+        <item>"International Friendlies"</item>
+        <item>"International Friendly"</item>
+        <item>"Ireland"</item>
+        <item>"Israel"</item>
+        <item>"It comes back from Hidden"</item>
+        <item>"It'll ask before switching"</item>
+        <item>"It'll switch to the game a minute before it starts"</item>
+        <item>"It's still recording. This stops it and deletes what's been recorded."</item>
+        <item>"Italian"</item>
+        <item>"Italy"</item>
+        <item>"Its episodes are watched and recorded on the channel you pick, whatever your guide calls them."</item>
+        <item>"Its own"</item>
+        <item>"Japan"</item>
+        <item>"Just this game"</item>
+        <item>"KNVB Cup"</item>
+        <item>"Keep All Episodes"</item>
+        <item>"Keep all"</item>
+        <item>"Keep your Live TV setup on all your devices?"</item>
+        <item>"King's Cup"</item>
+        <item>"King's Cup (Saudi)"</item>
+        <item>"Know where it's on? Pick a channel and it's remembered."</item>
+        <item>"LAST 5"</item>
+        <item>"LAST MEETINGS"</item>
+        <item>"LATEST SCORING"</item>
+        <item>"LINE-UPS"</item>
+        <item>"LISTS · OK turns one on or off, the arrows move it"</item>
+        <item>"LIVE "</item>
+        <item>"LIVE NOW"</item>
+        <item>"LIVE TV"</item>
+        <item>"LIVE TV · NEXT EPISODE"</item>
+        <item>"LIVE TV · THIS EPISODE"</item>
+        <item>"Large playlists and guides can take several minutes the first time. It keeps going if you leave this screen, and next time it opens straight away."</item>
+        <item>"Last met "</item>
+        <item>"Last one used"</item>
+        <item>"Last week"</item>
+        <item>"Later today"</item>
+        <item>"Launcher rows:"</item>
+        <item>"Layout"</item>
+        <item>"League"</item>
+        <item>"League Cup"</item>
+        <item>"League Networks"</item>
+        <item>"League network"</item>
+        <item>"Leagues and events"</item>
+        <item>"Leagues on All Events"</item>
+        <item>"Leave empty to use the playlist name"</item>
+        <item>"Leave empty to use the playlist number"</item>
+        <item>"Leave the app open until it finishes."</item>
+        <item>"Left off your Calendar"</item>
+        <item>"Left on Base"</item>
+        <item>"Left: hide all"</item>
+        <item>"Left: remove all"</item>
+        <item>"Length"</item>
+        <item>"Library"</item>
+        <item>"Liga 1 (Peru)"</item>
+        <item>"Liga Profesional (Argentina)"</item>
+        <item>"LigaPro (Ecuador)"</item>
+        <item>"Lightest"</item>
+        <item>"Lions Tour"</item>
+        <item>"List"</item>
+        <item>"Live"</item>
+        <item>"Live "</item>
+        <item>"Live &amp; Upcoming"</item>
+        <item>"Live Now"</item>
+        <item>"Live Now in Sports"</item>
+        <item>"Live Racing"</item>
+        <item>"Live TV"</item>
+        <item>"Live TV  ·  On Demand  ·  Streaming"</item>
+        <item>"Live TV full screen"</item>
+        <item>"Live TV guide"</item>
+        <item>"Live TV options"</item>
+        <item>"Live TV options (record, remind, channel…)"</item>
+        <item>"Live TV settings"</item>
+        <item>"Live games"</item>
+        <item>"Live · "</item>
+        <item>"Live, as it aired"</item>
+        <item>"Live, catch-up"</item>
+        <item>"Live, quality, sound, catch-up"</item>
+        <item>"Loading details…"</item>
+        <item>"Loading games…"</item>
+        <item>"Loading guide channels…"</item>
+        <item>"Loading…"</item>
+        <item>"Lock with PIN"</item>
+        <item>"Locked"</item>
+        <item>"Login failed: check the username and password"</item>
+        <item>"Logo Sources"</item>
+        <item>"Logo from your phone"</item>
+        <item>"Logo libraries"</item>
+        <item>"Look and layout"</item>
+        <item>"Looking in the logo libraries and TMDB…"</item>
+        <item>"Looking in your sports add-ons…"</item>
+        <item>"Looking through your channels…"</item>
+        <item>"Looking up your shows…"</item>
+        <item>"MATCH INFO"</item>
+        <item>"Main thread was stuck at:"</item>
+        <item>"Making thumbnails…"</item>
+        <item>"Manage VOD Groups"</item>
+        <item>"Manage group visibility"</item>
+        <item>"Manage visibility"</item>
+        <item>"Mark All as Watched"</item>
+        <item>"Mark as Unwatched"</item>
+        <item>"Mark as Watched"</item>
+        <item>"Match Theme"</item>
+        <item>"Match frame rate: asked for %.3f Hz but the display stayed at %.3f Hz (the box didn't switch: check its own display settings, e.g. Match content frame rate)"</item>
+        <item>"Match frame rate: still waiting for usable frame timing; will retry while playing ("</item>
+        <item>"Match frame rate: video %.3f fps, display %.3f Hz → %.3f Hz"</item>
+        <item>"Matchday "</item>
+        <item>"Men's College Basketball"</item>
+        <item>"Men's College Hockey"</item>
+        <item>"Men's College Lacrosse"</item>
+        <item>"Men's College Soccer"</item>
+        <item>"Men's College Volleyball"</item>
+        <item>"Men's Ice Hockey"</item>
+        <item>"Mexican Pacific League"</item>
+        <item>"Mexico"</item>
+        <item>"Month"</item>
+        <item>"More Sports"</item>
+        <item>"More caption tracks"</item>
+        <item>"More channels fit"</item>
+        <item>"Move All to…"</item>
+        <item>"Move To…"</item>
+        <item>"Move down"</item>
+        <item>"Move down in favorites"</item>
+        <item>"Move down in this group"</item>
+        <item>"Move up"</item>
+        <item>"Move up in favorites"</item>
+        <item>"Move up in this group"</item>
+        <item>"Movie"</item>
+        <item>"Movies"</item>
+        <item>"Moving"</item>
+        <item>"Moving recordings"</item>
+        <item>"My Sports"</item>
+        <item>"My calendar"</item>
+        <item>"My group"</item>
+        <item>"My groups"</item>
+        <item>"NBL (Australia)"</item>
+        <item>"NCAA Baseball"</item>
+        <item>"NCAA Basketball"</item>
+        <item>"NCAA Football"</item>
+        <item>"NCAA Hockey"</item>
+        <item>"NCAA Lacrosse"</item>
+        <item>"NCAA Men's Volleyball"</item>
+        <item>"NCAA Soccer"</item>
+        <item>"NCAA Softball"</item>
+        <item>"NCAA Volleyball"</item>
+        <item>"NCAA Women's Hockey"</item>
+        <item>"NCAA Women's Lacrosse"</item>
+        <item>"NCAA Women's Soccer"</item>
+        <item>"NPC (New Zealand)"</item>
+        <item>"Name"</item>
+        <item>"Nations League"</item>
+        <item>"Networks"</item>
+        <item>"New"</item>
+        <item>"New Recording"</item>
+        <item>"New Zealand"</item>
+        <item>"New group"</item>
+        <item>"Newest Release"</item>
+        <item>"News &amp; talk shows"</item>
+        <item>"Next episode"</item>
+        <item>"Next episode (finale)"</item>
+        <item>"Next week"</item>
+        <item>"Next: "</item>
+        <item>"No Program Guide Available"</item>
+        <item>"No URL set"</item>
+        <item>"No addons are installed and enabled, so there's nothing to search."</item>
+        <item>"No available channels. Add a playlist in Live TV settings."</item>
+        <item>"No available stream for this game right now. Choose another game or check its broadcasts on the Sports page."</item>
+        <item>"No backup channels for this channel"</item>
+        <item>"No bells rung yet"</item>
+        <item>"No captions on this channel"</item>
+        <item>"No channel names match."</item>
+        <item>"No channels here yet"</item>
+        <item>"No channels in this group"</item>
+        <item>"No crash details were saved."</item>
+        <item>"No crash or freeze has been saved yet."</item>
+        <item>"No date yet to watch at home"</item>
+        <item>"No description available."</item>
+        <item>"No favorites or recent channels yet."</item>
+        <item>"No games of theirs known right now."</item>
+        <item>"No groups yet. Add a playlist first."</item>
+        <item>"No guide channels match."</item>
+        <item>"No guide info"</item>
+        <item>"No guides loaded. Add an EPG source in Live TV settings."</item>
+        <item>"No hidden shows."</item>
+        <item>"No information"</item>
+        <item>"No leagues match that search."</item>
+        <item>"No live games available"</item>
+        <item>"No live score for this event. The time bar runs from the start time."</item>
+        <item>"No logos found for this channel. Try Search with another name."</item>
+        <item>"No matched channel"</item>
+        <item>"No matched channel for this game. Choose a broadcast on the Sports page first."</item>
+        <item>"No matching channels."</item>
+        <item>"No new episodes announced yet"</item>
+        <item>"No new episodes found for today."</item>
+        <item>"No other streams for this game right now."</item>
+        <item>"No playlists yet"</item>
+        <item>"No previous channel yet"</item>
+        <item>"No program information"</item>
+        <item>"No program information for this channel"</item>
+        <item>"No recordings yet"</item>
+        <item>"No replay of this game in your sports add-ons yet. "</item>
+        <item>"No replay on this channel"</item>
+        <item>"No scoring yet"</item>
+        <item>"No series set to record"</item>
+        <item>"No server set"</item>
+        <item>"No stored guide yet"</item>
+        <item>"No streams available"</item>
+        <item>"No streams available for this game."</item>
+        <item>"No thumbnails for Live TV or catch-up"</item>
+        <item>"No thumbnails for streamed links"</item>
+        <item>"No thumbnails for this kind of link"</item>
+        <item>"No thumbnails for torrents"</item>
+        <item>"No tracks available"</item>
+        <item>"None"</item>
+        <item>"None for this game"</item>
+        <item>"None found in this stream"</item>
+        <item>"None of your add-ons do yet: install one in Add-ons and they'll show here."</item>
+        <item>"None of your channels were found showing it in your guide. Search for the channel below: it's used for this show from now on."</item>
+        <item>"None of your leagues has a table (cups, golf, tennis and fights don't)."</item>
+        <item>"None of your shows are in your Live TV guide right now. Your guide usually covers the next few days."</item>
+        <item>"Norway"</item>
+        <item>"Not Now"</item>
+        <item>"Not a playlist (no #EXTM3U)"</item>
+        <item>"Not a playlist (too big: a stream sent on a playlist link?)"</item>
+        <item>"Not an Xtream API response"</item>
+        <item>"Not checked for this stream type"</item>
+        <item>"Not enough storage space to record"</item>
+        <item>"Not found"</item>
+        <item>"Not found in your guide: search all your channels"</item>
+        <item>"Not found. OK to choose a channel"</item>
+        <item>"Not in your channels' guides right now. Guides update during the day, so check back closer to the start. "</item>
+        <item>"Not in your playlists right now"</item>
+        <item>"Not known yet"</item>
+        <item>"Not on your Hub by default"</item>
+        <item>"Not out to watch at home yet"</item>
+        <item>"Not this channel"</item>
+        <item>"Note"</item>
+        <item>"Nothing aired in the last month."</item>
+        <item>"Nothing announced yet"</item>
+        <item>"Nothing coming up in the next four months."</item>
+        <item>"Nothing coming up yet."</item>
+        <item>"Nothing could be recorded from this channel"</item>
+        <item>"Nothing from your teams on this day."</item>
+        <item>"Nothing here with this filter."</item>
+        <item>"Nothing here yet. Shows you watch, your Library and shows you ring the bell on show up here with their new episodes."</item>
+        <item>"Nothing on right now."</item>
+        <item>"Nothing on this day."</item>
+        <item>"Nothing out"</item>
+        <item>"Nothing playing"</item>
+        <item>"Nothing recorded yet"</item>
+        <item>"Nothing saved."</item>
+        <item>"Nothing scheduled"</item>
+        <item>"Nothing to send."</item>
+        <item>"Nothing to show here yet"</item>
+        <item>"Nothing to show yet"</item>
+        <item>"Nothing yet: pick a team below."</item>
+        <item>"Now out to watch at home"</item>
+        <item>"Now: "</item>
+        <item>"Nuvio + IPTV crash report"</item>
+        <item>"Nuvio + IPTV stopped"</item>
+        <item>"OK  Live TV options"</item>
+        <item>"OK  Open in Sports"</item>
+        <item>"OK  Show page"</item>
+        <item>"OK TO FOLLOW"</item>
+        <item>"OK on a team: its card"</item>
+        <item>"OK on a team: its card  ·  ◀ ▶ on the leagues: another table"</item>
+        <item>"OK on one to stop following it"</item>
+        <item>"OK records it on that channel"</item>
+        <item>"OK to pick a channel"</item>
+        <item>"OK to pick a game"</item>
+        <item>"OK to play now · Back to stop"</item>
+        <item>"OK to replace or retry this pane"</item>
+        <item>"OK turns a league on or off, and opens or closes a sport. Leagues you follow always show."</item>
+        <item>"OK uses that copy."</item>
+        <item>"OK watches it (or records it, if it hasn't started there) · Hold OK to record"</item>
+        <item>"OK · FULL TABLE ›"</item>
+        <item>"OK: add or remove ★"</item>
+        <item>"OK: apply · Back: close"</item>
+        <item>"OK: choose · Back: games"</item>
+        <item>"OK: forget"</item>
+        <item>"OK: forget it (the Calendar picks the channel itself again)"</item>
+        <item>"OK: game info  ·  Hold OK: watch it"</item>
+        <item>"OK: game info  ·  Hold OK: watch it  ·  ◀ ▶ through a row"</item>
+        <item>"OK: game info  ·  Hold OK: watch it in the window"</item>
+        <item>"OK: game info  ·  Hold OK: watch it in the window  ·  ◀ ▶ through a row"</item>
+        <item>"OK: pick another game"</item>
+        <item>"OK: pick it up to move"</item>
+        <item>"OK: place it here"</item>
+        <item>"OK: play here, OK again: full screen  ·  Hold OK: other copies, pick a channel"</item>
+        <item>"OK: put it down"</item>
+        <item>"OK: select it to move"</item>
+        <item>"OK: show it on the Calendar again"</item>
+        <item>"OK: show or hide channel"</item>
+        <item>"OK: show or hide group"</item>
+        <item>"OK: watch  ·  Hold OK: other copies, pick a channel"</item>
+        <item>"ON NOW"</item>
+        <item>"Off"</item>
+        <item>"Off hides all of it"</item>
+        <item>"Off: Nuvio's original icons, in your chosen color"</item>
+        <item>"Off: channel logo"</item>
+        <item>"Oldest Release"</item>
+        <item>"Olympic Football"</item>
+        <item>"Olympic Hockey"</item>
+        <item>"Olympic Women's Hockey"</item>
+        <item>"On"</item>
+        <item>"On Demand"</item>
+        <item>"On TV"</item>
+        <item>"On TV: "</item>
+        <item>"On disc"</item>
+        <item>"On disc "</item>
+        <item>"On disc since "</item>
+        <item>"On it"</item>
+        <item>"On my TV"</item>
+        <item>"On now"</item>
+        <item>"On the bar and in the backups lists"</item>
+        <item>"On your Calendar"</item>
+        <item>"On: the Nuvio + IPTV icon and banner in your chosen color"</item>
+        <item>"Only When Paused or Seeking"</item>
+        <item>"Open"</item>
+        <item>"Open in Sports"</item>
+        <item>"Open movie page"</item>
+        <item>"Open show page"</item>
+        <item>"Open show page at this episode"</item>
+        <item>"Open the game's page; Back returns here"</item>
+        <item>"Opens on"</item>
+        <item>"Or choose the channel below"</item>
+        <item>"Other"</item>
+        <item>"Other copies…"</item>
+        <item>"Other streams"</item>
+        <item>"Others"</item>
+        <item>"Out at home since "</item>
+        <item>"Out of the playoffs"</item>
+        <item>"Out to watch at home"</item>
+        <item>"Out to watch at home "</item>
+        <item>"PAUSED LIVE"</item>
+        <item>"Pane"</item>
+        <item>"Paraguayan Primera"</item>
+        <item>"Paste the web address of the logo (a picture link ending in .png, .jpg, .svg…), then tap Send to TV."</item>
+        <item>"Pause buffer"</item>
+        <item>"Paused"</item>
+        <item>"Penalty Minutes"</item>
+        <item>"Pick a channel"</item>
+        <item>"Pick a different channel…"</item>
+        <item>"Pick a game to watch here"</item>
+        <item>"Pick another broadcast of this game"</item>
+        <item>"Pick favorites"</item>
+        <item>"Pick favorites in this group…"</item>
+        <item>"Pick favorites…"</item>
+        <item>"Pick the right channel…"</item>
+        <item>"Play"</item>
+        <item>"Play "</item>
+        <item>"Play bar layout"</item>
+        <item>"Play from Beginning"</item>
+        <item>"Play from archive"</item>
+        <item>"Play the recording"</item>
+        <item>"Play-In"</item>
+        <item>"Playback paused. Select a pane to retry sound."</item>
+        <item>"Players"</item>
+        <item>"Playing"</item>
+        <item>"Playing a channel that isn't showing a game from this page."</item>
+        <item>"Playing here"</item>
+        <item>"Playlist name"</item>
+        <item>"Playlists and logins"</item>
+        <item>"Playlists: "</item>
+        <item>"Playoff line"</item>
+        <item>"Poland"</item>
+        <item>"Polish"</item>
+        <item>"Portuguese"</item>
+        <item>"Poster"</item>
+        <item>"Postponed"</item>
+        <item>"Power Play"</item>
+        <item>"Practice"</item>
+        <item>"Première Ligue (Women)"</item>
+        <item>"Press OK"</item>
+        <item>"Press OK on Search in the group list, or the search key on your remote."</item>
+        <item>"Press OK on a channel to preview"</item>
+        <item>"Press OK to open Live TV settings"</item>
+        <item>"Press left to pick another group."</item>
+        <item>"Preview window"</item>
+        <item>"Previous channel"</item>
+        <item>"Primera B (Argentina)"</item>
+        <item>"Primera División (El Salvador)"</item>
+        <item>"Primera Nacional (Argentina)"</item>
+        <item>"Program info"</item>
+        <item>"Progress bar"</item>
+        <item>"Protected stream could not be prepared"</item>
+        <item>"Provider said too many requests (HTTP 429): catch-up lookups paused for 5 minutes"</item>
+        <item>"Provider's Order"</item>
+        <item>"Puerto Rican Winter League"</item>
+        <item>"Qualifying"</item>
+        <item>"Quick channels"</item>
+        <item>"Quick channels tab"</item>
+        <item>"RAN OUT OF MEMORY (Android closed it to free memory)"</item>
+        <item>"RECORD · CHOOSE THE CHANNEL"</item>
+        <item>"REPLAYS &amp; HIGHLIGHTS"</item>
+        <item>"RUNNING ORDER"</item>
+        <item>"Race"</item>
+        <item>"Race · Live"</item>
+        <item>"Racing"</item>
+        <item>"Reading the guides' channel lists…"</item>
+        <item>"Recently Added"</item>
+        <item>"Recently Watched"</item>
+        <item>"Recently Watched Channels"</item>
+        <item>"Recently aired"</item>
+        <item>"Recently watched"</item>
+        <item>"Recently watched cleared"</item>
+        <item>"Reconnecting…"</item>
+        <item>"Record"</item>
+        <item>"Record every new episode"</item>
+        <item>"Record for"</item>
+        <item>"Record it when it's in my guide"</item>
+        <item>"Record series"</item>
+        <item>"Recorded"</item>
+        <item>"Recording"</item>
+        <item>"Recording Live TV"</item>
+        <item>"Recording Now"</item>
+        <item>"Recording cancelled"</item>
+        <item>"Recording name"</item>
+        <item>"Recording new episodes"</item>
+        <item>"Recording now"</item>
+        <item>"Recording set"</item>
+        <item>"Recording stopped. It's in Recordings."</item>
+        <item>"Recordings"</item>
+        <item>"Recordings already made are kept"</item>
+        <item>"Records when it's in your guide"</item>
+        <item>"Refresh"</item>
+        <item>"Reload stream"</item>
+        <item>"Remind me"</item>
+        <item>"Remind me when it starts"</item>
+        <item>"Remind me when it's in my guide"</item>
+        <item>"Reminder cancelled"</item>
+        <item>"Reminder set"</item>
+        <item>"Reminders and Watch now use them first too. The others are one click away."</item>
+        <item>"Remove copy from this group"</item>
+        <item>"Remove from favorites"</item>
+        <item>"Remove from this group"</item>
+        <item>"Remove lock"</item>
+        <item>"Remove pane"</item>
+        <item>"Remove parental lock"</item>
+        <item>"Rename channel"</item>
+        <item>"Rename group"</item>
+        <item>"Reorder channels"</item>
+        <item>"Reorder groups"</item>
+        <item>"Replay from the start"</item>
+        <item>"Replays and highlights come from sports add-ons that offer them (HighFly Premium, StremVerse…). "</item>
+        <item>"Reset to Default"</item>
+        <item>"Reset to automatic"</item>
+        <item>"Reset to default"</item>
+        <item>"Resolution"</item>
+        <item>"Restart app"</item>
+        <item>"Resume"</item>
+        <item>"Resume "</item>
+        <item>"Retry"</item>
+        <item>"Right Away"</item>
+        <item>"Right: add all"</item>
+        <item>"Right: show all"</item>
+        <item>"Ring the bell"</item>
+        <item>"Ring the bell on a show's page, in Live TV or in Search (hold OK) to follow it."</item>
+        <item>"Ring the bell: follow this show"</item>
+        <item>"Ring the bell: put this movie on your Calendar"</item>
+        <item>"Romania"</item>
+        <item>"Rose Gold"</item>
+        <item>"Rugby League"</item>
+        <item>"Rugby Test Matches"</item>
+        <item>"Rugby Union"</item>
+        <item>"Rugby World Cup"</item>
+        <item>"Runs"</item>
+        <item>"Russia"</item>
+        <item>"Russian"</item>
+        <item>"SHOWING IT"</item>
+        <item>"Saudi Arabia"</item>
+        <item>"Save"</item>
+        <item>"Save My Setup"</item>
+        <item>"Save to Recordings"</item>
+        <item>"Save your changes?"</item>
+        <item>"Saved"</item>
+        <item>"Saved Channels"</item>
+        <item>"Saved channel list had channels from a turned-off playlist: taking them out"</item>
+        <item>"Saved channels and stored guide shown while the channel list is brought up to date"</item>
+        <item>"Saved on"</item>
+        <item>"Saving from catch-up now"</item>
+        <item>"Schedule"</item>
+        <item>"Schedule + your guide"</item>
+        <item>"Schedule a Recording"</item>
+        <item>"Schedule a recording…"</item>
+        <item>"Scheduled"</item>
+        <item>"Score pinned to the corner"</item>
+        <item>"Score pinned to the corner while you watch"</item>
+        <item>"Score unpinned"</item>
+        <item>"Scores are hidden"</item>
+        <item>"Scores are hidden (Sports settings)."</item>
+        <item>"Scottish Cup"</item>
+        <item>"Scottish League Cup"</item>
+        <item>"Screen size"</item>
+        <item>"Search"</item>
+        <item>"Search all my channels…"</item>
+        <item>"Search channels"</item>
+        <item>"Search guide channels"</item>
+        <item>"Search leagues"</item>
+        <item>"Search logos"</item>
+        <item>"Search teams and leagues"</item>
+        <item>"Searching teams…"</item>
+        <item>"Season finale"</item>
+        <item>"Season premiere"</item>
+        <item>"See Everything"</item>
+        <item>"See all"</item>
+        <item>"See what's airing today"</item>
+        <item>"Seek thumbnails paused to keep playback smooth (low memory)"</item>
+        <item>"Select all"</item>
+        <item>"Sent. Look at your TV."</item>
+        <item>"Serbia"</item>
+        <item>"Serie A Brazil"</item>
+        <item>"Serie B Brazil"</item>
+        <item>"Series"</item>
+        <item>"Series finale"</item>
+        <item>"Series premiere"</item>
+        <item>"Session"</item>
+        <item>"Set"</item>
+        <item>"Set the channel for this show"</item>
+        <item>"Settings"</item>
+        <item>"Setup Sync"</item>
+        <item>"Shape"</item>
+        <item>"Shots"</item>
+        <item>"Show"</item>
+        <item>"Show \"+ IPTV\" on the icon"</item>
+        <item>"Show &amp; movie logos (TMDB)"</item>
+        <item>"Show channels from"</item>
+        <item>"Show info panel"</item>
+        <item>"Show page"</item>
+        <item>"Show posters"</item>
+        <item>"Show quick channels"</item>
+        <item>"Show title"</item>
+        <item>"Show, hide, sort, rename and reorder the groups on this page."</item>
+        <item>"Showing 1 league"</item>
+        <item>"Shown"</item>
+        <item>"Shown while Live TV is recording"</item>
+        <item>"Shows"</item>
+        <item>"Shows only that region's channels for every game (handy for commentary in your language). "</item>
+        <item>"Shuffle"</item>
+        <item>"Side by side"</item>
+        <item>"Singapore"</item>
+        <item>"Single games"</item>
+        <item>"Size"</item>
+        <item>"Sleep "</item>
+        <item>"Sleep timer"</item>
+        <item>"Sleep timer off"</item>
+        <item>"Slovakia"</item>
+        <item>"Slovenia"</item>
+        <item>"Small live video"</item>
+        <item>"Smaller top"</item>
+        <item>"Somewhere else"</item>
+        <item>"Sort "</item>
+        <item>"South Africa"</item>
+        <item>"South African Premiership"</item>
+        <item>"South Korea"</item>
+        <item>"Spain"</item>
+        <item>"Spanish"</item>
+        <item>"Sprint Qualifying"</item>
+        <item>"Stacked"</item>
+        <item>"Stalker portal"</item>
+        <item>"Stalker portals require HTTP + HTTPS or Full app VPN protection. Change the VPN protection mode and retry."</item>
+        <item>"Stalker stream unavailable"</item>
+        <item>"Standings"</item>
+        <item>"Start time"</item>
+        <item>"Start – end time"</item>
+        <item>"Started "</item>
+        <item>"Starting"</item>
+        <item>"Starting in a minute"</item>
+        <item>"Starting now"</item>
+        <item>"Starting soon"</item>
+        <item>"Starting the recording…"</item>
+        <item>"Starting…"</item>
+        <item>"Starts"</item>
+        <item>"Starts now"</item>
+        <item>"Starts today"</item>
+        <item>"Stop"</item>
+        <item>"Stop Recording"</item>
+        <item>"Stop Recording Series"</item>
+        <item>"Stop recording"</item>
+        <item>"Stop recording new episodes"</item>
+        <item>"Stop recording series"</item>
+        <item>"Stop watching"</item>
+        <item>"Stopped before anything was recorded"</item>
+        <item>"Stops playback after"</item>
+        <item>"Storage ran out, so it stopped early"</item>
+        <item>"Stored guide has no listings for now: reading the guides again"</item>
+        <item>"Stored guide shown as it was while it's brought up to date"</item>
+        <item>"Stream ended"</item>
+        <item>"Stream info"</item>
+        <item>"Stream not found (HTTP 404). Try another stream format in the playlist's settings"</item>
+        <item>"Stream unavailable"</item>
+        <item>"Stream unavailable · press OK to retry"</item>
+        <item>"Streams"</item>
+        <item>"Strikeouts"</item>
+        <item>"Subtitles"</item>
+        <item>"Summer Tour"</item>
+        <item>"Super Cup"</item>
+        <item>"Sweden"</item>
+        <item>"Switch now"</item>
+        <item>"Switch to this copy"</item>
+        <item>"Switzerland"</item>
+        <item>"Sync: other TV's setup is the same"</item>
+        <item>"TEAM STATS"</item>
+        <item>"THE CHANNEL FOR THIS SHOW"</item>
+        <item>"THIS EPISODE"</item>
+        <item>"THIS WEEK"</item>
+        <item>"TMDB didn't answer"</item>
+        <item>"TOMORROW"</item>
+        <item>"TOP PERFORMERS"</item>
+        <item>"TV Guide"</item>
+        <item>"Tables"</item>
+        <item>"Tables are hidden while Hide Scores is on (Sports settings), so they don't give results away."</item>
+        <item>"Tags"</item>
+        <item>"Take it off your Calendar"</item>
+        <item>"Take this movie off your Calendar"</item>
+        <item>"Take wrong channels off the list, or pick the right one."</item>
+        <item>"Talk Show"</item>
+        <item>"Teams"</item>
+        <item>"Teams: their games, reminders and scoring alerts. Leagues: their schedule on My Sports."</item>
+        <item>"Test Match"</item>
+        <item>"That channel is no longer in your playlist"</item>
+        <item>"That recording can't be played"</item>
+        <item>"That recording isn't there any more"</item>
+        <item>"That show has already been on"</item>
+        <item>"That time has already passed. Pick a later day or time."</item>
+        <item>"The HLS replay sent nothing"</item>
+        <item>"The Netherlands"</item>
+        <item>"The Stalker portal and stream use different VPN routes. Use a remote portal and consistent VPN protection, then retry."</item>
+        <item>"The Stalker source changed. Retry playback."</item>
+        <item>"The Stalker source or VPN route changed. Retry playback."</item>
+        <item>"The Stalker stream attempted an insecure redirect. Playback was stopped."</item>
+        <item>"The Stalker stream changed its buffer format. Retry playback."</item>
+        <item>"The Stalker stream connection dropped"</item>
+        <item>"The Stalker stream could not be opened. Check VPN protection and retry."</item>
+        <item>"The app closed before anything was recorded"</item>
+        <item>"The app closed before it finished, so it stops early"</item>
+        <item>"The bar changes as you go"</item>
+        <item>"The drive it was recording to was removed"</item>
+        <item>"The guide changes as you go"</item>
+        <item>"The lightest choice: nothing is made while the video just plays"</item>
+        <item>"The list it shows first"</item>
+        <item>"The movie or series name, and the year if you know it, like Dune (2021). Leave it empty to go back to automatic."</item>
+        <item>"The order of the rows on My Sports. Live &amp; Upcoming always comes first."</item>
+        <item>"The portal archive download ended before the whole programme was saved."</item>
+        <item>"The portal changed its audio format during recording."</item>
+        <item>"The portal changed its audio format."</item>
+        <item>"The portal changed stream format during recording. Start a new recording."</item>
+        <item>"The provider closed the download early"</item>
+        <item>"The provider couldn't open this stream. Try again."</item>
+        <item>"The provider didn't list any episodes."</item>
+        <item>"The provider doesn't have this channel's stream right now"</item>
+        <item>"The provider is having trouble. Try again later."</item>
+        <item>"The provider isn't sending this channel properly right now"</item>
+        <item>"The provider refused this stream. Check the account or try another channel."</item>
+        <item>"The provider returned no live channels"</item>
+        <item>"The provider sent an invalid stream redirect."</item>
+        <item>"The provider stopped sending this show. Try again, or skip to another point"</item>
+        <item>"The provider took too long to answer (timeout). It may be busy; try again later."</item>
+        <item>"The provider's connection limit was reached. Remove a pane or try again."</item>
+        <item>"The server didn't send thumbnail pictures"</item>
+        <item>"The tab under the bar (▼ opens it)"</item>
+        <item>"The whole video, from the start, as soon as it opens. Uses the most data"</item>
+        <item>"Themes, menu, card styles and other visual options, kept the same on your TVs. Turn off to keep each TV its own."</item>
+        <item>"They're often added a few hours after the game ends."</item>
+        <item>"This DRM license format is unavailable in Multiview"</item>
+        <item>"This DRM scheme is unavailable in Multiview"</item>
+        <item>"This Device"</item>
+        <item>"This Stalker DASH stream can be played, but recording and pause buffering are unavailable."</item>
+        <item>"This TV can't decode this stream alongside the others. Remove a pane or choose another channel."</item>
+        <item>"This TV couldn't play this channel's picture or sound"</item>
+        <item>"This TV couldn't start this stream. Try another channel."</item>
+        <item>"This TV has its own setup too. Combine keeps the playlists and guides from both. Use the saved setup replaces what is on this TV."</item>
+        <item>"This Week"</item>
+        <item>"This can't be undone."</item>
+        <item>"This channel can't replay it from the start"</item>
+        <item>"This channel couldn't be recorded to pause it, so it's back to live"</item>
+        <item>"This channel is encrypted and can't be recorded"</item>
+        <item>"This channel is protected and couldn't be unlocked"</item>
+        <item>"This channel isn't playing right now"</item>
+        <item>"This channel's stream couldn't be read"</item>
+        <item>"This episode isn't in your guide"</item>
+        <item>"This movie has already aired"</item>
+        <item>"This protected channel couldn't be unlocked. Try another channel."</item>
+        <item>"This recording couldn't be played"</item>
+        <item>"This show"</item>
+        <item>"This stream couldn't play. Retry or choose another channel."</item>
+        <item>"This stream format is unavailable in Multiview"</item>
+        <item>"This stream has ended. Retry or choose another channel."</item>
+        <item>"This stream is no longer available for this profile."</item>
+        <item>"This stream is unavailable. Try another channel."</item>
+        <item>"This video couldn't be opened for thumbnails"</item>
+        <item>"This video's format can't make thumbnails on this device"</item>
+        <item>"This week"</item>
+        <item>"Thumbnails paused: low memory"</item>
+        <item>"Thumbnails stopped working for this video"</item>
+        <item>"Time left"</item>
+        <item>"Time to be confirmed"</item>
+        <item>"Times in your time zone"</item>
+        <item>"To Be Determined"</item>
+        <item>"To send this report: put your phone on the same Wi-Fi as this TV, scan the code with "</item>
+        <item>"Today"</item>
+        <item>"Tomorrow"</item>
+        <item>"Top "</item>
+        <item>"Turkey"</item>
+        <item>"Turkish"</item>
+        <item>"Turn off the bell"</item>
+        <item>"Turn off the bell for this show"</item>
+        <item>"Turn on On Demand for a playlist in Settings → Live TV, or show some groups with the settings button."</item>
+        <item>"Type part of the channel's name"</item>
+        <item>"U-17 World Cup"</item>
+        <item>"U-21 Euro Qualifying"</item>
+        <item>"U17 WC"</item>
+        <item>"U21 Euro"</item>
+        <item>"UEFA Euro"</item>
+        <item>"UEFA Super Cup"</item>
+        <item>"UP NEXT"</item>
+        <item>"USED TOO MUCH OF THE DEVICE (Android closed it)"</item>
+        <item>"Unassign"</item>
+        <item>"Unassigned"</item>
+        <item>"Unassigned channels"</item>
+        <item>"Unassigned: no guide (Automatic puts it back)"</item>
+        <item>"Unavailable"</item>
+        <item>"Uncategorized"</item>
+        <item>"Under-17 World Cup"</item>
+        <item>"Under-21"</item>
+        <item>"United Arab Emirates"</item>
+        <item>"United Kingdom"</item>
+        <item>"United States"</item>
+        <item>"Unknown"</item>
+        <item>"Unlock"</item>
+        <item>"Until "</item>
+        <item>"Unwatched only"</item>
+        <item>"Up next"</item>
+        <item>"Upcoming"</item>
+        <item>"Update asked for: finishing the update already running first"</item>
+        <item>"Update check started"</item>
+        <item>"Update check waiting while a channel is playing full screen or Nuvio's player is open"</item>
+        <item>"Update playlists &amp; EPG"</item>
+        <item>"Update started"</item>
+        <item>"Updating Live TV…"</item>
+        <item>"Uruguayan Primera"</item>
+        <item>"Use real size"</item>
+        <item>"Use stream's shape"</item>
+        <item>"Use the Saved Setup"</item>
+        <item>"Use the guide's channels again"</item>
+        <item>"Username and password are required"</item>
+        <item>"Using its own logo"</item>
+        <item>"Using your pick"</item>
+        <item>"VPN configurations, selected profile and automatic protection scope."</item>
+        <item>"VPN profiles and protection"</item>
+        <item>"VPN user profile is not ready. Reopen the app before using a Stalker portal."</item>
+        <item>"Venezuelan Primera"</item>
+        <item>"Venezuelan Winter League"</item>
+        <item>"Venue"</item>
+        <item>"Video"</item>
+        <item>"Video bitrate"</item>
+        <item>"View in Sports hub"</item>
+        <item>"Visitor"</item>
+        <item>"Volleyball"</item>
+        <item>"W FRIEND"</item>
+        <item>"WAITING FOR GUIDE"</item>
+        <item>"WATCH ON YOUR CHANNELS"</item>
+        <item>"WATCH · CHOOSE THE CHANNEL"</item>
+        <item>"WATCHING ON"</item>
+        <item>"WEEKLY SHOW"</item>
+        <item>"WIN PROBABILITY"</item>
+        <item>"WORLD CUP"</item>
+        <item>"Waiting for news of another season"</item>
+        <item>"Waiting to come out"</item>
+        <item>"Walks"</item>
+        <item>"Was in theaters "</item>
+        <item>"Watch"</item>
+        <item>"Watch channel now"</item>
+        <item>"Watch from the beginning"</item>
+        <item>"Watch from the start"</item>
+        <item>"Watch from the start of the recording"</item>
+        <item>"Watch full screen"</item>
+        <item>"Watch this channel now"</item>
+        <item>"Watched"</item>
+        <item>"Watching"</item>
+        <item>"We'll remind you before it starts"</item>
+        <item>"Weather"</item>
+        <item>"Week"</item>
+        <item>"Week "</item>
+        <item>"Week ›"</item>
+        <item>"What it shows and in what order"</item>
+        <item>"When it isn't found in your guide, or on the wrong channel"</item>
+        <item>"Where Change Logo looks. Turn off the ones you don't want in the list."</item>
+        <item>"While Watching"</item>
+        <item>"Women's Champions League"</item>
+        <item>"Women's College Basketball"</item>
+        <item>"Women's College Hockey"</item>
+        <item>"Women's College Lacrosse"</item>
+        <item>"Women's College Soccer"</item>
+        <item>"Women's College Volleyball"</item>
+        <item>"Women's Euro"</item>
+        <item>"Women's Europa Cup"</item>
+        <item>"Women's European Championship"</item>
+        <item>"Women's FA Cup"</item>
+        <item>"Women's Friendly"</item>
+        <item>"Women's Ice Hockey"</item>
+        <item>"Women's International"</item>
+        <item>"Women's International Friendlies"</item>
+        <item>"Women's League Cup"</item>
+        <item>"Women's Nations League"</item>
+        <item>"Women's Olympic Hockey"</item>
+        <item>"Women's Rugby World Cup"</item>
+        <item>"Women's U-17 World Cup"</item>
+        <item>"Women's World Cup"</item>
+        <item>"Women's World Cup Qualifier"</item>
+        <item>"Women's World Cup Qualifying (Europe)"</item>
+        <item>"World Cup"</item>
+        <item>"World Cup Qualifier"</item>
+        <item>"World Cup Qualifying"</item>
+        <item>"World Cup Qualifying (Africa)"</item>
+        <item>"World Cup Qualifying (Asia)"</item>
+        <item>"World Cup Qualifying (CONCACAF)"</item>
+        <item>"World Cup Qualifying (Europe)"</item>
+        <item>"World Cup Qualifying (Oceania)"</item>
+        <item>"World Cup Qualifying (South America)"</item>
+        <item>"Wrestling"</item>
+        <item>"Wrong PIN, try again"</item>
+        <item>"YOUR CHANNEL"</item>
+        <item>"Yesterday"</item>
+        <item>"You changed some of your groups. Save them before you go?"</item>
+        <item>"You have a saved Live TV setup"</item>
+        <item>"You're all caught up."</item>
+        <item>"You're not following any teams yet."</item>
+        <item>"Your IPTV links, usernames and passwords. Stored encrypted."</item>
+        <item>"Your Sports games appear here when they are live or about to start."</item>
+        <item>"Your channels are checked for this game from "</item>
+        <item>"Your favorites and recent channels. For any other channel, long-press it in the guide and choose Schedule a Recording."</item>
+        <item>"Your group"</item>
+        <item>"Your guide doesn't go that far ahead yet: it's set the moment it does"</item>
+        <item>"Your guides"</item>
+        <item>"Your own TV guide is checked too, to find the channel it's on. Follow it to see every show on My Sports."</item>
+        <item>"Your pick"</item>
+        <item>"Your playlists"</item>
+        <item>"Your playlists (including their logins), guides, favorites, Sports and Calendar choices and Live TV settings are saved, so every TV you sign in on has the same setup. A phone keeps its own look and layout. You can change what's included, or turn it off, any time in Settings → Live TV → Setup Sync."</item>
+        <item>"Your provider has this title more than once."</item>
+        <item>"[Stalker stream]"</item>
+        <item>"‹  Add a playlist group"</item>
+        <item>"‹  Back"</item>
+        <item>"‹  Play bar layout"</item>
+        <item>"‹  Quick channels"</item>
+        <item>"‹  Screen size"</item>
+        <item>"‹ Week"</item>
+        <item>"↕  Arrange"</item>
+        <item>"⏩  Auto-switch"</item>
+        <item>"⏩  Auto-switch on"</item>
+        <item>"⏮  From start"</item>
+        <item>"⏰ REMINDER"</item>
+        <item>"▲ Up to seek"</item>
+        <item>"▶  Watch now"</item>
+        <item>"▶ PLAYING"</item>
+        <item>"▶ RECORDED"</item>
+        <item>"●  Now watching: "</item>
+        <item>"●  Record"</item>
+        <item>"● LIVE"</item>
+        <item>"● LIVE NOW"</item>
+        <item>"● SERIES"</item>
+        <item>"★  Following"</item>
+        <item>"★ PREMIUM LIVE EVENT"</item>
+        <item>"☆  Follow"</item>
+        <item>"✎  Follow Teams &amp; Leagues"</item>
+        <item>"✓  Done"</item>
+        <item>"✓ WATCHED"</item>
+        <item>"＋  Follow a Name…"</item>
+        <item>"📌  Pin score"</item>
+        <item>"📌  Pinned"</item>
+        <item>"📡 On Demand"</item>
+        <item>"🔔  Remind me"</item>
+        <item>"🔔  Reminder set"</item>
+    </string-array>
+</resources>

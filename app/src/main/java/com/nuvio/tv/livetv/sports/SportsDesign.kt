@@ -891,7 +891,7 @@ internal fun SportsChannelRow(
 /** A text that fits on one line, cut with "…" (for the narrow info strip under the video). */
 @Composable
 internal fun OneLine(text: String, color: Color, size: TextUnit, weight: FontWeight = FontWeight.Normal, modifier: Modifier = Modifier) {
-    androidx.compose.material3.Text(text, color = color, fontSize = size, fontWeight = weight, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = modifier)
+    androidx.compose.material3.Text(com.nuvio.tv.livetv.ui.LiveTvTexts.tr(text), color = color, fontSize = size, fontWeight = weight, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = modifier)
 }
 
 /**

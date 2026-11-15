@@ -433,7 +433,7 @@ internal fun LiveTvPlayerPanel(
                         if (showNext) {
                             if (showClock) Spacer(Modifier.height(4.dp))
                             LiveText(
-                                "UP NEXT" + (nextTime?.let { " · " + it.substringBefore(" –") } ?: ""),
+                                "UP NEXT".tr() + (nextTime?.let { " · " + it.substringBefore(" –") } ?: ""),
                                 size = 10.sp, weight = FontWeight.Bold, color = colors.TextTertiary
                             )
                             LiveText(nextTitle!!, size = 13.sp, weight = FontWeight.Bold, color = colors.TextPrimary, maxLines = 2)

@@ -120,7 +120,8 @@ internal fun LiveText(
 ) {
     Text(
         style = if (shadow) androidx.compose.material3.LocalTextStyle.current.copy(shadow = TEXT_OVER_PICTURE) else androidx.compose.material3.LocalTextStyle.current,
-        text = text,
+        // Live TV's own words in the device's language (see LiveTvTexts).
+        text = LiveTvTexts.tr(text),
         modifier = if (marquee && maxLines == 1) {
             modifier.basicMarquee(
                 iterations = Int.MAX_VALUE,
@@ -559,7 +560,7 @@ internal fun LiveTag(text: String, background: Color, color: Color, modifier: Mo
             .background(background)
             .padding(horizontal = 6.dp, vertical = 1.dp)
     ) {
-        Text(text = text, color = color, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1)
+        Text(text = LiveTvTexts.tr(text), color = color, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1)
     }
 }
 
