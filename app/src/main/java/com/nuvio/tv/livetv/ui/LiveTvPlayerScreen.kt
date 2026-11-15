@@ -958,6 +958,7 @@ fun LiveTvPlayerScreen(
                 val next = viewModel.nextProgram(b.key, browseProgram?.stopMs ?: tick)
                 val browseParts = remember(shown?.description, shown?.year) { splitDescriptionYear(shown?.description, shown?.year) }
                 LiveTvPlayerPanel(
+                    tivimate = settings.guideTiviMateStyle,
                     background = settings.panelBackground,
                     channel = b,
                     mode = PanelMode.LIVE,
@@ -1141,6 +1142,7 @@ fun LiveTvPlayerScreen(
                     splitDescriptionYear(rawDesc, showProgram?.year).let { if (about != null) it.copy(year = null) else it }
                 }
                 LiveTvPlayerPanel(
+                    tivimate = settings.guideTiviMateStyle,
                     onBackupsBounds = { backupsAnchor = it },
                     onMultiview = { openMultiview() },
                     background = settings.panelBackground,

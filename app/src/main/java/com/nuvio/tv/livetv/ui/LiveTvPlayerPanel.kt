@@ -243,7 +243,9 @@ internal fun LiveTvPlayerPanel(
     onBackupsBounds: (androidx.compose.ui.geometry.Rect) -> Unit = {},
     /** Opens the Sports games, streams and layout controls from the Now Playing bar. */
     onMultiview: () -> Unit = {},
-) {
+    /** TiviMate style: a flat dark card with no edges, softer chips and clock (same contents). */
+    tivimate: Boolean = false,
+) = androidx.compose.runtime.CompositionLocalProvider(LocalGuideTiviMate provides tivimate) {
     val colors = NuvioTheme.colors
     val accent = colors.Secondary
     fun on(part: String) = part !in hidden
@@ -271,7 +273,12 @@ internal fun LiveTvPlayerPanel(
         Column(
             Modifier
                 .fillMaxWidth()
-                .glass(glassColor(background))
+                .then(
+                    // TiviMate: a flat dark card, no edge; how see-through it is follows the
+                    // same setting as the glass card.
+                    if (tivimate) Modifier.clip(RoundedCornerShape(16.dp)).background(TiviMateColors.Cell.copy(alpha = glassColor(background).alpha))
+                    else Modifier.glass(glassColor(background))
+                )
                 // Equal on every side, so the poster (and everything else) sits in an evenly
                 // framed card instead of a wider gap on one axis than the other.
                 .padding(14.dp)
@@ -287,8 +294,9 @@ internal fun LiveTvPlayerPanel(
                     val posterHeight = maxOf(76.dp, middleHeight)
                     Box(
                         Modifier.width(posterHeight * (52f / 76f)).height(posterHeight).clip(shape)
-                            .background(colors.BackgroundCard.copy(alpha = 0.85f))
-                            .border(1.dp, Color.White.copy(alpha = 0.12f), shape),
+                            // TiviMate: the logo sits on the card itself (no tile, no edge).
+                            .background(if (tivimate && poster.isNullOrBlank()) Color.Transparent else colors.BackgroundCard.copy(alpha = 0.85f))
+                            .then(if (tivimate) Modifier else Modifier.border(1.dp, Color.White.copy(alpha = 0.12f), shape)),
                         contentAlignment = Alignment.Center
                     ) {
                         if (!poster.isNullOrBlank()) LivePosterImage(poster, Modifier.fillMaxSize()) {
@@ -299,7 +307,7 @@ internal fun LiveTvPlayerPanel(
                     Spacer(Modifier.width(14.dp))
                 } else if (showChannel && !channel.logo.isNullOrBlank()) {
                     Box(
-                        Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)).background(Color.White.copy(alpha = 0.10f)),
+                        Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)).background(if (tivimate) Color.Transparent else Color.White.copy(alpha = 0.10f)),
                         contentAlignment = Alignment.Center
                     ) { ChannelLogo(channel.logo, 34.dp) }
                     Spacer(Modifier.width(14.dp))
@@ -345,7 +353,7 @@ internal fun LiveTvPlayerPanel(
                         }
                         Spacer(Modifier.height(4.dp))
                     }
-                    LiveText(title, size = 20.sp, weight = FontWeight.ExtraBold, maxLines = 1, marquee = true, color = colors.TextPrimary)
+                    LiveText(title, size = 20.sp, weight = if (tivimate) FontWeight.Bold else FontWeight.ExtraBold, maxLines = 1, marquee = true, color = colors.TextPrimary)
                     val line = listOfNotNull(meta.takeIf { it.isNotBlank() }, desc).joinToString("  ·  ")
                     if (on(BarPart.DESCRIPTION) && (line.isNotEmpty() || browsing)) {
                         Spacer(Modifier.height(2.dp))
@@ -417,10 +425,11 @@ internal fun LiveTvPlayerPanel(
                 // ---- right: the clock and what's next
                 if (showClock || showNext) {
                     Spacer(Modifier.width(14.dp))
-                    Box(Modifier.width(1.dp).height(60.dp).background(Color.White.copy(alpha = 0.10f)))
+                    if (!tivimate) Box(Modifier.width(1.dp).height(60.dp).background(Color.White.copy(alpha = 0.10f)))
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.widthIn(min = 70.dp, max = if (showNext) 190.dp else 110.dp)) {
-                        if (showClock) LiveText(clock, size = 19.sp, weight = FontWeight.ExtraBold, color = colors.TextPrimary)
+                        // TiviMate: a lighter, grey clock.
+                        if (showClock) LiveText(clock, size = 19.sp, weight = if (tivimate) FontWeight.Normal else FontWeight.ExtraBold, color = if (tivimate) colors.TextSecondary else colors.TextPrimary)
                         if (showNext) {
                             if (showClock) Spacer(Modifier.height(4.dp))
                             LiveText(
@@ -451,10 +460,12 @@ internal fun LiveTvPlayerPanel(
 /** A small see-through tag (quality, sound, catch-up). */
 @Composable
 private fun GlassChip(text: String) {
+    // TiviMate: solid light grey chips with dark text.
+    val tivimate = LocalGuideTiviMate.current
     LiveText(
         text,
-        size = 10.sp, weight = FontWeight.Bold, color = Color.White.copy(alpha = 0.9f),
-        modifier = Modifier.clip(RoundedCornerShape(5.dp)).background(Color.White.copy(alpha = 0.14f)).padding(horizontal = 6.dp, vertical = 1.dp)
+        size = 10.sp, weight = FontWeight.Bold, color = if (tivimate) TiviMateColors.Background else Color.White.copy(alpha = 0.9f),
+        modifier = Modifier.clip(RoundedCornerShape(5.dp)).background(if (tivimate) Color.White.copy(alpha = 0.62f) else Color.White.copy(alpha = 0.14f)).padding(horizontal = 6.dp, vertical = 1.dp)
     )
 }
 
@@ -466,8 +477,11 @@ private fun MultiviewButton(focused: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier.height(29.dp).clip(shape)
             .background(if (focused) Color.White else Color.White.copy(alpha = 0.10f))
-            .border(if (focused) 2.dp else 1.dp,
-                Color.White.copy(alpha = if (focused) 0.9f else 0.16f), shape)
+            .then(
+                // TiviMate: no edge around the button.
+                if (LocalGuideTiviMate.current && !focused) Modifier
+                else Modifier.border(if (focused) 2.dp else 1.dp, Color.White.copy(alpha = if (focused) 0.9f else 0.16f), shape)
+            )
             .clickable(onClick = onClick).padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
