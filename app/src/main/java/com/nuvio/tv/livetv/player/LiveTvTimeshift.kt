@@ -176,41 +176,69 @@ class LiveTvTimeshift(private val context: Context) {
         delay(2_500)
         var attempt = 0
         var policy = initialPolicy
+        // A replay: everything saved so far (all connections), the replay's full size when the
+        // provider says it, and how many times running carrying on brought nothing.
+        var totalBytes = 0L
+        var knownLength = -1L
+        var resumeTries = 0
         try {
             // Keeps going until you go live or change channel: a dropped connection is opened
             // again, with the gap marked, instead of ending the buffer (which sent you back to
             // live after half a minute or so).
             while (scope.isActive && recording) {
+                // A replay cut off part way: ask for the rest of the same file (from the byte it
+                // stopped at), so it carries on seamlessly instead of the save ending there and
+                // playback stopping at that point.
+                val resuming = !reconnect && totalBytes > 0
                 if (attempt > 0) {
-                    segmenter.reconnected()
+                    if (!resuming) segmenter.reconnected()
                     delay((attempt * 2_000L).coerceAtMost(8_000L))
                 }
                 attempt++
                 val t0 = System.currentTimeMillis()
                 var bytes = 0L
+                var complete = false
+                var cantResume = false
                 val why = try {
-                    val fresh = if (attempt > 1) refreshStream?.invoke() else null
+                    // Stalker: a fresh link is the live one, so not for carrying on a replay.
+                    val fresh = if (attempt > 1 && !resuming) refreshStream?.invoke() else null
                     if (fresh?.mimeType == StalkerMimeProbe.DASH || fresh?.mimeType == StalkerMimeProbe.HLS) {
                         recording = false
                         throw java.io.IOException("The Stalker stream changed its buffer format. Retry playback.")
                     }
                     if (fresh != null) { if (policy !== fresh.policy) policy?.retire(); policy = fresh.policy }
-                    val c = LiveHttp.open(fresh?.url ?: url, fresh?.headers ?: headers, 20_000, policy)
+                    val requestHeaders = if (resuming) headers + ("Range" to "bytes=$totalBytes-") else headers
+                    val c = LiveHttp.open(fresh?.url ?: url, fresh?.headers ?: requestHeaders, 20_000, policy)
                     val code = c.responseCode
-                    if (code !in 200..299) { c.disconnect(); "HTTP $code" }
-                    else c.inputStream.use { input ->
-                        val buf = ByteArray(64 * 1024)
-                        var end = "the provider ended the stream"
-                        while (scope.isActive && recording) {
-                            val n = input.read(buf)
-                            if (n < 0) break
-                            bytes += n
-                            segmenter.write(buf, 0, n)
-                            trimmedMs = (segmenter.trimmedSec * 1000).toLong()
-                            savedMs = (segmenter.totalSec * 1000).toLong()
+                    when {
+                        resuming && code == 416 -> { c.disconnect(); complete = true; "all of it is saved" }
+                        // The provider sent the replay from its start again: it can't carry on.
+                        resuming && code == 200 -> { c.disconnect(); cantResume = true; "the provider can't carry on from where it stopped" }
+                        code !in 200..299 -> { c.disconnect(); "HTTP $code" }
+                        else -> {
+                            if (knownLength < 0) knownLength = when (code) {
+                                200 -> c.contentLengthLong
+                                206 -> c.getHeaderField("Content-Range")?.substringAfterLast('/')?.trim()?.toLongOrNull() ?: -1L
+                                else -> -1L
+                            }
+                            c.inputStream.use { input ->
+                                val buf = ByteArray(64 * 1024)
+                                var end = "the provider ended the stream"
+                                while (scope.isActive && recording) {
+                                    val n = input.read(buf)
+                                    if (n < 0) break
+                                    bytes += n
+                                    totalBytes += n
+                                    segmenter.write(buf, 0, n)
+                                    trimmedMs = (segmenter.trimmedSec * 1000).toLong()
+                                    savedMs = (segmenter.totalSec * 1000).toLong()
+                                }
+                                if (!recording) end = "stopped"
+                                // Asked for the rest and there was none: it was all there.
+                                if (resuming && code == 206 && bytes == 0L) complete = true
+                                end
+                            }
                         }
-                        if (!recording) end = "stopped"
-                        end
                     }
                 } catch (e: kotlinx.coroutines.CancellationException) {
                     throw e
@@ -218,11 +246,20 @@ class LiveTvTimeshift(private val context: Context) {
                     if (refreshStream != null) "Stalker stream unavailable" else e.message ?: e.javaClass.simpleName
                 }
                 if (!recording) break
-                // A replay that came in and ended: it's all saved (no reconnecting, which would
-                // start the replay again from its beginning).
-                if (!reconnect && (bytes > 0 || attempt >= 2)) {
-                    report.add("$label: ${bytes / 1024 / 1024} MB saved ($why)")
-                    break
+                if (!reconnect) {
+                    if (knownLength > 0 && totalBytes >= knownLength) complete = true
+                    if (bytes > 0) resumeTries = 0 else if (resuming) resumeTries++
+                    // Saved to its end, or it can't be carried on (playback then asks the provider
+                    // again from where it got to): the save ends here.
+                    if (complete || cantResume || resumeTries >= 6 || (totalBytes == 0L && attempt >= 2)) {
+                        report.add("$label: ${totalBytes / 1024 / 1024} MB saved ($why)")
+                        break
+                    }
+                    if (totalBytes > 0) {
+                        report.add("$label: connection ended after ${(System.currentTimeMillis() - t0) / 1000}s ($why); carrying on from ${totalBytes / 1024 / 1024} MB")
+                        if (bytes > 0) attempt = 1
+                        continue
+                    }
                 }
                 report.add("$label: connection ended after ${(System.currentTimeMillis() - t0) / 1000}s, ${bytes / 1024} KB ($why); reconnecting")
                 // Got nothing at all several times running: give up (the provider won't serve it).

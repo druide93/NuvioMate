@@ -109,11 +109,15 @@ class LiveTvPlaybackController @Inject constructor(
     var catchupCache: Boolean = true
     @Volatile private var replayLocal = false
     private var replayJob: Job? = null
+    /** Waiting at the end of the saved part of a replay: how much was saved, and since when. */
+    private var replayWaitSavedMs = -1L
+    private var replayWaitSince = 0L
 
     private fun stopReplayCache() {
         replayJob?.cancel()
         replayJob = null
         replayLocal = false
+        replayWaitSavedMs = -1L
         if (replayCache.session != null) replayCache.stop()
     }
 
@@ -1134,7 +1138,18 @@ class LiveTvPlaybackController @Inject constructor(
         // A replay played straight from the provider froze (often after a skip inside it, which
         // some providers can't do): reloading the same link just froze again every 16 s. Ask the
         // provider for the replay again from where it stopped; after 3 tries in a row, say so.
-        if (archive && !replayLocal && onCatchupStalled != null) {
+        // A replay playing from its copy on this box caught up with the part still coming in:
+        // wait for it (it carries on by itself after a cut), as long as more keeps arriving.
+        // Reloading here used to play the provider's link straight, with no copy, every 15 s.
+        if (archive && replayLocal && replayCache.isRecording) {
+            val saved = replayCache.savedMs
+            if (saved != replayWaitSavedMs) { replayWaitSavedMs = saved; replayWaitSince = now }
+            if (now - replayWaitSince < REPLAY_WAIT_MS) return
+            com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up on ${ch.name}: nothing more came in to save for ${REPLAY_WAIT_MS / 1000}s")
+        }
+        // Also when it played from the copy: asking again from this point saves a new copy from
+        // there (the copy that stopped can't go further).
+        if (archive && onCatchupStalled != null) {
             if (catchupRestarts >= 3) {
                 com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up on ${ch.name} kept freezing; stopped after 3 tries")
                 catchupRestarts = 0
@@ -1914,6 +1929,14 @@ class LiveTvPlaybackController @Inject constructor(
             if (replayLocal) {
                 val ch0 = currentChannel
                 val url0 = currentUrl
+                // First ask again from where it got to (a new copy from there), instead of
+                // starting the replay over from its beginning with no copy; up to 3 times running.
+                if (onCatchupStalled != null && catchupRestarts < 3) {
+                    catchupRestarts++
+                    com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: the saved copy didn't play (${error.errorCodeName}); asking again from this point (try $catchupRestarts)")
+                    _player?.stop()
+                    if (onCatchupStalled?.invoke() == true) return
+                }
                 stopReplayCache()
                 if (ch0 != null && url0 != null) {
                     com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: the saved copy didn't play (${error.errorCodeName}); playing it directly")
@@ -2289,6 +2312,8 @@ class LiveTvPlaybackController @Inject constructor(
         private const val MAX_RECONNECTS = 8
         /** No progress for this long while it should be playing = stalled. */
         private const val STALL_MS = 15_000L
+        /** A replay playing from its copy waits this long for more to be saved before asking again. */
+        private const val REPLAY_WAIT_MS = 60_000L
         /** How far a replay's own clock may be from the time asked for before it counts as a different show. */
         private const val WRONG_SHOW_SLACK_MS = 10 * 60_000L
         /** Two freezes within this long: the channel counts as failing (live games only). */
