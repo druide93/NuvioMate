@@ -71,6 +71,13 @@ val localProperties = Properties().apply {
     }
 }
 
+if (localProperties.getProperty("TMDB_API_KEY").isNullOrBlank()) {
+    logger.warn(
+        "w: TMDB_API_KEY is missing from local.properties: every TMDB call will fail with 401, " +
+            "so cast photos, TMDB artwork and trailers won't load. See local.example.properties."
+    )
+}
+
 val devProperties = Properties().apply {
     val devPropertiesFile = rootProject.file("local.dev.properties")
     if (devPropertiesFile.exists()) {
