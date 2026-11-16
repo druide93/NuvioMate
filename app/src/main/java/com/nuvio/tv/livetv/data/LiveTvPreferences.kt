@@ -1102,6 +1102,25 @@ class LiveTvPreferences @Inject constructor(
         list.map { if (it.id == groupId && key !in it.channelKeys) it.copy(channelKeys = it.channelKeys + key) else it }
     }
 
+    /** Adds all [keys] to one of your own groups in a single save (the ones already there are skipped). */
+    suspend fun addManyToCustomGroup(groupId: String, keys: List<String>) = updateCustomGroups { list ->
+        list.map { g ->
+            if (g.id != groupId) g
+            else g.copy(channelKeys = g.channelKeys + keys.filter { it !in g.channelKeys }.distinct())
+        }
+    }
+
+    /** Copies all [keys] into a playlist group in a single save (the ones already copied there are skipped). */
+    suspend fun copyChannels(groupId: String, keys: List<String>) {
+        store.edit { p ->
+            val m = decodeListMap(p[my(Keys.channelCopies)]).toMutableMap()
+            val cur = m[groupId].orEmpty()
+            val add = keys.filter { it !in cur }.distinct()
+            if (add.isNotEmpty()) m[groupId] = cur + add
+            p[my(Keys.channelCopies)] = encodeListMap(m)
+        }
+    }
+
     suspend fun removeFromCustomGroup(groupId: String, key: String) = updateCustomGroups { list ->
         list.map { if (it.id == groupId) it.copy(channelKeys = it.channelKeys - key) else it }
     }
@@ -1747,7 +1766,11 @@ class LiveTvPreferences @Inject constructor(
                     sourceType = o.optString("sourceType").ifBlank { o.optString("providerKind").ifBlank { if (o.optJSONObject("stalkerConfig") != null || o.optJSONObject("stalker") != null) "stalker" else "" } },
                     stalkerConfig = (o.optJSONObject("stalkerConfig") ?: o.optJSONObject("stalker"))?.let { value ->
                         runCatching { com.nuvio.stalker.StalkerConfig.fromJson(kotlinx.serialization.json.Json.parseToJsonElement(value.toString()) as kotlinx.serialization.json.JsonObject) }.getOrNull()
-                    }
+                    },
+                    linkServer = o.optString("linkServer"),
+                    linkUsername = o.optString("linkUsername"),
+                    linkPassword = o.optString("linkPassword"),
+                    vodInPlaylist = o.optBoolean("vodInPlaylist", false)
                 )
             }
         }.getOrDefault(emptyList())
@@ -1764,6 +1787,8 @@ class LiveTvPreferences @Inject constructor(
                     .put("useEmbeddedEpg", s.useEmbeddedEpg)
                     .put("xtreamServer", s.xtreamServer).put("xtreamUsername", s.xtreamUsername)
                     .put("xtreamPassword", s.xtreamPassword)
+                    .put("linkServer", s.linkServer).put("linkUsername", s.linkUsername)
+                    .put("linkPassword", s.linkPassword).put("vodInPlaylist", s.vodInPlaylist)
                     .put("lastUpdatedMs", s.lastUpdatedMs).put("lastError", s.lastError ?: "")
                     .put("channelCount", s.channelCount)
                     .put("importVod", s.importVod)

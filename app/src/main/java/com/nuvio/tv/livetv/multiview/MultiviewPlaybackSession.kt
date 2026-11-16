@@ -107,7 +107,28 @@ class MultiviewPlaybackSession(
         },
         onChanged = ::publishState,
         mayPlayChannel = mayPlayChannel,
+        onSetupFailed = ::reportSetupFailure,
     )
+
+    /**
+     * A pane that failed before its stream started used to show "Stream unavailable" with nothing
+     * in the report. Says what failed and where; only our own messages are written out, never a
+     * provider's, and the link is masked.
+     */
+    private fun reportSetupFailure(paneId: Int, channel: LiveChannel, failure: Exception) {
+        fun name(t: Throwable) = t.javaClass.simpleName.ifEmpty { t.javaClass.name }
+        val ours = failure is IllegalArgumentException || failure is IllegalStateException
+        val where = failure.stackTrace.take(3).joinToString(" < ") {
+            "${it.className.substringAfterLast('.')}.${it.methodName}:${it.lineNumber}"
+        }
+        val cause = failure.cause?.takeIf { it !== failure }?.let { ", caused by ${name(it)}" }.orEmpty()
+        LiveTvLoadReport.add(
+            "Multiview: ${channel.name} couldn't start in P${paneId + 1} (${name(failure)}" +
+                (if (ours) failure.message?.let { ": $it" }.orEmpty() else "") + cause + ")" +
+                (if (where.isNotEmpty()) " at $where" else "") +
+                (if (channel.stalkerRef == null) " · ${LiveStreamFormats.redact(channel.url)}" else "")
+        )
+    }
 
     // Closing this subscription matters: sessions are short lived, unlike the single player.
     private val vpnSubscription = VpnPlaybackProtection.observeSettings {
@@ -348,8 +369,9 @@ private class AndroidMultiviewPanePlayer(
             .setAudioCapabilities(AudioCapabilities.DEFAULT_AUDIO_CAPABILITIES)
             .setEnableFloatOutput(enableFloatOutput)
             .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
+            // Offload is already off unless asked for. Don't switch it off here: that call only
+            // exists on Android 10 and up, and on older TVs it stopped every pane from starting.
             .build()
-            .apply { setOffloadMode(AudioSink.OFFLOAD_MODE_DISABLED) }
     }.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
         .setEnableDecoderFallback(true)
 
