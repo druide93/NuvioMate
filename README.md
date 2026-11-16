@@ -19,18 +19,30 @@ Avec l'option **Guide style TiviMate** (paramètres de la TV en direct, avec la 
 - **Émissions qui se chevauchent dans le guide du fournisseur :** la plus ancienne s'arrête au début de la suivante, et une même émission listée deux fois n'apparaît plus qu'une fois. Les cases ne s'empilent plus les unes sur les autres.
 
 ### Replay
+- **Retour au début (⏮) :** sur les chaînes avec replay, le bandeau du lecteur plein écran a un bouton ⏮. Dans un replay ou un enregistrement, il revient au début. En direct, il relance l'émission en cours depuis son début.
+- **Reculer depuis le direct :** en direct ou en pause sur une chaîne avec replay, ⏪, ⟲30 et la barre de progression reculent aussi au-delà de ce que garde la pause. Une fois la touche relâchée, l'émission reprend par le replay à partir de ce moment. Avancer jusqu'au direct, sur une émission encore à l'antenne, ramène au direct.
+- **Démarrage en 2 s environ** (TF1 : 1,8 s au lieu de 9,2 s) :
+  - l'app attend moins longtemps avant de demander le replay au fournisseur, et redemande 2 s après un refus ;
+  - avec **Préférer HLS pour le replay** désactivé, le replay est demandé en TS, même sur une chaîne en m3u8 ;
+  - avec l'option activée, un replay HLS qui n'affiche rien passe au TS au bout de 6 s au lieu de 15 ;
+  - le premier morceau est coupé au début d'une image, même quand le flux ne le signale pas.
+- **Copie supprimée en quittant la TV en direct** (retour à l'accueil, ou ouverture du lecteur de Nuvio) : avant, la sauvegarde continuait jusqu'à la fin de l'émission, à environ 35 Mo par minute, et la copie restait sur la box jusqu'à la chaîne suivante ou au redémarrage de l'app.
 - **Sauvegarde qui reprend après une coupure :** un replay coupé en cours de téléchargement redemande la suite du même fichier, au lieu de s'arrêter là. Si le fournisseur ne sait pas reprendre en cours de fichier, la partie déjà sauvegardée est sautée et la sauvegarde continue.
 - **Sauts dans la partie déjà sauvegardée** sans recharger tout le flux.
 - **Fournisseur qui ralentit fortement** après un démarrage rapide : nouvelle connexion, qui reprend au même endroit.
 - **Enchaîner les replays** ne coupe plus la nouvelle sauvegarde (les démarrages de 30 à 60 s ont disparu), et la lecture gèle moins près de la fin de la partie sauvegardée.
-- **Diagnostic :** le rapport de démarrage s'écrit aussi dans les journaux système (`adb logcat -s NuvioReport`), avec la vitesse de sauvegarde toutes les 30 s.
+- **Diagnostic :** le rapport de démarrage s'écrit aussi dans les journaux système (`adb logcat -s NuvioReport`), avec la vitesse de sauvegarde toutes les 30 s. Il indique aussi quand le fournisseur a répondu, quand le premier morceau était prêt et s'il a été coupé au début d'une image.
 
 ### Traduction française
 - **Textes écrits directement dans le code** (guide, lecteur, Sport, Enregistrements, Calendrier, Multiview, menus) : affichés en français quand l'appareil est en français. Le temps restant s'affiche par exemple « 1h 23min restantes ».
+- **Titres en majuscules et menus terminés par « … » :** traduits eux aussi. Ça couvre les catégories du menu d'une chaîne (REGARDER, CETTE ÉMISSION, ENREGISTRER…), les sections des Enregistrements, de Sport et du Calendrier, et les menus comme « Renommer la chaîne… ».
+- **Phrases avec un nom, un nombre ou une heure :** traduites en entier, dans l'ordre des mots du français. Par exemple : Enregistrement de « Journal » programmé (20:30), ou : 3 chaînes copiées dans Sport. Ça concerne le menu d'une chaîne, l'écran Enregistrements, la programmation d'un enregistrement, les messages après « Enregistrer » et l'enregistrement d'un match.
+- **Heures des enregistrements** au format de l'appareil : 20:30 plutôt que 8:30 PM.
 - **Fichiers de traduction :** compléments aux traductions françaises du projet d'origine.
 
 ### Compilation
 - **Compilations debug locales** sans la clé de signature du projet : elles sont signées avec la clé de debug standard et s'installent sous `com.nuvio.livetv.debug`, à côté de l'app officielle.
+- **Clé TMDB :** à mettre dans `local.properties` sur la ligne `TMDB_API_KEY`. Le modèle `local.example.properties` la montre, et la clé v3 est gratuite sur themoviedb.org. Sans elle, la compilation affiche un avertissement : tous les appels à TMDB échouent, et la fiche d'un film ou d'une série montre les acteurs sans photo, sans illustrations ni bandes-annonces TMDB.
 
 ---
 
