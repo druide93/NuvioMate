@@ -39,6 +39,12 @@ class TsSegmenter(
         private set
     @Volatile var totalSec: Double = 0.0
         private set
+    /**
+     * The last piece was cut where a picture starts (the stream marks those); false: cut by
+     * length (at twice the target, or three times), when the stream marks none in time.
+     */
+    @Volatile var lastCutClean: Boolean = false
+        private set
 
     // Packet assembly (input arrives in any sizes; TS packets are 188 bytes).
     private val pkt = ByteArray(PACKET)
@@ -50,6 +56,9 @@ class TsSegmenter(
     private val pmtPids = HashSet<Int>()
     private val pmts = HashMap<Int, ByteArray>()
     private var pcrPid = -1
+    /** The video stream (from the PMT): its packet id and kind, to spot where pictures start. */
+    private var videoPid = -1
+    private var videoType = 0
 
     // The piece being written.
     private var seq = 0L
@@ -129,6 +138,11 @@ class TsSegmenter(
             if (pcrPid < 0) pcrPid = pid
             lastPcr = pcr
         }
+        // Many streams don't mark where pictures start (seen on TF1: the first piece waited
+        // 7.6 s to be cut by length, and the replay's picture with it). The video itself says
+        // so: a picture the player can start from begins with the stream's settings (SPS) or
+        // is a key picture (IDR).
+        if (!randomAccess && pusi && pid == videoPid && startsKeyPicture(p)) randomAccess = true
 
         // Time to start a new piece?
         if (out == null) {
@@ -136,11 +150,18 @@ class TsSegmenter(
             if (pat == null || pmts.isEmpty()) return
             openPiece()
         } else {
+            // A piece opened before the stream's clock came: measured by the clock from its
+            // first tick (the wall clock instead would be wrong when the provider sends faster
+            // than real time, in the playlist's lengths too).
+            if (pieceStartPcr < 0 && lastPcr >= 0) pieceStartPcr = lastPcr
             val len = currentLengthSec()
             val target = if (pieces.isEmpty()) 2.0 else targetSec
             val cleanCut = randomAccess && len >= target
-            val forcedCut = len >= target * 2 && pusi && pid == pcrPid
+            // At the start of a video frame (or of what carries the clock), so the cut at least
+            // falls between frames; a stream whose clock has a packet id of its own never got one.
+            val forcedCut = len >= target * 2 && pusi && (pid == pcrPid || pid == videoPid)
             if (cleanCut || forcedCut || len >= target * 3) {
+                lastCutClean = cleanCut
                 closePiece()
                 openPiece()
             }
@@ -241,13 +262,49 @@ class TsSegmenter(
         }
     }
 
-    /** The PCR packet id from a PMT (the stream's clock). */
+    /** The PCR packet id from a PMT (the stream's clock), and the video stream's. */
     private fun readPmt(p: ByteArray) {
         val start = payloadStart(p) ?: return
         val i = start + 1 + (p[start].toInt() and 0xFF)
         if (i + 10 > PACKET) return
         val pid = ((p[i + 8].toInt() and 0x1F) shl 8) or (p[i + 9].toInt() and 0xFF)
         if (pid != 0x1FFF) pcrPid = pid
+        // The streams, listed after the program's own descriptors: the first video one.
+        if (i + 12 > PACKET) return
+        val sectionLen = ((p[i + 1].toInt() and 0x0F) shl 8) or (p[i + 2].toInt() and 0xFF)
+        val end = minOf(i + 3 + sectionLen - 4, PACKET)
+        val infoLen = ((p[i + 10].toInt() and 0x0F) shl 8) or (p[i + 11].toInt() and 0xFF)
+        var j = i + 12 + infoLen
+        while (j + 5 <= end) {
+            val type = p[j].toInt() and 0xFF
+            val esPid = ((p[j + 1].toInt() and 0x1F) shl 8) or (p[j + 2].toInt() and 0xFF)
+            val esInfo = ((p[j + 3].toInt() and 0x0F) shl 8) or (p[j + 4].toInt() and 0xFF)
+            if (type in VIDEO_TYPES) { videoPid = esPid; videoType = type; return }
+            j += 5 + esInfo
+        }
+    }
+
+    /**
+     * The video packet [p] starts a picture the player can start from: its first bytes hold the
+     * stream's settings or a key picture (H.264: SPS or IDR; HEVC: VPS / SPS / PPS or a key
+     * picture; MPEG-2: a sequence or group header).
+     */
+    private fun startsKeyPicture(p: ByteArray): Boolean {
+        val s = payloadStart(p) ?: return false
+        // The PES header first: 00 00 01, stream id, length (2), flags (2), header length.
+        if (s + 9 > PACKET || p[s].toInt() != 0 || p[s + 1].toInt() != 0 || p[s + 2].toInt() != 1) return false
+        var k = s + 9 + (p[s + 8].toInt() and 0xFF)
+        while (k + 3 < PACKET) {
+            if (p[k].toInt() != 0 || p[k + 1].toInt() != 0 || p[k + 2].toInt() != 1) { k++; continue }
+            val b = p[k + 3].toInt() and 0xFF
+            when (videoType) {
+                0x1B -> (b and 0x1F).let { if (it == 5 || it == 7) return true }
+                0x24 -> ((b shr 1) and 0x3F).let { if (it in 16..21 || it in 32..34) return true }
+                0x01, 0x02 -> if (b == 0xB3 || b == 0xB8) return true
+            }
+            k += 3
+        }
+        return false
     }
 
     private fun payloadStart(p: ByteArray): Int? {
@@ -262,5 +319,7 @@ class TsSegmenter(
     private companion object {
         const val PACKET = 188
         const val SYNC: Byte = 0x47
+        /** PMT stream types for video: MPEG-1, MPEG-2, H.264, HEVC. */
+        val VIDEO_TYPES = setOf(0x01, 0x02, 0x1B, 0x24)
     }
 }

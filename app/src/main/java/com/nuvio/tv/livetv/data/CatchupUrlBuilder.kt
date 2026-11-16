@@ -93,7 +93,10 @@ object CatchupUrlBuilder {
         val query = m.groupValues[6]
         val (host, user, pass, id) = m.destructured
         // HLS (.m3u8) replays come with a length, so the seek bar and skipping work properly.
-        val ext = if (preferHls) ".m3u8" else m.groupValues[5].ifEmpty { ".ts" }
+        // Otherwise TS, whatever the live link is. An m3u8 channel's replay used to be asked as
+        // HLS too, so with "Prefer HLS" off, or HLS found not to work on this provider, every
+        // replay still tried HLS first, and a provider that sends nothing for it cost 15 s.
+        val ext = if (preferHls) ".m3u8" else ".ts"
         val fmt = SimpleDateFormat("yyyy-MM-dd:HH-mm", Locale.US)
         serverTimezone?.takeIf { it.isNotBlank() }?.let { fmt.timeZone = java.util.TimeZone.getTimeZone(it) }
         val minutes = (duration / 60).coerceAtLeast(1)

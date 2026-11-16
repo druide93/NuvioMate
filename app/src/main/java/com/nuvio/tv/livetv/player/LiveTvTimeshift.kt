@@ -14,6 +14,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.io.RandomAccessFile
 import java.net.HttpURLConnection
@@ -32,8 +33,10 @@ import com.nuvio.tv.livetv.stalker.StalkerMimeProbe
  *    with a local playlist ([HlsPieces]; separate sound streams too); older segments are
  *    dropped past the time limit.
  *
- * Everything lives in the app's cache folder and is deleted when you go live, change channel
- * or leave Live TV.
+ * Everything lives in a "timeshift" folder next to the recordings (the app's own folder on the
+ * drive set for recordings: Android/data/…/files on this device, so Android's "Clear cache"
+ * doesn't reach it) and is deleted when you go live, change channel or leave Live TV; anything
+ * left over (a crash, the box switched off) goes when the app next starts.
  */
 class LiveTvTimeshift(private val context: Context) {
 
@@ -134,9 +137,21 @@ class LiveTvTimeshift(private val context: Context) {
     /** Stops recording and deletes it. */
     fun stop() {
         recording = false
-        job?.cancel()
+        val old = job
+        old?.cancel()
         job = null
-        session?.dir?.let { d -> ACTIVE -= d; scope.launch { runCatching { d.deleteRecursively() } } }
+        session?.dir?.let { d ->
+            ACTIVE -= d
+            scope.launch {
+                runCatching { d.deleteRecursively() }
+                // The recording only notices it was stopped once its current read from the
+                // provider returns, and could still write a piece or its playlist into the folder
+                // as it was being deleted (left behind until the next clean-up, 15 minutes on).
+                // Once it has really finished, whatever it left goes too.
+                withTimeoutOrNull(30_000L) { old?.join() }
+                if (d.exists()) runCatching { d.deleteRecursively() }
+            }
+        }
         session = null
         trimmedMs = 0L
         savedMs = 0L
@@ -165,6 +180,9 @@ class LiveTvTimeshift(private val context: Context) {
 
     private fun open(url: String, headers: Map<String, String>): HttpURLConnection = LiveHttp.open(url, headers, 20_000)
 
+    /** Milliseconds as seconds with one decimal, for the Start-Up Report. */
+    private fun secs(ms: Long): String = String.format(java.util.Locale.US, "%.1f", ms / 1000.0)
+
     // ------------------------------------------------------------------ TS
 
     private suspend fun recordTs(
@@ -184,8 +202,15 @@ class LiveTvTimeshift(private val context: Context) {
         val report = com.nuvio.tv.livetv.model.LiveTvLoadReport
         val began = System.currentTimeMillis()
         // The player has only just let go of its connection: give the provider a moment, or
-        // accounts with one connection can refuse (or later cut) this one.
-        delay(2_500)
+        // accounts with one connection can refuse (or later cut) this one. A replay waits less:
+        // every second here is a second more before its picture (2.5 s of an 11 s start). If the
+        // provider still counts the old connection and refuses, the next try comes 2 s later,
+        // which is still later than the one try used to come.
+        delay(if (reconnect) 2_500 else 1_000)
+        // A replay, for the Start-Up Report: when the provider answered, and whether the first
+        // piece (what playback waits for) has been reported yet.
+        var answeredAt = 0L
+        var firstPieceReported = false
         var attempt = 0
         var policy = initialPolicy
         // A replay: everything saved so far (all connections), the replay's full size when the
@@ -225,6 +250,10 @@ class LiveTvTimeshift(private val context: Context) {
                     val requestHeaders = if (resuming) headers + ("Range" to "bytes=$totalBytes-") else headers
                     val c = LiveHttp.open(fresh?.url ?: url, fresh?.headers ?: requestHeaders, 20_000, policy)
                     val code = c.responseCode
+                    if (!reconnect && !firstPieceReported) {
+                        answeredAt = System.currentTimeMillis()
+                        report.add("$label: the provider answered in ${secs(answeredAt - t0)} s (HTTP $code), ${secs(answeredAt - began)} s after asking")
+                    }
                     when {
                         resuming && code == 416 -> { c.disconnect(); complete = true; "all of it is saved" }
                         code !in 200..299 -> { c.disconnect(); "HTTP $code" }
@@ -278,6 +307,15 @@ class LiveTvTimeshift(private val context: Context) {
                                     segmenter.write(buf, off, m)
                                     trimmedMs = (segmenter.trimmedSec * 1000).toLong()
                                     savedMs = (segmenter.totalSec * 1000).toLong()
+                                    if (!reconnect && !firstPieceReported && segmenter.totalSec > 0) {
+                                        firstPieceReported = true
+                                        val at = System.currentTimeMillis()
+                                        report.add(
+                                            "$label: first piece ready ${secs(at - began)} s after asking, ${secs(at - answeredAt)} s after the provider answered " +
+                                                "(${String.format(java.util.Locale.US, "%.1f", segmenter.totalSec)} s of the show, " +
+                                                "${if (segmenter.lastCutClean) "cut where a picture starts" else "no picture start marked: cut by length"})"
+                                        )
+                                    }
                                     // A replay: how fast it's coming in, every 30 s (seconds of
                                     // show saved per second, and the speed), to see a provider
                                     // slowing it to real time or a stall.

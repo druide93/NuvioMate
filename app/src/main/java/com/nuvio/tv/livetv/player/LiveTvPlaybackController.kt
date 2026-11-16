@@ -133,7 +133,10 @@ class LiveTvPlaybackController @Inject constructor(
         replayJob = scope.launch {
             val f = java.io.File(session.playUri.path ?: "")
             var waited = 0
-            while (waited < 15_000 && !(f.exists() && f.length() > 0)) { delay(200); waited += 200 }
+            // Not past the save giving up (the provider sent nothing, or refused twice): it then
+            // goes straight to playing it directly or the next link, instead of waiting out the
+            // 15 s for a copy that won't come.
+            while (waited < 15_000 && !(f.exists() && f.length() > 0) && replayCache.isRecording) { delay(200); waited += 200 }
             if (replayCache.session != session || currentUrl != url) return@launch
             archiveStartPending = true
             if (!f.exists() || f.length() == 0L) {
@@ -1113,7 +1116,12 @@ class LiveTvPlaybackController @Inject constructor(
             if (_state.value.catchupTitle != null) { archiveStarted = true; catchupRestarts = 0 }
             return
         }
-        if (now - lastProgressAt < STALL_MS || !autoReconnect) return
+        // An HLS catch-up link that hasn't shown anything yet, with the TS link next: providers
+        // that don't do HLS replays answer it with nothing at all, and waiting the full 15 s
+        // for that was most of the start (seen: 16 s lost, then the TS link played in 5 s).
+        val hlsFirstTry = _state.value.catchupTitle != null && !archiveStarted &&
+            isHlsReplayLink(currentUrl) && isTsReplayLink(fallbackUrls.firstOrNull())
+        if (now - lastProgressAt < (if (hlsFirstTry) HLS_REPLAY_WAIT_MS else STALL_MS) || !autoReconnect) return
         lastProgressAt = now
         val archive = _state.value.catchupTitle != null
         // A catch-up that never started (stuck on "Loading…" with no error): some panels answer
@@ -1127,8 +1135,8 @@ class LiveTvPlaybackController @Inject constructor(
             )
             p.stop()
             if (fb != null) {
-                val wasHls = currentUrl?.substringBefore('?')?.let { it.contains("/timeshift/") && it.endsWith(".m3u8", true) } == true
-                val toTs = fb.substringBefore('?').let { it.contains("/timeshift/") && it.endsWith(".ts", true) }
+                val wasHls = isHlsReplayLink(currentUrl)
+                val toTs = isTsReplayLink(fb)
                 hlsCatchupFailedOn = if (wasHls && toTs) ch.sourceId else null
                 currentUrl = fb
                 // A TS replay: saved while it plays, like one that started as TS.
@@ -1962,8 +1970,8 @@ class LiveTvPlaybackController @Inject constructor(
             val fb = fallbackUrls.removeFirstOrNull()
             if (fb != null && ch != null && p != null) {
                 com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up failed (${error.errorCodeName}); trying ${redact(fb)}")
-                val wasHls = currentUrl?.substringBefore('?')?.let { it.contains("/timeshift/") && it.endsWith(".m3u8", true) } == true
-                val toTs = fb.substringBefore('?').let { it.contains("/timeshift/") && it.endsWith(".ts", true) }
+                val wasHls = isHlsReplayLink(currentUrl)
+                val toTs = isTsReplayLink(fb)
                 hlsCatchupFailedOn = if (wasHls && toTs) ch.sourceId else null
                 currentUrl = fb
                 if (_state.value.catchupTitle != null && saveFallback(ch, fb)) return
@@ -2262,6 +2270,10 @@ class LiveTvPlaybackController @Inject constructor(
         resumeAfterBackground = null
         clearStarting()
         stopShift()
+        // A catch-up being saved goes too. Leaving Live TV (or opening Nuvio's own player) during
+        // a replay used to leave it downloading to the end of the show in the background, its
+        // copy (about 35 MB a minute) kept on the box until the next channel or app restart.
+        stopReplayCache()
         reconnectJob?.cancel()
         stallJob?.cancel()
         stallJob = null
@@ -2308,6 +2320,8 @@ class LiveTvPlaybackController @Inject constructor(
         private const val MAX_RECONNECTS = 8
         /** No progress for this long while it should be playing = stalled. */
         private const val STALL_MS = 15_000L
+        /** An HLS catch-up link with nothing to show after this long moves on to its TS link. */
+        private const val HLS_REPLAY_WAIT_MS = 6_000L
         /** A replay playing from its copy waits this long for more to be saved before asking again. */
         private const val REPLAY_WAIT_MS = 60_000L
         /** How far a replay's own clock may be from the time asked for before it counts as a different show. */
@@ -2321,6 +2335,14 @@ class LiveTvPlaybackController @Inject constructor(
         private const val LOADING_AFTER_MOVE_MS = 7_000L
         private const val C_TIME_UNSET = Long.MIN_VALUE + 1
         private const val TAG = "LiveTvPlayback"
+
+        /** An Xtream catch-up link for HLS (…/timeshift/….m3u8). */
+        private fun isHlsReplayLink(url: String?): Boolean =
+            url?.substringBefore('?')?.let { it.contains("/timeshift/") && it.endsWith(".m3u8", true) } == true
+
+        /** An Xtream catch-up link for TS (…/timeshift/….ts). */
+        private fun isTsReplayLink(url: String?): Boolean =
+            url?.substringBefore('?')?.let { it.contains("/timeshift/") && it.endsWith(".ts", true) } == true
     }
 }
 
