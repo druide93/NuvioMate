@@ -226,7 +226,7 @@ class LiveTvViewModel @Inject constructor(
         return if (s == null || pos == null) false else {
             val absolute = s.program.startMs + pos
             val at = programs.value[s.channel.key].orEmpty().firstOrNull { absolute >= it.startMs && absolute < it.stopMs } ?: s.program
-            playCatchup(s.channel, at, absolute - at.startMs)
+            playCatchup(s.channel, at, absolute - at.startMs, fresh = false)
         }
     }
 
@@ -637,8 +637,42 @@ class LiveTvViewModel @Inject constructor(
     private val _catchup = MutableStateFlow<CatchupSession?>(null)
     val catchup: StateFlow<CatchupSession?> = _catchup
 
-    /** Plays [program] from the archive, starting [offsetMs] into it. */
-    fun playCatchup(channel: LiveChannel, program: EpgProgram, offsetMs: Long = 0L): Boolean {
+    /**
+     * A replay just picked (from the guide, "Watch from the beginning", skipping back from live…)
+     * that hasn't shown a picture yet: full screen shows its channel's logo and "Loading the
+     * replay" meanwhile. Not for a skip inside a replay that's already playing.
+     */
+    private val _replayOpening = MutableStateFlow<LiveChannel?>(null)
+    val replayOpening: StateFlow<LiveChannel?> = _replayOpening
+    private var replayOpeningJob: kotlinx.coroutines.Job? = null
+
+    /** Shows the waiting screen for [channel]'s replay until its first picture, a problem, or something else playing. */
+    private fun markReplayOpening(channel: LiveChannel) {
+        replayOpeningJob?.cancel()
+        _replayOpening.value = channel
+        replayOpeningJob = viewModelScope.launch {
+            // The replay was asked for (the time zone may be looked up first, a few seconds at most)…
+            playback.state.first { it.catchupTitle != null && it.channelKey == channel.key && !it.pictureShown }
+            // …and now shows its first picture, can't be played, or gave way to live / another channel.
+            val s = playback.state.first { it.pictureShown || it.error != null || it.catchupTitle == null || it.isPlaying }
+            // Playing without a picture yet: a radio-like channel never shows one, so not for long.
+            if (!s.pictureShown && s.error == null && s.catchupTitle != null) {
+                withTimeoutOrNull(3_000) { playback.state.first { it.pictureShown || it.error != null || it.catchupTitle == null } }
+            }
+            _replayOpening.value = null
+        }
+    }
+
+    private fun clearReplayOpening() {
+        replayOpeningJob?.cancel()
+        _replayOpening.value = null
+    }
+
+    /**
+     * Plays [program] from the archive, starting [offsetMs] into it. [fresh]: a replay picked now
+     * (false for a skip inside the replay playing, or it carrying on), which gets the waiting screen.
+     */
+    fun playCatchup(channel: LiveChannel, program: EpgProgram, offsetMs: Long = 0L, fresh: Boolean = true): Boolean {
         val catchup = channel.catchup ?: return false
         val now = System.currentTimeMillis()
         if (!CatchupUrlBuilder.isAvailable(catchup, program.startMs, now)) return false
@@ -648,6 +682,7 @@ class LiveTvViewModel @Inject constructor(
             if (program.providerSourceIdentity != live.sourceIdentity) return false
             val archive = live.copy(kind = com.nuvio.stalker.StalkerContentKind.ARCHIVE,
                 command = "", programId = programmeId)
+            if (fresh) markReplayOpening(channel)
             playback.play(channel, catchupTitle = program.title, catchupStartMs = program.startMs,
                 catchupLeadMs = offsetMs.coerceAtLeast(0L), stalkerStream = archive)
             _catchup.value = CatchupSession(channel, program, 0L)
@@ -663,16 +698,19 @@ class LiveTvViewModel @Inject constructor(
             // A zone worked out from the server's clock or guide is checked again now and then
             // in the background (clock changes); never one picked in settings.
             if (playlistPickedZones.value[channel.sourceId].isNullOrBlank()) repository.recheckServerZone(channel)
-            return startCatchup(channel, catchup, program, offsetMs, knownZone)
+            return startCatchup(channel, catchup, program, offsetMs, knownZone, fresh)
         }
         if (Regex("""/(?:live/)?[^/]+/[^/]+/\d+(\.[a-z0-9]+)?(\?.*)?$""", RegexOption.IGNORE_CASE).containsMatchIn(channel.url)) {
+            // The waiting screen from now, while the time zone is looked up.
+            if (fresh) markReplayOpening(channel)
             viewModelScope.launch {
                 val tz = kotlinx.coroutines.withTimeoutOrNull(ZONE_WAIT_MS) { repository.learnServerZone(channel) }
-                startCatchup(channel, catchup, program, offsetMs, tz ?: playlistZones.value[channel.sourceId]?.takeIf { it.isNotBlank() })
+                val started = startCatchup(channel, catchup, program, offsetMs, tz ?: playlistZones.value[channel.sourceId]?.takeIf { it.isNotBlank() })
+                if (fresh && !started && _replayOpening.value?.key == channel.key) clearReplayOpening()
             }
             return true
         }
-        return startCatchup(channel, catchup, program, offsetMs, playlistZones.value[channel.sourceId])
+        return startCatchup(channel, catchup, program, offsetMs, playlistZones.value[channel.sourceId], fresh)
     }
 
     private fun startCatchup(
@@ -680,7 +718,9 @@ class LiveTvViewModel @Inject constructor(
         catchup: com.nuvio.tv.livetv.model.CatchupInfo,
         program: EpgProgram,
         offsetMs: Long,
-        zone: String?
+        zone: String?,
+        /** Show the waiting screen (already shown when the time zone had to be looked up first). */
+        fresh: Boolean = false
     ): Boolean {
         val now = System.currentTimeMillis()
         // The guide's time shift is taken back off (the archive goes by the guide's own times),
@@ -718,6 +758,7 @@ class LiveTvViewModel @Inject constructor(
             ),
             catchupForms[channel.sourceId]
         )
+        if (fresh) markReplayOpening(channel)
         playback.play(
             channel, overrideUrl = links.first(), catchupTitle = program.title,
             fallbacks = links.drop(1),
@@ -810,7 +851,7 @@ class LiveTvViewModel @Inject constructor(
         if (p?.playbackState == androidx.media3.common.Player.STATE_ENDED) {
             // The window we asked for ran out: start a new one right where we are.
             val at = list.firstOrNull { absolute >= it.startMs && absolute < it.stopMs } ?: return
-            if (absolute < System.currentTimeMillis() - 60_000) playCatchup(s.channel, at, absolute - at.startMs)
+            if (absolute < System.currentTimeMillis() - 60_000) playCatchup(s.channel, at, absolute - at.startMs, fresh = false)
             return
         }
         if (absolute < s.program.stopMs) return
@@ -930,7 +971,7 @@ class LiveTvViewModel @Inject constructor(
                     "(copy starts at ${s.baseOffsetMs / 60_000} min, saved ${saved?.let { "${it / 60_000} min" } ?: "none"}, " +
                     "player length ${p?.duration?.takeIf { it != androidx.media3.common.C.TIME_UNSET }?.let { "${it / 60_000} min" } ?: "unknown"})"
             )
-            playCatchup(s.channel, s.program, target)
+            playCatchup(s.channel, s.program, target, fresh = false)
         }
     }
 

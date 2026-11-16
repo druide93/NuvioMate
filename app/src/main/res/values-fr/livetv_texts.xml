@@ -1329,5 +1329,6 @@
         <item>"Enregistrement de « {0} » programmé ({1})"</item>
         <item>"Enregistrement de chaque « {0} » sur {1}"</item>
         <item>"Enregistrement de « {0} » sur {1}"</item>
+        <item>"Chargement du replay"</item>
     </string-array>
 </resources>
