@@ -80,6 +80,20 @@ private const val UP_NEXT_SECONDS = 10
 
 private const val DOUBLE_RIGHT_MS = 400L
 
+/** Catch-up channels: skipped forward to within this of live, you're back on live instead of a replay. */
+private const val LIVE_EDGE_MS = 20_000L
+
+/** A replay started by skipping back from live starts at least this far back (the newest part an archive has). */
+private const val REPLAY_BEHIND_MS = 15_000L
+
+/** How far one press of ◀ / ▶ (or ⏪ / ⏩) skips in a replay; held, further with each repeat. */
+private fun holdStepMs(repeat: Int): Long = when {
+    repeat > 20 -> 120_000L
+    repeat > 8 -> 60_000L
+    repeat > 2 -> 30_000L
+    else -> 10_000L
+}
+
 /** The picture size saved in settings, as one of Nuvio's own player modes. */
 internal fun aspectModeOf(name: String): com.nuvio.tv.ui.screens.player.AspectMode =
     com.nuvio.tv.ui.screens.player.AspectMode.entries.firstOrNull { it.name == name }
@@ -354,6 +368,15 @@ fun LiveTvPlayerScreen(
     LaunchedEffect(scrubToken) {
         val target = scrubTargetMs ?: return@LaunchedEffect
         delay(700)
+        val s = catchupSession
+        // Skipped forward up to live in a show still on air: back to watching it live.
+        if (s != null && s.recordingId == null && target > positionMs &&
+            s.program.startMs + target >= System.currentTimeMillis() - LIVE_EDGE_MS
+        ) {
+            scrubTargetMs = null
+            viewModel.backToLive(s.channel)
+            return@LaunchedEffect
+        }
         viewModel.seekCatchupTo(target)
         positionMs = target
         scrubTargetMs = null
@@ -362,16 +385,26 @@ fun LiveTvPlayerScreen(
     // The on-screen ⟲30 / ⟳30 buttons pass their own 30 seconds.
     fun scrub(forward: Boolean, repeat: Int, stepMs: Long? = null) {
         val s = catchupSession ?: return
-        val step = stepMs ?: when {
-            repeat > 20 -> 120_000L
-            repeat > 8 -> 60_000L
-            repeat > 2 -> 30_000L
-            else -> 10_000L
-        }
+        val step = stepMs ?: holdStepMs(repeat)
         val length = s.program.stopMs - s.program.startMs
         val from = scrubTargetMs ?: positionMs
         scrubTargetMs = (from + if (forward) step else -step).coerceIn(0L, length)
         scrubToken++
+        showBanner()
+    }
+    // The bar's ⏮: in a replay or a recording, straight back to the start of what's playing; live
+    // on a catch-up channel (or one being recorded), the show on now from its beginning.
+    fun backToStart() {
+        if (playback.catchupTitle != null) {
+            // Drop a skip still waiting to happen (◀ / ▶ pressed just before), then go to the start.
+            scrubTargetMs = null
+            scrubToken++
+            viewModel.seekCatchupTo(0L)
+            positionMs = 0L
+        } else {
+            val ch = current ?: return
+            if (!viewModel.watchFromStart(ch)) toast = "This channel can't replay it from the start"
+        }
         showBanner()
     }
 
@@ -435,6 +468,55 @@ fun LiveTvPlayerScreen(
     }
     // The play bar's Multiview button works for any live channel (not only ones with a game).
     val multiviewEligible = current != null && playback.catchupTitle == null && !playingRecording
+    // The play bar's ⏮ (back to the start): in a replay or recording, or live where the show on
+    // now can be restarted (catch-up, or a recording running). Not on a sports addon's own timeline.
+    val restartInBar = current != null &&
+        (playback.catchupTitle != null || (!ownTimeline && viewModel.canWatchFromStart(current)))
+    // Live (or paused) on a catch-up channel: the bar can always move back. Skipping back further
+    // than the pause buffer reaches (or with no buffer at all) carries on into the show through
+    // catch-up, from that point; skipping forward to live again comes back to live.
+    val fromRecording by viewModel.playback.recordingPlayback.collectAsStateWithLifecycle()
+    val liveCatchup = current != null && playback.catchupTitle == null && !ownTimeline && fromRecording == null &&
+        viewModel.canReplayNow(current)
+    // Where that replay will start (wall clock): it starts once you stop pressing, like catch-up skips.
+    var liveRewindAtMs by remember { mutableStateOf<Long?>(null) }
+    var liveRewindToken by remember { mutableIntStateOf(0) }
+    LaunchedEffect(liveRewindToken) {
+        if (liveRewindAtMs == null) return@LaunchedEffect
+        delay(700)
+        // Read again: a channel change in the meantime drops it.
+        val at = liveRewindAtMs ?: return@LaunchedEffect
+        liveRewindAtMs = null
+        val ch = current ?: return@LaunchedEffect
+        val offset = viewModel.replayFrom(ch, at)
+        if (offset == null) toast = "This channel can't replay it from the start" else positionMs = offset
+    }
+    LaunchedEffect(playback.channelKey, playback.catchupTitle) { liveRewindAtMs = null }
+    /**
+     * Moves where the replay will start by [deltaMs] (live or paused on a catch-up channel). Back
+     * past what the pause buffer has starts it through catch-up; forward only moves a start still
+     * waiting (up to live, which drops it). False when it's not for catch-up: the caller skips in
+     * the pause buffer as before.
+     */
+    fun seekThroughCatchup(deltaMs: Long): Boolean {
+        if (!liveCatchup) return false
+        val now = System.currentTimeMillis()
+        val pending = liveRewindAtMs
+        val target = (pending ?: viewModel.playback.shiftPositionWallMs() ?: now) + deltaMs
+        if (pending == null) {
+            if (deltaMs >= 0) return false
+            // Still inside the pause buffer: skip there, no need to ask the provider.
+            val earliest = viewModel.playback.shiftEarliestWallMs()
+            if (earliest != null && viewModel.playback.shiftCanSeek() && target >= earliest) return false
+        }
+        // No floor at the show's start: paused during the show before, going back carries on into
+        // that one (whichever show is on at that moment is the one replayed).
+        liveRewindAtMs = if (deltaMs > 0 && target >= now - LIVE_EDGE_MS) null
+            else target.coerceAtMost(now - REPLAY_BEHIND_MS)
+        liveRewindToken++
+        showBanner()
+        return true
+    }
     fun openMultiview() {
         okHoldJob?.cancel()
         longPressFired = false
@@ -532,9 +614,13 @@ fun LiveTvPlayerScreen(
                 ) {
                     if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent true
                     val forward = mediaCode == AndroidKeyEvent.KEYCODE_MEDIA_FAST_FORWARD || mediaCode == AndroidKeyEvent.KEYCODE_MEDIA_SKIP_FORWARD
+                    // Live on a catch-up channel: as in a replay (10 seconds, held faster); paused, 30.
+                    val liveStep = if (shiftStartedAt != null) 30_000L else holdStepMs(e.nativeKeyEvent.repeatCount)
                     when {
                         // Each press 10 seconds; held, faster (as with ◀ / ▶).
                         archive -> scrub(forward = forward, repeat = e.nativeKeyEvent.repeatCount)
+                        // Back past the pause buffer (or with none): on into the show through catch-up.
+                        seekThroughCatchup(if (forward) liveStep else -liveStep) -> Unit
                         shifting && viewModel.playback.shiftCanSeek() -> {
                             viewModel.playback.shiftSeekBy(if (forward) 30_000L else -30_000L); showBanner()
                         }
@@ -628,7 +714,7 @@ fun LiveTvPlayerScreen(
                         else if (shiftStartedAt != null || (ownTimeline && viewModel.playback.shiftIsBehind())) PanelMode.SHIFT
                         else PanelMode.LIVE
                     val paused = playback.userPaused
-                    val list = panelControls(mode, paused, canSkip = archive || viewModel.playback.shiftCanSeek(), bell = bellInBar, pin = pinGame != null, backups = backups.isNotEmpty(), sports = multiviewEligible)
+                    val list = panelControls(mode, paused, canSkip = archive || viewModel.playback.shiftCanSeek() || liveCatchup, bell = bellInBar, pin = pinGame != null, backups = backups.isNotEmpty(), sports = multiviewEligible, restart = restartInBar, liveSeek = liveCatchup)
                     if (e.type == KeyEventType.KeyUp) return@onPreviewKeyEvent isOk || e.key == Key.Back
                     showBanner()
                     val buttons = list.filter { it != PanelControl.TIMELINE }
@@ -652,7 +738,8 @@ fun LiveTvPlayerScreen(
                                     r > 2 -> 30_000L
                                     else -> 10_000L
                                 }
-                                viewModel.playback.shiftSeekBy(if (forward) step else -step)
+                                // Live on a catch-up channel: back past the pause buffer goes on through catch-up.
+                                if (!seekThroughCatchup(if (forward) step else -step)) viewModel.playback.shiftSeekBy(if (forward) step else -step)
                             }
                             return@onPreviewKeyEvent true
                         }
@@ -684,8 +771,11 @@ fun LiveTvPlayerScreen(
                         isOk -> {
                             if (e.nativeKeyEvent.repeatCount > 0) return@onPreviewKeyEvent true
                             when (buttons.getOrNull(i)) {
-                                PanelControl.BACK -> if (archive) scrub(forward = false, repeat = 0, stepMs = 30_000L) else viewModel.playback.shiftSeekBy(-30_000)
-                                PanelControl.FORWARD -> if (archive) scrub(forward = true, repeat = 0, stepMs = 30_000L) else viewModel.playback.shiftSeekBy(30_000)
+                                PanelControl.RESTART -> backToStart()
+                                PanelControl.BACK -> if (archive) scrub(forward = false, repeat = 0, stepMs = 30_000L)
+                                    else if (!seekThroughCatchup(-30_000L)) viewModel.playback.shiftSeekBy(-30_000)
+                                PanelControl.FORWARD -> if (archive) scrub(forward = true, repeat = 0, stepMs = 30_000L)
+                                    else if (!seekThroughCatchup(30_000L)) viewModel.playback.shiftSeekBy(30_000)
                                 PanelControl.PLAY -> viewModel.playback.togglePause()
                                 PanelControl.LIVE -> {
                                     if (playingRecording) onBack()
@@ -1124,13 +1214,19 @@ fun LiveTvPlayerScreen(
                         )
                     }
                     PanelMode.LIVE -> nowProgram?.let { p ->
+                        // Skipped back on a catch-up channel: where the replay will start, and live marked.
+                        val rewindAt = liveRewindAtMs
                         PanelTimeline(
                             startMs = p.startMs,
                             endMs = p.stopMs,
-                            positionMs = tick.coerceIn(p.startMs, p.stopMs),
+                            positionMs = (rewindAt ?: tick).coerceIn(p.startMs, p.stopMs),
+                            liveMs = if (rewindAt != null) tick.coerceIn(p.startMs, p.stopMs) else null,
+                            recordedUntilMs = if (rewindAt != null) tick else null,
                             leftLabel = formatClock(p.startMs, use24h),
                             rightLabel = formatClock(p.stopMs, use24h),
-                            status = minutesLeftLabel(p.stopMs, tick)
+                            status = if (rewindAt != null) formatDuration((tick - rewindAt).coerceAtLeast(0L)) + " behind live"
+                                else minutesLeftLabel(p.stopMs, tick),
+                            statusLive = rewindAt != null
                         )
                     }
                 }
@@ -1167,7 +1263,7 @@ fun LiveTvPlayerScreen(
                     showPosters = settings.showPosters,
                     timeline = timeline,
                     paused = paused,
-                    controls = panelControls(mode, paused, canSkip = archive || viewModel.playback.shiftCanSeek(), bell = bellInBar, pin = pinGame != null, backups = backups.isNotEmpty(), sports = multiviewEligible),
+                    controls = panelControls(mode, paused, canSkip = archive || viewModel.playback.shiftCanSeek() || liveCatchup, bell = bellInBar, pin = pinGame != null, backups = backups.isNotEmpty(), sports = multiviewEligible, restart = restartInBar, liveSeek = liveCatchup),
                     focused = controlFocus,
                     captionsOn = captionsOn,
                     audioLabel = remember(playback.channelKey, bannerVisible) { viewModel.playback.audioLabel() },

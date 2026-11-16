@@ -828,6 +828,19 @@ class LiveTvViewModel @Inject constructor(
         return CatchupUrlBuilder.isAvailable(channel, p, System.currentTimeMillis())
     }
 
+    /** True if the show on now can be replayed through the channel's catch-up (so live can skip back into it). */
+    fun canReplayNow(channel: LiveChannel): Boolean = catchupStartPossible(channel)
+
+    /**
+     * Live (or paused) on a catch-up channel, skipped back to [atMs] (wall clock): plays the show
+     * on at that moment through catch-up, from there. The time into that show, or null if it can't.
+     */
+    fun replayFrom(channel: LiveChannel, atMs: Long): Long? {
+        val p = programs.value[channel.key]?.firstOrNull { atMs >= it.startMs && atMs < it.stopMs } ?: return null
+        val offset = (atMs - p.startMs).coerceAtLeast(0L)
+        return if (playCatchup(channel, p, offset)) offset else null
+    }
+
     /** True if the show on now can be watched from its beginning: catch-up, or a recording running on the channel. */
     fun canWatchFromStart(channel: LiveChannel): Boolean =
         catchupStartPossible(channel) || recorder.activeFor(channel.key) != null

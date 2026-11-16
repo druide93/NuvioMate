@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material.icons.filled.Replay30
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.runtime.Composable
@@ -70,10 +71,10 @@ internal enum class PanelMode { LIVE, CATCHUP, SHIFT }
 
 /**
  * The panel's controls, in the order the highlight moves through them. The bar itself only has
- * the timeline, back 30, play/pause, forward 30 and the gear; the rest are kept for the keys
- * that still name them, and live in the gear panel.
+ * the timeline, back to the start, back 30, play/pause, forward 30 and the gear; the rest are
+ * kept for the keys that still name them, and live in the gear panel.
  */
-internal enum class PanelControl { TIMELINE, BACK, PLAY, FORWARD, LIVE, CC, AUDIO, SIZE, SLEEP, PIN, BELL, BACKUPS, SPORTS, MORE }
+internal enum class PanelControl { TIMELINE, RESTART, BACK, PLAY, FORWARD, LIVE, CC, AUDIO, SIZE, SLEEP, PIN, BELL, BACKUPS, SPORTS, MORE }
 
 /** Timeline: everything in wall-clock milliseconds. */
 internal data class PanelTimeline(
@@ -137,11 +138,17 @@ internal object BarPart {
     fun join(set: Set<String>): String = set.sorted().joinToString(",")
 }
 
-/** Which controls the bar offers: back 30 / forward 30 only where you can skip, and the gear. */
-internal fun panelControls(mode: PanelMode, paused: Boolean, canSkip: Boolean, bell: Boolean = false, pin: Boolean = false, backups: Boolean = false, sports: Boolean = false): List<PanelControl> = buildList {
-    val transport = mode != PanelMode.LIVE || paused
+/**
+ * Which controls the bar offers: back 30 / forward 30 only where you can skip, back to the start
+ * where there's a beginning to go back to ([restart]: a replay, or a catch-up channel), and the gear.
+ * [liveSeek]: live on a catch-up channel, which can skip back through catch-up (so the bar moves even live).
+ */
+internal fun panelControls(mode: PanelMode, paused: Boolean, canSkip: Boolean, bell: Boolean = false, pin: Boolean = false, backups: Boolean = false, sports: Boolean = false, restart: Boolean = false, liveSeek: Boolean = false): List<PanelControl> = buildList {
+    val transport = mode != PanelMode.LIVE || paused || liveSeek
     // The timeline itself can be grabbed (Up from the buttons) and moved with ◀ / ▶.
     if (transport && canSkip) add(PanelControl.TIMELINE)
+    // Back to the start: first on the left, like a player's ⏮.
+    if (restart) add(PanelControl.RESTART)
     if (transport && canSkip) add(PanelControl.BACK)
     add(PanelControl.PLAY)
     if (transport && canSkip) add(PanelControl.FORWARD)
@@ -371,9 +378,10 @@ internal fun LiveTvPlayerPanel(
                         Spacer(Modifier.height(if (seekHint) 22.dp else 6.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             if (full) {
-                                listOf(PanelControl.BACK, PanelControl.PLAY, PanelControl.FORWARD).filter { it in controls }.forEach { c ->
+                                listOf(PanelControl.RESTART, PanelControl.BACK, PanelControl.PLAY, PanelControl.FORWARD).filter { it in controls }.forEach { c ->
                                     RoundButton(
                                         icon = when (c) {
+                                            PanelControl.RESTART -> Icons.Default.SkipPrevious
                                             PanelControl.BACK -> Icons.Default.Replay30
                                             PanelControl.FORWARD -> Icons.Default.Forward30
                                             else -> if (paused) Icons.Default.PlayArrow else Icons.Default.Pause

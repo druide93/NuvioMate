@@ -21,9 +21,11 @@ How to get around Nuvio + IPTV with your TV remote. [Back to the README](README.
 |---|---|
 | **▲ / ▼**, **CH+ / CH−** | Next / previous channel |
 | **OK** | Info panel (catch-up: pause / play) |
+| **⏮** on the info panel | Catch-up channels: back to the start (a replay or recording: its beginning; live: the show on now from its beginning) |
 | **◀** | Overlay mode (catch-up: skip back) |
 | **▶** | Catch-up: skip forward (hold to skip faster) |
 | **⏪ / ⏩** | Catch-up and paused live TV: 30 seconds back / forward (hold to go faster) |
+| **⏪**, **⟲30** or the progress bar, live on a catch-up channel | Back into the show through catch-up, even before where you paused; skip forward up to live to be back on live |
 | **Long-press OK** or **Menu** | Audio, subtitles, screen size, picture shape, stream info, sleep timer, record, **Add to Multiview**, watch from the beginning, find & stream |
 | **Back** | Back to the guide |
 
