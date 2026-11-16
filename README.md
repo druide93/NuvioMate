@@ -1,3 +1,41 @@
+# Nuvio + IPTV, édition française style TiviMate (fork)
+
+> **Ce dépôt est un fork de [homelessbrian/NuvioPlusIPTV](https://github.com/homelessbrian/NuvioPlusIPTV).** L'app, sa TV en direct, son Sport, son Multiview et tout le reste sont le travail de [homelessbrian](https://github.com/homelessbrian) et des contributeurs qu'il cite (dont [ghbarker](https://github.com/ghbarker)), eux-mêmes basés sur [NuvioTV](https://github.com/NuvioMedia/NuvioTV). Tout le mérite de l'app leur revient.
+>
+> Ce fork ajoute par-dessus un guide plus proche de TiviMate, des corrections du replay et une traduction française plus complète. Les mises à jour du projet d'origine y sont intégrées régulièrement. Le code reste sous la même licence, [GPL-3.0](LICENSE).
+>
+> Les problèmes liés aux changements de ce fork ne concernent pas l'auteur d'origine : merci de ne pas les lui signaler. Le code Downloader, les versions publiées et les liens (Discord, Ko-fi…) de la présentation d'origine plus bas concernent l'app d'origine, pas ce fork.
+
+## Changements de ce fork
+
+### Guide style TiviMate
+Avec l'option **Guide style TiviMate** (paramètres de la TV en direct, avec la taille du guide) :
+- **Grille :** colonne des chaînes sans case, noms en gras, chaîne en lecture en bleu avec ▶. Cases avec le titre seul et des coins légèrement arrondis, ligne sélectionnée un peu plus claire. Date et heure en bleu au-dessus des chaînes, ligne « maintenant » fine et bleue. Marge de gauche réduite, grille jusqu'au bord droit de l'écran.
+- **Groupes :** une fois ouverte, la liste des groupes occupe toute la hauteur à gauche, et l'en-tête se décale à côté.
+- **En-tête :** grand aperçu, ligne de la chaîne, titre, horaire avec une petite barre de progression et le temps restant, description sur plusieurs lignes.
+- **Bandeau d'infos du lecteur :** fond sombre uni dont la transparence suit le réglage existant, sans liseré blanc, étiquettes grises. Les informations et les boutons ne changent pas.
+
+### Guide (tous styles)
+- **Émissions qui se chevauchent dans le guide du fournisseur :** la plus ancienne s'arrête au début de la suivante, et une même émission listée deux fois n'apparaît plus qu'une fois. Les cases ne s'empilent plus les unes sur les autres.
+
+### Replay
+- **Sauvegarde qui reprend après une coupure :** un replay coupé en cours de téléchargement redemande la suite du même fichier, au lieu de s'arrêter là. Si le fournisseur ne sait pas reprendre en cours de fichier, la partie déjà sauvegardée est sautée et la sauvegarde continue.
+- **Sauts dans la partie déjà sauvegardée** sans recharger tout le flux.
+- **Fournisseur qui ralentit fortement** après un démarrage rapide : nouvelle connexion, qui reprend au même endroit.
+- **Enchaîner les replays** ne coupe plus la nouvelle sauvegarde (les démarrages de 30 à 60 s ont disparu), et la lecture gèle moins près de la fin de la partie sauvegardée.
+- **Diagnostic :** le rapport de démarrage s'écrit aussi dans les journaux système (`adb logcat -s NuvioReport`), avec la vitesse de sauvegarde toutes les 30 s.
+
+### Traduction française
+- **Textes écrits directement dans le code** (guide, lecteur, Sport, Enregistrements, Calendrier, Multiview, menus) : affichés en français quand l'appareil est en français. Le temps restant s'affiche par exemple « 1h 23min restantes ».
+- **Fichiers de traduction :** compléments aux traductions françaises du projet d'origine.
+
+### Compilation
+- **Compilations debug locales** sans la clé de signature du projet : elles sont signées avec la clé de debug standard et s'installent sous `com.nuvio.livetv.debug`, à côté de l'app officielle.
+
+---
+
+<p align="center"><em>Présentation de l'app d'origine (en anglais) :</em></p>
+
 <div align="center">
 
 # Nuvio + IPTV
