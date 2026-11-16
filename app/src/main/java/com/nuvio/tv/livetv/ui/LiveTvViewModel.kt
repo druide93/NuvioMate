@@ -1454,7 +1454,7 @@ class LiveTvViewModel @Inject constructor(
     fun toggleSeries(channel: LiveChannel, program: EpgProgram): String {
         scheduler.seriesFor(channel.key, titleMarks(program.title).title)?.let {
             scheduler.removeSeries(it.id)
-            return "Stopped recording \"${it.title}\""
+            return LiveTvTexts.trf("Stopped recording \"{0}\"", it.title)
         }
         return scheduler.addSeries(channel, program)
     }
@@ -1516,9 +1516,9 @@ class LiveTvViewModel @Inject constructor(
             startDelayMs = if (watching) 1_500L else 0L
         )
         if (watching) playback.playFromRecording(recorder.playlistFile(rec))
-        val until = if (untilStopped) "you stop it" else formatClock(stopAt, settings.value.use24HourClock)
-        return if (recorder.freeBytes() < needed) "Recording \"$title\" until $until. Storage is low, so it may stop early."
-        else "Recording \"$title\" until $until"
+        val until = if (untilStopped) "you stop it".tr() else formatClock(stopAt, settings.value.use24HourClock)
+        return if (recorder.freeBytes() < needed) LiveTvTexts.trf("Recording \"{0}\" until {1}. Storage is low, so it may stop early.", title, until)
+        else LiveTvTexts.trf("Recording \"{0}\" until {1}", title, until)
     }
 
     fun currentProgram(channelKey: String, at: Long = _now.value): EpgProgram? =

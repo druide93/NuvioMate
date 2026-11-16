@@ -42,6 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nuvio.tv.livetv.record.RecordingSchedule
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.livetv.ui.formatClock
 import com.nuvio.tv.ui.theme.NuvioTheme
 import kotlinx.coroutines.delay
@@ -128,8 +130,8 @@ internal fun RecordDialog(
         LengthPicker(minutes) { minutes = it }
         Spacer(Modifier.height(8.dp))
         LiveText(
-            (if (live) "Starts now" else "Starts ${formatClock(startAt, use24h)} (${early / 60_000} min early)") +
-                "  ·  Ends ${formatClock(endAt, use24h)}" + (if (postMin > 0) " (with $postMin min extra)" else ""),
+            (if (live) "Starts now".tr() else LiveTvTexts.trf("Starts {0} ({1} min early)", formatClock(startAt, use24h), early / 60_000)) +
+                "  ·  " + LiveTvTexts.trf("Ends {0}", formatClock(endAt, use24h)) + (if (postMin > 0) " " + LiveTvTexts.trf("(with {0} min extra)", postMin) else ""),
             color = SportsLook.Dim, size = 12.sp
         )
         Spacer(Modifier.height(12.dp))

@@ -13,12 +13,15 @@ import com.nuvio.tv.R
  */
 internal object LiveTvTexts {
     @Volatile private var map: Map<String, String> = emptyMap()
+    /** The same words in capitals, for headings shown in capitals ("WATCH", "SCHEDULED"). */
+    @Volatile private var upper: Map<String, String> = emptyMap()
     @Volatile private var builtFor: String? = null
 
     /** Reads the lists for [context]'s language (once per language). */
     fun init(context: Context) {
         val config = context.resources.configuration
-        val tag = if (android.os.Build.VERSION.SDK_INT >= 24) config.locales[0].toLanguageTag() else @Suppress("DEPRECATION") config.locale.toLanguageTag()
+        val locale = if (android.os.Build.VERSION.SDK_INT >= 24) config.locales[0] else @Suppress("DEPRECATION") config.locale
+        val tag = locale.toLanguageTag()
         if (tag == builtFor) return
         map = runCatching {
             val en = context.resources.getStringArray(R.array.livetv_texts_en)
@@ -28,11 +31,29 @@ internal object LiveTvTexts {
                 for (i in en.indices) if (en[i] != local[i] && local[i].isNotEmpty()) put(en[i], local[i])
             }
         }.getOrDefault(emptyMap())
+        upper = HashMap<String, String>(map.size * 2).apply {
+            for ((en, local) in map) { val k = en.uppercase(); if (k !in this) put(k, local.uppercase(locale)) }
+        }
         builtFor = tag
     }
 
-    /** [text] in the device's language, when it's one of Live TV's own words. */
-    fun tr(text: String): String = map[text] ?: text
+    /**
+     * [text] in the device's language, when it's one of Live TV's own words. A menu item that
+     * opens another step ends in "…" ("Rename channel…"): it's found without it too. Headings
+     * put in capitals before they're shown ("THIS SHOW") are found in capitals.
+     */
+    fun tr(text: String): String = map[text]
+        ?: text.takeIf { it.length > 1 && it.endsWith('…') }?.let { t -> map[t.dropLast(1)]?.let { "$it…" } }
+        ?: text.takeIf { it != it.lowercase() && it == it.uppercase() }?.let { upper[it] }
+        ?: text
+
+    /**
+     * [template] in the device's language with {0}, {1}… replaced by [args], for texts with a
+     * number or a name in them ("Copied {0} channels to {1}"): the translation can put them
+     * where its own word order needs them.
+     */
+    fun trf(template: String, vararg args: Any?): String =
+        args.foldIndexed(tr(template)) { i, s, a -> s.replace("{$i}", a.toString()) }
 }
 
 /** This Live TV word in the device's language (see [LiveTvTexts]). */

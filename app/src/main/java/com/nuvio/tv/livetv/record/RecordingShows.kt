@@ -43,6 +43,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.livetv.ui.guideBackdrop
 import com.nuvio.tv.livetv.ui.liveCorner
 import com.nuvio.tv.ui.theme.NuvioTheme
@@ -157,13 +159,13 @@ internal fun RecordedFolderCard(
                     Box(
                         Modifier.align(Alignment.TopEnd).padding(8.dp).clip(RoundedCornerShape(50))
                             .background(colors.Secondary).padding(horizontal = 9.dp, vertical = 2.dp)
-                    ) { LiveText("$fresh new", size = 12.sp, weight = FontWeight.Bold, color = colors.Background) }
+                    ) { LiveText(if (fresh == 1) "1 new".tr() else LiveTvTexts.trf("{0} new", fresh), size = 12.sp, weight = FontWeight.Bold, color = colors.Background) }
                 }
                 Box(
                     Modifier.align(Alignment.BottomStart).padding(8.dp).clip(RoundedCornerShape(6.dp))
                         .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.7f)).padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
-                    LiveText("${show.episodes.size} episodes", size = 12.sp, weight = FontWeight.SemiBold, color = androidx.compose.ui.graphics.Color.White)
+                    LiveText(LiveTvTexts.trf("{0} episodes", show.episodes.size), size = 12.sp, weight = FontWeight.SemiBold, color = androidx.compose.ui.graphics.Color.White)
                 }
             }
         }
@@ -175,8 +177,8 @@ internal fun RecordedFolderCard(
             marquee = focused
         )
         LiveText(
-            (if (watched >= show.episodes.size) "All watched" else "$watched of ${show.episodes.size} watched") +
-                " · latest " + shortDayLabel(airedMs(newest)).lowercase(Locale.getDefault()),
+            (if (watched >= show.episodes.size) "All watched".tr() else LiveTvTexts.trf("{0} of {1} watched", watched, show.episodes.size)) +
+                " · " + LiveTvTexts.trf("latest {0}", shortDayLabel(airedMs(newest)).lowercase(Locale.getDefault())),
             size = 13.sp,
             color = colors.TextSecondary
         )
@@ -252,11 +254,12 @@ internal fun RecordedShowPage(
                     },
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                LiveText("Recordings  ›  ${show.title}", size = 14.sp, color = colors.TextSecondary)
+                LiveText("Recordings".tr() + "  ›  " + show.title, size = 14.sp, color = colors.TextSecondary)
                 ArtThumb(art[newestOf(show).id], newestOf(show).channelLogo, show.title, Modifier.fillMaxWidth(0.85f).aspectRatio(16f / 9f))
                 LiveText(show.title, size = 28.sp, weight = FontWeight.Bold, maxLines = 2)
                 LiveText(
-                    "${show.episodes.size} episodes · $watchedCount watched" + (if (freshCount > 0) " · $freshCount new" else "") +
+                    LiveTvTexts.trf("{0} episodes · {1} watched", show.episodes.size, watchedCount) +
+                        (if (freshCount > 0) " · " + (if (freshCount == 1) "1 new".tr() else LiveTvTexts.trf("{0} new", freshCount)) else "") +
                         "\n" + listOfNotNull(
                             durationLabel(totalSec).takeIf { totalSec > 0 },
                             sizeLabel(totalBytes).takeIf { totalBytes > 0 }
@@ -381,7 +384,7 @@ private fun EpisodeRow(
         Spacer(Modifier.width(12.dp))
         when {
             state.watched -> LiveText("Watched", size = 13.sp, color = colors.TextTertiary)
-            minutesLeft != null -> LiveText("$minutesLeft min left", size = 13.sp, weight = FontWeight.SemiBold)
+            minutesLeft != null -> LiveText(LiveTvTexts.trf("{0} min left", minutesLeft), size = 13.sp, weight = FontWeight.SemiBold)
             else -> Box(
                 Modifier.clip(RoundedCornerShape(50)).background(colors.Secondary).padding(horizontal = 10.dp, vertical = 2.dp)
             ) { LiveText("NEW", size = 12.sp, weight = FontWeight.Bold, color = colors.Background) }

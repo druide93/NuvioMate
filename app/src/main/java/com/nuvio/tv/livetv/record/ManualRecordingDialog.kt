@@ -32,6 +32,8 @@ import com.nuvio.tv.livetv.model.LiveChannel
 import com.nuvio.tv.livetv.ui.LiveDialog
 import com.nuvio.tv.livetv.ui.LiveFocusRow
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.livetv.ui.MenuItem
 import com.nuvio.tv.livetv.ui.TextInputDialog
 import com.nuvio.tv.livetv.ui.focusedTextColor
@@ -127,7 +129,7 @@ internal fun ManualRecordingDialog(
         }
         Spacer(Modifier.height(6.dp))
         LiveText(
-            "Ends at ${timeFmt.format(Date(startMs() + lengthMin * 60_000L))}. Your Start Early and Keep Recording After times are added.",
+            LiveTvTexts.trf("Ends at {0}. Your Start Early and Keep Recording After times are added.", timeFmt.format(Date(startMs() + lengthMin * 60_000L))),
             color = NuvioTheme.colors.TextSecondary, size = 13.sp, maxLines = 2
         )
         problem?.let {
@@ -157,7 +159,7 @@ internal fun ManualRecordingDialog(
             onDismiss = { editing = null },
             onConfirm = { text ->
                 parseTime(text)?.let { minuteOfDay = it; problem = null }
-                    ?: run { problem = "Couldn't read \"$text\" as a time. Try 8:30 PM or 20:30." }
+                    ?: run { problem = LiveTvTexts.trf("Couldn't read \"{0}\" as a time. Try 8:30 PM or 20:30.", text) }
                 editing = null
             }
         )
@@ -218,7 +220,7 @@ private fun ValueRow(
     ) { f ->
         LiveText(label, color = focusedTextColor(f).copy(alpha = 0.75f), size = 15.sp, modifier = Modifier.width(120.dp))
         LiveText(
-            (if (onChange != null && f) "◀  " else "") + value + (if (onChange != null && f) "  ▶" else ""),
+            (if (onChange != null && f) "◀  " else "") + value.tr() + (if (onChange != null && f) "  ▶" else ""),
             color = focusedTextColor(f), size = 16.sp, weight = FontWeight.SemiBold, modifier = Modifier.weight(1f)
         )
     }

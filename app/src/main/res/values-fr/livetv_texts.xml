@@ -1261,5 +1261,73 @@
         <item>"📡 À la demande"</item>
         <item>"🔔  Me le rappeler"</item>
         <item>"🔔  Rappel programmé"</item>
+        <item>"Copier dans un groupe"</item>
+        <item>"Copier plusieurs chaînes dans un groupe"</item>
+        <item>"Copier des chaînes dans un groupe"</item>
+        <item>"Copier des chaînes dans un groupe"</item>
+        <item>"Affichage du guide (panneau d’infos, aperçu)"</item>
+        <item>"Droite : tout cocher"</item>
+        <item>"Gauche : tout décocher"</item>
+        <item>"OK : cocher ou décocher"</item>
+        <item>"Retour : annuler"</item>
+        <item>"Retour : choisir le groupe"</item>
+        <item>"Copier {0} chaîne dans…"</item>
+        <item>"Copier {0} chaînes dans…"</item>
+        <item>"{0} chaîne copiée dans {1}"</item>
+        <item>"{0} chaînes copiées dans {1}"</item>
+        <item>"Déjà dans {0}"</item>
+        <item>"Aucune chaîne dans {0}"</item>
+        <item>"Match complet"</item>
+        <item>"Condensé"</item>
+        <item>"Lire depuis l’archive : {0}"</item>
+        <item>"Trouver et regarder « {0} » dans Nuvio"</item>
+        <item>"Masquer le groupe « {0} »"</item>
+        <item>"Pas encore prêt chez le fournisseur : nouvel essai à {0} ({1} sur {2})"</item>
+        <item>"Sauvegardé depuis le replay à {0}, après la fin"</item>
+        <item>"« {0} » n’a encore rien enregistré : {1}"</item>
+        <item>"« {0} » n’a encore rien enregistré. Patientez quelques secondes."</item>
+        <item>"{0} libres"</item>
+        <item>"Et {0} de plus en cours d’enregistrement"</item>
+        <item>"Garder les {0} derniers"</item>
+        <item>"Déplacement des enregistrements ({0} sur {1})"</item>
+        <item>"{0} sur {1}"</item>
+        <item>"Enregistré depuis la playlist : {0}"</item>
+        <item>"Chaque nouvel épisode sur {0} (les rediffusions d’épisodes déjà enregistrés sont ignorées). L’arrêter annule aussi les diffusions programmées qui n’ont pas commencé ; ce qui est enregistré est conservé."</item>
+        <item>"Épisodes à conserver : {0}"</item>
+        <item>"Les {0} derniers"</item>
+        <item>"{0} : les anciens épisodes sont supprimés à mesure que les nouveaux sont enregistrés."</item>
+        <item>"Garder les {0} derniers"</item>
+        <item>"Déplacer « {0} »"</item>
+        <item>"Déplacer {0} enregistrements"</item>
+        <item>"(déjà ici)"</item>
+        <item>"Tout supprimer de « {0} » ?"</item>
+        <item>"Cela supprime les {0} épisodes. Cette action est irréversible."</item>
+        <item>"Supprimer « {0} » ?"</item>
+        <item>"{0} enregistrées"</item>
+        <item>"{0} pour l’instant"</item>
+        <item>"1 nouveau"</item>
+        <item>"{0} nouveaux"</item>
+        <item>"{0} épisodes"</item>
+        <item>"{0} sur {1} vus"</item>
+        <item>"dernier : {0}"</item>
+        <item>"{0} épisodes · {1} vus"</item>
+        <item>"{0} min restantes"</item>
+        <item>"Fin à {0}. Vos durées « Commencer l’enregistrement plus tôt » et « Continuer l’enregistrement après » s’y ajoutent."</item>
+        <item>"Impossible de lire « {0} » comme une heure. Essayez par exemple 20:30."</item>
+        <item>"Début à {0} ({1} min plus tôt)"</item>
+        <item>"Fin à {0}"</item>
+        <item>"(avec {0} min en plus)"</item>
+        <item>"Enregistrement de « {0} » arrêté"</item>
+        <item>"ce que vous l’arrêtiez"</item>
+        <item>"Enregistrement de « {0} » jusqu’à {1}"</item>
+        <item>"Enregistrement de « {0} » jusqu’à {1}. Le stockage est presque plein, il pourrait s’arrêter plus tôt."</item>
+        <item>"Cette chaîne est déjà en cours d’enregistrement"</item>
+        <item>"Enregistrement de « {0} » en cours"</item>
+        <item>"Enregistrement de « {0} » programmé ({1}). Il chevauche « {2} » ; votre abonnement n’en permet peut-être qu’un à la fois."</item>
+        <item>"Sauvegarde de « {0} » depuis le replay"</item>
+        <item>"Enregistrement de « {0} » programmé ({1}). Il sera sauvegardé depuis le replay après la fin."</item>
+        <item>"Enregistrement de « {0} » programmé ({1})"</item>
+        <item>"Enregistrement de chaque « {0} » sur {1}"</item>
+        <item>"Enregistrement de « {0} » sur {1}"</item>
     </string-array>
 </resources>

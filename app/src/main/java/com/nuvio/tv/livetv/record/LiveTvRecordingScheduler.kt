@@ -13,6 +13,7 @@ import com.nuvio.tv.livetv.data.LiveTvRepository
 import com.nuvio.tv.livetv.model.CatchupInfo
 import com.nuvio.tv.livetv.model.EpgProgram
 import com.nuvio.tv.livetv.model.LiveChannel
+import com.nuvio.tv.livetv.ui.LiveTvTexts
 import com.nuvio.stalker.StalkerContentKind
 import com.nuvio.stalker.StalkerStreamRef
 import dagger.hilt.EntryPoint
@@ -256,7 +257,7 @@ class LiveTvRecordingScheduler @Inject constructor(
                 recorder.start(channel, channel.url, title, program.episode, program.description,
                     program.startMs, program.stopMs, program.stopMs + padPostMs)
             }
-            return "Recording \"$title\" now"
+            return LiveTvTexts.trf("Recording \"{0}\" now", title)
         }
         if (program.stopMs <= now && !useCatchup) return "That show has already been on"
         val s = RecordingSchedule(
@@ -286,10 +287,10 @@ class LiveTvRecordingScheduler @Inject constructor(
         val clash = clashWith(s)
         val whenText = timeLabel(program.startMs)
         return when {
-            clash != null -> "Set to record \"$title\" ($whenText). It overlaps \"${clash.title}\"; your account may only allow one at a time."
-            useCatchup && program.stopMs <= now -> "Saving \"$title\" from catch-up"
-            useCatchup -> "Set to record \"$title\" ($whenText). It's saved from catch-up after it ends."
-            else -> "Set to record \"$title\" ($whenText)"
+            clash != null -> LiveTvTexts.trf("Set to record \"{0}\" ({1}). It overlaps \"{2}\"; your account may only allow one at a time.", title, whenText, clash.title)
+            useCatchup && program.stopMs <= now -> LiveTvTexts.trf("Saving \"{0}\" from catch-up", title)
+            useCatchup -> LiveTvTexts.trf("Set to record \"{0}\" ({1}). It's saved from catch-up after it ends.", title, whenText)
+            else -> LiveTvTexts.trf("Set to record \"{0}\" ({1})", title, whenText)
         }
     }
 
@@ -328,7 +329,7 @@ class LiveTvRecordingScheduler @Inject constructor(
             }
             expandSeries()
         }
-        return "Recording every \"$title\" on ${channel.name}"
+        return LiveTvTexts.trf("Recording every \"{0}\" on {1}", title, channel.name)
     }
 
     /** Stops a series rule (and cancels the airings it set that haven't started). */
@@ -476,7 +477,7 @@ class LiveTvRecordingScheduler @Inject constructor(
                 recorder.start(channel, channel.url, s.title, s.episode, s.description, s.startMs, s.stopMs, s.stopMs + s.post,
                     onFinished = { rec -> s.seriesId?.let { keepOnlyNewest(it) } }, seriesId = s.seriesId)
                 remove(s)
-                LiveTvNotice.show("Recording \"${s.title}\" on ${channel.name}")
+                LiveTvNotice.show(LiveTvTexts.trf("Recording \"{0}\" on {1}", s.title, channel.name))
                 return@launch
             }
             // Catch-up: download the whole show.
@@ -710,8 +711,10 @@ class LiveTvRecordingScheduler @Inject constructor(
 
     private fun timeLabel(ms: Long): String {
         val sameDay = java.text.SimpleDateFormat("yyyyMMdd", java.util.Locale.US).let { it.format(java.util.Date(ms)) == it.format(java.util.Date()) }
-        val fmt = if (sameDay) "h:mm a" else "EEE h:mm a"
-        return java.text.SimpleDateFormat(fmt, java.util.Locale.getDefault()).format(java.util.Date(ms))
+        // The device's own way of writing a time (20:30 in French, 8:30 PM in American English).
+        val locale = java.util.Locale.getDefault()
+        val fmt = android.text.format.DateFormat.getBestDateTimePattern(locale, if (sameDay) "jmm" else "EEEjmm")
+        return java.text.SimpleDateFormat(fmt, locale).format(java.util.Date(ms))
     }
 
     companion object {

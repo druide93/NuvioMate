@@ -9,6 +9,7 @@ import com.nuvio.tv.domain.model.CatalogDescriptor
 import com.nuvio.tv.domain.model.enabledAddons
 import com.nuvio.tv.domain.repository.AddonRepository
 import com.nuvio.tv.livetv.model.LiveChannel
+import com.nuvio.tv.livetv.ui.tr
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -185,7 +186,7 @@ class SportsAddonSource @Inject constructor(
         all.sortWith(compareBy<Vod> { if (resRank(it.res) < 0) 1 else 0 }.thenBy { it.kind.ordinal }.thenByDescending { resRank(it.res) })
         val out = ArrayList<ChannelMatch>()
         for (v in all) {
-            val bits = listOfNotNull(v.kind.label, v.res?.let { if (it >= 2160) "4K" else "${it}p" })
+            val bits = listOfNotNull(v.kind.label.tr(), v.res?.let { if (it >= 2160) "4K" else "${it}p" })
             val title = when {
                 v.single && v.kind == VodKind.REPLAY && v.res == null -> v.g.name
                 else -> v.g.name + " · " + bits.joinToString(" · ")
@@ -193,7 +194,7 @@ class SportsAddonSource @Inject constructor(
             out += ChannelMatch(
                 channel = channelFor(v.g, v.s, v.i, title),
                 score = ADDON_SCORE,
-                how = "${v.kind.label} · ${v.g.addon.displayName}",
+                how = "${v.kind.label.tr()} · ${v.g.addon.displayName}",
                 program = null,
                 quality = SportsMatcher.nameQuality(v.s.info),
                 catchup = false

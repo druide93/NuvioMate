@@ -1261,6 +1261,74 @@
         <item>"📡 On Demand"</item>
         <item>"🔔  Remind me"</item>
         <item>"🔔  Reminder set"</item>
+        <item>"Copy to group"</item>
+        <item>"Copy several to group"</item>
+        <item>"Copy channels to group"</item>
+        <item>"Copy channels to a group"</item>
+        <item>"Guide display (info panel, preview)"</item>
+        <item>"Right: pick all"</item>
+        <item>"Left: pick none"</item>
+        <item>"OK: pick or unpick"</item>
+        <item>"Back: cancel"</item>
+        <item>"Back: choose the group"</item>
+        <item>"Copy {0} channel to…"</item>
+        <item>"Copy {0} channels to…"</item>
+        <item>"Copied {0} channel to {1}"</item>
+        <item>"Copied {0} channels to {1}"</item>
+        <item>"Already in {0}"</item>
+        <item>"No channels in {0}"</item>
+        <item>"Full game"</item>
+        <item>"Condensed"</item>
+        <item>"Play from archive: {0}"</item>
+        <item>"Find &amp; stream \"{0}\" in Nuvio"</item>
+        <item>"Hide group \"{0}\""</item>
+        <item>"Not ready at the provider yet: trying again at {0} ({1} of {2})"</item>
+        <item>"Saved from catch-up at {0}, after it ends"</item>
+        <item>"\"{0}\" hasn't recorded anything yet: {1}"</item>
+        <item>"\"{0}\" hasn't recorded anything yet. Give it a few seconds."</item>
+        <item>"{0} free"</item>
+        <item>"And {0} more recording now"</item>
+        <item>"Keep last {0}"</item>
+        <item>"Moving recordings ({0} of {1})"</item>
+        <item>"{0} of {1}"</item>
+        <item>"Recording from playlist: {0}"</item>
+        <item>"Every new episode on {0} (repeats of episodes already recorded are skipped). Stopping it also cancels the airings it set that haven't started; what's recorded is kept."</item>
+        <item>"Episodes to Keep: {0}"</item>
+        <item>"Last {0}"</item>
+        <item>"{0}: older episodes are deleted as new ones are recorded."</item>
+        <item>"Keep the Last {0}"</item>
+        <item>"Move \"{0}\""</item>
+        <item>"Move {0} recordings"</item>
+        <item>"(already here)"</item>
+        <item>"Delete all of \"{0}\"?"</item>
+        <item>"This deletes all {0} episodes. It can't be undone."</item>
+        <item>"Delete \"{0}\"?"</item>
+        <item>"{0} recorded"</item>
+        <item>"{0} so far"</item>
+        <item>"1 new"</item>
+        <item>"{0} new"</item>
+        <item>"{0} episodes"</item>
+        <item>"{0} of {1} watched"</item>
+        <item>"latest {0}"</item>
+        <item>"{0} episodes · {1} watched"</item>
+        <item>"{0} min left"</item>
+        <item>"Ends at {0}. Your Start Early and Keep Recording After times are added."</item>
+        <item>"Couldn't read \"{0}\" as a time. Try 8:30 PM or 20:30."</item>
+        <item>"Starts {0} ({1} min early)"</item>
+        <item>"Ends {0}"</item>
+        <item>"(with {0} min extra)"</item>
+        <item>"Stopped recording \"{0}\""</item>
+        <item>"you stop it"</item>
+        <item>"Recording \"{0}\" until {1}"</item>
+        <item>"Recording \"{0}\" until {1}. Storage is low, so it may stop early."</item>
+        <item>"This channel is already recording"</item>
+        <item>"Recording \"{0}\" now"</item>
+        <item>"Set to record \"{0}\" ({1}). It overlaps \"{2}\"; your account may only allow one at a time."</item>
+        <item>"Saving \"{0}\" from catch-up"</item>
+        <item>"Set to record \"{0}\" ({1}). It's saved from catch-up after it ends."</item>
+        <item>"Set to record \"{0}\" ({1})"</item>
+        <item>"Recording every \"{0}\" on {1}"</item>
+        <item>"Recording \"{0}\" on {1}"</item>
     </string-array>
     <string-array name="livetv_texts" tools:ignore="MissingTranslation">
         <item>" · Hold OK: 1 other stream"</item>
@@ -2522,5 +2590,73 @@
         <item>"📡 On Demand"</item>
         <item>"🔔  Remind me"</item>
         <item>"🔔  Reminder set"</item>
+        <item>"Copy to group"</item>
+        <item>"Copy several to group"</item>
+        <item>"Copy channels to group"</item>
+        <item>"Copy channels to a group"</item>
+        <item>"Guide display (info panel, preview)"</item>
+        <item>"Right: pick all"</item>
+        <item>"Left: pick none"</item>
+        <item>"OK: pick or unpick"</item>
+        <item>"Back: cancel"</item>
+        <item>"Back: choose the group"</item>
+        <item>"Copy {0} channel to…"</item>
+        <item>"Copy {0} channels to…"</item>
+        <item>"Copied {0} channel to {1}"</item>
+        <item>"Copied {0} channels to {1}"</item>
+        <item>"Already in {0}"</item>
+        <item>"No channels in {0}"</item>
+        <item>"Full game"</item>
+        <item>"Condensed"</item>
+        <item>"Play from archive: {0}"</item>
+        <item>"Find &amp; stream \"{0}\" in Nuvio"</item>
+        <item>"Hide group \"{0}\""</item>
+        <item>"Not ready at the provider yet: trying again at {0} ({1} of {2})"</item>
+        <item>"Saved from catch-up at {0}, after it ends"</item>
+        <item>"\"{0}\" hasn't recorded anything yet: {1}"</item>
+        <item>"\"{0}\" hasn't recorded anything yet. Give it a few seconds."</item>
+        <item>"{0} free"</item>
+        <item>"And {0} more recording now"</item>
+        <item>"Keep last {0}"</item>
+        <item>"Moving recordings ({0} of {1})"</item>
+        <item>"{0} of {1}"</item>
+        <item>"Recording from playlist: {0}"</item>
+        <item>"Every new episode on {0} (repeats of episodes already recorded are skipped). Stopping it also cancels the airings it set that haven't started; what's recorded is kept."</item>
+        <item>"Episodes to Keep: {0}"</item>
+        <item>"Last {0}"</item>
+        <item>"{0}: older episodes are deleted as new ones are recorded."</item>
+        <item>"Keep the Last {0}"</item>
+        <item>"Move \"{0}\""</item>
+        <item>"Move {0} recordings"</item>
+        <item>"(already here)"</item>
+        <item>"Delete all of \"{0}\"?"</item>
+        <item>"This deletes all {0} episodes. It can't be undone."</item>
+        <item>"Delete \"{0}\"?"</item>
+        <item>"{0} recorded"</item>
+        <item>"{0} so far"</item>
+        <item>"1 new"</item>
+        <item>"{0} new"</item>
+        <item>"{0} episodes"</item>
+        <item>"{0} of {1} watched"</item>
+        <item>"latest {0}"</item>
+        <item>"{0} episodes · {1} watched"</item>
+        <item>"{0} min left"</item>
+        <item>"Ends at {0}. Your Start Early and Keep Recording After times are added."</item>
+        <item>"Couldn't read \"{0}\" as a time. Try 8:30 PM or 20:30."</item>
+        <item>"Starts {0} ({1} min early)"</item>
+        <item>"Ends {0}"</item>
+        <item>"(with {0} min extra)"</item>
+        <item>"Stopped recording \"{0}\""</item>
+        <item>"you stop it"</item>
+        <item>"Recording \"{0}\" until {1}"</item>
+        <item>"Recording \"{0}\" until {1}. Storage is low, so it may stop early."</item>
+        <item>"This channel is already recording"</item>
+        <item>"Recording \"{0}\" now"</item>
+        <item>"Set to record \"{0}\" ({1}). It overlaps \"{2}\"; your account may only allow one at a time."</item>
+        <item>"Saving \"{0}\" from catch-up"</item>
+        <item>"Set to record \"{0}\" ({1}). It's saved from catch-up after it ends."</item>
+        <item>"Set to record \"{0}\" ({1})"</item>
+        <item>"Recording every \"{0}\" on {1}"</item>
+        <item>"Recording \"{0}\" on {1}"</item>
     </string-array>
 </resources>

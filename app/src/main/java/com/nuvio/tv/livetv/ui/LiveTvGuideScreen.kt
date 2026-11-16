@@ -2341,14 +2341,15 @@ private fun LiveTvGuideScreenBody(
             GroupPickerDialog(
                 channel = null,
                 groups = viewModel.bulkCopyTargets(),
-                title = "Copy ${picks.size} ${if (picks.size == 1) "channel" else "channels"} to…",
+                title = LiveTvTexts.trf(if (picks.size == 1) "Copy {0} channel to…" else "Copy {0} channels to…", picks.size),
                 onDismiss = { copyTargetPicker = false },
                 onPick = { g ->
                     val added = viewModel.copyChannelsToGroup(g.id, picks)
                     copyTargetPicker = false
                     copyPickMode = false
                     com.nuvio.tv.livetv.record.LiveTvNotice.show(
-                        if (added == 0) "Already in ${g.title}" else "Copied $added ${if (added == 1) "channel" else "channels"} to ${g.title}"
+                        if (added == 0) LiveTvTexts.trf("Already in {0}", g.title)
+                        else LiveTvTexts.trf(if (added == 1) "Copied {0} channel to {1}" else "Copied {0} channels to {1}", added, g.title)
                     )
                 },
                 onNewGroup = {
@@ -2361,7 +2362,10 @@ private fun LiveTvGuideScreenBody(
                             viewModel.createGroupWithChannels(name, picks)
                             copyPickMode = false
                             com.nuvio.tv.livetv.record.LiveTvNotice.show(
-                                "Copied ${picks.size} ${if (picks.size == 1) "channel" else "channels"} to ${name.trim().ifBlank { "My group" }}"
+                                LiveTvTexts.trf(
+                                    if (picks.size == 1) "Copied {0} channel to {1}" else "Copied {0} channels to {1}",
+                                    picks.size, name.trim().ifBlank { "My group".tr() }
+                                )
                             )
                         }
                     )
@@ -2398,7 +2402,7 @@ private fun LiveTvGuideScreenBody(
                         groupMenu = null
                         val list = viewModel.channelsInGroup(g.id)
                         if (list.isEmpty()) {
-                            com.nuvio.tv.livetv.record.LiveTvNotice.show("No channels in ${g.title}")
+                            com.nuvio.tv.livetv.record.LiveTvNotice.show(LiveTvTexts.trf("No channels in {0}", g.title))
                         } else {
                             if (ui.selectedGroupId != g.id) viewModel.selectGroup(g.id)
                             favoritesChannels = list
@@ -2414,7 +2418,7 @@ private fun LiveTvGuideScreenBody(
                         groupMenu = null
                         val list = viewModel.channelsInGroup(g.id)
                         if (list.isEmpty()) {
-                            com.nuvio.tv.livetv.record.LiveTvNotice.show("No channels in ${g.title}")
+                            com.nuvio.tv.livetv.record.LiveTvNotice.show(LiveTvTexts.trf("No channels in {0}", g.title))
                         } else {
                             if (ui.selectedGroupId != g.id) viewModel.selectGroup(g.id)
                             copyPickChannels = list
@@ -3859,13 +3863,13 @@ private fun ChannelContextMenu(
             if (canRestart && (program == null || (now >= program.startMs && now < program.stopMs))) item {
                 MenuItem(restartLabel, onClick = onRestart)
             }
-            if (canCatchup) item { MenuItem("Play from archive: ${program!!.title}", onClick = { onCatchup(program!!) }) }
+            if (canCatchup) item { MenuItem(LiveTvTexts.trf("Play from archive: {0}", program!!.title), onClick = { onCatchup(program!!) }) }
             if (program != null || streamProgram != null) {
                 item { MenuHeader("This show") }
                 if (program != null) item { MenuItem("Program info", onClick = onProgramInfo) }
                 if (bell != null) item { MenuItem(bell.label, onClick = { bell.toggle(); onDismiss() }) }
                 if (streamProgram != null) {
-                    item { MenuItem("Find & stream \"${streamProgram.title}\" in Nuvio", onClick = { onFindInNuvio(streamProgram) }) }
+                    item { MenuItem(LiveTvTexts.trf("Find & stream \"{0}\" in Nuvio", streamProgram.title), onClick = { onFindInNuvio(streamProgram) }) }
                 }
                 // Upcoming show: Remind me (or Cancel reminder), right in the long-press menu.
                 if (program != null && program.startMs > now) item {
@@ -3898,7 +3902,7 @@ private fun ChannelContextMenu(
             item { MenuItem("Change logo…", onClick = onChangeLogo) }
             item { MenuHeader("Hide & arrange") }
             item { MenuItem("Hide channel", onClick = onHide) }
-            item { MenuItem("Hide group \"${ch.group}\"", onClick = onHideGroup) }
+            item { MenuItem(LiveTvTexts.trf("Hide group \"{0}\"", ch.group), onClick = onHideGroup) }
             item { MenuItem("Manage visibility…", onClick = onManageVisibility) }
             if (canReorder) item { MenuItem("Reorder channels…", onClick = onReorder) }
             item { MenuHeader("Guide") }

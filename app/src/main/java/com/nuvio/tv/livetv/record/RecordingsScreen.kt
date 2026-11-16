@@ -60,6 +60,8 @@ import kotlinx.coroutines.flow.stateIn
 import coil3.compose.AsyncImage
 import com.nuvio.tv.livetv.ui.LIVE_RED
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.livetv.ui.liveCorner
 import com.nuvio.tv.livetv.ui.guideBackdrop
 import com.nuvio.tv.ui.theme.NuvioTheme
@@ -126,9 +128,9 @@ class RecordingsViewModel @Inject constructor(
         val at = scheduler.startsAt(s)
         val time = java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT).format(java.util.Date(at))
         return when {
-            s.attempts > 0 -> "Not ready at the provider yet: trying again at $time (${s.attempts + 1} of ${LiveTvRecordingScheduler.MAX_TRIES + 1})"
+            s.attempts > 0 -> LiveTvTexts.trf("Not ready at the provider yet: trying again at {0} ({1} of {2})", time, s.attempts + 1, LiveTvRecordingScheduler.MAX_TRIES + 1)
             at <= System.currentTimeMillis() -> "Saving from catch-up now"
-            else -> "Saved from catch-up at $time, after it ends"
+            else -> LiveTvTexts.trf("Saved from catch-up at {0}, after it ends", time)
         }
     }
 
@@ -290,7 +292,8 @@ fun RecordingsScreen(
     val playNow: (LiveTvRecording) -> Unit = { rec ->
         // Nothing saved yet (it's still connecting): say so instead of an error.
         if (rec.durationSec <= 0) LiveTvNotice.show(
-            "\"${rec.title}\" hasn't recorded anything yet" + (rec.problem?.let { ": $it" } ?: ". Give it a few seconds.")
+            rec.problem?.let { LiveTvTexts.trf("\"{0}\" hasn't recorded anything yet: {1}", rec.title, it.tr()) }
+                ?: LiveTvTexts.trf("\"{0}\" hasn't recorded anything yet. Give it a few seconds.", rec.title)
         )
         else onPlay(viewModel.playUrl(rec), rec.title, posters[rec.id], rec.id, false)
     }
@@ -322,7 +325,7 @@ fun RecordingsScreen(
             Row(verticalAlignment = Alignment.Bottom) {
                 LiveText("Recordings", size = 30.sp, weight = FontWeight.Bold, modifier = Modifier.weight(1f))
                 LiveText(
-                    "${sizeLabel(viewModel.freeBytes())} free",
+                    LiveTvTexts.trf("{0} free", sizeLabel(viewModel.freeBytes())),
                     size = 15.sp,
                     color = colors.TextSecondary
                 )
@@ -368,7 +371,7 @@ fun RecordingsScreen(
                         )
                     }
                     if (now.size > 2) {
-                        LiveText("And ${now.size - 2} more recording now", size = 14.sp, color = colors.TextSecondary)
+                        LiveText(LiveTvTexts.trf("And {0} more recording now", now.size - 2), size = 14.sp, color = colors.TextSecondary)
                     }
                 }
                 Spacer(Modifier.height(22.dp))
@@ -407,7 +410,7 @@ fun RecordingsScreen(
                         items(seriesRules, key = { it.id }) { r ->
                             InfoCard(
                                 title = r.title,
-                                line = withPlaylist(r.channel.name, r.channel.sourceId) + " · " + (if (r.keepLast > 0) "Keep last ${r.keepLast}" else "Keep all"),
+                                line = withPlaylist(r.channel.name, r.channel.sourceId) + " · " + (if (r.keepLast > 0) LiveTvTexts.trf("Keep last {0}", r.keepLast) else "Keep all".tr()),
                                 note = null,
                                 modifier = if (r.id == firstSeriesId) Modifier.focusRequester(first) else Modifier,
                                 onClick = { seriesMenu = r }
@@ -494,10 +497,10 @@ fun RecordingsScreen(
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                LiveText("Moving recordings" + if (m.count > 1) " (${m.index} of ${m.count})" else "", size = 14.sp, weight = FontWeight.Bold)
+                LiveText(if (m.count > 1) LiveTvTexts.trf("Moving recordings ({0} of {1})", m.index, m.count) else "Moving recordings", size = 14.sp, weight = FontWeight.Bold)
                 LiveText(m.title, size = 13.sp, color = colors.TextSecondary)
                 ProgressLine(if (m.totalBytes > 0) m.doneBytes.toFloat() / m.totalBytes else 0f, colors.Secondary, Modifier.fillMaxWidth())
-                LiveText(sizeLabel(m.doneBytes) + " of " + sizeLabel(m.totalBytes), size = 12.sp, color = colors.TextTertiary)
+                LiveText(LiveTvTexts.trf("{0} of {1}", sizeLabel(m.doneBytes), sizeLabel(m.totalBytes)), size = 12.sp, color = colors.TextTertiary)
             }
         }
     }
@@ -512,7 +515,7 @@ fun RecordingsScreen(
         RecordingActionDialog(
             title = s.title,
             detail = s.channel.name + " · " + dateLabel(s.startMs) +
-                (playlistOf(s.channel.sourceId)?.let { "\nRecording from playlist: $it" } ?: ""),
+                (playlistOf(s.channel.sourceId)?.let { "\n" + LiveTvTexts.trf("Recording from playlist: {0}", it) } ?: ""),
             actions = listOf(
                 "Cancel Recording" to { scheduleMenu = null; viewModel.scheduler.cancel(s.id) },
                 "Close" to { scheduleMenu = null }
@@ -525,11 +528,11 @@ fun RecordingsScreen(
     seriesMenu?.let { r ->
         RecordingActionDialog(
             title = r.title,
-            detail = (playlistOf(r.channel.sourceId)?.let { "Recording from playlist: $it\n" } ?: "") +
-                "Every new episode on " + r.channel.name + " (repeats of episodes already recorded are skipped). Stopping it also cancels the airings it set that haven't started; what's recorded is kept.",
+            detail = (playlistOf(r.channel.sourceId)?.let { LiveTvTexts.trf("Recording from playlist: {0}", it) + "\n" } ?: "") +
+                LiveTvTexts.trf("Every new episode on {0} (repeats of episodes already recorded are skipped). Stopping it also cancels the airings it set that haven't started; what's recorded is kept.", r.channel.name),
             actions = listOf(
                 "Stop Recording Series" to { seriesMenu = null; viewModel.scheduler.removeSeries(r.id) },
-                ("Episodes to Keep: " + (if (r.keepLast == 0) "All" else "Last ${r.keepLast}")) to { seriesMenu = null; seriesKeepMenu = r },
+                LiveTvTexts.trf("Episodes to Keep: {0}", if (r.keepLast == 0) "All".tr() else LiveTvTexts.trf("Last {0}", r.keepLast)) to { seriesMenu = null; seriesKeepMenu = r },
                 "Close" to { seriesMenu = null }
             ),
             onDismiss = { seriesMenu = null }
@@ -538,9 +541,9 @@ fun RecordingsScreen(
     seriesKeepMenu?.let { r ->
         RecordingActionDialog(
             title = "Episodes to Keep",
-            detail = r.title + ": older episodes are deleted as new ones are recorded.",
+            detail = LiveTvTexts.trf("{0}: older episodes are deleted as new ones are recorded.", r.title),
             actions = listOf(0, 1, 3, 5, 10).map { n ->
-                val label = (if (n == 0) "Keep All Episodes" else "Keep the Last $n") + if (r.keepLast == n) "  ✓" else ""
+                val label = (if (n == 0) "Keep All Episodes".tr() else LiveTvTexts.trf("Keep the Last {0}", n)) + if (r.keepLast == n) "  ✓" else ""
                 label to { seriesKeepMenu = null; viewModel.scheduler.setKeep(r.id, n) }
             },
             onDismiss = { seriesKeepMenu = null }
@@ -569,12 +572,12 @@ fun RecordingsScreen(
         val here = recs.mapNotNull { viewModel.storageIdOf(it) }.distinct()
         val places = RecordingStorage.choices(recContext).filter { c -> recs.any { viewModel.storageIdOf(it) != c.id } }
         RecordingActionDialog(
-            title = if (recs.size == 1) "Move \"${recs.first().title}\"" else "Move ${recs.size} recordings",
-            detail = "Copies to the place you choose, checks the copy, then removes it from where it was. " +
-                "Leave the app open until it finishes.",
+            title = if (recs.size == 1) LiveTvTexts.trf("Move \"{0}\"", recs.first().title) else LiveTvTexts.trf("Move {0} recordings", recs.size),
+            detail = "Copies to the place you choose, checks the copy, then removes it from where it was. ".tr() +
+                "Leave the app open until it finishes.".tr(),
             actions = places.map { c ->
-                val label = c.label + " · " + RecordingStorage.sizeLabel(c.freeBytes) + " free" +
-                    if (here.size == 1 && here.first() == c.id) "  (already here)" else ""
+                val label = c.label.tr() + " · " + LiveTvTexts.trf("{0} free", RecordingStorage.sizeLabel(c.freeBytes)) +
+                    if (here.size == 1 && here.first() == c.id) "  " + "(already here)".tr() else ""
                 label to { movePick = null; viewModel.moveTo(recs, c) }
             } + listOf("Cancel" to { movePick = null }),
             onDismiss = { movePick = null }
@@ -582,8 +585,8 @@ fun RecordingsScreen(
     }
     confirmDeleteShow?.let { show ->
         RecordingActionDialog(
-            title = "Delete all of \"${show.title}\"?",
-            detail = "This deletes all ${show.episodes.size} episodes. It can't be undone.",
+            title = LiveTvTexts.trf("Delete all of \"{0}\"?", show.title),
+            detail = LiveTvTexts.trf("This deletes all {0} episodes. It can't be undone.", show.episodes.size),
             actions = listOf(
                 "Cancel" to { confirmDeleteShow = null },
                 "Delete All" to { confirmDeleteShow = null; show.episodes.forEach { viewModel.delete(it) } }
@@ -612,7 +615,7 @@ fun RecordingsScreen(
     }
     confirmDelete?.let { rec ->
         RecordingActionDialog(
-            title = "Delete \"${rec.title}\"?",
+            title = LiveTvTexts.trf("Delete \"{0}\"?", rec.title),
             detail = if (rec.isRecording) "It's still recording. This stops it and deletes what's been recorded." else "This can't be undone.",
             actions = listOf(
                 "Cancel" to { confirmDelete = null },
@@ -772,7 +775,7 @@ private fun RecordingNowCard(
     var watchFocused by remember { mutableStateOf(false) }
     var stopFocused by remember { mutableStateOf(false) }
     val (bg, ring) = cardColors(watchFocused || stopFocused)
-    val time = SimpleDateFormat("h:mm a", Locale.getDefault())
+    val time = localTimeFormat()
     val from = rec.programStartMs.takeIf { it > 0 } ?: rec.startedAtMs
     val to = rec.programStopMs.takeIf { it > 0 } ?: rec.stopAtMs
     // Catch-up downloads come faster than the show and have a long time limit: go by how much
@@ -802,10 +805,10 @@ private fun RecordingNowCard(
                 LiveText(rec.title, size = 20.sp, weight = FontWeight.Bold, marquee = watchFocused || stopFocused, modifier = Modifier.weight(1f, fill = false))
             }
             val status = when {
-                rec.durationSec <= 0 -> "Starting…" + (rec.problem?.let { " ($it)" } ?: "")
-                else -> durationLabel(rec.durationSec) + " recorded" +
+                rec.durationSec <= 0 -> "Starting…".tr() + (rec.problem?.let { " (" + it.tr() + ")" } ?: "")
+                else -> LiveTvTexts.trf("{0} recorded", durationLabel(rec.durationSec)) +
                     (if (rec.sizeBytes > 0) " · " + sizeLabel(rec.sizeBytes) else "") +
-                    (rec.problem?.let { " · $it" } ?: "")
+                    (rec.problem?.let { " · " + it.tr() } ?: "")
             }
             LiveText(
                 listOf(rec.channelName, time.format(Date(from)) + " – " + time.format(Date(to)), status).joinToString(" · "),
@@ -961,7 +964,7 @@ internal fun RecordedCard(
                 shortDayLabel(rec.programStartMs.takeIf { it > 0 } ?: rec.startedAtMs),
                 durationLabel(rec.durationSec).takeIf { rec.durationSec > 0 },
                 sizeLabel(rec.sizeBytes).takeIf { rec.sizeBytes > 0 }
-            ).joinToString(" · ") + (rec.problem?.let { " · $it" } ?: ""),
+            ).joinToString(" · ") + (rec.problem?.let { " · " + it.tr() } ?: ""),
             size = 13.sp,
             color = if (failed) colors.Error else colors.TextSecondary
         )
@@ -1006,7 +1009,7 @@ private fun RecordingInfoDialog(rec: LiveTvRecording, savedOn: String, playlist:
     val first = remember { FocusRequester() }
     LaunchedEffect(Unit) { kotlinx.coroutines.delay(80); runCatching { first.requestFocus() } }
     val day = SimpleDateFormat("EEE d MMM", Locale.getDefault())
-    val time = SimpleDateFormat("h:mm a", Locale.getDefault())
+    val time = localTimeFormat()
     val aired = if (rec.programStartMs > 0 && rec.programStopMs > rec.programStartMs)
         day.format(Date(rec.programStartMs)) + ", " + time.format(Date(rec.programStartMs)) + " – " + time.format(Date(rec.programStopMs))
     else day.format(Date(rec.startedAtMs)) + ", " + time.format(Date(rec.startedAtMs))
@@ -1015,8 +1018,8 @@ private fun RecordingInfoDialog(rec: LiveTvRecording, savedOn: String, playlist:
         playlist?.let { add("Playlist" to it) }
         rec.episode?.let { add("Episode" to it) }
         add("Aired" to aired)
-        add("Length" to if (rec.durationSec > 0) durationLabel(rec.durationSec) + (if (rec.isRecording) " so far" else "") else "—")
-        add("Size" to if (rec.sizeBytes > 0) sizeLabel(rec.sizeBytes) + (if (rec.isRecording) " so far" else "") else "—")
+        add("Length" to if (rec.durationSec > 0) durationLabel(rec.durationSec).let { if (rec.isRecording) LiveTvTexts.trf("{0} so far", it) else it } else "—")
+        add("Size" to if (rec.sizeBytes > 0) sizeLabel(rec.sizeBytes).let { if (rec.isRecording) LiveTvTexts.trf("{0} so far", it) else it } else "—")
         add("Recorded" to when {
             rec.isRecording && rec.fromCatchup -> "Saving from catch-up now"
             rec.isRecording -> "Recording now"
@@ -1052,8 +1055,12 @@ private fun savedOnLabel(context: android.content.Context, dir: String): String 
 
 internal fun dateLabel(ms: Long): String {
     val day = shortDayLabel(ms)
-    return day + ", " + SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(ms))
+    return day + ", " + localTimeFormat().format(Date(ms))
 }
+
+/** The device's own way of writing a time: 20:30 in French, 8:30 PM in American English. */
+internal fun localTimeFormat(): SimpleDateFormat =
+    SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(Locale.getDefault(), "jmm"), Locale.getDefault())
 
 /** "Today", "Tomorrow", "Yesterday", the weekday within a week, else the date. */
 internal fun shortDayLabel(ms: Long): String {
@@ -1064,9 +1071,9 @@ internal fun shortDayLabel(ms: Long): String {
     }
     val diff = dayIndex(ms) - dayIndex(System.currentTimeMillis())
     return when {
-        diff == 0L -> "Today"
-        diff == 1L -> "Tomorrow"
-        diff == -1L -> "Yesterday"
+        diff == 0L -> "Today".tr()
+        diff == 1L -> "Tomorrow".tr()
+        diff == -1L -> "Yesterday".tr()
         diff in -6L..6L -> SimpleDateFormat("EEE", Locale.getDefault()).format(Date(ms))
         else -> SimpleDateFormat("EEE d MMM", Locale.getDefault()).format(Date(ms))
     }
