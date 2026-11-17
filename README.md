@@ -19,6 +19,10 @@ Avec l'option **Guide style TiviMate** (paramètres de la TV en direct, avec la 
 - **Émissions qui se chevauchent dans le guide du fournisseur :** la plus ancienne s'arrête au début de la suivante, et une même émission listée deux fois n'apparaît plus qu'une fois. Les cases ne s'empilent plus les unes sur les autres.
 
 ### Replay
+- **Télécommande pendant un replay :**
+  - **◀ / ▶** avancent ou reculent tout de suite et affichent la barre complète, la barre de progression sélectionnée : les appuis suivants continuent d'avancer dans l'émission. Avant, seul le petit bandeau s'affichait.
+  - **▲ / ▼** affichent les informations de la chaîne et de l'émission, la barre de progression sélectionnée, au lieu de changer de chaîne. **CH+ / CH−** changent toujours de chaîne.
+  - Un bouton **● Direct** dans la barre, à côté de la roue crantée, revient au direct de la chaîne. Il n'était que dans le menu des options.
 - **Écran d'attente au lancement d'un replay :** en plein écran, le logo de la chaîne (son nom si elle n'en a pas) et « Chargement du replay » s'affichent jusqu'à la première image, au lieu de la dernière image du direct figée sous un petit « Chargement… ». Ça vaut pour un replay choisi dans le guide, « Regarder depuis le début » et un retour en arrière depuis le direct.
 - **Même écran pour un saut vers une partie pas encore chargée :**
   - **Saut hors de la copie sauvegardée sur la box** (le replay est redemandé au fournisseur) : l'image du moment est gardée, figée et assombrie, sous le logo et « Chargement du replay ». Si elle ne peut pas être gardée (chaîne protégée, image noire), l'écran est noir.

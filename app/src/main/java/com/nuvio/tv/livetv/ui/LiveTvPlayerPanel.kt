@@ -142,8 +142,9 @@ internal object BarPart {
  * Which controls the bar offers: back 30 / forward 30 only where you can skip, back to the start
  * where there's a beginning to go back to ([restart]: a replay, or a catch-up channel), and the gear.
  * [liveSeek]: live on a catch-up channel, which can skip back through catch-up (so the bar moves even live).
+ * [live]: a replay, which can go back to the channel live (a "Live" button beside the gear).
  */
-internal fun panelControls(mode: PanelMode, paused: Boolean, canSkip: Boolean, bell: Boolean = false, pin: Boolean = false, backups: Boolean = false, sports: Boolean = false, restart: Boolean = false, liveSeek: Boolean = false): List<PanelControl> = buildList {
+internal fun panelControls(mode: PanelMode, paused: Boolean, canSkip: Boolean, bell: Boolean = false, pin: Boolean = false, backups: Boolean = false, sports: Boolean = false, restart: Boolean = false, liveSeek: Boolean = false, live: Boolean = false): List<PanelControl> = buildList {
     val transport = mode != PanelMode.LIVE || paused || liveSeek
     // The timeline itself can be grabbed (Up from the buttons) and moved with ◀ / ▶.
     if (transport && canSkip) add(PanelControl.TIMELINE)
@@ -159,6 +160,8 @@ internal fun panelControls(mode: PanelMode, paused: Boolean, canSkip: Boolean, b
     // Other copies of this channel (same name, any quality or playlist), right before the gear.
     if (backups) add(PanelControl.BACKUPS)
     if (sports) add(PanelControl.SPORTS)
+    // A replay: back to the channel live, right before the gear (it was only in the gear panel).
+    if (live) add(PanelControl.LIVE)
     add(PanelControl.MORE)
 }
 
@@ -255,6 +258,8 @@ internal fun LiveTvPlayerPanel(
     onBackupsBounds: (androidx.compose.ui.geometry.Rect) -> Unit = {},
     /** Opens the Sports games, streams and layout controls from the Now Playing bar. */
     onMultiview: () -> Unit = {},
+    /** A replay's "Live" button: back to the channel live. */
+    onLive: () -> Unit = {},
     /** TiviMate style: a flat dark card with no edges, softer chips and clock (same contents). */
     tivimate: Boolean = false,
 ) = androidx.compose.runtime.CompositionLocalProvider(LocalGuideTiviMate provides tivimate) {
@@ -430,6 +435,10 @@ internal fun LiveTvPlayerPanel(
                                         onClick = onMultiview)
                                     Spacer(Modifier.width(8.dp))
                                 }
+                                if (PanelControl.LIVE in controls) {
+                                    LiveButton(focused = focused == PanelControl.LIVE && !inRow, onClick = onLive)
+                                    Spacer(Modifier.width(8.dp))
+                                }
                                 RoundButton(Icons.Default.Settings, focused = focused == PanelControl.MORE && !inRow, big = false)
                             }
                         }
@@ -483,9 +492,22 @@ private fun GlassChip(text: String) {
     )
 }
 
+@Composable
+private fun MultiviewButton(focused: Boolean, onClick: () -> Unit) =
+    NamedButton("Multiview", focused, onClick) { tint ->
+        Icon(Icons.Default.GridView, contentDescription = null, tint = tint, modifier = Modifier.size(15.dp))
+    }
+
+/** A replay's way back to the channel live: a red dot and "Live", like the live tag. */
+@Composable
+private fun LiveButton(focused: Boolean, onClick: () -> Unit) =
+    NamedButton("Live", focused, onClick) {
+        Box(Modifier.size(8.dp).clip(CircleShape).background(LIVE_RED))
+    }
+
 /** A named entry beside the normal playback controls, with the same bar highlight. */
 @Composable
-private fun MultiviewButton(focused: Boolean, onClick: () -> Unit) {
+private fun NamedButton(label: String, focused: Boolean, onClick: () -> Unit, leading: @Composable (tint: Color) -> Unit) {
     val shape = RoundedCornerShape(15.dp)
     val foreground = if (focused) Color(0xFF111111) else NuvioTheme.colors.TextPrimary
     Row(
@@ -500,8 +522,8 @@ private fun MultiviewButton(focused: Boolean, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Icon(Icons.Default.GridView, contentDescription = null, tint = foreground, modifier = Modifier.size(15.dp))
-        LiveText("Multiview", size = 11.sp, weight = FontWeight.Bold, color = foreground)
+        leading(foreground)
+        LiveText(label, size = 11.sp, weight = FontWeight.Bold, color = foreground)
     }
 }
 

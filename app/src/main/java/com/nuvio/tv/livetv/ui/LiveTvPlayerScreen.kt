@@ -402,6 +402,23 @@ fun LiveTvPlayerScreen(
         scrubToken++
         showBanner()
     }
+    // A replay: ◀ / ▶ and ▲ / ▼ bring up the full bar (the channel, the show, the buttons) with
+    // the progress bar grabbed, so ◀ / ▶ go on moving through the show and ▼ reaches the buttons.
+    // Before, ◀ / ▶ only showed the small bar, and ▲ / ▼ changed channel.
+    fun grabTimeline() {
+        panelFull = true
+        controlFocus = PanelControl.TIMELINE
+        recentFocus = null
+        rowPills = false
+        showBanner()
+    }
+    // The bar's "Live" in a replay: back to the channel live. A skip still waiting to happen
+    // (◀ / ▶ pressed just before) is dropped, so it can't start the replay again once live.
+    fun replayToLive() {
+        scrubTargetMs = null
+        scrubToken++
+        current?.let { viewModel.backToLive(it) }
+    }
     // The bar's ⏮: in a replay or a recording, straight back to the start of what's playing; live
     // on a catch-up channel (or one being recorded), the show on now from its beginning.
     fun backToStart() {
@@ -627,8 +644,12 @@ fun LiveTvPlayerScreen(
                     // Live on a catch-up channel: as in a replay (10 seconds, held faster); paused, 30.
                     val liveStep = if (shiftStartedAt != null) 30_000L else holdStepMs(e.nativeKeyEvent.repeatCount)
                     when {
-                        // Each press 10 seconds; held, faster (as with ◀ / ▶).
-                        archive -> scrub(forward = forward, repeat = e.nativeKeyEvent.repeatCount)
+                        // Each press 10 seconds; held, faster (as with ◀ / ▶). With nothing
+                        // highlighted, the full bar comes up on the progress bar, as with ◀ / ▶.
+                        archive -> {
+                            scrub(forward = forward, repeat = e.nativeKeyEvent.repeatCount)
+                            if (controlFocus == null) grabTimeline()
+                        }
                         // Back past the pause buffer (or with none): on into the show through catch-up.
                         seekThroughCatchup(if (forward) liveStep else -liveStep) -> Unit
                         shifting && viewModel.playback.shiftCanSeek() -> {
@@ -724,7 +745,7 @@ fun LiveTvPlayerScreen(
                         else if (shiftStartedAt != null || (ownTimeline && viewModel.playback.shiftIsBehind())) PanelMode.SHIFT
                         else PanelMode.LIVE
                     val paused = playback.userPaused
-                    val list = panelControls(mode, paused, canSkip = archive || viewModel.playback.shiftCanSeek() || liveCatchup, bell = bellInBar, pin = pinGame != null, backups = backups.isNotEmpty(), sports = multiviewEligible, restart = restartInBar, liveSeek = liveCatchup)
+                    val list = panelControls(mode, paused, canSkip = archive || viewModel.playback.shiftCanSeek() || liveCatchup, bell = bellInBar, pin = pinGame != null, backups = backups.isNotEmpty(), sports = multiviewEligible, restart = restartInBar, liveSeek = liveCatchup, live = archive && !playingRecording)
                     if (e.type == KeyEventType.KeyUp) return@onPreviewKeyEvent isOk || e.key == Key.Back
                     showBanner()
                     val buttons = list.filter { it != PanelControl.TIMELINE }
@@ -789,7 +810,7 @@ fun LiveTvPlayerScreen(
                                 PanelControl.PLAY -> viewModel.playback.togglePause()
                                 PanelControl.LIVE -> {
                                     if (playingRecording) onBack()
-                                    else if (archive) current?.let { viewModel.backToLive(it) } else viewModel.playback.goLive()
+                                    else if (archive) replayToLive() else viewModel.playback.goLive()
                                     controlFocus = PanelControl.PLAY
                                 }
                                 PanelControl.CC -> {
@@ -861,6 +882,9 @@ fun LiveTvPlayerScreen(
                         true
                     }
                     playingRecording && (code == AndroidKeyEvent.KEYCODE_LAST_CHANNEL || code in AndroidKeyEvent.KEYCODE_0..AndroidKeyEvent.KEYCODE_9) -> true
+                    // A replay: ▲ / ▼ show the channel and the show with the progress bar grabbed
+                    // (◀ / ▶ then move through it), instead of changing channel. CH+ / CH− still do.
+                    archive && (e.key == Key.DirectionUp || e.key == Key.DirectionDown) -> { grabTimeline(); true }
                     e.key == Key.DirectionUp || e.key == Key.ChannelUp -> {
                         if (settings.channelSurf && current != null) browseStep(1, e) else zap(1); true
                     }
@@ -869,7 +893,7 @@ fun LiveTvPlayerScreen(
                     }
                     e.key == Key.DirectionLeft -> {
                         when {
-                            archive -> scrub(forward = false, repeat = e.nativeKeyEvent.repeatCount)
+                            archive -> { scrub(forward = false, repeat = e.nativeKeyEvent.repeatCount); grabTimeline() }
                             // Skips back in the buffer (with Rewind Anytime: once the panel is up
                             // or you're already behind live; otherwise Left keeps its usual job).
                             shifting && viewModel.playback.shiftCanSeek() && (bannerVisible || viewModel.playback.shiftIsBehind()) -> {
@@ -882,7 +906,7 @@ fun LiveTvPlayerScreen(
                     }
                     e.key == Key.DirectionRight -> {
                         when {
-                            archive -> scrub(forward = true, repeat = e.nativeKeyEvent.repeatCount)
+                            archive -> { scrub(forward = true, repeat = e.nativeKeyEvent.repeatCount); grabTimeline() }
                             shifting && viewModel.playback.shiftCanSeek() && viewModel.playback.shiftIsBehind() -> {
                                 viewModel.playback.shiftSeekBy(10_000L * (1 + minOf(e.nativeKeyEvent.repeatCount, 11))); showBanner()
                             }
@@ -1283,7 +1307,8 @@ fun LiveTvPlayerScreen(
                     showPosters = settings.showPosters,
                     timeline = timeline,
                     paused = paused,
-                    controls = panelControls(mode, paused, canSkip = archive || viewModel.playback.shiftCanSeek() || liveCatchup, bell = bellInBar, pin = pinGame != null, backups = backups.isNotEmpty(), sports = multiviewEligible, restart = restartInBar, liveSeek = liveCatchup),
+                    controls = panelControls(mode, paused, canSkip = archive || viewModel.playback.shiftCanSeek() || liveCatchup, bell = bellInBar, pin = pinGame != null, backups = backups.isNotEmpty(), sports = multiviewEligible, restart = restartInBar, liveSeek = liveCatchup, live = archive && !playingRecording),
+                    onLive = { replayToLive(); controlFocus = PanelControl.PLAY },
                     focused = controlFocus,
                     captionsOn = captionsOn,
                     audioLabel = remember(playback.channelKey, bannerVisible) { viewModel.playback.audioLabel() },
