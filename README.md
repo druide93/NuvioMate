@@ -31,6 +31,10 @@ Avec l'option **Guide style TiviMate** (paramètres de la TV en direct, avec la 
 - **Saut dans la partie la plus récente de la copie** (pas encore relue par le lecteur) : la copie est relue à partir de ce point, sous l'image figée et le logo, au lieu d'une image figée jusqu'à 10 s.
 - **Saut pendant qu'une copie se prépare** : si le point visé y est déjà, ou le sera bientôt, la copie démarre là, au lieu d'être jetée et redemandée au fournisseur. Choisir à nouveau le même replay ne relance plus son chargement.
 - **Retour dans l'app pendant un replay** : un saut fait entre-temps est gardé, un replay en pause reste en pause, et la touche Accueil pendant un chargement ne lance plus le son derrière l'écran d'accueil.
+  - Plus d'une minute après le début du lien, le replay est redemandé au fournisseur à partir de ce point. Avant, la copie repartait du début du lien et la lecture restait bloquée sur « Chargement… ».
+  - Un replay Stalker en pause ne joue plus un instant au retour, le temps que son lien arrive.
+- **Pause gardée** : un saut qui redemande le replay au fournisseur, une reconnexion ou un lien de secours laissent en pause un replay en pause. Pause pendant un chargement (après un saut ou une coupure) est maintenant prise en compte, au lieu de laisser la vidéo repartir une fois chargée.
+- **Replay Stalker loin dans l'émission** : un lien Stalker commence toujours au début de l'émission. Au-delà d'une minute, il est lu directement chez le fournisseur et placé au bon moment, au lieu de repartir du début. Si le portail ne permet pas de se placer dans le fichier, la copie reprend comme avant.
 - **Barre de progression pendant un chargement** : elle reste sur le point visé. Avant, elle sautait, et le titre pouvait passer à l'émission suivante.
 - **Saut de moins d'une minute** sur un replay lu directement chez le fournisseur : il n'était pas pris en compte, le replay repart maintenant au bon endroit.
 - **Replay choisi pendant que le fuseau horaire du fournisseur est recherché** : un saut ne l'annule plus, et il ne repart plus en fond si l'on quitte le plein écran entre-temps.

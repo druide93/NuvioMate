@@ -36,6 +36,8 @@ class LiveTvPlayerHooks @Inject constructor(
     interface Owner {
         fun onLiveFailure(channelKey: String): Boolean
         fun onCatchupStalled(): Boolean
+        /** A replay picked up after the background far into its link: ask for it again from [inStreamMs] into that link. */
+        fun onCatchupResume(inStreamMs: Long, plays: Boolean): Boolean
     }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -61,6 +63,7 @@ class LiveTvPlayerHooks @Inject constructor(
     init {
         playback.onLiveFailure = { key -> newestOwner()?.onLiveFailure(key) ?: false }
         playback.onCatchupStalled = { newestOwner()?.onCatchupStalled() ?: false }
+        playback.onCatchupResume = { at, plays -> newestOwner()?.onCatchupResume(at, plays) ?: false }
         // The audio track picked on each channel, remembered and used every time it plays.
         playback.onAudioChosen = { key, audio -> scope.launch { prefs.setChannelAudio(key, audio) } }
         // Same for captions: on or off, as you left them on that channel.

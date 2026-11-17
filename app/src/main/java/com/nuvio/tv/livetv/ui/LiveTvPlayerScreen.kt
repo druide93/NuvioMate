@@ -323,8 +323,18 @@ fun LiveTvPlayerScreen(
         diagnostics = { viewModel.playback.frameRateDiagnostics() },
         // The switch is made with the picture paused, as Nuvio's own player and TiviMate do: some
         // TVs ignored a switch asked for while a channel was playing.
-        pause = { viewModel.playback.player?.let { pl -> pl.playWhenReady.also { pl.playWhenReady = false } } ?: false },
-        resume = { wasPlaying -> if (wasPlaying) viewModel.playback.player?.playWhenReady = true }
+        // Not a pause of yours meanwhile: a skip asked of the provider during the switch still plays.
+        pause = {
+            viewModel.playback.player?.let { pl ->
+                pl.playWhenReady.also { was -> viewModel.playback.displaySwitchHold = was; pl.playWhenReady = false }
+            } ?: false
+        },
+        resume = { wasPlaying ->
+            // Only while still held: Home meanwhile took it over (see onAppBackground).
+            val held = viewModel.playback.displaySwitchHold
+            viewModel.playback.displaySwitchHold = false
+            if (wasPlaying && held) viewModel.playback.player?.playWhenReady = true
+        }
     )
 
     // Sleep timer: the controller stops playback (on any screen); full screen then closes.

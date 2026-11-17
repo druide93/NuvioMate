@@ -219,6 +219,29 @@ class LiveTvViewModel @Inject constructor(
     /** A channel that won't play: another channel by the same name, if there is one. */
     override fun onLiveFailure(channelKey: String): Boolean = switchToBackup(channelKey)
 
+    /**
+     * Back from the background more than a minute into a replay saved on this box as it played
+     * ([inStreamMs] into the link playing): asked of the provider again from that point, as a skip
+     * there is, with the seek bar on it, paused or playing as [plays] says. Played from its own
+     * link again, its copy had to save everything up to that point first: it started near the
+     * link's start and the player was then moved past what was saved ("Loading" for ever, or the
+     * wrong place). Written in the time zone this replay already went by, so it's asked straight
+     * away. False when it can't be: a portal replay (its link always starts at the show's start),
+     * a recording, not the replay playing, or a skip still on its way.
+     */
+    override fun onCatchupResume(inStreamMs: Long, plays: Boolean): Boolean {
+        val s = _catchup.value ?: return false
+        val st = playback.state.value
+        if (s.recordingId != null || s.channel.stalkerRef != null || st.catchupTitle == null || st.channelKey != s.channel.key) return false
+        if (catchupZoneJob?.isActive == true || seekJob?.isActive == true) return false
+        val catchup = s.channel.catchup ?: return false
+        val absolute = s.program.startMs + s.baseOffsetMs + inStreamMs.coerceAtLeast(0L)
+        val at = programs.value[s.channel.key].orEmpty().firstOrNull { absolute >= it.startMs && absolute < it.stopMs } ?: s.program
+        if (!CatchupUrlBuilder.isAvailable(catchup, at.startMs, System.currentTimeMillis())) return false
+        return startCatchup(s.channel, catchup, at, absolute - at.startMs,
+            playlistZones.value[s.channel.sourceId]?.takeIf { it.isNotBlank() }, forceReload = true, plays = plays)
+    }
+
     /** A replay that stopped: start it again from where it got to. */
     override fun onCatchupStalled(): Boolean {
         val s = _catchup.value
@@ -852,7 +875,9 @@ class LiveTvViewModel @Inject constructor(
         /** Show the waiting screen (already shown when the time zone had to be looked up first). */
         markWait: Boolean = false,
         /** A skip or a restart: the link is started again even if it's the one playing. */
-        forceReload: Boolean = false
+        forceReload: Boolean = false,
+        /** Plays once in (false: there paused, a replay paused before the background picked up again). */
+        plays: Boolean = true
     ): Boolean {
         val now = System.currentTimeMillis()
         // The guide's time shift is taken back off (the archive goes by the guide's own times),
@@ -903,7 +928,8 @@ class LiveTvViewModel @Inject constructor(
             // Only checked against the stream's own clock when no time shift is set (a shift
             // makes the stream's clock differ from the guide on purpose).
             catchupExpectWallMs = if (shift == 0L && correctionMs == 0L) from else null,
-            forceReload = forceReload
+            forceReload = forceReload,
+            plays = plays
         )
         pendingSeekMs = null
         if (playback.requests.value == requestsBefore) {
