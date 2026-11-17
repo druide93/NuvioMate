@@ -19,7 +19,14 @@ Avec l'option **Guide style TiviMate** (paramètres de la TV en direct, avec la 
 - **Émissions qui se chevauchent dans le guide du fournisseur :** la plus ancienne s'arrête au début de la suivante, et une même émission listée deux fois n'apparaît plus qu'une fois. Les cases ne s'empilent plus les unes sur les autres.
 
 ### Replay
-- **Écran d'attente au lancement d'un replay :** en plein écran, le logo de la chaîne (son nom si elle n'en a pas) et « Chargement du replay » s'affichent jusqu'à la première image, au lieu de la dernière image du direct figée sous un petit « Chargement… ». Ça vaut pour un replay choisi dans le guide, « Regarder depuis le début » et un retour en arrière depuis le direct. Les sauts à l'intérieur d'un replay déjà lancé gardent le petit « Chargement… ».
+- **Écran d'attente au lancement d'un replay :** en plein écran, le logo de la chaîne (son nom si elle n'en a pas) et « Chargement du replay » s'affichent jusqu'à la première image, au lieu de la dernière image du direct figée sous un petit « Chargement… ». Ça vaut pour un replay choisi dans le guide, « Regarder depuis le début » et un retour en arrière depuis le direct.
+- **Même écran pour un saut vers une partie pas encore chargée :**
+  - **Saut hors de la copie sauvegardée sur la box** (le replay est redemandé au fournisseur) : l'image du moment est gardée, figée et assombrie, sous le logo et « Chargement du replay ». Si elle ne peut pas être gardée (chaîne protégée, image noire), l'écran est noir.
+  - **Saut dans un replay HLS au-delà de ce qui est en mémoire** : le même écran, en transparence sur la dernière image, si rien n'apparaît au bout de 0,6 s.
+  - Les sauts dans la partie déjà sauvegardée restent instantanés, sans écran.
+- **Barre de progression pendant un chargement** : elle reste sur le point visé. Avant, elle sautait, et le titre pouvait passer à l'émission suivante.
+- **Saut de moins d'une minute** sur un replay lu directement chez le fournisseur : il n'était pas pris en compte, le replay repart maintenant au bon endroit.
+- **Replay choisi pendant que le fuseau horaire du fournisseur est recherché** : un saut ne l'annule plus, et il ne repart plus en fond si l'on quitte le plein écran entre-temps.
 - **Retour au début (⏮) :** sur les chaînes avec replay, le bandeau du lecteur plein écran a un bouton ⏮. Dans un replay ou un enregistrement, il revient au début. En direct, il relance l'émission en cours depuis son début.
 - **Reculer depuis le direct :** en direct ou en pause sur une chaîne avec replay, ⏪, ⟲30 et la barre de progression reculent aussi au-delà de ce que garde la pause. Une fois la touche relâchée, l'émission reprend par le replay à partir de ce moment. Avancer jusqu'au direct, sur une émission encore à l'antenne, ramène au direct.
 - **Démarrage en 2 s environ** (TF1 : 1,8 s au lieu de 9,2 s) :

@@ -52,7 +52,9 @@ data class LivePlaybackState(
      */
     val userPaused: Boolean = false,
     /** What's playing has shown its first picture (since it was asked for). */
-    val pictureShown: Boolean = false
+    val pictureShown: Boolean = false,
+    /** What's playing has started (played or shown a picture) since it was asked for. */
+    val started: Boolean = false
 )
 
 data class LiveTrackOption(
@@ -85,6 +87,35 @@ class LiveTvPlaybackController @Inject constructor(
 
     private val _state = MutableStateFlow(LivePlaybackState())
     val state: StateFlow<LivePlaybackState> = _state.asStateFlow()
+
+    /**
+     * Counts pictures that appeared after a wait: the first one of each stream, and the first one
+     * after each skip inside a stream. Only ever goes up, so "a picture since then" is a bigger number.
+     */
+    private val _pictures = MutableStateFlow(0)
+    val pictures: StateFlow<Int> = _pictures.asStateFlow()
+
+    /** Counts streams asked for (each one starts a fresh [state]); a request that changed nothing doesn't count. */
+    private val _requests = MutableStateFlow(0)
+    val requests: StateFlow<Int> = _requests.asStateFlow()
+
+    /** Counts times Live TV was told to stop playing (or to let go of the player for Nuvio's own). */
+    private val _stops = MutableStateFlow(0)
+    val stops: StateFlow<Int> = _stops.asStateFlow()
+
+    /** Playing with sound and no picture at all (a radio-like channel): no picture will come. */
+    fun playingWithoutPicture(): Boolean {
+        val p = _player ?: return false
+        val tracks = p.currentTracks
+        // No video selected: none in the stream, or one this TV can't decode (sound only then).
+        return p.isPlaying && !tracks.isEmpty && !tracks.isTypeSelected(C.TRACK_TYPE_VIDEO)
+    }
+
+    /** Where [positionMs] in the stream playing is already loaded, so a skip there shows a picture straight away. */
+    fun loadedAt(positionMs: Long): Boolean {
+        val p = _player ?: return false
+        return positionMs >= p.currentPosition - 1_000 && positionMs <= p.bufferedPosition
+    }
 
     private var currentChannel: LiveChannel? = null
     private var stalkerResolveJob: Job? = null
@@ -706,6 +737,8 @@ class LiveTvPlaybackController @Inject constructor(
         catchupExpectWallMs: Long? = null,
         stalkerStream: StalkerStreamRef? = null,
         reconnectAttempt: Int = 0,
+        /** Start the link again even when it's the one playing (a skip in a replay, which then goes to its new point). */
+        forceReload: Boolean = false,
     ) {
         if (stalkerStream == null && overrideUrl == null && catchupTitle == null && channel.stalkerRef != null &&
             currentChannel?.key == channel.key && activeStalkerRef == channel.stalkerRef && _state.value.error == null &&
@@ -728,7 +761,7 @@ class LiveTvPlaybackController @Inject constructor(
         stalkerMimeType = null
         if (ref == null) {
             playResolved(channel, overrideUrl, catchupTitle, fallback, fallbacks, catchupStartMs,
-                catchupLeadMs, catchupPrimaryUrl, catchupExpectWallMs)
+                catchupLeadMs, catchupPrimaryUrl, catchupExpectWallMs, forceReload = forceReload)
             return
         }
         // Let go of the previous provider connection while the new temporary link is obtained.
@@ -740,6 +773,7 @@ class LiveTvPlaybackController @Inject constructor(
         currentUrl = null
         _state.value = LivePlaybackState(channelKey = channel.key, isBuffering = true, catchupTitle = catchupTitle)
             .copy(reconnectAttempt = reconnectAttempt)
+        _requests.value = _requests.value + 1
         stalkerResolveJob = scope.launch {
             try {
                 val resolved = stalker.prepare(channel.sourceId, ref)
@@ -750,7 +784,7 @@ class LiveTvPlaybackController @Inject constructor(
                     fallback = fallback, fallbacks = fallbacks,
                     catchupStartMs = catchupStartMs, catchupLeadMs = catchupLeadMs,
                     catchupPrimaryUrl = catchupPrimaryUrl, catchupExpectWallMs = catchupExpectWallMs,
-                    previousChannelKey = previousChannelKey, reconnectAttempt = reconnectAttempt)
+                    previousChannelKey = previousChannelKey, reconnectAttempt = reconnectAttempt, forceReload = forceReload)
             } catch (cancelled: kotlinx.coroutines.CancellationException) {
                 throw cancelled
             } catch (failure: Exception) {
@@ -776,6 +810,7 @@ class LiveTvPlaybackController @Inject constructor(
         catchupExpectWallMs: Long? = null,
         previousChannelKey: String? = currentChannel?.key,
         reconnectAttempt: Int = 0,
+        forceReload: Boolean = false,
     ) {
         // Something chosen to play (back from the background through a launcher row, say):
         // that wins over picking up what was on before.
@@ -842,7 +877,7 @@ class LiveTvPlaybackController @Inject constructor(
                 .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, textOff)
                 .build()
         }
-        if (currentChannel?.key == channel.key && currentUrl == url && _state.value.error == null &&
+        if (!forceReload && currentChannel?.key == channel.key && currentUrl == url && _state.value.error == null &&
             p.playbackState != Player.STATE_IDLE
         ) {
             if (!p.isPlaying) p.play()
@@ -860,6 +895,7 @@ class LiveTvPlaybackController @Inject constructor(
         currentUrl = url
         _state.value = LivePlaybackState(channelKey = channel.key, isBuffering = true, catchupTitle = catchupTitle)
             .copy(reconnectAttempt = reconnectAttempt)
+        _requests.value = _requests.value + 1
         if (catchupTitle == null) markStarting(channel.key)
         if (bufferFailedKey != null && bufferFailedKey != channel.key) bufferFailedKey = null
         // Rewind anytime (full screen): play through the rolling buffer instead.
@@ -966,15 +1002,15 @@ class LiveTvPlaybackController @Inject constructor(
         return streamWallMs(p)?.let { it - programStartMs }
     }
 
-    /** Seeks such a replay to [offsetMs] into the show; false if it can't be done in the stream. */
-    fun seekArchiveTo(programStartMs: Long, offsetMs: Long): Boolean {
-        if (!archiveWallMapped) return false
-        val p = _player ?: return false
-        val wall = streamWallMs(p) ?: return false
-        val target = p.currentPosition + (programStartMs + offsetMs - wall)
-        if (target < 0) return false
-        p.seekTo(target)
-        return true
+    /**
+     * Where in the stream to seek such a replay to be [offsetMs] into the show that started at
+     * [programStartMs]; null if it can't be done in the stream.
+     */
+    fun archiveSeekTarget(programStartMs: Long, offsetMs: Long): Long? {
+        if (!archiveWallMapped) return null
+        val p = _player ?: return null
+        val wall = streamWallMs(p) ?: return null
+        return (p.currentPosition + (programStartMs + offsetMs - wall)).takeIf { it >= 0 }
     }
 
     /** Plain words for playback errors, with the provider's HTTP status when there is one. */
@@ -1049,6 +1085,7 @@ class LiveTvPlaybackController @Inject constructor(
     }
 
     fun stop() {
+        _stops.value = _stops.value + 1
         stalkerMediaPolicy?.retire()
         stalkerMediaPolicy = null
         stalkerMimeType = null
@@ -1788,7 +1825,8 @@ class LiveTvPlaybackController @Inject constructor(
 
         override fun onRenderedFirstFrame() {
             awaitingFrame = false
-            if (!_state.value.pictureShown) _state.value = _state.value.copy(pictureShown = true)
+            if (!_state.value.pictureShown || !_state.value.started) _state.value = _state.value.copy(pictureShown = true, started = true)
+            _pictures.value = _pictures.value + 1
             // Playing fine for a while: no longer counts as "the app closed while this was starting".
             currentChannel?.key?.let { key ->
                 scope.launch {
@@ -1908,7 +1946,7 @@ class LiveTvPlaybackController @Inject constructor(
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            _state.value = _state.value.copy(isPlaying = isPlaying)
+            _state.value = _state.value.copy(isPlaying = isPlaying, started = _state.value.started || isPlaying)
         }
 
         override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {
@@ -2258,6 +2296,7 @@ class LiveTvPlaybackController @Inject constructor(
      * own player opens, so the two never hold the audio at the same time.
      */
     fun releaseNow() {
+        _stops.value = _stops.value + 1
         if (_player != null) release()
     }
 

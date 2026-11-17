@@ -679,7 +679,10 @@ internal fun LivePlayerSurface(
         update = { view ->
             if (view.player !== player) {
                 view.player = player
-                if (player != null) onAttached()
+                if (player != null) {
+                    LiveVideoFrame.register(view)
+                    onAttached()
+                } else LiveVideoFrame.unregister(view)
             }
             view.resizeMode = if (aspectMode != null) AspectRatioFrameLayout.RESIZE_MODE_FIT else resizeMode
             reshape(view)
@@ -703,7 +706,10 @@ internal fun LivePlayerSurface(
     }
     androidx.compose.runtime.LaunchedEffect(pictureShape, aspectMode) { viewRef?.let { reshape(it) } }
     DisposableEffect(Unit) {
-        onDispose { viewRef?.player = null }
+        onDispose {
+            viewRef?.let { LiveVideoFrame.unregister(it) }
+            viewRef?.player = null
+        }
     }
 }
 

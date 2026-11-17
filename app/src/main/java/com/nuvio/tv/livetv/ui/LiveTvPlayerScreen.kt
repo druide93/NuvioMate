@@ -945,11 +945,12 @@ fun LiveTvPlayerScreen(
             pictureShape = pictureShape
         )
 
-        // A replay just picked, until its first picture: the channel's logo and "Loading the
-        // replay" over the whole screen (the panel and menus still open over it).
-        val replayOpening by viewModel.replayOpening.collectAsStateWithLifecycle()
+        // A replay loading (just picked, or skipped to a part that isn't loaded), until its
+        // picture: the channel's logo and "Loading the replay" over the whole screen, on black or
+        // over the picture as it was (the panel and menus still open over it).
+        val replayWait by viewModel.replayWait.collectAsStateWithLifecycle()
         ReplayWaitingScreen(
-            channel = replayOpening?.let { viewModel.channelByKey(it.key) ?: it },
+            wait = replayWait?.let { w -> viewModel.channelByKey(w.channel.key)?.let { w.copy(channel = it) } ?: w },
             modifier = Modifier.fillMaxSize()
         )
 
@@ -958,7 +959,7 @@ fun LiveTvPlayerScreen(
         val slowLoading = rememberDelayedTrue(playback.isBuffering, 1_200)
         val recStarting by viewModel.playback.recordingStarting.collectAsStateWithLifecycle()
         val centerMessage = when {
-            replayOpening != null -> null // the waiting screen says it
+            replayWait != null -> null // the waiting screen says it
             current == null -> "Nothing playing"
             playback.error != null -> null // shown with its reason below
             recStarting -> "Starting the recording…"
