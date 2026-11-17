@@ -311,8 +311,13 @@ class LiveTvTimeshift(private val context: Context) {
                                     bytes += m
                                     totalBytes += m
                                     segmenter.write(buf, off, m)
-                                    trimmedMs = (segmenter.trimmedSec * 1000).toLong()
-                                    savedMs = (segmenter.totalSec * 1000).toLong()
+                                    // Only for the save still going: one just replaced (a skip
+                                    // asking the provider again) wrote its own length over the new
+                                    // save's for a moment, which a replay's copy waits on to start.
+                                    if (session?.dir == dir) {
+                                        trimmedMs = (segmenter.trimmedSec * 1000).toLong()
+                                        savedMs = (segmenter.totalSec * 1000).toLong()
+                                    }
                                     if (!reconnect && !firstPieceReported && segmenter.totalSec > 0) {
                                         firstPieceReported = true
                                         val at = System.currentTimeMillis()
