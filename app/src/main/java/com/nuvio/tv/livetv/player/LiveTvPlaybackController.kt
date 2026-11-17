@@ -145,16 +145,31 @@ class LiveTvPlaybackController @Inject constructor(
     /** Waiting at the end of the saved part of a replay: how much was saved, and since when. */
     private var replayWaitSavedMs = -1L
     private var replayWaitSince = 0L
+    /**
+     * A replay's copy is on its way (the player has let go of the stream until it plays from the
+     * copy): still loading, though the player itself is stopped meanwhile.
+     */
+    @Volatile private var copyStarting = false
+    /** A skip moved where that copy starts ([retargetCopy]): the wait for it counts from then. */
+    @Volatile private var copyWaitFrom = 0L
+    /**
+     * Where that copy starts is a point chosen in it (a skip), not where a whole-minute link was
+     * asked to be: if the wait runs out, it still starts there (see [copyStartPoint]).
+     */
+    @Volatile private var copyExact = false
+    /** That copy plays once in (false: a paused replay picked up again after the background stays paused). */
+    @Volatile private var copyPlays = true
 
     private fun stopReplayCache() {
         replayJob?.cancel()
         replayJob = null
         replayLocal = false
+        copyStarting = false
         replayWaitSavedMs = -1L
         if (replayCache.session != null) replayCache.stop()
     }
 
-    /** Starts saving the catch-up at [url] and plays it from the device once the first part is in. */
+    /** Starts saving the catch-up at [url] and plays it from the device once enough of it is in (see [copyStartPoint]). */
     private fun startReplayCache(channel: LiveChannel, url: String): Boolean {
         val p = _player ?: return false
         replayCache.baseDir = timeshift.baseDir
@@ -162,6 +177,18 @@ class LiveTvPlaybackController @Inject constructor(
         val session = replayCache.start(url, channel.headers, keepMinutes = null, reconnect = false, label = "Catch-up save", refreshStream = bufferResolver(channel), policy = stalkerMediaPolicy, mimeType = stalkerMimeType) ?: return false
         com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: saving the replay while it plays, for instant skipping")
         p.stop()
+        // Loading until the copy plays, though the stopped player says it's idle: the small
+        // "Loading…" shows where there's no waiting screen, and the waiting screen doesn't take
+        // the stopped player for the replay being ready.
+        copyStarting = true
+        copyExact = false
+        copyWaitFrom = 0L
+        copyPlays = true
+        // The stopped player says it plays once in, like the screen: kept paused from what played
+        // before, Play/Pause meanwhile did the opposite of what showed, and Home didn't count it
+        // as playing.
+        if (backgroundJob?.isActive != true) p.playWhenReady = true
+        if (!_state.value.isBuffering) _state.value = _state.value.copy(isBuffering = true)
         replayJob?.cancel()
         replayJob = scope.launch {
             val f = java.io.File(session.playUri.path ?: "")
@@ -177,15 +204,178 @@ class LiveTvPlaybackController @Inject constructor(
                 // other links for this replay are tried from there if it fails).
                 com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: nothing came in to save; playing it directly")
                 replayCache.stop()
+                copyStarting = false
                 p.setMediaSource(buildMediaSource(url, channel.headers, isLive = false))
             } else {
+                val startAt = copyStartPoint()
+                if (replayCache.session != session || currentUrl != url) return@launch
                 replayLocal = true
-                p.setMediaSource(localRecordingSource(session.playUri), 0L)
+                copyStarting = false
+                playCopyFrom(p, session, startAt)
             }
             p.prepare()
-            p.playWhenReady = true
+            if (backgroundJob?.isActive == true) {
+                // Home pressed while the copy was on its way: it stays paused (it played behind
+                // the launcher until the line was let go), and plays on coming back if it was to.
+                if (copyPlays) pausedForBackground = true
+                p.playWhenReady = false
+            } else {
+                p.playWhenReady = copyPlays
+            }
         }
         return true
+    }
+
+    /** A replay's copy is on its way: the player is stopped until it plays from the copy. */
+    fun copyOnItsWay(): Boolean = copyStarting && replayJob?.isActive == true
+
+    /** Counts skips in replays ([noteSkip]): a resume after the background gives way to one made since. */
+    @Volatile private var skipSerial = 0
+
+    /** You skipped in the replay (see [skipSerial]). */
+    fun noteSkip() {
+        skipSerial++
+    }
+
+    /** Gives the player the replay's copy, starting [startAt] into it. */
+    private fun playCopyFrom(p: ExoPlayer, session: LiveTvTimeshift.Session, startAt: Long) {
+        // The player keeps a start point it's given, except 0, which it reads as "where you
+        // like" (the newest part of a growing list): then the timeline goes to the start.
+        archiveStartPending = startAt <= 0L
+        p.setMediaSource(localRecordingSource(session.playUri), startAt.coerceAtLeast(0L))
+        p.prepare()
+    }
+
+    /**
+     * Where to start the replay's copy, once it holds [REPLAY_COPY_AHEAD_MS] past the point
+     * asked for ([leadSeekMs] into it: catch-up links start on the whole minute, a skip picks a
+     * point in it). The player reads the copy's list of pieces only every
+     * [REPLAY_LIST_TARGET_SEC] s. Started on the first piece (2 s), it played that from the whole
+     * minute and stopped on "Loading…" until it looked again; only then did it skip to the point
+     * asked for, and load once more. Waits [REPLAY_COPY_WAIT_MS] at most (a provider sending
+     * about as fast as it plays), no longer than the player would have stopped anyway, and not
+     * at all when even a fast provider couldn't send that much in time (a Stalker replay asked
+     * far into the show, where the copy starts at the show's start). It then starts as close to
+     * that point as that much ahead allows, so it plays on without stopping; a point picked by
+     * a skip ([copyExact]) is kept. A copy of an HLS stream keeps its own way (the timeline skips).
+     */
+    private suspend fun copyStartPoint(): Long {
+        // HLS copies don't count what's saved: the player skips to the point once it can, as before.
+        if (replayCache.session?.kind != LiveTvTimeshift.Kind.TS) return 0L
+        val began = android.os.SystemClock.elapsedRealtime()
+        while (true) {
+            val lead = leadSeekMs
+            val saved = replayCache.savedMs
+            val waitedMs = android.os.SystemClock.elapsedRealtime() - maxOf(began, copyWaitFrom)
+            val missingMs = lead + REPLAY_COPY_AHEAD_MS - saved
+            val giveUp = waitedMs >= REPLAY_COPY_WAIT_MS ||
+                missingMs > (REPLAY_COPY_WAIT_MS - waitedMs) * REPLAY_FASTEST_SAVE
+            val startAt = when {
+                missingMs <= 0 -> lead
+                // Saved to its end, or the save stopped: nothing more is coming to wait for.
+                !replayCache.isRecording -> if (lead < saved) lead else (saved - REPLAY_COPY_AHEAD_MS).coerceIn(0L, lead)
+                giveUp && copyExact -> lead.coerceAtMost((saved - 1_000).coerceAtLeast(0L))
+                giveUp -> (saved - REPLAY_COPY_AHEAD_MS).coerceIn(0L, lead)
+                else -> null
+            }
+            if (startAt != null) {
+                // Done here: nothing left for the timeline to skip.
+                leadSeekMs = 0L
+                com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
+                    "Catch-up: copy played from ${startAt / 1000} s in" +
+                        (if (lead > 0) " (the point asked for is ${lead / 1000} s in)" else "") +
+                        ", ${saved / 1000} s saved after ${waitedMs / 100 / 10.0} s more"
+                )
+                return startAt
+            }
+            delay(100)
+        }
+    }
+
+    /**
+     * A skip while the replay's copy isn't playing yet (see [copyStartPoint]): it starts at
+     * [inStreamMs] instead, when that's in the copy or about to be. False otherwise (the
+     * provider is then asked again from there). Before, the copy on its way was thrown away and
+     * saved again from the new point.
+     */
+    fun retargetCopy(inStreamMs: Long): Boolean {
+        val p = _player ?: return false
+        if (!copyOnItsWay() || replayCache.session?.kind != LiveTvTimeshift.Kind.TS || savedRecordingId != null ||
+            _state.value.catchupTitle == null
+        ) return false
+        if (inStreamMs < 0 || inStreamMs > replayCache.savedMs + REPLAY_COPY_AHEAD_MS) return false
+        leadSeekMs = inStreamMs
+        copyExact = true
+        copyWaitFrom = android.os.SystemClock.elapsedRealtime()
+        // The seek bar goes by the stopped player's place meanwhile (a replay already started:
+        // a copy read again, or one played straight that moved on to a saved link). Only the
+        // place moves; the copy is then given its own start point (playCopyFrom).
+        p.seekTo(inStreamMs)
+        com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: skip to ${inStreamMs / 1000} s while the copy is on its way; it starts there")
+        return true
+    }
+
+    /**
+     * A skip to [positionMs] in the replay's copy saved on this box lands past (or just before
+     * the end of) what the player has read of the copy's list, while more is saved. The player
+     * reads that list again only every [REPLAY_LIST_TARGET_SEC] s, and the copy can come in many
+     * times faster than it plays: a plain skip there left a frozen picture until the player next
+     * looked, or the replay stopped again soon after. See [rereadCopyAt].
+     */
+    fun copyRereadNeeded(positionMs: Long): Boolean {
+        val p = _player ?: return false
+        if (!replayLocal || savedRecordingId != null || replayCache.session == null || _state.value.catchupTitle == null) return false
+        val listed = listedMs(p) ?: return false
+        return replayCache.savedMs > listed && positionMs + REPLAY_COPY_AHEAD_MS > listed
+    }
+
+    /**
+     * Plays the replay's copy again from [positionMs], which reads its whole list now (see
+     * [copyRereadNeeded]). The player lets go of the picture meanwhile. With less than
+     * [REPLAY_COPY_AHEAD_MS] saved past that point, it waits for it first, stopped (as a new
+     * copy does, see [copyStartPoint]): it would otherwise stop again soon after, until the
+     * player next read the list. False if the copy isn't what's playing any more.
+     */
+    fun rereadCopyAt(positionMs: Long): Boolean {
+        val p = _player ?: return false
+        val session = replayCache.session ?: return false
+        if (!replayLocal || savedRecordingId != null || _state.value.catchupTitle == null) return false
+        val at = positionMs.coerceAtLeast(0L)
+        com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
+            "Catch-up: skip to ${at / 1000} s in the copy, past what the player has read of it " +
+                "(${(listedMs(p) ?: 0L) / 1000} s of ${replayCache.savedMs / 1000} s saved); reading the copy again from there"
+        )
+        leadSeekMs = 0L
+        if (replayCache.savedMs >= at + REPLAY_COPY_AHEAD_MS || !replayCache.isRecording) {
+            playCopyFrom(p, session, at)
+            return true
+        }
+        // Stopped until enough is saved past it; the seek bar shows the new point meanwhile.
+        // Paused or playing stays as it was.
+        p.stop()
+        p.seekTo(at)
+        copyStarting = true
+        copyExact = true
+        copyWaitFrom = 0L
+        leadSeekMs = at
+        if (!_state.value.isBuffering) _state.value = _state.value.copy(isBuffering = true)
+        replayJob?.cancel()
+        replayJob = scope.launch {
+            val startAt = copyStartPoint()
+            if (replayCache.session != session || !replayLocal) return@launch
+            copyStarting = false
+            playCopyFrom(p, session, startAt)
+        }
+        return true
+    }
+
+    /** How much of the stream playing the player has read so far (null: not known yet). */
+    private fun listedMs(p: ExoPlayer): Long? {
+        val tl = p.currentTimeline
+        if (tl.isEmpty) return null
+        val w = tl.getWindow(p.currentMediaItemIndex.coerceIn(0, tl.windowCount - 1), androidx.media3.common.Timeline.Window())
+        if (w.isPlaceholder || w.durationMs == C.TIME_UNSET) return null
+        return w.durationMs
     }
     var timeshiftEnabled: Boolean = true
     var timeshiftMinutes: Int = 10
@@ -877,10 +1067,21 @@ class LiveTvPlaybackController @Inject constructor(
                 .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, textOff)
                 .build()
         }
+        // The same link already playing, or its copy on its way (the player is stopped until it
+        // plays from the copy): it carries on. Picking the replay again meanwhile threw the copy
+        // away and asked the provider again.
+        val copyOnItsWay = copyOnItsWay()
         if (!forceReload && currentChannel?.key == channel.key && currentUrl == url && _state.value.error == null &&
-            p.playbackState != Player.STATE_IDLE
+            (p.playbackState != Player.STATE_IDLE || copyOnItsWay)
         ) {
-            if (!p.isPlaying) p.play()
+            // Picked again: it plays (once its copy is in), as a pick of a paused replay does.
+            if (copyOnItsWay) {
+                copyPlays = true
+                if (backgroundJob?.isActive != true) p.playWhenReady = true
+            } else if (!p.isPlaying) {
+                p.play()
+                copyPlays = true
+            }
             return
         }
         reconnectJob?.cancel()
@@ -1308,15 +1509,52 @@ class LiveTvPlaybackController @Inject constructor(
         val url = currentUrl
         val title = _state.value.catchupTitle
         val start = archiveStartWallMs
-        val pos = p.currentPosition
+        // A replay's copy on its way: the stopped player still has the place of what played
+        // before it (another replay, a channel); the copy was to start where it's headed.
+        val pos = if (copyOnItsWay()) leadSeekMs else p.currentPosition
         resumeAfterBackground = {
             if (title != null) {
-                // Catch-up: the same replay, back where you were.
-                play(ch, url, title, catchupStartMs = start)
+                // Catch-up: the same replay, back where you were. Its copy starts right there
+                // when it can (see copyStartPoint); otherwise the player is moved there once ready.
+                val skipsBefore = skipSerial
+                play(ch, url, title, catchupStartMs = start, catchupLeadMs = pos.coerceAtLeast(0L))
+                val viaCopy = copyOnItsWay()
+                if (viaCopy) {
+                    // Paused before: its copy stays paused once in (it played until the resume
+                    // paused it). Playing or not, Home pressed again meanwhile sees it right.
+                    copyPlays = wasPlaying
+                    _player?.playWhenReady = wasPlaying
+                    // The controls show it as it is, whether or not the player tells it again
+                    // (it doesn't when it was already paused).
+                    _state.value = _state.value.copy(userPaused = !wasPlaying)
+                }
                 scope.launch {
                     var waited = 0
-                    while (waited < 15_000 && _player?.playbackState != Player.STATE_READY) { delay(200); waited += 200 }
-                    _player?.let { pl -> if (pos > 0) pl.seekTo(pos); if (!wasPlaying) pl.pause() }
+                    var readyWaited = 0
+                    // Live, another channel, or another replay or point asked of the provider
+                    // since (a new link): the old place means nothing there.
+                    fun gone() = currentChannel?.key != ch.key || _state.value.catchupTitle != title || archiveStartWallMs != start
+                    // Its copy on its way doesn't count against the 15 s it gets to be ready
+                    // (a skip meanwhile can make it wait again).
+                    while (!gone() && waited < 60_000 &&
+                        (copyOnItsWay() || (_player?.playbackState != Player.STATE_READY && readyWaited < 15_000))
+                    ) {
+                        delay(200)
+                        waited += 200
+                        if (!copyOnItsWay()) readyWaited += 200
+                    }
+                    if (gone()) return@launch
+                    // A skip in it since wins over the old place (it was undone); paused stays paused.
+                    val skipped = skipSerial != skipsBefore
+                    _player?.let { pl ->
+                        if (pos > 0 && !skipped && kotlin.math.abs(pl.currentPosition - pos) > 2_000) pl.seekTo(pos)
+                        // Unless Play was pressed or it was picked again while its copy loaded.
+                        if (!wasPlaying && !(viaCopy && copyPlays)) {
+                            pl.pause()
+                            // Home pressed again meanwhile marked it to play on coming back.
+                            pausedForBackground = false
+                        }
+                    }
                 }
             } else {
                 currentUrl = null
@@ -1351,6 +1589,13 @@ class LiveTvPlaybackController @Inject constructor(
 
     fun togglePause() {
         val p = _player ?: return
+        // A replay's copy on its way (the player is stopped meanwhile): whether it plays once in.
+        // Before, the copy then always played, whatever was pressed meanwhile.
+        if (copyOnItsWay()) {
+            copyPlays = !p.playWhenReady
+            p.playWhenReady = copyPlays
+            return
+        }
         when {
             _shiftStartedAt.value != null -> if (p.isPlaying) p.pause() else resumeShift()
             _recordingPlayback.value != null -> if (p.isPlaying) p.pause() else p.play()
@@ -1358,7 +1603,11 @@ class LiveTvPlaybackController @Inject constructor(
             _ownTimeline.value -> p.playWhenReady = !p.playWhenReady
             p.isPlaying && _state.value.catchupTitle == null -> pauseLive()
             p.isPlaying -> p.pause()
-            else -> p.play()
+            else -> {
+                p.play()
+                // A paused replay picked up after the background then plays (see its resume).
+                copyPlays = true
+            }
         }
     }
 
@@ -1824,6 +2073,9 @@ class LiveTvPlaybackController @Inject constructor(
         }
 
         override fun onRenderedFirstFrame() {
+            // Stopped: a picture of the stream just let go of, told late (the player is stopped
+            // while a replay's copy is on its way). Not the picture of what's asked for now.
+            if (_player?.playbackState == Player.STATE_IDLE) return
             awaitingFrame = false
             if (!_state.value.pictureShown || !_state.value.started) _state.value = _state.value.copy(pictureShown = true, started = true)
             _pictures.value = _pictures.value + 1
@@ -1861,7 +2113,16 @@ class LiveTvPlaybackController @Inject constructor(
 
         override fun onTimelineChanged(timeline: androidx.media3.common.Timeline, reason: Int) {
             updateOwnTimeline()
+            // Stopped while a replay's copy is on its way: this is still about the stream let go
+            // of (the player tells it once more as it stops). Taken for the copy, the skip into
+            // the minute was "done" on the old stream and forgotten, so the copy started on the
+            // whole minute, or a skip that reads the copy again went back to the copy's start.
+            if (copyOnItsWay()) return
+            val urlBefore = currentUrl
             checkCatchupClock(timeline)
+            // The wrong show came and another link is asked for: the rest of this is the old
+            // link's timeline (it cleared the new link's skip into the minute, or its own start).
+            if (currentUrl != urlBefore || copyOnItsWay()) return
             if (shiftStartPending && !timeline.isEmpty) {
                 val pl = _player
                 if (pl != null) {
@@ -1913,7 +2174,8 @@ class LiveTvPlaybackController @Inject constructor(
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             _state.value = _state.value.copy(
-                isBuffering = playbackState == Player.STATE_BUFFERING,
+                // Stopped while a replay's copy is on its way: still loading.
+                isBuffering = playbackState == Player.STATE_BUFFERING || (playbackState == Player.STATE_IDLE && copyOnItsWay()),
                 error = if (playbackState == Player.STATE_READY) null else _state.value.error,
                 reconnectAttempt = if (playbackState == Player.STATE_READY) 0 else _state.value.reconnectAttempt
             )
@@ -2134,9 +2396,14 @@ class LiveTvPlaybackController @Inject constructor(
         catchupCache && ch.drm == null && !url.substringBefore('?').contains("m3u8", ignoreCase = true) &&
             startReplayCache(ch, url)
 
-    /** You skipped yourself: forget the automatic skip into the replay. */
+    /**
+     * You skipped yourself: forget the automatic skip into the replay. Not while its copy is on
+     * its way, where it's where the copy starts: a skip then moves it ([retargetCopy]) or asks the
+     * provider again (which starts afresh). Cleared, the copy could start at its very beginning
+     * just before that request replaced it, with sound, for the seconds a time zone is looked up.
+     */
     fun cancelCatchupLead() {
-        leadSeekMs = 0L
+        if (!copyOnItsWay()) leadSeekMs = 0L
     }
 
     private fun tryLeadSeek(p: ExoPlayer, w: androidx.media3.common.Timeline.Window) {
@@ -2366,6 +2633,15 @@ class LiveTvPlaybackController @Inject constructor(
         private const val HLS_REPLAY_WAIT_MS = 6_000L
         /** A replay playing from its copy waits this long for more to be saved before asking again. */
         private const val REPLAY_WAIT_MS = 60_000L
+        /**
+         * A replay's copy starts playing once it holds this much past the point asked for: more
+         * than the player plays before it next reads the copy's list (see [copyStartPoint]).
+         */
+        private const val REPLAY_COPY_AHEAD_MS = REPLAY_LIST_TARGET_SEC * 1_000L + 3_000L
+        /** The longest a replay's copy waits for that: no longer than the player would have stopped for anyway. */
+        private const val REPLAY_COPY_WAIT_MS = REPLAY_LIST_TARGET_SEC * 1_000L
+        /** About the fastest a provider sends a replay (times real time, 17x seen): more than that won't come in time. */
+        private const val REPLAY_FASTEST_SAVE = 20L
         /** How far a replay's own clock may be from the time asked for before it counts as a different show. */
         private const val WRONG_SHOW_SLACK_MS = 10 * 60_000L
         /** Two freezes within this long: the channel counts as failing (live games only). */

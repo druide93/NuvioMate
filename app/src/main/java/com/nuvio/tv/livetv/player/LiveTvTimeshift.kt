@@ -23,6 +23,12 @@ import com.nuvio.tv.livetv.stalker.StalkerMediaPolicy
 import com.nuvio.tv.livetv.stalker.StalkerMimeProbe
 
 /**
+ * A replay's copy (kept whole) lists its pieces with this target length. The player reads a
+ * growing list again only about once per target length, so it sees new pieces this often.
+ */
+internal const val REPLAY_LIST_TARGET_SEC = 10
+
+/**
  * Pause and rewind live TV, for channels without catch-up: when you pause, the channel is
  * recorded to the device (one connection to the provider, the same one playback used), and
  * play continues from the recording, behind live. "Go live" drops it.
@@ -198,7 +204,7 @@ class LiveTvTimeshift(private val context: Context) {
         // Pieces past the time limit are dropped as new ones come in (it records on, behind you).
         // A replay (kept whole): a 10 s target, so playback close to what's saved sees new
         // pieces within seconds instead of freezing up to 20 s.
-        val segmenter = TsSegmenter(dir, keepSec = keepMinutes?.let { it * 60.0 }, fixedTargetSec = if (keepMinutes == null) 10 else null) { _ -> }
+        val segmenter = TsSegmenter(dir, keepSec = keepMinutes?.let { it * 60.0 }, fixedTargetSec = if (keepMinutes == null) REPLAY_LIST_TARGET_SEC else null) { _ -> }
         val report = com.nuvio.tv.livetv.model.LiveTvLoadReport
         val began = System.currentTimeMillis()
         // The player has only just let go of its connection: give the provider a moment, or

@@ -24,6 +24,13 @@ Avec l'option **Guide style TiviMate** (paramètres de la TV en direct, avec la 
   - **Saut hors de la copie sauvegardée sur la box** (le replay est redemandé au fournisseur) : l'image du moment est gardée, figée et assombrie, sous le logo et « Chargement du replay ». Si elle ne peut pas être gardée (chaîne protégée, image noire), l'écran est noir.
   - **Saut dans un replay HLS au-delà de ce qui est en mémoire** : le même écran, en transparence sur la dernière image, si rien n'apparaît au bout de 0,6 s.
   - Les sauts dans la partie déjà sauvegardée restent instantanés, sans écran.
+- **Plus d'à-coup après un saut hors de la copie** : l'écran d'attente ne laisse plus voir une demi-seconde de vidéo avant un nouveau « Chargement… ». Le lecteur ne relit la liste des morceaux de la copie que toutes les 10 s. Lancé dès le premier morceau (2 s), il jouait ce morceau depuis la minute ronde (les liens de replay commencent à la minute), puis attendait sa relecture suivante, et seulement alors sautait au moment demandé.
+  - La copie démarre maintenant directement au moment demandé, une fois qu'elle en contient 13 s de plus. L'attente dure 10 s au plus : avec un fournisseur lent, le replay démarre le plus près possible de ce moment.
+  - L'écran d'attente reste jusqu'à ce que la vidéo joue, pas seulement jusqu'à sa première image.
+  - Même chose au lancement d'un replay : la vidéo ne s'arrête plus après ses 2 premières secondes. En contrepartie, la première image arrive un peu plus tard, le temps de sauvegarder ces 13 s.
+- **Saut dans la partie la plus récente de la copie** (pas encore relue par le lecteur) : la copie est relue à partir de ce point, sous l'image figée et le logo, au lieu d'une image figée jusqu'à 10 s.
+- **Saut pendant qu'une copie se prépare** : si le point visé y est déjà, ou le sera bientôt, la copie démarre là, au lieu d'être jetée et redemandée au fournisseur. Choisir à nouveau le même replay ne relance plus son chargement.
+- **Retour dans l'app pendant un replay** : un saut fait entre-temps est gardé, un replay en pause reste en pause, et la touche Accueil pendant un chargement ne lance plus le son derrière l'écran d'accueil.
 - **Barre de progression pendant un chargement** : elle reste sur le point visé. Avant, elle sautait, et le titre pouvait passer à l'émission suivante.
 - **Saut de moins d'une minute** sur un replay lu directement chez le fournisseur : il n'était pas pris en compte, le replay repart maintenant au bon endroit.
 - **Replay choisi pendant que le fuseau horaire du fournisseur est recherché** : un saut ne l'annule plus, et il ne repart plus en fond si l'on quitte le plein écran entre-temps.
