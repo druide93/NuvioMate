@@ -10,8 +10,19 @@ import com.nuvio.tv.livetv.stalker.StalkerMediaPolicy
  * provider that sends you on to its stream server answered "HTTP 302" and nothing was recorded).
  */
 object LiveHttp {
-    /** The connection after the last redirect (its [HttpURLConnection.getURL] is where it ended up). */
-    fun open(url: String, headers: Map<String, String>, readTimeoutMs: Int = 20_000, policy: StalkerMediaPolicy? = null): HttpURLConnection {
+    /**
+     * The connection after the last redirect (its [HttpURLConnection.getURL] is where it ended up).
+     * [lines]: each connection is put there while it's open (from before the provider answers), so
+     * whoever stops the recording can close it at once (see [LiveTvTimeshift.stop]); the one
+     * returned stays there for the caller to take out once it's done with it.
+     */
+    fun open(
+        url: String,
+        headers: Map<String, String>,
+        readTimeoutMs: Int = 20_000,
+        policy: StalkerMediaPolicy? = null,
+        lines: MutableCollection<HttpURLConnection>? = null,
+    ): HttpURLConnection {
         var current = url
         var secureContext = URL(url).protocol.equals("https", true)
         var hops = 0
@@ -26,10 +37,18 @@ object LiveHttp {
             if (requestHeaders.keys.none { it.equals("User-Agent", true) }) {
                 c.setRequestProperty("User-Agent", com.nuvio.tv.livetv.data.LiveTvRepository.DEFAULT_UA)
             }
-            val code = c.responseCode
+            lines?.add(c)
+            val code = try {
+                c.responseCode
+            } catch (e: Exception) {
+                lines?.remove(c)
+                runCatching { c.disconnect() }
+                throw e
+            }
             if (code in setOf(301, 302, 303, 307, 308) && hops < 8) {
                 val location = c.getHeaderField("Location")
                 c.disconnect()
+                lines?.remove(c)
                 if (location.isNullOrBlank()) throw java.io.IOException("The provider sent an invalid stream redirect.")
                 current = runCatching { URL(URL(current), location).toString() }.getOrDefault(location)
                 if (URL(current).protocol.equals("https", true)) secureContext = true
@@ -41,9 +60,58 @@ object LiveHttp {
     }
 
     /** The text at [url], and where it was really served from (for links relative to it). */
-    fun fetch(url: String, headers: Map<String, String>, policy: StalkerMediaPolicy? = null): Pair<String, String> {
-        val c = open(url, headers, policy = policy)
+    fun fetch(
+        url: String,
+        headers: Map<String, String>,
+        policy: StalkerMediaPolicy? = null,
+        lines: MutableCollection<HttpURLConnection>? = null,
+    ): Pair<String, String> {
+        val c = open(url, headers, policy = policy, lines = lines)
         return try { c.inputStream.use { it.readBytes().toString(Charsets.UTF_8) } to c.url.toString() }
-        finally { c.disconnect() }
+        finally { c.disconnect(); lines?.remove(c) }
+    }
+}
+
+/**
+ * The provider connection a recording holds (a replay's copy, the pause buffer). Accounts with
+ * one connection hold a new request for seconds, or refuse it ("too many connections"), while
+ * the provider still counts the old one: seen on a replay asked while the one before was still
+ * saving (held 9 s), and on a live channel picked while the replay's copy was (refused). A new
+ * request waits until the recording just stopped has really let go of its connection, and a
+ * moment more for the provider to see it go.
+ */
+internal object ProviderLine {
+    /** About how long the provider takes to see a connection go (requests 0.9 s after were fine). */
+    const val MARGIN_MS = 1_000L
+
+    /** A recording just stopped, until it has finished (its connection closed). */
+    @Volatile private var closing: kotlinx.coroutines.Job? = null
+
+    /** When a recording's connection was last closed (elapsed realtime; 0: never). */
+    @Volatile private var freeAt = 0L
+
+    /** [job]'s recording was stopped: its connection is being closed. */
+    fun stopping(job: kotlinx.coroutines.Job?) {
+        if (job != null && !job.isCompleted) closing = job
+    }
+
+    /** A recording's connection has just been closed. */
+    fun closed() {
+        freeAt = android.os.SystemClock.elapsedRealtime()
+    }
+
+    /** A recording's connection is still closing, or closed less than [MARGIN_MS] ago. */
+    fun busy(): Boolean {
+        if (closing?.isCompleted == false) return true
+        val at = freeAt
+        return at > 0 && android.os.SystemClock.elapsedRealtime() - at < MARGIN_MS
+    }
+
+    /** Waits until [busy] is over (3 s at most for a connection that won't close). */
+    suspend fun awaitFree() {
+        closing?.let { j -> kotlinx.coroutines.withTimeoutOrNull(3_000L) { j.join() } }
+        val at = freeAt
+        val left = if (at > 0) at + MARGIN_MS - android.os.SystemClock.elapsedRealtime() else 0L
+        if (left > 0) kotlinx.coroutines.delay(left)
     }
 }

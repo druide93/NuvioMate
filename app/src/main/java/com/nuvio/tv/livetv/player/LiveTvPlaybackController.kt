@@ -142,6 +142,38 @@ class LiveTvPlaybackController @Inject constructor(
     var catchupCache: Boolean = true
     @Volatile private var replayLocal = false
     private var replayJob: Job? = null
+
+    /** A provider link waiting for the line a recording just let go of (see [openWhenLineFree]). */
+    private var lineWaitJob: Job? = null
+
+    /**
+     * Gives the player a provider link with [open] once the connection of a recording just
+     * stopped (the replay's copy, the pause buffer) is really closed, and a moment more; at once
+     * when there's none. Accounts with one connection held a request that came while the provider
+     * still counted the copy's (9 s), or refused it: a live channel picked in the guide during a
+     * replay showed "Provider refused the stream (HTTP 403)". Dropped if something else is asked
+     * for meanwhile.
+     */
+    private fun openWhenLineFree(p: ExoPlayer, open: (afterWait: Boolean) -> Unit) {
+        lineWaitJob?.cancel()
+        lineWaitJob = null
+        if (!ProviderLine.busy()) { open(false); return }
+        val request = _requests.value
+        val url = currentUrl
+        // Off the copy (or what played) meanwhile: it isn't what was asked for any more. Still
+        // loading (the stop says idle): "Loading…" stays up.
+        p.stop()
+        if (!_state.value.isBuffering) _state.value = _state.value.copy(isBuffering = true)
+        lineWaitJob = scope.launch {
+            ProviderLine.awaitFree()
+            // Something else asked for meanwhile, a recording playing included.
+            if (_requests.value != request || currentUrl != url || _player !== p ||
+                _recordingPlayback.value != null || savedRecordingId != null
+            ) return@launch
+            lineWaitJob = null
+            open(true)
+        }
+    }
     /** Waiting at the end of the saved part of a replay: how much was saved, and since when. */
     private var replayWaitSavedMs = -1L
     private var replayWaitSince = 0L
@@ -262,6 +294,9 @@ class LiveTvPlaybackController @Inject constructor(
                 // other links for this replay are tried from there if it fails).
                 com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: nothing came in to save; playing it directly")
                 replayCache.stop()
+                // Once the save has let go of its connection (see openWhenLineFree).
+                ProviderLine.awaitFree()
+                if (currentUrl != url) return@launch
                 copyStarting = false
                 p.setMediaSource(buildMediaSource(url, channel.headers, isLive = false))
             } else {
@@ -647,6 +682,7 @@ class LiveTvPlaybackController @Inject constructor(
 
     /** Lets go of the provider connection, so a recording of this channel can use it. */
     fun handOverForRecording() {
+        lineWaitJob?.cancel()
         val p = _player ?: return
         if (_shiftStartedAt.value != null) stopShift()
         reconnectJob?.cancel()
@@ -670,6 +706,7 @@ class LiveTvPlaybackController @Inject constructor(
      */
     fun playSavedRecording(channel: LiveChannel, playlist: java.io.File, title: String, recordingId: String, startAtMs: Long) {
         play(channel, overrideUrl = android.net.Uri.fromFile(playlist).toString(), catchupTitle = title)
+        lineWaitJob?.cancel()
         val p = _player ?: return
         savedRecordingId = recordingId
         savedRecordingPlaylist = playlist
@@ -693,6 +730,7 @@ class LiveTvPlaybackController @Inject constructor(
 
     /** Plays [playlist] (a recording that's still being made), a few seconds behind live. */
     fun playFromRecording(playlist: java.io.File, fromStart: Boolean = false) {
+        lineWaitJob?.cancel()
         val p = _player ?: return
         _recordingPlayback.value = playlist
         _recordingStarting.value = true
@@ -1206,15 +1244,23 @@ class LiveTvPlaybackController @Inject constructor(
             !url.substringBefore('?').endsWith(".m3u8", ignoreCase = true) && startReplayCache(channel, url, playsNow)
         ) return
         archiveStartPending = catchupTitle != null
-        p.setMediaSource(buildMediaSource(url, channel.headers, isLive = catchupTitle == null))
-        p.prepare()
-        if (catchupTitle != null && backgroundJob?.isActive == true) {
-            // A replay whose link came in just after Home: it stays paused (it played behind the
-            // launcher until the line was let go), and plays on coming back if it was to.
-            if (playsNow) pausedForBackground = true
-            p.playWhenReady = false
-        } else {
-            p.playWhenReady = playsNow
+        // The stopped player says whether it plays once in (Play/Pause meanwhile go by it).
+        if (backgroundJob?.isActive != true) p.playWhenReady = playsNow
+        // Once the replay's copy (or the pause buffer) has let go of its connection.
+        openWhenLineFree(p) { afterWait ->
+            p.setMediaSource(buildMediaSource(url, channel.headers, isLive = catchupTitle == null))
+            p.prepare()
+            // As asked, or as Play/Pause set it while the line was let go.
+            val plays = if (catchupTitle != null) copyPlays else playsNow
+            if (backgroundJob?.isActive == true && (catchupTitle != null || afterWait)) {
+                // A replay whose link came in just after Home (or anything opened after waiting
+                // for the line): it stays paused (it played behind the launcher until the line
+                // was let go), and plays on coming back if it was to.
+                if (plays) pausedForBackground = true
+                p.playWhenReady = false
+            } else {
+                p.playWhenReady = plays
+            }
         }
     }
 
@@ -1323,7 +1369,11 @@ class LiveTvPlaybackController @Inject constructor(
         while (cause != null) {
             if (cause is androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException) {
                 return when (cause.responseCode) {
-                    401, 403 -> "Provider refused the stream (HTTP ${cause.responseCode}): account limit, expired, or blocked"
+                    // One text per code, so it's shown in the device's language (see LiveTvTexts).
+                    // Most often the account's connection limit: another device or app watching,
+                    // or the provider still counting a connection just let go of.
+                    401 -> "Provider refused the stream (HTTP 401): too many connections on this account, or it's expired or blocked"
+                    403 -> "Provider refused the stream (HTTP 403): too many connections on this account, or it's expired or blocked"
                     404 -> "Stream not found (HTTP 404). Try another stream format in the playlist's settings"
                     429, 456, 458, 509 -> "Too many connections on this account (HTTP ${cause.responseCode})"
                     in 500..599 -> "Provider's server error (HTTP ${cause.responseCode})"
@@ -1400,6 +1450,7 @@ class LiveTvPlaybackController @Inject constructor(
         savedRecordingPlaylist = null
         clearStarting()
         reconnectJob?.cancel()
+        lineWaitJob?.cancel()
         stopReplayCache()
         // A pause buffer lets go of its provider connection too (a recording you're watching
         // from carries on; only watching it stops).
@@ -1626,6 +1677,7 @@ class LiveTvPlaybackController @Inject constructor(
         if (_recordingPlayback.value != null) return
         if (resumeAfterBackground != null) return
         resumeJob?.cancel()
+        lineWaitJob?.cancel()
         val wasPlaying = pausedForBackground
         val url = currentUrl
         val title = _state.value.catchupTitle
@@ -2430,9 +2482,12 @@ class LiveTvPlaybackController @Inject constructor(
                     com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: the saved copy didn't play (${error.errorCodeName}); playing it directly")
                     archiveStartPending = true
                     _player?.let { pl ->
-                        pl.setMediaSource(buildMediaSource(url0, ch0.headers, isLive = false))
-                        pl.prepare()
-                        // Paused or playing stays as it was.
+                        // Once the copy's save has let go of its connection.
+                        openWhenLineFree(pl) {
+                            pl.setMediaSource(buildMediaSource(url0, ch0.headers, isLive = false))
+                            pl.prepare()
+                            // Paused or playing stays as it was.
+                        }
                     }
                     return
                 }
@@ -2731,8 +2786,15 @@ class LiveTvPlaybackController @Inject constructor(
         }
         if (!autoReconnect || attempt > MAX_RECONNECTS) return
         reconnectJob?.cancel()
+        // Refused (often the account's connection limit): asking again at once is refused too, and
+        // each try counts as one more connection while the provider still counts the last. Seen:
+        // eight requests in 20 s, all refused.
+        val refused = error?.let { e -> generateSequence<Throwable>(e) { it.cause }.take(8).any { c ->
+            c is androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException && c.responseCode in REFUSED_CODES
+        } } == true
         reconnectJob = scope.launch {
-            delay((attempt * 2_000L).coerceAtMost(10_000L))
+            delay(if (refused) (attempt * 5_000L).coerceAtMost(15_000L) else (attempt * 2_000L).coerceAtMost(10_000L))
+            ProviderLine.awaitFree()
             val ch = currentChannel ?: return@launch
             if (activeStalkerRef != null) {
                 when {
@@ -2766,6 +2828,8 @@ class LiveTvPlaybackController @Inject constructor(
             forcedMime = forcedMime,
             bufferSize = bufferSize,
             stalkerPolicy = stalkerMediaPolicy,
+            // This player asks again itself, more slowly, after a refusal (see scheduleReconnect).
+            retryRefusals = false,
         ).build(url, headers, isLive)
 
     /**
@@ -2778,6 +2842,7 @@ class LiveTvPlaybackController @Inject constructor(
     }
 
     private fun release() {
+        lineWaitJob?.cancel()
         stalkerMediaPolicy?.retire()
         stalkerMediaPolicy = null
         stalkerMimeType = null
@@ -2837,6 +2902,8 @@ class LiveTvPlaybackController @Inject constructor(
         /** This much further behind live than it normally plays counts as "behind live" in a sports addon game. */
         private const val OWN_BEHIND_MS = 8_000L
         private const val MAX_RECONNECTS = 8
+        /** HTTP answers that mean the provider refused this account the stream (see scheduleReconnect). */
+        private val REFUSED_CODES = setOf(401, 403)
         /** No progress for this long while it should be playing = stalled. */
         private const val STALL_MS = 15_000L
         /** An HLS catch-up link with nothing to show after this long moves on to its TS link. */

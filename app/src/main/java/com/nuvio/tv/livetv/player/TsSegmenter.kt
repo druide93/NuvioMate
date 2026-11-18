@@ -59,6 +59,8 @@ class TsSegmenter(
     /** The video stream (from the PMT): its packet id and kind, to spot where pictures start. */
     private var videoPid = -1
     private var videoType = 0
+    /** Other tables the player reads (ad markers), from the PMT: checked like the PAT / PMT. */
+    private var sectionPids: Set<Int> = emptySet()
 
     // The piece being written.
     private var seq = 0L
@@ -114,6 +116,8 @@ class TsSegmenter(
     private fun packet(p: ByteArray) {
         val pid = ((p[1].toInt() and 0x1F) shl 8) or (p[2].toInt() and 0xFF)
         val pusi = (p[1].toInt() and 0x40) != 0
+        // A damaged table isn't passed on (see tableOk).
+        if ((pid == 0 || pid in pmtPids || pid in sectionPids) && !tableOk(p, pid, pusi)) return
         val afc = (p[3].toInt() shr 4) and 0x3
         var randomAccess = false
         var pcr = -1L
@@ -262,6 +266,44 @@ class TsSegmenter(
         }
     }
 
+    /**
+     * The table packet [p] (on a PAT, PMT or other table's packet id) is whole enough to pass on.
+     * A damaged one in a provider's replay made the player give up on the copy ("the saved copy
+     * didn't play"): where its table starts pointed past the end of the packet, which the player
+     * doesn't check. And a damaged PAT or PMT was kept as the copy to repeat, so every piece after
+     * it started with it. Dropped: marked damaged in transit, a table that would start past the
+     * packet, the wrong kind of table, and a PAT / PMT whose checksum is wrong when a good one is
+     * already kept (some providers get the checksum wrong all along: their first one is kept).
+     */
+    private fun tableOk(p: ByteArray, pid: Int, pusi: Boolean): Boolean {
+        if ((p[1].toInt() and 0x80) != 0) return false
+        val afc = (p[3].toInt() shr 4) and 0x3
+        val s = payloadStart(p)
+        // Its adaptation field runs past the packet: the player would read past it too.
+        if (afc == 3 && s == null) return false
+        if (!pusi || s == null) return true
+        val start = s + 1 + (p[s].toInt() and 0xFF)
+        if (start + 3 > PACKET) return false
+        val expected = when (pid) { 0 -> 0x00; in pmtPids -> 0x02; else -> -1 }
+        if (expected < 0) return true
+        if ((p[start].toInt() and 0xFF) != expected) return false
+        val len = ((p[start + 1].toInt() and 0x0F) shl 8) or (p[start + 2].toInt() and 0xFF)
+        // A table going on in the next packets: its checksum can't be checked from this one.
+        if (start + 3 + len > PACKET) return true
+        if (crc32(p, start, 3 + len) == 0) return true
+        return if (pid == 0) pat == null else pmts[pid] == null
+    }
+
+    /** MPEG's CRC-32 over [len] bytes of [p] from [from]: 0 over a whole table with its checksum. */
+    private fun crc32(p: ByteArray, from: Int, len: Int): Int {
+        var crc = -1
+        for (i in from until from + len) {
+            crc = crc xor ((p[i].toInt() and 0xFF) shl 24)
+            for (b in 0 until 8) crc = if (crc < 0) (crc shl 1) xor 0x04C11DB7 else crc shl 1
+        }
+        return crc
+    }
+
     /** The PCR packet id from a PMT (the stream's clock), and the video stream's. */
     private fun readPmt(p: ByteArray) {
         val start = payloadStart(p) ?: return
@@ -275,13 +317,17 @@ class TsSegmenter(
         val end = minOf(i + 3 + sectionLen - 4, PACKET)
         val infoLen = ((p[i + 10].toInt() and 0x0F) shl 8) or (p[i + 11].toInt() and 0xFF)
         var j = i + 12 + infoLen
+        var videoFound = false
+        val sections = HashSet<Int>()
         while (j + 5 <= end) {
             val type = p[j].toInt() and 0xFF
             val esPid = ((p[j + 1].toInt() and 0x1F) shl 8) or (p[j + 2].toInt() and 0xFF)
             val esInfo = ((p[j + 3].toInt() and 0x0F) shl 8) or (p[j + 4].toInt() and 0xFF)
-            if (type in VIDEO_TYPES) { videoPid = esPid; videoType = type; return }
+            if (!videoFound && type in VIDEO_TYPES) { videoPid = esPid; videoType = type; videoFound = true }
+            if (type in SECTION_TYPES) sections += esPid
             j += 5 + esInfo
         }
+        sectionPids = sections
     }
 
     /**
@@ -321,5 +367,7 @@ class TsSegmenter(
         const val SYNC: Byte = 0x47
         /** PMT stream types for video: MPEG-1, MPEG-2, H.264, HEVC. */
         val VIDEO_TYPES = setOf(0x01, 0x02, 0x1B, 0x24)
+        /** PMT stream types the player reads as tables: SCTE-35 ad markers. */
+        val SECTION_TYPES = setOf(0x86)
     }
 }

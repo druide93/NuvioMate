@@ -1330,6 +1330,12 @@
         <item>"Recording every \"{0}\" on {1}"</item>
         <item>"Recording \"{0}\" on {1}"</item>
         <item>"Loading the replay"</item>
+        <item>"Provider refused the stream (HTTP 401): too many connections on this account, or it's expired or blocked"</item>
+        <item>"Provider refused the stream (HTTP 403): too many connections on this account, or it's expired or blocked"</item>
+        <item>"Too many connections on this account (HTTP 429)"</item>
+        <item>"Too many connections on this account (HTTP 456)"</item>
+        <item>"Too many connections on this account (HTTP 458)"</item>
+        <item>"Too many connections on this account (HTTP 509)"</item>
     </string-array>
     <string-array name="livetv_texts" tools:ignore="MissingTranslation">
         <item>" · Hold OK: 1 other stream"</item>
@@ -2660,5 +2666,11 @@
         <item>"Recording every \"{0}\" on {1}"</item>
         <item>"Recording \"{0}\" on {1}"</item>
         <item>"Loading the replay"</item>
+        <item>"Provider refused the stream (HTTP 401): too many connections on this account, or it's expired or blocked"</item>
+        <item>"Provider refused the stream (HTTP 403): too many connections on this account, or it's expired or blocked"</item>
+        <item>"Too many connections on this account (HTTP 429)"</item>
+        <item>"Too many connections on this account (HTTP 456)"</item>
+        <item>"Too many connections on this account (HTTP 458)"</item>
+        <item>"Too many connections on this account (HTTP 509)"</item>
     </string-array>
 </resources>

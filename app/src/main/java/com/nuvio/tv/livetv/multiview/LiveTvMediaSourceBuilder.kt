@@ -27,6 +27,8 @@ internal class LiveTvMediaSourceBuilder(
     private val strictDrm: Boolean = false,
     private val requireHttpSources: Boolean = false,
     private val stalkerPolicy: StalkerMediaPolicy? = null,
+    /** False: a live channel's refusal (HTTP 401 / 403) isn't retried by the player (see [RefusalNotRetried]). */
+    private val retryRefusals: Boolean = true,
 ) {
     private fun captionExtractor(factory: DefaultHlsExtractorFactory): HlsExtractorFactory =
         if (observeCaptions) LiveCaptions.Hls(factory) else factory
@@ -56,6 +58,7 @@ internal class LiveTvMediaSourceBuilder(
         // Look for them anyway, the way TV apps do.
         if (item.localConfiguration?.mimeType == MimeTypes.APPLICATION_M3U8) {
             return androidx.media3.exoplayer.hls.HlsMediaSource.Factory(http)
+                .setLoadErrorHandlingPolicy(errorPolicy(isLive))
                 .setExtractorFactory(
                     captionExtractor(
                         androidx.media3.exoplayer.hls.DefaultHlsExtractorFactory(
@@ -73,7 +76,34 @@ internal class LiveTvMediaSourceBuilder(
             )
             // CC1–CC4 and the digital (708) captions; the menu only offers those with text.
             .setTsSubtitleFormats(LiveCaptions.formats)
-        return DefaultMediaSourceFactory(http, if (observeCaptions) LiveCaptions.Extractors(extractors) else extractors).createMediaSource(item)
+        return DefaultMediaSourceFactory(http, if (observeCaptions) LiveCaptions.Extractors(extractors) else extractors)
+            .setLoadErrorHandlingPolicy(errorPolicy(isLive))
+            .createMediaSource(item)
+    }
+
+    /**
+     * Live channels in the full-screen player: [RefusalNotRetried]. Replays keep the player's own
+     * retries (without them a refusal went straight through every other form of the replay's
+     * link within a second), and so does Multiview, which doesn't ask again itself.
+     */
+    private fun errorPolicy(isLive: Boolean): androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy =
+        if (isLive && !retryRefusals) RefusalNotRetried else androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy()
+
+    /**
+     * The player's own quick retries (at once, then 1 s and 2 s later), except when the provider
+     * refused the stream (HTTP 401 / 403, most often the account's connection limit): those were
+     * refused too, each one more connection while the provider still counted the last (eight
+     * requests in 20 s, all refused). The error then goes straight to the app, which asks again
+     * more slowly.
+     */
+    private object RefusalNotRetried : androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy() {
+        override fun getRetryDelayMsFor(loadErrorInfo: androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy.LoadErrorInfo): Long {
+            // The refusal can come wrapped (the VPN's data source passes it on inside another error).
+            val refused = generateSequence<Throwable>(loadErrorInfo.exception) { it.cause }.take(8).any {
+                it is androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException && (it.responseCode == 401 || it.responseCode == 403)
+            }
+            return if (refused) androidx.media3.common.C.TIME_UNSET else super.getRetryDelayMsFor(loadErrorInfo)
+        }
     }
 
     /**

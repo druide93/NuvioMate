@@ -1330,5 +1330,11 @@
         <item>"Enregistrement de chaque « {0} » sur {1}"</item>
         <item>"Enregistrement de « {0} » sur {1}"</item>
         <item>"Chargement du replay"</item>
+        <item>"Le fournisseur refuse le flux (HTTP 401) : trop de connexions en même temps sur ce compte, ou compte expiré ou bloqué"</item>
+        <item>"Le fournisseur refuse le flux (HTTP 403) : trop de connexions en même temps sur ce compte, ou compte expiré ou bloqué"</item>
+        <item>"Trop de connexions en même temps sur ce compte (HTTP 429)"</item>
+        <item>"Trop de connexions en même temps sur ce compte (HTTP 456)"</item>
+        <item>"Trop de connexions en même temps sur ce compte (HTTP 458)"</item>
+        <item>"Trop de connexions en même temps sur ce compte (HTTP 509)"</item>
     </string-array>
 </resources>

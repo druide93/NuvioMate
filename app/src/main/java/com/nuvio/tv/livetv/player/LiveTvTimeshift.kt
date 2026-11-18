@@ -58,6 +58,8 @@ class LiveTvTimeshift(private val context: Context) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var job: Job? = null
+    /** The recording's open connections to the provider, closed at once by [stop]. */
+    @Volatile private var lines: java.util.concurrent.ConcurrentLinkedDeque<HttpURLConnection>? = null
     @Volatile var session: Session? = null
         private set
     @Volatile private var recording = false
@@ -124,10 +126,12 @@ class LiveTvTimeshift(private val context: Context) {
         val s = Session(if (isHls) Kind.HLS else Kind.TS, now, Uri.fromFile(local), dir)
         session = s
         ACTIVE += s.dir
+        val open = java.util.concurrent.ConcurrentLinkedDeque<HttpURLConnection>()
+        lines = open
         job = if (isHls) {
-            scope.launch { recordHls(url, headers, dir, local, keepMinutes ?: 24 * 60, live = reconnect, leadMs = leadMs, audioLanguage = audioLanguage, label = label, refreshStream = refreshStream, initialPolicy = policy) }
+            scope.launch { recordHls(url, headers, dir, local, keepMinutes ?: 24 * 60, live = reconnect, leadMs = leadMs, audioLanguage = audioLanguage, label = label, refreshStream = refreshStream, initialPolicy = policy, lines = open) }
         } else {
-            scope.launch { recordTs(url, headers, dir, keepMinutes, reconnect, label, refreshStream, policy) }
+            scope.launch { recordTs(url, headers, dir, keepMinutes, reconnect, label, refreshStream, policy, open) }
         }
         return s
     }
@@ -146,6 +150,15 @@ class LiveTvTimeshift(private val context: Context) {
         val old = job
         old?.cancel()
         job = null
+        // Its connection is closed now, not once its current read returns (up to 20 s on a
+        // provider that stalls): the next request (a skip, live, another replay) went out while
+        // the provider still counted this one, and was held for seconds or refused.
+        ProviderLine.stopping(old)
+        lines?.let { open ->
+            lines = null
+            val now = generateSequence { open.pollFirst() }.toList()
+            if (now.isNotEmpty()) scope.launch { now.forEach { runCatching { it.disconnect() } } }
+        }
         session?.dir?.let { d ->
             ACTIVE -= d
             scope.launch {
@@ -200,6 +213,8 @@ class LiveTvTimeshift(private val context: Context) {
         label: String = "Pause buffer",
         refreshStream: (suspend () -> StalkerPlayback)? = null,
         initialPolicy: StalkerMediaPolicy? = null,
+        /** This recording's open connections, which [stop] closes at once. */
+        lines: MutableCollection<HttpURLConnection>,
     ) {
         // Pieces past the time limit are dropped as new ones come in (it records on, behind you).
         // A replay (kept whole): a 10 s target, so playback close to what's saved sees new
@@ -207,12 +222,18 @@ class LiveTvTimeshift(private val context: Context) {
         val segmenter = TsSegmenter(dir, keepSec = keepMinutes?.let { it * 60.0 }, fixedTargetSec = if (keepMinutes == null) REPLAY_LIST_TARGET_SEC else null) { _ -> }
         val report = com.nuvio.tv.livetv.model.LiveTvLoadReport
         val began = System.currentTimeMillis()
+        var opened = false
+        // The recording before this one (the replay before a skip, say) is closed first: asked
+        // while the provider still counted it, a replay was held 9 s before it answered, and a
+        // live channel was refused ("too many connections").
+        ProviderLine.awaitFree()
         // The player has only just let go of its connection: give the provider a moment, or
         // accounts with one connection can refuse (or later cut) this one. A replay waits less:
         // every second here is a second more before its picture (2.5 s of an 11 s start). If the
         // provider still counts the old connection and refuses, the next try comes 2 s later,
         // which is still later than the one try used to come.
-        delay(if (reconnect) 2_500 else 1_000)
+        val waitLeft = (if (reconnect) 2_500L else 1_000L) - (System.currentTimeMillis() - began)
+        if (waitLeft > 0) delay(waitLeft)
         // A replay, for the Start-Up Report: when the provider answered, and whether the first
         // piece (what playback waits for) has been reported yet.
         var answeredAt = 0L
@@ -254,110 +275,120 @@ class LiveTvTimeshift(private val context: Context) {
                     }
                     if (fresh != null) { if (policy !== fresh.policy) policy?.retire(); policy = fresh.policy }
                     val requestHeaders = if (resuming) headers + ("Range" to "bytes=$totalBytes-") else headers
-                    val c = LiveHttp.open(fresh?.url ?: url, fresh?.headers ?: requestHeaders, 20_000, policy)
-                    val code = c.responseCode
-                    if (!reconnect && !firstPieceReported) {
-                        answeredAt = System.currentTimeMillis()
-                        report.add("$label: the provider answered in ${secs(answeredAt - t0)} s (HTTP $code), ${secs(answeredAt - began)} s after asking")
-                    }
-                    when {
-                        resuming && code == 416 -> { c.disconnect(); complete = true; "all of it is saved" }
-                        code !in 200..299 -> { c.disconnect(); "HTTP $code" }
-                        else -> {
-                            // The provider sent the replay from its start again (it can't carry on
-                            // from the middle): what's already saved is read again and skipped.
-                            var skip = if (resuming && code == 200) totalBytes else 0L
-                            if (resuming) {
-                                rangeWorks = code == 206
-                                report.add(
-                                    if (code == 206) "$label: the provider carries on from ${totalBytes / 1024 / 1024} MB"
-                                    else "$label: the provider can't carry on from the middle; reading the first ${totalBytes / 1024 / 1024} MB again"
-                                )
-                            }
-                            if (knownLength < 0) knownLength = when (code) {
-                                200 -> c.contentLengthLong
-                                206 -> c.getHeaderField("Content-Range")?.substringAfterLast('/')?.trim()?.toLongOrNull() ?: -1L
-                                else -> -1L
-                            }
-                            c.inputStream.use { input ->
-                                val buf = ByteArray(64 * 1024)
-                                var end = "the provider ended the stream"
-                                var lastNote = System.currentTimeMillis()
-                                var noteBytes = totalBytes
-                                var noteSaved = savedMs
-                                // Speed check for a replay: the provider sends the start at full
-                                // speed, then slows to about real time (seen: 17x, then 1.2x after
-                                // about 16 minutes), so the saved part hardly gets ahead of
-                                // playback. A new connection, carrying on from the same byte, may
-                                // get full speed again.
-                                var checkAt = System.currentTimeMillis()
-                                var checkSaved = savedMs
-                                // The fastest this connection went: a new one is only asked for
-                                // when it came fast and then slowed right down (a provider that's
-                                // simply slow gains nothing from it; each new connection costs a
-                                // couple of seconds, and playback froze catching up).
-                                var peakRate = 0.0
-                                while (scope.isActive && alive(dir)) {
-                                    val n = input.read(buf)
-                                    if (n < 0) break
-                                    var off = 0
-                                    if (skip > 0) {
-                                        off = minOf(n.toLong(), skip).toInt()
-                                        skip -= off
-                                        if (off == n) continue
-                                        checkAt = System.currentTimeMillis(); checkSaved = savedMs
-                                    }
-                                    val m = n - off
-                                    bytes += m
-                                    totalBytes += m
-                                    segmenter.write(buf, off, m)
-                                    // Only for the save still going: one just replaced (a skip
-                                    // asking the provider again) wrote its own length over the new
-                                    // save's for a moment, which a replay's copy waits on to start.
-                                    if (session?.dir == dir) {
-                                        trimmedMs = (segmenter.trimmedSec * 1000).toLong()
-                                        savedMs = (segmenter.totalSec * 1000).toLong()
-                                    }
-                                    if (!reconnect && !firstPieceReported && segmenter.totalSec > 0) {
-                                        firstPieceReported = true
-                                        val at = System.currentTimeMillis()
-                                        report.add(
-                                            "$label: first piece ready ${secs(at - began)} s after asking, ${secs(at - answeredAt)} s after the provider answered " +
-                                                "(${String.format(java.util.Locale.US, "%.1f", segmenter.totalSec)} s of the show, " +
-                                                "${if (segmenter.lastCutClean) "cut where a picture starts" else "no picture start marked: cut by length"})"
-                                        )
-                                    }
-                                    // A replay: how fast it's coming in, every 30 s (seconds of
-                                    // show saved per second, and the speed), to see a provider
-                                    // slowing it to real time or a stall.
-                                    val nowMs = System.currentTimeMillis()
-                                    if (!reconnect && nowMs - lastNote >= 30_000) {
-                                        val secs = (nowMs - lastNote) / 1000.0
-                                        report.add(
-                                            "$label: ${savedMs / 1000}s saved (${totalBytes / 1024 / 1024} MB), " +
-                                                "last ${secs.toInt()}s: ${String.format(java.util.Locale.US, "%.1f", (savedMs - noteSaved) / 1000.0 / secs)}x real time, " +
-                                                "${(totalBytes - noteBytes) / 1024 / secs.toLong().coerceAtLeast(1)} KB/s"
-                                        )
-                                        lastNote = nowMs; noteBytes = totalBytes; noteSaved = savedMs
-                                    }
-                                    if (!reconnect && nowMs - checkAt >= 20_000) {
-                                        val rate = (savedMs - checkSaved) / (nowMs - checkAt).toDouble()
-                                        checkAt = nowMs; checkSaved = savedMs
-                                        val throttled = peakRate >= 4.0 && rate < 2.0 && rate < peakRate * 0.4
-                                        if (rate > peakRate) peakRate = rate
-                                        if (throttled && rangeWorks != false && nowMs - lastBoostAt >= 60_000) {
-                                            lastBoostAt = nowMs
-                                            end = "slowed to ${String.format(java.util.Locale.US, "%.1f", rate)}x real time; new connection for full speed"
-                                            break
+                    // Sent from here on: even a request cut (by [stop]) or failed before the provider
+                    // answered counts as a connection the provider has to see go.
+                    opened = true
+                    val c = LiveHttp.open(fresh?.url ?: url, fresh?.headers ?: requestHeaders, 20_000, policy, lines)
+                    // Let go of it as soon as it's done with (a dropped or finished connection
+                    // included), and [stop] closes it at once meanwhile.
+                    try {
+                        val code = c.responseCode
+                        if (!reconnect && !firstPieceReported) {
+                            answeredAt = System.currentTimeMillis()
+                            report.add("$label: the provider answered in ${secs(answeredAt - t0)} s (HTTP $code), ${secs(answeredAt - began)} s after asking")
+                        }
+                        when {
+                            resuming && code == 416 -> { c.disconnect(); complete = true; "all of it is saved" }
+                            code !in 200..299 -> { c.disconnect(); "HTTP $code" }
+                            else -> {
+                                // The provider sent the replay from its start again (it can't carry on
+                                // from the middle): what's already saved is read again and skipped.
+                                var skip = if (resuming && code == 200) totalBytes else 0L
+                                if (resuming) {
+                                    rangeWorks = code == 206
+                                    report.add(
+                                        if (code == 206) "$label: the provider carries on from ${totalBytes / 1024 / 1024} MB"
+                                        else "$label: the provider can't carry on from the middle; reading the first ${totalBytes / 1024 / 1024} MB again"
+                                    )
+                                }
+                                if (knownLength < 0) knownLength = when (code) {
+                                    200 -> c.contentLengthLong
+                                    206 -> c.getHeaderField("Content-Range")?.substringAfterLast('/')?.trim()?.toLongOrNull() ?: -1L
+                                    else -> -1L
+                                }
+                                c.inputStream.use { input ->
+                                    val buf = ByteArray(64 * 1024)
+                                    var end = "the provider ended the stream"
+                                    var lastNote = System.currentTimeMillis()
+                                    var noteBytes = totalBytes
+                                    var noteSaved = savedMs
+                                    // Speed check for a replay: the provider sends the start at full
+                                    // speed, then slows to about real time (seen: 17x, then 1.2x after
+                                    // about 16 minutes), so the saved part hardly gets ahead of
+                                    // playback. A new connection, carrying on from the same byte, may
+                                    // get full speed again.
+                                    var checkAt = System.currentTimeMillis()
+                                    var checkSaved = savedMs
+                                    // The fastest this connection went: a new one is only asked for
+                                    // when it came fast and then slowed right down (a provider that's
+                                    // simply slow gains nothing from it; each new connection costs a
+                                    // couple of seconds, and playback froze catching up).
+                                    var peakRate = 0.0
+                                    while (scope.isActive && alive(dir)) {
+                                        val n = input.read(buf)
+                                        if (n < 0) break
+                                        var off = 0
+                                        if (skip > 0) {
+                                            off = minOf(n.toLong(), skip).toInt()
+                                            skip -= off
+                                            if (off == n) continue
+                                            checkAt = System.currentTimeMillis(); checkSaved = savedMs
+                                        }
+                                        val m = n - off
+                                        bytes += m
+                                        totalBytes += m
+                                        segmenter.write(buf, off, m)
+                                        // Only for the save still going: one just replaced (a skip
+                                        // asking the provider again) wrote its own length over the new
+                                        // save's for a moment, which a replay's copy waits on to start.
+                                        if (session?.dir == dir) {
+                                            trimmedMs = (segmenter.trimmedSec * 1000).toLong()
+                                            savedMs = (segmenter.totalSec * 1000).toLong()
+                                        }
+                                        if (!reconnect && !firstPieceReported && segmenter.totalSec > 0) {
+                                            firstPieceReported = true
+                                            val at = System.currentTimeMillis()
+                                            report.add(
+                                                "$label: first piece ready ${secs(at - began)} s after asking, ${secs(at - answeredAt)} s after the provider answered " +
+                                                    "(${String.format(java.util.Locale.US, "%.1f", segmenter.totalSec)} s of the show, " +
+                                                    "${if (segmenter.lastCutClean) "cut where a picture starts" else "no picture start marked: cut by length"})"
+                                            )
+                                        }
+                                        // A replay: how fast it's coming in, every 30 s (seconds of
+                                        // show saved per second, and the speed), to see a provider
+                                        // slowing it to real time or a stall.
+                                        val nowMs = System.currentTimeMillis()
+                                        if (!reconnect && nowMs - lastNote >= 30_000) {
+                                            val secs = (nowMs - lastNote) / 1000.0
+                                            report.add(
+                                                "$label: ${savedMs / 1000}s saved (${totalBytes / 1024 / 1024} MB), " +
+                                                    "last ${secs.toInt()}s: ${String.format(java.util.Locale.US, "%.1f", (savedMs - noteSaved) / 1000.0 / secs)}x real time, " +
+                                                    "${(totalBytes - noteBytes) / 1024 / secs.toLong().coerceAtLeast(1)} KB/s"
+                                            )
+                                            lastNote = nowMs; noteBytes = totalBytes; noteSaved = savedMs
+                                        }
+                                        if (!reconnect && nowMs - checkAt >= 20_000) {
+                                            val rate = (savedMs - checkSaved) / (nowMs - checkAt).toDouble()
+                                            checkAt = nowMs; checkSaved = savedMs
+                                            val throttled = peakRate >= 4.0 && rate < 2.0 && rate < peakRate * 0.4
+                                            if (rate > peakRate) peakRate = rate
+                                            if (throttled && rangeWorks != false && nowMs - lastBoostAt >= 60_000) {
+                                                lastBoostAt = nowMs
+                                                end = "slowed to ${String.format(java.util.Locale.US, "%.1f", rate)}x real time; new connection for full speed"
+                                                break
+                                            }
                                         }
                                     }
+                                    if (!alive(dir)) end = "stopped"
+                                    // Asked for the rest and there was none: it was all there.
+                                    if (resuming && code == 206 && bytes == 0L) complete = true
+                                    end
                                 }
-                                if (!alive(dir)) end = "stopped"
-                                // Asked for the rest and there was none: it was all there.
-                                if (resuming && code == 206 && bytes == 0L) complete = true
-                                end
                             }
                         }
+                    } finally {
+                        lines.remove(c)
+                        runCatching { c.disconnect() }
                     }
                 } catch (e: kotlinx.coroutines.CancellationException) {
                     throw e
@@ -386,6 +417,8 @@ class LiveTvTimeshift(private val context: Context) {
                 if (bytes > 0) attempt = 1
             }
         } finally {
+            // Its connection is closed by now (the next request waits for this, see ProviderLine).
+            if (opened) ProviderLine.closed()
             report.add("$label finished after ${(System.currentTimeMillis() - began) / 1000}s (${segmenter.totalSec.toInt()}s recorded)")
             runCatching { segmenter.finish(ended = true) }
             if (session?.dir == dir) savedMs = (segmenter.totalSec * 1000).toLong()
@@ -408,12 +441,25 @@ class LiveTvTimeshift(private val context: Context) {
         label: String,
         refreshStream: (suspend () -> StalkerPlayback)? = null,
         initialPolicy: StalkerMediaPolicy? = null,
+        /** This recording's open connections, which [stop] closes at once. */
+        lines: java.util.concurrent.ConcurrentLinkedDeque<HttpURLConnection>,
     ) {
         val report = com.nuvio.tv.livetv.model.LiveTvLoadReport
         var policy = initialPolicy
-        val connect: (String, Map<String, String>) -> HttpURLConnection = { address, requestHeaders -> LiveHttp.open(address, requestHeaders, 20_000, policy) }
+        var opened = false
+        // Each piece's connection is closed by HlsPieces once read; only the last few are kept
+        // here, for [stop] to close one still being read.
+        val connect: (String, Map<String, String>) -> HttpURLConnection = { address, requestHeaders ->
+            // Stopped: no new request (the pieces left to fetch went on asking after [stop]).
+            if (!alive(dir)) throw java.io.IOException("Recording stopped")
+            opened = true
+            LiveHttp.open(address, requestHeaders, 20_000, policy, lines).also { while (lines.size > 8) lines.pollFirst() }
+        }
+        // The recording before this one is closed first (see recordTs).
+        ProviderLine.awaitFree()
         try {
-            val (firstText, firstUrl) = LiveHttp.fetch(url, headers, policy)
+            opened = true
+            val (firstText, firstUrl) = LiveHttp.fetch(url, headers, policy, lines)
             val choice = if (HlsPieces.isMaster(firstText)) {
                 HlsPieces.pick(firstUrl, firstText, audioLanguage) ?: return
             } else null
@@ -421,6 +467,9 @@ class LiveTvTimeshift(private val context: Context) {
             val audioUrl = choice?.audioUrl
             val video = HlsPieces.Track(videoUrl, dir, if (audioUrl != null) "v" else "", headers, connect)
             val audio = audioUrl?.let { HlsPieces.Track(it, dir, "a", headers, connect) }
+            // Stopped: the piece being read and those left are dropped at once.
+            video.stopNow = { !alive(dir) }
+            audio?.stopNow = { !alive(dir) }
             val videoFile = if (audio != null) File(dir, "video.m3u8") else local
             val audioFile = File(dir, "audio.m3u8")
             var vm = if (choice == null) HlsPieces.parseMedia(firstText) else video.fetch()
@@ -441,7 +490,7 @@ class LiveTvTimeshift(private val context: Context) {
                 if (fresh.mimeType == StalkerMimeProbe.DASH) throw java.io.IOException(StalkerMimeProbe.DASH_RECORDING_UNAVAILABLE)
                 if (policy !== fresh.policy) policy?.retire()
                 policy = fresh.policy
-                val (text, servedAt) = LiveHttp.fetch(fresh.url, fresh.headers, policy)
+                val (text, servedAt) = LiveHttp.fetch(fresh.url, fresh.headers, policy, lines)
                 val refreshed = if (HlsPieces.isMaster(text)) HlsPieces.pick(servedAt, text, audioLanguage) else null
                 if ((refreshed?.audioUrl != null) != (audio != null)) throw IllegalStateException("The portal changed its audio format.")
                 video.url = refreshed?.videoUrl ?: servedAt
@@ -494,6 +543,7 @@ class LiveTvTimeshift(private val context: Context) {
             Log.w(TAG, "HLS recording stopped: $problem")
             report.add("$label: HLS saving stopped ($problem)")
         } finally {
+            if (opened) ProviderLine.closed()
             if (session?.dir == dir) recording = false
         }
     }

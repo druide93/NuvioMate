@@ -903,7 +903,7 @@ internal fun liveCorner(): androidx.compose.ui.unit.Dp {
 
 /**
  * A message over the video ("Reconnecting…") with the reason underneath, wrapped onto as many
- * lines as it needs. A long reason ("Provider refused the stream (HTTP 403): account limit…")
+ * lines as it needs. A long reason ("Provider refused the stream (HTTP 403): too many connections…")
  * used to sit on the same single line and got cut off, so you couldn't see what was wrong.
  */
 @Composable
