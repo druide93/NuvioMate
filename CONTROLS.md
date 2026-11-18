@@ -19,16 +19,21 @@ How to get around Nuvio + IPTV with your TV remote. [Back to the README](README.
 ### Full screen
 | Button | Action |
 |---|---|
-| **▲ / ▼**, **CH+ / CH−** | Next / previous channel (a replay: **▲ / ▼** show the info panel with the progress bar highlighted; **CH+ / CH−** still change channel) |
-| **OK** | Info panel (catch-up: pause / play) |
-| **⏮** on the info panel | Catch-up channels: back to the start (a replay or recording: its beginning; live: the show on now from its beginning) |
-| **● Live** on the info panel | A replay: back to the channel live |
-| **◀** | Overlay mode (catch-up: skip back, with the info panel on the progress bar) |
-| **▶** | Catch-up: skip forward, with the info panel on the progress bar (hold to skip faster) |
+| **OK** | The channel menu: the channel and the show, with ⏮ back to the start (catch-up channels), ⏯ pause, and the pin, bell, backups, **Multiview** and ⚙ buttons · **◀ / ▶** move between the buttons, **▼** opens the Channel Row, **▲** or **Back** closes it |
+| **▲** | The info bar |
+| **▼** | The playback controls at the bottom: the show, the progress bar, ⏮ ⏪ ⏯ ⏩ and the other buttons (a replay: the progress bar highlighted) |
+| **◀ / ▶** | Previous / next channel (with **Channel Surfing** on: look through the channels on the bar, **OK** switches) · a replay (or paused live): skip back / forward, with the controls on the progress bar (hold to skip faster) |
+| **◀** (hold) | Overlay mode (or the groups), when Channel Surfing is off |
+| **▶** (hold) | Back to the channel watched before, when Channel Surfing is off |
+| **CH+ / CH−** | Next / previous channel |
+| **▼**, then **▲** to the progress bar | Move through the show with **◀ / ▶**, **OK** pauses / plays; **▲** again closes the controls |
+| **⏮** on the controls | Catch-up channels: back to the start (a replay or recording: its beginning; live: the show on now from its beginning) |
+| **● Live** on the controls | A replay: back to the channel live |
+| **▼** from the controls' buttons | The Channel Row |
 | **⏪ / ⏩** | Catch-up and paused live TV: 30 seconds back / forward (hold to go faster) |
 | **⏪**, **⟲30** or the progress bar, live on a catch-up channel | Back into the show through catch-up, even before where you paused; skip forward up to live to be back on live |
 | **Long-press OK** or **Menu** | Audio, subtitles, screen size, picture shape, stream info, sleep timer, record, **Add to Multiview**, watch from the beginning, find & stream |
-| **Back** | Back to the guide |
+| **Back** | Hides what's on screen · again: back to the guide |
 
 ### Overlay mode
 | Button | Action |

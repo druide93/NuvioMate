@@ -1336,5 +1336,8 @@
         <item>"Trop de connexions en même temps sur ce compte (HTTP 456)"</item>
         <item>"Trop de connexions en même temps sur ce compte (HTTP 458)"</item>
         <item>"Trop de connexions en même temps sur ce compte (HTTP 509)"</item>
+        <item>"◀ ▶ parcourir · OK lecture/pause"</item>
+        <item>"{0} de retard sur le direct"</item>
+        <item>"En cours : {0}"</item>
     </string-array>
 </resources>

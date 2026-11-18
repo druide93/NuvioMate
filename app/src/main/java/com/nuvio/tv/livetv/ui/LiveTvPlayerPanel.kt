@@ -24,6 +24,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.FastForward
+import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.FilterNone
 import androidx.compose.material.icons.filled.Forward30
 import androidx.compose.material.icons.filled.GridView
@@ -68,6 +70,14 @@ import com.nuvio.tv.ui.theme.NuvioTheme
 
 /** What the bottom panel is showing. */
 internal enum class PanelMode { LIVE, CATCHUP, SHIFT }
+
+/**
+ * Which part of the bar to draw. TiviMate style: OK and Up show the channel and the show alone
+ * ([ALL] with no buttons); Down shows the playback controls ([CONTROLS]): over a dark fade at the
+ * bottom, the show on one line, the progress bar across the screen, then where you are, the
+ * playback buttons in the middle and the other buttons on the right.
+ */
+internal enum class PanelPart { ALL, CONTROLS }
 
 /**
  * The panel's controls, in the order the highlight moves through them. The bar itself only has
@@ -262,6 +272,10 @@ internal fun LiveTvPlayerPanel(
     onLive: () -> Unit = {},
     /** TiviMate style: a flat dark card with no edges, softer chips and clock (same contents). */
     tivimate: Boolean = false,
+    /** The whole bar, or only its playback controls (see [PanelPart]). */
+    part: PanelPart = PanelPart.ALL,
+    /** How many lines the description may take (default: 2 with the buttons, else 1). */
+    descriptionLines: Int? = null,
 ) = androidx.compose.runtime.CompositionLocalProvider(LocalGuideTiviMate provides tivimate) {
     val colors = NuvioTheme.colors
     val accent = colors.Secondary
@@ -281,7 +295,19 @@ internal fun LiveTvPlayerPanel(
     val rowOpen = withRow && inRow
     val selectedTab = rowLists.firstOrNull { it.id == rowSelected } ?: rowLists.firstOrNull()
 
-    Box(
+    if (part == PanelPart.CONTROLS) ControlsBar(
+        channel = channel, title = title, timeline = timeline, paused = paused, controls = controls,
+        focused = focused?.takeIf { !inRow }, showNumber = showNumber, bellOn = bellOn, pinOn = pinOn,
+        onBackupsBounds = onBackupsBounds, onMultiview = onMultiview, onLive = onLive,
+        row = if (withRow && rowOpen && selectedTab != null) {
+            {
+                RowHeader(rowLists, selectedTab, rowPillsFocused)
+                Spacer(Modifier.height(6.dp))
+                RecentRow(recent.orEmpty(), recentFocus, recentClear, playingKey, showNumber)
+            }
+        } else null,
+        modifier = modifier
+    ) else Box(
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 36.dp, end = 36.dp, bottom = 14.dp, top = 8.dp)
@@ -303,6 +329,75 @@ internal fun LiveTvPlayerPanel(
         ) {
             val density = LocalDensity.current
             var middleHeight by remember { mutableStateOf(0.dp) }
+            // The playback controls and the progress bar, in the middle column.
+            val controlsRow: @Composable () -> Unit = {
+                // The seek hint sits above the bar, so the bar's row makes room for it.
+                val seekHint = full && showProgress && timeline != null && PanelControl.TIMELINE in controls
+                if (full || showProgress) {
+                    Spacer(Modifier.height(if (seekHint) 22.dp else 6.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (full) {
+                            listOf(PanelControl.RESTART, PanelControl.BACK, PanelControl.PLAY, PanelControl.FORWARD).filter { it in controls }.forEach { c ->
+                                RoundButton(
+                                    icon = when (c) {
+                                        PanelControl.RESTART -> Icons.Default.SkipPrevious
+                                        PanelControl.BACK -> Icons.Default.Replay30
+                                        PanelControl.FORWARD -> Icons.Default.Forward30
+                                        else -> if (paused) Icons.Default.PlayArrow else Icons.Default.Pause
+                                    },
+                                    focused = focused == c && !inRow,
+                                    big = c == PanelControl.PLAY
+                                )
+                                Spacer(Modifier.width(8.dp))
+                            }
+                            Spacer(Modifier.width(4.dp))
+                        }
+                        Box(Modifier.weight(1f)) {
+                            when {
+                                // The channel menu (OK): no time left, to leave room for its buttons.
+                                showProgress && timeline != null -> GlassTimeline(timeline, grabbed = focused == PanelControl.TIMELINE, hint = seekHint, showStatus = !full)
+                                // Progress bar off: the times, as words.
+                                timeline != null -> LiveText(
+                                    timeline.leftLabel + " – " + timeline.rightLabel + "  ·  " + timeline.status,
+                                    size = 12.sp, color = colors.TextSecondary
+                                )
+                            }
+                        }
+                        if (full) {
+                            Spacer(Modifier.width(10.dp))
+                            if (PanelControl.PIN in controls) {
+                                RoundButton(
+                                    if (pinOn) Icons.Default.PushPin else Icons.Outlined.PushPin,
+                                    focused = focused == PanelControl.PIN && !inRow, big = false
+                                )
+                                Spacer(Modifier.width(8.dp))
+                            }
+                            if (PanelControl.BELL in controls) {
+                                RoundButton(
+                                    if (bellOn) Icons.Default.NotificationsActive else Icons.Default.NotificationsNone,
+                                    focused = focused == PanelControl.BELL && !inRow, big = false
+                                )
+                                Spacer(Modifier.width(8.dp))
+                            }
+                            if (PanelControl.BACKUPS in controls) {
+                                Box(Modifier.onGloballyPositioned { onBackupsBounds(it.boundsInWindow()) }) {
+                                    RoundButton(Icons.Default.FilterNone, focused = focused == PanelControl.BACKUPS && !inRow, big = false)
+                                }
+                                Spacer(Modifier.width(8.dp))
+                            }
+                            if (PanelControl.SPORTS in controls) {
+                                RoundButton(Icons.Default.GridView, focused = focused == PanelControl.SPORTS && !inRow, big = false)
+                                Spacer(Modifier.width(8.dp))
+                            }
+                            if (PanelControl.LIVE in controls) {
+                                LiveButton(focused = focused == PanelControl.LIVE && !inRow, onClick = onLive)
+                                Spacer(Modifier.width(8.dp))
+                            }
+                            RoundButton(Icons.Default.Settings, focused = focused == PanelControl.MORE && !inRow, big = false)
+                        }
+                    }
+                }
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 // ---- left: the poster, or the channel's logo on a tile
                 if (showPoster) {
@@ -375,74 +470,9 @@ internal fun LiveTvPlayerPanel(
                     val line = listOfNotNull(meta.takeIf { it.isNotBlank() }, desc).joinToString("  ·  ")
                     if (on(BarPart.DESCRIPTION) && (line.isNotEmpty() || browsing)) {
                         Spacer(Modifier.height(2.dp))
-                        ScrollingDescription(line.ifEmpty { " " }, size = 12.sp, color = colors.TextSecondary, maxLines = if (full) 2 else 1)
+                        ScrollingDescription(line.ifEmpty { " " }, size = 12.sp, color = colors.TextSecondary, maxLines = descriptionLines ?: if (full) 2 else 1)
                     }
-                    // The seek hint sits above the bar, so the bar's row makes room for it.
-                    val seekHint = full && showProgress && timeline != null && PanelControl.TIMELINE in controls
-                    if (full || showProgress) {
-                        Spacer(Modifier.height(if (seekHint) 22.dp else 6.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (full) {
-                                listOf(PanelControl.RESTART, PanelControl.BACK, PanelControl.PLAY, PanelControl.FORWARD).filter { it in controls }.forEach { c ->
-                                    RoundButton(
-                                        icon = when (c) {
-                                            PanelControl.RESTART -> Icons.Default.SkipPrevious
-                                            PanelControl.BACK -> Icons.Default.Replay30
-                                            PanelControl.FORWARD -> Icons.Default.Forward30
-                                            else -> if (paused) Icons.Default.PlayArrow else Icons.Default.Pause
-                                        },
-                                        focused = focused == c && !inRow,
-                                        big = c == PanelControl.PLAY
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                }
-                                Spacer(Modifier.width(4.dp))
-                            }
-                            Box(Modifier.weight(1f)) {
-                                when {
-                                    showProgress && timeline != null -> GlassTimeline(timeline, grabbed = focused == PanelControl.TIMELINE, hint = seekHint)
-                                    // Progress bar off: the times, as words.
-                                    timeline != null -> LiveText(
-                                        timeline.leftLabel + " – " + timeline.rightLabel + "  ·  " + timeline.status,
-                                        size = 12.sp, color = colors.TextSecondary
-                                    )
-                                }
-                            }
-                            if (full) {
-                                Spacer(Modifier.width(10.dp))
-                                if (PanelControl.PIN in controls) {
-                                    RoundButton(
-                                        if (pinOn) Icons.Default.PushPin else Icons.Outlined.PushPin,
-                                        focused = focused == PanelControl.PIN && !inRow, big = false
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                }
-                                if (PanelControl.BELL in controls) {
-                                    RoundButton(
-                                        if (bellOn) Icons.Default.NotificationsActive else Icons.Default.NotificationsNone,
-                                        focused = focused == PanelControl.BELL && !inRow, big = false
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                }
-                                if (PanelControl.BACKUPS in controls) {
-                                    Box(Modifier.onGloballyPositioned { onBackupsBounds(it.boundsInWindow()) }) {
-                                        RoundButton(Icons.Default.FilterNone, focused = focused == PanelControl.BACKUPS && !inRow, big = false)
-                                    }
-                                    Spacer(Modifier.width(8.dp))
-                                }
-                                if (PanelControl.SPORTS in controls) {
-                                    MultiviewButton(focused = focused == PanelControl.SPORTS && !inRow,
-                                        onClick = onMultiview)
-                                    Spacer(Modifier.width(8.dp))
-                                }
-                                if (PanelControl.LIVE in controls) {
-                                    LiveButton(focused = focused == PanelControl.LIVE && !inRow, onClick = onLive)
-                                    Spacer(Modifier.width(8.dp))
-                                }
-                                RoundButton(Icons.Default.Settings, focused = focused == PanelControl.MORE && !inRow, big = false)
-                            }
-                        }
-                    }
+                    controlsRow()
                 }
 
                 // ---- right: the clock and what's next
@@ -480,6 +510,194 @@ internal fun LiveTvPlayerPanel(
     }
 }
 
+/**
+ * The playback controls (▼, or paused), like a TV's own player: no card, a dark fade from the
+ * bottom of the picture. The channel's logo and the show (its times and title), the progress bar
+ * across the screen, then where you are on the left, ⏮ ⏪ ⏯ ⏩ in the middle and the other
+ * buttons (Live, pin, bell, backups, Multiview, ⚙) on the right. The Channel Row opens under them.
+ */
+@Composable
+private fun ControlsBar(
+    channel: LiveChannel,
+    title: String,
+    timeline: PanelTimeline?,
+    paused: Boolean,
+    controls: List<PanelControl>,
+    focused: PanelControl?,
+    showNumber: Boolean,
+    bellOn: Boolean,
+    pinOn: Boolean,
+    onBackupsBounds: (androidx.compose.ui.geometry.Rect) -> Unit,
+    onMultiview: () -> Unit,
+    onLive: () -> Unit,
+    row: (@Composable () -> Unit)?,
+    modifier: Modifier,
+) {
+    val colors = NuvioTheme.colors
+    val canSeek = PanelControl.TIMELINE in controls
+    val grabbed = focused == PanelControl.TIMELINE
+    Box(
+        modifier.fillMaxWidth()
+            .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.72f), Color.Black.copy(alpha = 0.9f))))
+    ) {
+        Column(Modifier.fillMaxWidth().padding(start = 40.dp, end = 40.dp, top = 64.dp, bottom = 18.dp)) {
+            // ---- the show: the channel's logo, its name, the show's times and title
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (!channel.logo.isNullOrBlank()) {
+                    ChannelLogo(channel.logo, 34.dp)
+                    Spacer(Modifier.width(14.dp))
+                }
+                Column(Modifier.weight(1f)) {
+                    LiveText(
+                        (if (showNumber) "${channel.number}  " else "") + channel.name,
+                        size = 12.sp, color = colors.TextSecondary, maxLines = 1
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        timeline?.let {
+                            LiveText(it.leftLabel.removePrefix("From ") + " — " + it.rightLabel.removePrefix("Live "), size = 14.sp, color = colors.TextSecondary)
+                            Spacer(Modifier.width(12.dp))
+                        }
+                        LiveText(title, size = 15.sp, weight = FontWeight.SemiBold, color = colors.TextPrimary, maxLines = 1, marquee = true)
+                    }
+                }
+                // What the remote does with the progress bar.
+                if (canSeek && timeline != null) {
+                    Spacer(Modifier.width(12.dp))
+                    LiveText(
+                        if (grabbed) "◀ ▶ seek · OK play/pause" else "▲ Up to seek",
+                        size = 11.sp, color = Color.White.copy(alpha = 0.8f),
+                        modifier = Modifier.clip(RoundedCornerShape(6.dp)).background(Color.White.copy(alpha = 0.12f))
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    )
+                }
+            }
+            Spacer(Modifier.height(14.dp))
+            // ---- the progress bar, across the screen
+            timeline?.let { SeekLine(it, grabbed) }
+            Spacer(Modifier.height(8.dp))
+            // ---- where you are · the playback buttons · the others
+            Box(Modifier.fillMaxWidth()) {
+                timeline?.let { t ->
+                    LiveText(
+                        t.status, size = 14.sp, color = if (t.statusLive) LIVE_RED else colors.TextPrimary,
+                        modifier = Modifier.align(Alignment.CenterStart).widthIn(max = 300.dp)
+                    )
+                }
+                Row(
+                    Modifier.align(Alignment.Center),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    listOf(PanelControl.RESTART, PanelControl.BACK, PanelControl.PLAY, PanelControl.FORWARD).filter { it in controls }.forEach { c ->
+                        PlayerIconButton(
+                            when (c) {
+                                PanelControl.RESTART -> Icons.Default.SkipPrevious
+                                PanelControl.BACK -> Icons.Default.FastRewind
+                                PanelControl.FORWARD -> Icons.Default.FastForward
+                                else -> if (paused) Icons.Default.PlayArrow else Icons.Default.Pause
+                            },
+                            focused = focused == c,
+                            big = c == PanelControl.PLAY
+                        )
+                    }
+                }
+                Row(
+                    Modifier.align(Alignment.CenterEnd),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    if (PanelControl.PIN in controls)
+                        PlayerIconButton(if (pinOn) Icons.Default.PushPin else Icons.Outlined.PushPin, focused = focused == PanelControl.PIN)
+                    if (PanelControl.BELL in controls)
+                        PlayerIconButton(if (bellOn) Icons.Default.NotificationsActive else Icons.Default.NotificationsNone, focused = focused == PanelControl.BELL)
+                    if (PanelControl.BACKUPS in controls)
+                        Box(Modifier.onGloballyPositioned { onBackupsBounds(it.boundsInWindow()) }) {
+                            PlayerIconButton(Icons.Default.FilterNone, focused = focused == PanelControl.BACKUPS)
+                        }
+                    if (PanelControl.SPORTS in controls) PlayerIconButton(Icons.Default.GridView, focused = focused == PanelControl.SPORTS)
+                    if (PanelControl.LIVE in controls) LiveBadgeButton(focused = focused == PanelControl.LIVE, onClick = onLive)
+                    PlayerIconButton(Icons.Default.Settings, focused = focused == PanelControl.MORE)
+                }
+            }
+            if (row != null) {
+                Spacer(Modifier.height(10.dp))
+                row()
+            }
+        }
+    }
+}
+
+/** A button on the controls: just the icon, or a white disc with the icon dark when highlighted. */
+@Composable
+private fun PlayerIconButton(icon: ImageVector, focused: Boolean, big: Boolean = false) {
+    Box(
+        Modifier
+            .graphicsLayer { val s = if (focused) 1.08f else 1f; scaleX = s; scaleY = s }
+            .size(if (big) 46.dp else 40.dp)
+            .clip(CircleShape)
+            .background(if (focused) Color.White else Color.Transparent),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            icon, contentDescription = null,
+            tint = if (focused) Color(0xFF111111) else Color.White.copy(alpha = if (big) 0.95f else 0.75f),
+            modifier = Modifier.size(if (big) 28.dp else 24.dp)
+        )
+    }
+}
+
+/** A replay's way back to live on the controls: "LIVE" in a frame. */
+@Composable
+private fun LiveBadgeButton(focused: Boolean, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(5.dp)
+    LiveText(
+        "LIVE", size = 12.sp, weight = FontWeight.Bold,
+        color = if (focused) Color(0xFF111111) else Color.White.copy(alpha = 0.85f),
+        modifier = Modifier
+            .graphicsLayer { val s = if (focused) 1.08f else 1f; scaleX = s; scaleY = s }
+            .clip(shape)
+            .background(if (focused) Color.White else Color.Transparent)
+            .border(1.5.dp, Color.White.copy(alpha = if (focused) 1f else 0.75f), shape)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 7.dp, vertical = 2.dp)
+    )
+}
+
+/**
+ * The controls' progress bar: a thin line across the screen in the accent colour, how far you can
+ * go without waiting a little lighter, a red line where live is, and a dot where you are (bigger
+ * once grabbed, with the seek picture above it).
+ */
+@Composable
+private fun SeekLine(t: PanelTimeline, grabbed: Boolean) {
+    val accent = NuvioTheme.colors.Secondary
+    val span = (t.endMs - t.startMs).coerceAtLeast(1L).toFloat()
+    fun frac(ms: Long) = ((ms - t.startMs) / span).coerceIn(0f, 1f)
+    BoxWithConstraints(Modifier.fillMaxWidth().height(16.dp)) {
+        val w = maxWidth
+        val line = if (grabbed) 5.dp else 4.dp
+        Box(Modifier.align(Alignment.CenterStart).fillMaxWidth().height(line).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(alpha = 0.22f)))
+        t.recordedUntilMs?.let { r ->
+            Box(Modifier.align(Alignment.CenterStart).width(w * frac(r)).height(line).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(alpha = 0.4f)))
+        }
+        Box(Modifier.align(Alignment.CenterStart).width(w * frac(t.positionMs)).height(line).clip(RoundedCornerShape(2.dp)).background(accent))
+        t.liveMs?.let { l ->
+            Box(Modifier.align(Alignment.CenterStart).offset(x = (w * frac(l)) - 1.dp).width(2.dp).fillMaxHeight().background(LIVE_RED))
+        }
+        val knob = if (grabbed) 16.dp else 10.dp
+        Box(
+            Modifier.align(Alignment.CenterStart).offset(x = (w * frac(t.positionMs)) - knob / 2).size(knob)
+                .clip(CircleShape).background(if (grabbed) Color.White else Color.White.copy(alpha = 0.85f))
+                .border(if (grabbed) 3.dp else 0.dp, accent.copy(alpha = 0.6f), CircleShape)
+        )
+        // Seek thumbnails (recordings, sports replays), or why there are none, while seeking.
+        com.nuvio.tv.livetv.thumbs.LiveTvTimelineThumb(
+            startMs = t.startMs, endMs = t.endMs, positionMs = t.positionMs, grabbed = grabbed,
+            modifier = Modifier.align(Alignment.TopStart)
+        )
+    }
+}
+
 /** A small see-through tag (quality, sound, catch-up). */
 @Composable
 private fun GlassChip(text: String) {
@@ -491,12 +709,6 @@ private fun GlassChip(text: String) {
         modifier = Modifier.clip(RoundedCornerShape(5.dp)).background(if (tivimate) Color.White.copy(alpha = 0.62f) else Color.White.copy(alpha = 0.14f)).padding(horizontal = 6.dp, vertical = 1.dp)
     )
 }
-
-@Composable
-private fun MultiviewButton(focused: Boolean, onClick: () -> Unit) =
-    NamedButton("Multiview", focused, onClick) { tint ->
-        Icon(Icons.Default.GridView, contentDescription = null, tint = tint, modifier = Modifier.size(15.dp))
-    }
 
 /** A replay's way back to the channel live: a red dot and "Live", like the live tag. */
 @Composable
@@ -550,7 +762,7 @@ private fun RoundButton(icon: ImageVector, focused: Boolean, big: Boolean, conte
  * or replay, a handle with the time you're at, and a red line where live is.
  */
 @Composable
-private fun GlassTimeline(t: PanelTimeline, grabbed: Boolean, hint: Boolean = false) {
+private fun GlassTimeline(t: PanelTimeline, grabbed: Boolean, hint: Boolean = false, showStatus: Boolean = true) {
     val colors = NuvioTheme.colors
     val span = (t.endMs - t.startMs).coerceAtLeast(1L).toFloat()
     fun frac(ms: Long) = ((ms - t.startMs) / span).coerceIn(0f, 1f)
@@ -597,12 +809,14 @@ private fun GlassTimeline(t: PanelTimeline, grabbed: Boolean, hint: Boolean = fa
         }
         Spacer(Modifier.width(10.dp))
         LiveText(right, size = 11.sp, color = if (t.liveMs != null) LIVE_RED else colors.TextSecondary)
-        Spacer(Modifier.width(10.dp))
-        LiveText(
-            t.status,
-            size = 11.sp,
-            color = if (t.statusLive) LIVE_RED else colors.TextTertiary
-        )
+        if (showStatus) {
+            Spacer(Modifier.width(10.dp))
+            LiveText(
+                t.status,
+                size = 11.sp,
+                color = if (t.statusLive) LIVE_RED else colors.TextTertiary
+            )
+        }
     }
 }
 

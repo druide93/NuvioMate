@@ -1336,6 +1336,9 @@
         <item>"Too many connections on this account (HTTP 456)"</item>
         <item>"Too many connections on this account (HTTP 458)"</item>
         <item>"Too many connections on this account (HTTP 509)"</item>
+        <item>"◀ ▶ seek · OK play/pause"</item>
+        <item>"{0} behind live"</item>
+        <item>"Now watching: {0}"</item>
     </string-array>
     <string-array name="livetv_texts" tools:ignore="MissingTranslation">
         <item>" · Hold OK: 1 other stream"</item>
@@ -2672,5 +2675,8 @@
         <item>"Too many connections on this account (HTTP 456)"</item>
         <item>"Too many connections on this account (HTTP 458)"</item>
         <item>"Too many connections on this account (HTTP 509)"</item>
+        <item>"◀ ▶ seek · OK play/pause"</item>
+        <item>"{0} behind live"</item>
+        <item>"Now watching: {0}"</item>
     </string-array>
 </resources>
