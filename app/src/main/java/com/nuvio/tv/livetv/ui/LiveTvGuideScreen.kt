@@ -596,6 +596,16 @@ private fun LiveTvGuideScreenBody(
     }
 
     /** Leaving full screen for the guide with the preview window off: playing stops (nothing to see it in). */
+    // Back to the guide from a replay: the channel and where in the replay you were, so the
+    // guide shows the show being replayed rather than what's on now.
+    var replaySpot by remember { mutableStateOf<Pair<String, Long>?>(null) }
+    fun replaySpotNow(): Pair<String, Long>? {
+        val s = viewModel.catchup.value ?: return null
+        val st = viewModel.playbackState.value
+        if (s.recordingId != null || st.catchupTitle == null || st.channelKey != s.channel.key) return null
+        val at = s.program.startMs + (viewModel.catchupPositionMs() ?: 0L)
+        return s.channel.key to at.coerceIn(s.program.startMs, (s.program.stopMs - 1).coerceAtLeast(s.program.startMs))
+    }
     fun stopIfNoPreview() {
         if (settings.showPreview) return
         stoppedKey = playback.channelKey
@@ -766,6 +776,7 @@ private fun LiveTvGuideScreenBody(
             if (!mayChangeGroup) return@LaunchedEffect
             viewModel.selectGroup(group)
         }
+        replaySpot = replaySpotNow()?.takeIf { it.first == target.key }
         highlightKey = target.key
     }
     LaunchedEffect(highlightKey, channels) {
@@ -775,6 +786,14 @@ private fun LiveTvGuideScreenBody(
         row = idx
         column = GuideColumn.CHANNEL
         cursorGroupId = ui.selectedGroupId
+        // Back from a replay: on the show being replayed, in its hours, not on what's on now.
+        val spot = replaySpot
+        replaySpot = null
+        if (spot != null && spot.first == key && spot.second < System.currentTimeMillis()) {
+            column = GuideColumn.PROGRAM
+            cursorMs = spot.second
+            windowStart = floorSlot(spot.second)
+        }
         listState.scrollToItem((idx - 2).coerceAtLeast(0))
         highlightKey = null
     }
@@ -2503,6 +2522,7 @@ private fun LiveTvGuideScreenBody(
                         // Keep the picture full screen throughout the transition back to Sports.
                         onReturnToSports()
                     } else {
+                        replaySpot = replaySpotNow()
                         stopIfNoPreview()
                         fullscreenShown = false; exitFullscreenTick++
                     }
