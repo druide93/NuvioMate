@@ -1,12 +1,19 @@
-# Nuvio + IPTV, édition française style TiviMate (fork)
+<p align="center"><img src="app/src/main/res/drawable/livetv_wordmark_iptv.png" alt="NuvioMate" width="420"></p>
 
-> **Ce dépôt est un fork de [homelessbrian/NuvioPlusIPTV](https://github.com/homelessbrian/NuvioPlusIPTV).** L'app, sa TV en direct, son Sport, son Multiview et tout le reste sont le travail de [homelessbrian](https://github.com/homelessbrian) et des contributeurs qu'il cite (dont [ghbarker](https://github.com/ghbarker)), eux-mêmes basés sur [NuvioTV](https://github.com/NuvioMedia/NuvioTV). Tout le mérite de l'app leur revient.
->
-> Ce fork ajoute par-dessus un guide plus proche de TiviMate, des corrections du replay et une traduction française plus complète. Les mises à jour du projet d'origine y sont intégrées régulièrement. Le code reste sous la même licence, [GPL-3.0](LICENSE).
->
-> Les problèmes liés aux changements de ce fork ne concernent pas l'auteur d'origine : merci de ne pas les lui signaler. Le code Downloader, les versions publiées et les liens (Discord, Ko-fi…) de la présentation d'origine plus bas concernent l'app d'origine, pas ce fork.
+# NuvioMate
 
-## Changements de ce fork
+> **NuvioMate est un fork de [homelessbrian/NuvioPlusIPTV](https://github.com/homelessbrian/NuvioPlusIPTV) (Nuvio + IPTV).** L'app, sa TV en direct, son Sport, son Multiview et tout le reste sont le travail de [homelessbrian](https://github.com/homelessbrian) et des contributeurs qu'il cite (dont [ghbarker](https://github.com/ghbarker)), eux-mêmes basés sur [NuvioTV](https://github.com/NuvioMedia/NuvioTV). Tout le mérite de l'app leur revient.
+>
+> NuvioMate ajoute par-dessus un guide plus proche de TiviMate, des corrections du replay et une traduction française plus complète. Les mises à jour du projet d'origine y sont intégrées régulièrement. Le code reste sous la même licence, [GPL-3.0](LICENSE).
+>
+> Les problèmes liés aux changements de NuvioMate ne concernent pas l'auteur d'origine : merci de ne pas les lui signaler. Le code Downloader, les versions publiées, les mises à jour dans l'app et les liens (Discord, Ko-fi…) de la présentation d'origine plus bas concernent l'app d'origine, pas NuvioMate.
+
+## Changements de NuvioMate
+
+### Nom et logo
+- **Nom NuvioMate** dans toutes les langues, et identifiant `com.nuviomate.tv` : l'app s'installe à côté de Nuvio et de Nuvio + IPTV, sans les remplacer.
+- **Logo NuvioMate** (bouton lecture arrondi et petit point) : icône et bannière TV dans les 6 couleurs d'icône, logo dans la couleur du thème au démarrage, dans le menu latéral, les paramètres, la sélection de profil, l'écran de connexion et les pages de configuration ouvertes sur le téléphone. Désactiver **Utiliser l'icône NuvioMate** (Paramètres › Apparence › Icône et bannière de l’application) remet les icônes d'origine de Nuvio.
+- **Pas de mise à jour dans l'app :** elle proposerait les versions de Nuvio + IPTV. NuvioMate se met à jour en installant une nouvelle version compilée.
 
 ### Guide style TiviMate
 Avec l'option **Guide style TiviMate** (paramètres de la TV en direct, avec la taille du guide) :
@@ -64,7 +71,9 @@ Avec l'option **Guide style TiviMate** (paramètres de la TV en direct, avec la 
 - **Fichiers de traduction :** compléments aux traductions françaises du projet d'origine.
 
 ### Compilation
-- **Compilations debug locales** sans la clé de signature du projet : elles sont signées avec la clé de debug standard et s'installent sous `com.nuvio.livetv.debug`, à côté de l'app officielle.
+- **Compilations release** (`assembleFullRelease`) : elles s'installent sous `com.nuviomate.tv`.
+- **Compilations debug** : elles sont toujours signées avec la clé de debug standard et s'installent sous `com.nuvio.livetv.debug`, à côté de NuvioMate et de l'app officielle.
+- **Logo :** les icônes, bannières et logos sont générés par `scripts/nuviomate_brand.py` (Python avec Pillow, police Avenir Next de macOS), à lancer depuis la racine du dépôt.
 - **Clé TMDB :** à mettre dans `local.properties` sur la ligne `TMDB_API_KEY`. Le modèle `local.example.properties` la montre, et la clé v3 est gratuite sur themoviedb.org. Sans elle, la compilation affiche un avertissement : tous les appels à TMDB échouent, et la fiche d'un film ou d'une série montre les acteurs sans photo, sans illustrations ni bandes-annonces TMDB.
 
 ---
