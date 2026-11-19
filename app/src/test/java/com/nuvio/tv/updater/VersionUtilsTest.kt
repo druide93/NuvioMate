@@ -47,4 +47,13 @@ class VersionUtilsTest {
         assertFalse(VersionUtils.isRemoteNewer("1.1.0-test.441000+beta.10", "1.1.0-test.441001+beta.9"))
         assertTrue(VersionUtils.isRemoteNewer("1.1.0-test.99999+beta.9", "1.1.0-test.9999+beta.9"))
     }
+
+    @Test
+    fun `NuvioMate releases are newer than the plain build and than earlier NuvioMate releases`() {
+        assertTrue(VersionUtils.isRemoteNewer("1.2.0-beta.2.mate.1", "1.2.0-beta.2"))
+        assertTrue(VersionUtils.isRemoteNewer("1.2.0-beta.2.mate.10", "1.2.0-beta.2.mate.9"))
+        assertTrue(VersionUtils.isRemoteNewer("1.2.0-beta.3.mate.1", "1.2.0-beta.2.mate.7"))
+        assertTrue(VersionUtils.isRemoteNewer("1.2.0-mate.1", "1.2.0-beta.3.mate.4"))
+        assertFalse(VersionUtils.isRemoteNewer("1.2.0-beta.2.mate.3", "1.2.0-beta.2.mate.3"))
+    }
 }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- NuvioMate Dev: the debug build's launcher name, so it can't be mixed up with NuvioMate. -->
+<resources>
+    <string name="app_name">NuvioMate Dev</string>
+</resources>

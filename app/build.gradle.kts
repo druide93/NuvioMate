@@ -183,9 +183,9 @@ android {
         buildConfigField("String", "SPONSOR_NAMES", buildConfigString(sponsorNames))
         buildConfigField("String", "SENTRY_DSN", buildConfigString(sentryDsn))
 
-        // In-app updater (GitHub Releases)
-        buildConfigField("String", "GITHUB_OWNER", "\"homelessbrian\"")
-        buildConfigField("String", "GITHUB_REPO", "\"NuvioPlusIPTV\"")
+        // In-app updater (GitHub Releases). NuvioMate: our own releases (scripts/nuviomate_release.sh).
+        buildConfigField("String", "GITHUB_OWNER", "\"druide93\"")
+        buildConfigField("String", "GITHUB_REPO", "\"NuvioMate\"")
     }
 
     flavorDimensions += "distribution"
@@ -193,8 +193,8 @@ android {
         create("full") {
             dimension = "distribution"
             buildConfigField("boolean", "FEATURE_PLUGINS_ENABLED", "true")
-            // NuvioMate: no in-app updater (it would offer homelessbrian's releases); updated by our own builds.
-            buildConfigField("boolean", "FEATURE_IN_APP_UPDATES_ENABLED", "false")
+            // NuvioMate: the in-app updater offers our own releases (druide93/NuvioMate).
+            buildConfigField("boolean", "FEATURE_IN_APP_UPDATES_ENABLED", "true")
             buildConfigField("boolean", "FEATURE_IN_APP_TRAILERS_ENABLED", "true")
             buildConfigField("boolean", "FEATURE_EXTERNAL_TRAILERS_ENABLED", "true")
             buildConfigField("boolean", "FEATURE_EXTERNAL_PLAYBACK_KEEP_ALIVE_ENABLED", "true")
@@ -239,6 +239,9 @@ android {
 
             buildConfigField("boolean", "IS_DEBUG_BUILD", "true")
             buildConfigField("String", "SENTRY_ENVIRONMENT", buildConfigString("debug"))
+            // NuvioMate Dev: no in-app updater. Releases are signed with the release key, so they
+            // can't replace a debug-signed app; the dev app is updated by installing new debug builds.
+            buildConfigField("boolean", "FEATURE_IN_APP_UPDATES_ENABLED", "false")
 
             // Dev environment (from local.dev.properties)
             buildConfigField("String", "SUPABASE_URL", buildConfigString(resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_URL")))
@@ -436,8 +439,9 @@ androidComponents {
         val isPlaystore = variant.productFlavors.any { it.second == "playstore" }
         // Local builds without the release keystore can't update the installed app (different
         // signature), so they get their own ID and install next to it instead.
-        // NuvioMate: debug builds are always signed with the debug key, so always their own ID.
-        variant.applicationId.set(if (isPlaystore) "com.nuvio.appdebug" else "com.nuvio.livetv.debug")
+        // NuvioMate: debug builds are always signed with the debug key, so always their own ID:
+        // "NuvioMate Dev" (com.nuviomate.tv.debug), installed next to NuvioMate with its own data.
+        variant.applicationId.set(if (isPlaystore) "com.nuvio.appdebug" else "com.nuviomate.tv.debug")
     }
     // Live TV fork: release builds get their own app ID too, so they install next to official
     // Nuvio and update the fork's earlier builds in place.

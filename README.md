@@ -6,14 +6,15 @@
 >
 > NuvioMate ajoute par-dessus un guide plus proche de TiviMate, des corrections du replay et une traduction française plus complète. Les mises à jour du projet d'origine y sont intégrées régulièrement. Le code reste sous la même licence, [GPL-3.0](LICENSE).
 >
-> Les problèmes liés aux changements de NuvioMate ne concernent pas l'auteur d'origine : merci de ne pas les lui signaler. Le code Downloader, les versions publiées, les mises à jour dans l'app et les liens (Discord, Ko-fi…) de la présentation d'origine plus bas concernent l'app d'origine, pas NuvioMate.
+> Les problèmes liés aux changements de NuvioMate ne concernent pas l'auteur d'origine : merci de ne pas les lui signaler. Le code Downloader, les versions publiées et les liens (Discord, Ko-fi…) de la présentation d'origine plus bas concernent l'app d'origine, pas NuvioMate.
 
 ## Changements de NuvioMate
 
 ### Nom et logo
 - **Nom NuvioMate** dans toutes les langues, et identifiant `com.nuviomate.tv` : l'app s'installe à côté de Nuvio et de Nuvio + IPTV, sans les remplacer.
 - **Logo NuvioMate** (bouton lecture arrondi et petit point) : icône et bannière TV dans les 6 couleurs d'icône, logo dans la couleur du thème au démarrage, dans le menu latéral, les paramètres, la sélection de profil, l'écran de connexion et les pages de configuration ouvertes sur le téléphone. Désactiver **Utiliser l'icône NuvioMate** (Paramètres › Apparence › Icône et bannière de l’application) remet les icônes d'origine de Nuvio.
-- **Pas de mise à jour dans l'app :** elle proposerait les versions de Nuvio + IPTV. NuvioMate se met à jour en installant une nouvelle version compilée.
+- **Mises à jour dans l'app depuis ce dépôt :** NuvioMate propose les versions publiées dans les [releases de druide93/NuvioMate](https://github.com/druide93/NuvioMate/releases), et non plus celles de Nuvio + IPTV. Garder le canal **Bêta** (Paramètres › À propos) : les versions NuvioMate sont numérotées comme des bêtas.
+- **NuvioMate Dev :** la version de développement s'installe à côté de NuvioMate, avec ses propres données, son nom et une icône marquée DEV. Elle ne se met pas à jour depuis l'app.
 
 ### Guide style TiviMate
 Avec l'option **Guide style TiviMate** (paramètres de la TV en direct, avec la taille du guide) :
@@ -72,7 +73,8 @@ Avec l'option **Guide style TiviMate** (paramètres de la TV en direct, avec la 
 
 ### Compilation
 - **Compilations release** (`assembleFullRelease`) : elles s'installent sous `com.nuviomate.tv`.
-- **Compilations debug** : elles sont toujours signées avec la clé de debug standard et s'installent sous `com.nuvio.livetv.debug`, à côté de NuvioMate et de l'app officielle.
+- **Publier une mise à jour :** `scripts/nuviomate_release.sh` choisit la version suivante (`1.2.0-beta.2.mate.1`, `.mate.2`… : la version de Nuvio plus le numéro de build NuvioMate), compile les APK signés, les copie dans `../apk-nuviomate/<version>/` et pose le tag git. Il reste à pousser `main` puis à créer la release GitHub sur ce tag avec les APK : les apps installées la proposent alors. `--dry-run` affiche seulement la version.
+- **Compilations debug (NuvioMate Dev)** : toujours signées avec la clé de debug standard, sous `com.nuviomate.tv.debug`, à côté de NuvioMate et de l'app officielle. `scripts/nuviomate_dev.sh` compile et installe sur la télé (ou `scripts/nuviomate_dev.sh emulator-5554`), sans lancer l'app.
 - **Logo :** les icônes, bannières et logos sont générés par `scripts/nuviomate_brand.py` (Python avec Pillow, police Avenir Next de macOS), à lancer depuis la racine du dépôt.
 - **Clé TMDB :** à mettre dans `local.properties` sur la ligne `TMDB_API_KEY`. Le modèle `local.example.properties` la montre, et la clé v3 est gratuite sur themoviedb.org. Sans elle, la compilation affiche un avertissement : tous les appels à TMDB échouent, et la fiche d'un film ou d'une série montre les acteurs sans photo, sans illustrations ni bandes-annonces TMDB.
 

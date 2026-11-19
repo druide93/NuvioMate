@@ -143,6 +143,25 @@ def banner(c1, c2, size=(320, 180)):
     return img.convert("RGB").resize(size, Image.LANCZOS)
 
 
+DEV_BAND = (245, 124, 32)  # orange "DEV" band of the debug app (NuvioMate Dev)
+
+
+def dev_band(img):
+    """Puts an orange "DEV" band across the bottom of an icon or banner (for NuvioMate Dev)."""
+    w, h = img.size
+    scale = max(1, 512 // min(w, h)) * SS
+    big = img.convert("RGBA").resize((w * scale, h * scale), Image.LANCZOS)
+    bw, bh = big.size
+    band_h = round(min(bw, bh) * (0.26 if bw == bh else 0.2))
+    d = ImageDraw.Draw(big)
+    d.rectangle((0, bh - band_h, bw, bh), fill=DEV_BAND + (255,))
+    font = ImageFont.truetype(FONT, round(band_h * 0.72), index=FONT_BOLD)
+    l, t, r, b = d.textbbox((0, 0), "DEV", font=font)
+    d.text(((bw - (r - l)) / 2 - l, bh - band_h + (band_h - (b - t)) / 2 - t), "DEV", font=font,
+           fill=(255, 255, 255, 255))
+    return big.convert("RGB").resize((w, h), Image.LANCZOS)
+
+
 def save(img, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     img.save(path, optimize=True)
@@ -150,12 +169,17 @@ def save(img, path):
 
 def main():
     res = "app/src/full/res"
+    dev_res = "app/src/fullDebug/res"
     suffix = lambda name: "" if name == "default" else "_" + name
     for name in ("default", "arctic_blue", "copper", "emerald", "graphite", "rose_gold"):
         c1, c2 = PALETTES[name]
         for dpi, px in ICON_SIZES.items():
             save(icon(px, c1, c2), f"{res}/mipmap-{dpi}/iptv_ic_launcher{suffix(name)}.png")
         save(banner(c1, c2), f"{res}/mipmap-xhdpi/iptv_banner{suffix(name)}.png")
+        # NuvioMate Dev (debug build): the same icons and banners with a "DEV" band.
+        for dpi, px in ICON_SIZES.items():
+            save(dev_band(icon(px, c1, c2)), f"{dev_res}/mipmap-{dpi}/iptv_ic_launcher{suffix(name)}.png")
+        save(dev_band(banner(c1, c2)), f"{dev_res}/mipmap-xhdpi/iptv_banner{suffix(name)}.png")
 
     draw = "app/src/main/res/drawable"
     for file_suffix, name in (("", "default"), ("_arctic_blue", "arctic_blue"), ("_gold", "gold"),
