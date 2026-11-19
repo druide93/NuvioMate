@@ -406,6 +406,16 @@ fun CalendarSettingsContent(initialFocusRequester: FocusRequester? = null) {
                         }
                     )
                     SettingsActionRow(
+                        title = "Week Starts On",
+                        subtitle = "The first day of the week in the Week and Month views",
+                        value = when (s.calendarWeekStart) { "MONDAY" -> "Monday"; "SATURDAY" -> "Saturday"; else -> "Sunday" },
+                        onClick = {
+                            update {
+                                it.copy(calendarWeekStart = when (it.calendarWeekStart) { "MONDAY" -> "SATURDAY"; "SATURDAY" -> "SUNDAY"; else -> "MONDAY" })
+                            }
+                        }
+                    )
+                    SettingsActionRow(
                         title = "Picking an Episode in Your Guide",
                         subtitle = "OK on an episode that's in your Live TV guide opens its Live TV options (watch, record, remind) or the show's page",
                         value = if (s.calendarOkAction == "PAGE") "Show page" else "Live TV options",

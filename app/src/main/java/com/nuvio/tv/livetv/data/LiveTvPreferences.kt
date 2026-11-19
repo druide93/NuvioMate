@@ -151,6 +151,7 @@ class LiveTvPreferences @Inject constructor(
         val calendarSkipNewsTalk = booleanPreferencesKey("calendar_skip_news_talk")
         val calendarView = stringPreferencesKey("calendar_view")
         val calendarOkAction = stringPreferencesKey("calendar_ok_action")
+        val calendarWeekStart = stringPreferencesKey("calendar_week_start")
         val calendarHideWatched = booleanPreferencesKey("calendar_hide_watched")
         val calendarSports = booleanPreferencesKey("calendar_sports")
         val calendarFollows = stringPreferencesKey("calendar_follows")
@@ -640,6 +641,7 @@ class LiveTvPreferences @Inject constructor(
             calendarSkipNewsTalk = p[Keys.calendarSkipNewsTalk] ?: d.calendarSkipNewsTalk,
             calendarView = p[Keys.calendarView] ?: d.calendarView,
             calendarOkAction = p[Keys.calendarOkAction] ?: d.calendarOkAction,
+            calendarWeekStart = p[Keys.calendarWeekStart] ?: d.calendarWeekStart,
             calendarHideWatched = p[Keys.calendarHideWatched] ?: d.calendarHideWatched,
             calendarSports = p[Keys.calendarSports] ?: d.calendarSports,
             onDemandInStreams = p[Keys.onDemandInStreams] ?: d.onDemandInStreams,
@@ -980,6 +982,7 @@ class LiveTvPreferences @Inject constructor(
         p[Keys.calendarSkipNewsTalk] = s.calendarSkipNewsTalk
         p[Keys.calendarView] = s.calendarView
         p[Keys.calendarOkAction] = s.calendarOkAction
+        p[Keys.calendarWeekStart] = s.calendarWeekStart
         p[Keys.calendarHideWatched] = s.calendarHideWatched
         p[Keys.calendarSports] = s.calendarSports
         p[Keys.onDemandInStreams] = s.onDemandInStreams

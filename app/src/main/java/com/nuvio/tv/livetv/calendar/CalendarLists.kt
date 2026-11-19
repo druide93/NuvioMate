@@ -2,6 +2,7 @@ package com.nuvio.tv.livetv.calendar
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -63,6 +64,16 @@ internal fun rememberCalendarWeekDays(entries: List<CalendarEntry>, start: Local
         }
     }
 }
+
+/** The week-start setting ("SUNDAY", "MONDAY", "SATURDAY"); anything else is Sunday. */
+internal fun calendarFirstDay(setting: String): DayOfWeek =
+    runCatching { DayOfWeek.valueOf(setting) }.getOrNull()?.takeIf { it == DayOfWeek.MONDAY || it == DayOfWeek.SATURDAY } ?: DayOfWeek.SUNDAY
+
+/** Where [day] sits in a week starting on [first] (0 = first day). */
+internal fun calendarDayIndex(day: LocalDate, first: DayOfWeek): Int = (day.dayOfWeek.value - first.value + 7) % 7
+
+/** The first day of the week that holds [day]. */
+internal fun calendarWeekOf(day: LocalDate, first: DayOfWeek): LocalDate = day.minusDays(calendarDayIndex(day, first).toLong())
 
 internal fun calendarWhenOf(entry: CalendarEntry, zone: ZoneId): Long =
     entry.airMs ?: entry.day.atStartOfDay(zone).toInstant().toEpochMilli()

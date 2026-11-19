@@ -90,6 +90,7 @@ import com.nuvio.tv.livetv.ui.liveCellColors
 import com.nuvio.tv.ui.theme.NuvioTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -515,11 +516,11 @@ fun CalendarScreen(
                 when (tab) {
                     CalTab.UPCOMING, CalTab.RECENT -> when {
                         view == "MONTH" -> MonthView(
-                            entries = filtered, use24h = use24h, now = now, firstFocus = firstItem, reset = resetKey, restore = restoreKey,
+                            entries = filtered, weekStart = calendarFirstDay(settings.calendarWeekStart), use24h = use24h, now = now, firstFocus = firstItem, reset = resetKey, restore = restoreKey,
                             status = status, onOpen = ::open, onOptions = { options = it }
                         )
                         view == "WEEK" -> WeekView(
-                            entries = filtered, use24h = use24h, now = now, firstFocus = firstItem, reset = resetKey, restore = restoreKey,
+                            entries = filtered, weekStart = calendarFirstDay(settings.calendarWeekStart), use24h = use24h, now = now, firstFocus = firstItem, reset = resetKey, restore = restoreKey,
                             status = status, onOpen = ::open, onOptions = { options = it }
                         )
                         pool.isEmpty() && state.problem != null && state.entries.isEmpty() -> EmptyNote(
@@ -1285,6 +1286,7 @@ private fun TeamMark(t: CalendarTeam?, size: Dp, big: Boolean, compact: Boolean,
 @Composable
 private fun WeekView(
     entries: List<CalendarEntry>,
+    weekStart: DayOfWeek,
     use24h: Boolean,
     now: Long,
     firstFocus: FocusRequester,
@@ -1296,15 +1298,16 @@ private fun WeekView(
     onOptions: (CalendarEntry) -> Unit
 ) {
     val today = LocalDate.now()
-    val thisWeek = today.minusDays((today.dayOfWeek.value % 7).toLong())
-    fun weekOf(day: LocalDate) = day.minusDays((day.dayOfWeek.value % 7).toLong())
+    val thisWeek = calendarWeekOf(today, weekStart)
+    fun weekOf(day: LocalDate) = calendarWeekOf(day, weekStart)
     val restored = remember { restore?.let { k -> entries.firstOrNull { it.key == k } } }
-    // The week you were looking at stays when you go to a game or a show and come back.
-    var start by rememberSaveable { mutableStateOf(restored?.let { weekOf(it.day) } ?: thisWeek) }
+    // The week you were looking at stays when you go to a game or a show and come back
+    // (realigned if the week now starts on another day).
+    var start by rememberSaveable(weekStart) { mutableStateOf(restored?.let { weekOf(it.day) } ?: thisWeek) }
     val byDay = rememberCalendarWeekDays(entries, start)
     val columnStates = remember {
         List(7) { d ->
-            val at = restored?.takeIf { weekOf(it.day) == start && (it.day.dayOfWeek.value % 7) == d }
+            val at = restored?.takeIf { weekOf(it.day) == start && calendarDayIndex(it.day, weekStart) == d }
                 ?.let { r -> byDay[r.day].orEmpty().indexOfFirst { it.key == r.key } }
             LazyListState((at ?: 0).coerceAtLeast(0))
         }
@@ -1506,6 +1509,7 @@ private fun MiniCard(
 @Composable
 private fun MonthView(
     entries: List<CalendarEntry>,
+    weekStart: DayOfWeek,
     use24h: Boolean,
     now: Long,
     firstFocus: FocusRequester,
@@ -1585,13 +1589,13 @@ private fun MonthView(
         }
         Spacer(Modifier.height(6.dp))
         Row(Modifier.fillMaxWidth().padding(start = 64.dp)) {
-            listOf("SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT").forEach {
+            (0 until 7).map { weekStart.plus(it.toLong()).getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()).uppercase() }.forEach {
                 LiveText(it, size = 10.sp, weight = FontWeight.Bold, color = NuvioTheme.colors.TextSecondary, modifier = Modifier.weight(1f).padding(start = 4.dp))
             }
         }
         Spacer(Modifier.height(3.dp))
         val firstDay = shown.atDay(1)
-        val start = firstDay.minusDays((firstDay.dayOfWeek.value % 7).toLong())
+        val start = calendarWeekOf(firstDay, weekStart)
         val weeks = ((ChronoUnit.DAYS.between(start, shown.atEndOfMonth()) / 7) + 1).toInt()
         Column(Modifier.weight(1f).padding(start = 64.dp, bottom = 14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             for (w in 0 until weeks) {

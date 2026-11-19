@@ -527,6 +527,8 @@ data class LiveTvSettings(
     val calendarView: String = "LIST",
     /** OK on an episode that's in your Live TV guide: "LIVE" (Live TV options) or "PAGE" (the show page). */
     val calendarOkAction: String = "LIVE",
+    /** Calendar: the day the Week and Month views start on ("SUNDAY", "MONDAY" or "SATURDAY"). */
+    val calendarWeekStart: String = "SUNDAY",
     /** Recently aired: only what you haven't watched. */
     val calendarHideWatched: Boolean = false,
     /** Offer "Watch On Demand" in Nuvio's stream list for movies and episodes. */

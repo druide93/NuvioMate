@@ -116,6 +116,7 @@ internal class SyncParts(private val store: SharedPreferences) {
             "auto_reconnect", "auto_backup_channel", "hide_stray_entries", "captions_by_default",
             "channel_sort", "group_sort", "vod_default_sort", "vod_sorts", "vod_merge_duplicates",
             "calendar_hide_spoilers", "calendar_hide_watched", "calendar_skip_news_talk", "calendar_sports", "calendar_new_episode_cards",
+            "calendar_week_start",
             "guide_search_catalog", "guide_search_live", "guide_search_ondemand",
             "vod_search_catalog", "vod_search_live", "vod_search_ondemand", "search_order", "logo_sources_off",
             "clean_group_names", "browse_by_channel_name",
