@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="iptv_phone_title">"Nuvio + IPTV’ye ekle"</string>
+    <string name="iptv_phone_title">"NuvioMate’ye ekle"</string>
     <string name="iptv_phone_connected_to">"%1$s cihazına bağlı"</string>
     <string name="iptv_phone_heading">"TV’ne ekle"</string>
     <string name="iptv_phone_instructions">"Bunu doldur ve TV’ye gönder’e dokun. Hemen TV’nde görünür."</string>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="iptv_phone_title">Add to Nuvio + IPTV</string>
-    <string name="iptv_phone_brand_name" translatable="false">Nuvio + IPTV</string>
+    <string name="iptv_phone_title">Add to NuvioMate</string>
+    <string name="iptv_phone_brand_name" translatable="false">NuvioMate</string>
     <string name="iptv_phone_connected_to">Connected to %1$s</string>
     <string name="iptv_phone_heading">Add to your TV</string>
     <string name="iptv_phone_instructions">Fill this in and tap Send to TV. It shows up on your TV right away.</string>

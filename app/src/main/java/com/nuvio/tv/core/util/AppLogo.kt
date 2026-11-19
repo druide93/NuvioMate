@@ -9,7 +9,7 @@ import com.nuvio.tv.R
  */
 fun Context.readAppLogoBytes(): ByteArray? =
     try {
-        resources.openRawResource(R.drawable.app_logo_wordmark).use { it.readBytes() }
+        resources.openRawResource(R.drawable.livetv_wordmark_iptv).use { it.readBytes() } // Live TV fork: NuvioMate logo
     } catch (_: Exception) {
         null
     }

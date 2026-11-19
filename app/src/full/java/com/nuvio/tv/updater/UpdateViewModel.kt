@@ -83,7 +83,7 @@ class UpdateViewModel @Inject constructor(
             downloadStore.clearIfInstalled()
             consumeAutoInstalledUpdate()
             syncBackgroundJobs()
-            if (enabled && !BuildConfig.IS_DEBUG_BUILD) {
+            if (enabled && !BuildConfig.IS_DEBUG_BUILD && BuildConfig.FEATURE_IN_APP_UPDATES_ENABLED) {
                 checkForUpdates(force = false, showNoUpdateFeedback = false)
             }
         }

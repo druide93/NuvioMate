@@ -22,6 +22,10 @@ class UpdateRepository @Inject constructor(
 ) {
 
     suspend fun getLatestUpdate(channel: UpdateChannel): Result<AppUpdate> {
+        // NuvioMate: the in-app updater is off (it would fetch homelessbrian's releases).
+        if (!BuildConfig.FEATURE_IN_APP_UPDATES_ENABLED) {
+            return Result.failure(IllegalStateException("In-app updates are turned off in this build"))
+        }
         // Test builds are their own app: they update only from the tester-only service, never from
         // the public releases.
         if (BuildConfig.NUVIO_CHANNEL == "test") {

@@ -193,7 +193,8 @@ android {
         create("full") {
             dimension = "distribution"
             buildConfigField("boolean", "FEATURE_PLUGINS_ENABLED", "true")
-            buildConfigField("boolean", "FEATURE_IN_APP_UPDATES_ENABLED", "true")
+            // NuvioMate: no in-app updater (it would offer homelessbrian's releases); updated by our own builds.
+            buildConfigField("boolean", "FEATURE_IN_APP_UPDATES_ENABLED", "false")
             buildConfigField("boolean", "FEATURE_IN_APP_TRAILERS_ENABLED", "true")
             buildConfigField("boolean", "FEATURE_EXTERNAL_TRAILERS_ENABLED", "true")
             buildConfigField("boolean", "FEATURE_EXTERNAL_PLAYBACK_KEEP_ALIVE_ENABLED", "true")
@@ -230,12 +231,9 @@ android {
 
     buildTypes {
         debug {
-            // Local builds without the project's keystore: fall back to the standard debug key.
-            signingConfig = if (signingConfigs.getByName("release").storeFile?.exists() == true) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            // NuvioMate: debug builds always use the standard debug key (the release key is the fork's,
+            // shared with Nuvio + IPTV, and would make a debug build replace that app).
+            signingConfig = signingConfigs.getByName("debug")
             isDebuggable = parseBooleanProperty(providers.gradleProperty("debuggable").orNull)
             isMinifyEnabled = false
 
@@ -438,9 +436,8 @@ androidComponents {
         val isPlaystore = variant.productFlavors.any { it.second == "playstore" }
         // Local builds without the release keystore can't update the installed app (different
         // signature), so they get their own ID and install next to it instead.
-        val hasReleaseKeystore = (releaseStoreFilePath?.let(::file) ?: file("../nuviotv.jks")).exists()
-        val livetvDebugId = if (hasReleaseKeystore) "com.nuvio.livetv" else "com.nuvio.livetv.debug"
-        variant.applicationId.set(if (isPlaystore) "com.nuvio.appdebug" else livetvDebugId)
+        // NuvioMate: debug builds are always signed with the debug key, so always their own ID.
+        variant.applicationId.set(if (isPlaystore) "com.nuvio.appdebug" else "com.nuvio.livetv.debug")
     }
     // Live TV fork: release builds get their own app ID too, so they install next to official
     // Nuvio and update the fork's earlier builds in place.
@@ -449,7 +446,8 @@ androidComponents {
         // Test builds (-PlivetvTestBuild=true) get their own ID, so they install next to the
         // real app instead of replacing it.
         val testBuild = (findProperty("livetvTestBuild") as String?)?.toBoolean() == true
-        if (!isPlaystore) variant.applicationId.set(if (testBuild) "com.nuvio.livetv.test" else "com.nuvio.livetv")
+        // NuvioMate: its own app ID, installed next to official Nuvio and Nuvio + IPTV (com.nuvio.livetv).
+        if (!isPlaystore) variant.applicationId.set(if (testBuild) "com.nuvio.livetv.test" else "com.nuviomate.tv")
     }
     // Only the full flavor ships the in-app updater.
     onVariants(selector().withFlavor("distribution" to "full")) { variant ->

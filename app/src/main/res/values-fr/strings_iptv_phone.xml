@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="iptv_phone_title">Ajouter à Nuvio + IPTV</string>
-    <string name="iptv_phone_brand_name" translatable="false">Nuvio + IPTV</string>
+    <string name="iptv_phone_title">Ajouter à NuvioMate</string>
+    <string name="iptv_phone_brand_name" translatable="false">NuvioMate</string>
     <string name="iptv_phone_connected_to">Connexion à %1$s</string>
     <string name="iptv_phone_heading">Ajouter à votre téléviseur</string>
     <string name="iptv_phone_instructions">Remplissez ce formulaire et appuyez sur « Envoyer au téléviseur ». L’ajout apparaît immédiatement sur votre téléviseur.</string>

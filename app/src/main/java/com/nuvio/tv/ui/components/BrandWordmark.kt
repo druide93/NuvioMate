@@ -17,7 +17,12 @@ fun BrandWordmark(
     drawableOverride: Int? = null
 ) {
     Image(
-        painter = painterResource(id = drawableOverride ?: NuvioTheme.currentTheme.brandWordmarkResource),
+        // Live TV fork: the NuvioMate logo wherever Nuvio's wordmark is shown.
+        painter = painterResource(
+            id = com.nuvio.tv.livetv.branding.LiveTvBranding.iptvWordmark(
+                drawableOverride ?: NuvioTheme.currentTheme.brandWordmarkResource
+            )
+        ),
         contentDescription = contentDescription,
         modifier = modifier,
         contentScale = contentScale,

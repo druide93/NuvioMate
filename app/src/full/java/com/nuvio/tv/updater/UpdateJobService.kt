@@ -98,6 +98,7 @@ class UpdateJobService : JobService() {
     }
 
     private suspend fun checkAndDownload(entryPoint: UpdateJobEntryPoint, playbackPolicy: UpdatePlaybackPolicy) {
+        if (!BuildConfig.FEATURE_IN_APP_UPDATES_ENABLED) return
         playbackPolicy.checkpoint()
         val preferences = entryPoint.updatePreferences()
         val autoInstallEnabled = preferences.autoInstallEnabled.first()

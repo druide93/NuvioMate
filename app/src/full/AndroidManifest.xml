@@ -36,8 +36,8 @@
             android:excludeFromRecents="true"
             android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen" />
 
-        <!-- Live TV fork: "Nuvio + IPTV" icons (one per icon color). The original Nuvio
-             icons stay available: Settings > Appearance > App icon > "+ IPTV on the icon". -->
+        <!-- Live TV fork: "NuvioMate" icons (one per icon color). The original Nuvio
+             icons stay available: Settings > Appearance > App icon > "Use the NuvioMate icon". -->
         <activity
             android:name="com.nuvio.tv.launcher.AppIconDefault"
             android:enabled="false"

@@ -646,8 +646,8 @@
         <item>"Nothing yet: pick a team below."</item>
         <item>"Now out to watch at home"</item>
         <item>"Now: "</item>
-        <item>"Nuvio + IPTV crash report"</item>
-        <item>"Nuvio + IPTV stopped"</item>
+        <item>"NuvioMate crash report"</item>
+        <item>"NuvioMate stopped"</item>
         <item>"OK  Live TV options"</item>
         <item>"OK  Open in Sports"</item>
         <item>"OK  Show page"</item>
@@ -704,7 +704,7 @@
         <item>"On now"</item>
         <item>"On the bar and in the backups lists"</item>
         <item>"On your Calendar"</item>
-        <item>"On: the Nuvio + IPTV icon and banner in your chosen color"</item>
+        <item>"On: the NuvioMate icon and banner in your chosen color"</item>
         <item>"Only When Paused or Seeking"</item>
         <item>"Open"</item>
         <item>"Open in Sports"</item>
@@ -912,7 +912,7 @@
         <item>"Shape"</item>
         <item>"Shots"</item>
         <item>"Show"</item>
-        <item>"Show \"+ IPTV\" on the icon"</item>
+        <item>"Use the NuvioMate icon"</item>
         <item>"Show &amp; movie logos (TMDB)"</item>
         <item>"Show channels from"</item>
         <item>"Show info panel"</item>
@@ -2034,8 +2034,8 @@
         <item>"Nothing yet: pick a team below."</item>
         <item>"Now out to watch at home"</item>
         <item>"Now: "</item>
-        <item>"Nuvio + IPTV crash report"</item>
-        <item>"Nuvio + IPTV stopped"</item>
+        <item>"NuvioMate crash report"</item>
+        <item>"NuvioMate stopped"</item>
         <item>"OK  Live TV options"</item>
         <item>"OK  Open in Sports"</item>
         <item>"OK  Show page"</item>
@@ -2092,7 +2092,7 @@
         <item>"On now"</item>
         <item>"On the bar and in the backups lists"</item>
         <item>"On your Calendar"</item>
-        <item>"On: the Nuvio + IPTV icon and banner in your chosen color"</item>
+        <item>"On: the NuvioMate icon and banner in your chosen color"</item>
         <item>"Only When Paused or Seeking"</item>
         <item>"Open"</item>
         <item>"Open in Sports"</item>
@@ -2300,7 +2300,7 @@
         <item>"Shape"</item>
         <item>"Shots"</item>
         <item>"Show"</item>
-        <item>"Show \"+ IPTV\" on the icon"</item>
+        <item>"Use the NuvioMate icon"</item>
         <item>"Show &amp; movie logos (TMDB)"</item>
         <item>"Show channels from"</item>
         <item>"Show info panel"</item>

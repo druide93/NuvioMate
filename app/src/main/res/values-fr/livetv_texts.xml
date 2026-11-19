@@ -646,8 +646,8 @@
         <item>"Rien pour l’instant : choisissez une équipe ci-dessous."</item>
         <item>"Désormais disponible à la maison"</item>
         <item>"En ce moment : "</item>
-        <item>"Rapport de plantage Nuvio + IPTV"</item>
-        <item>"Nuvio + IPTV s’est arrêté"</item>
+        <item>"Rapport de plantage NuvioMate"</item>
+        <item>"NuvioMate s’est arrêté"</item>
         <item>"OK  Options TV en direct"</item>
         <item>"OK  Ouvrir dans Sports"</item>
         <item>"OK  Page de la série"</item>
@@ -704,7 +704,7 @@
         <item>"En ce moment"</item>
         <item>"Sur la barre et dans les listes de secours"</item>
         <item>"Dans votre Calendrier"</item>
-        <item>"Activé : l’icône et la bannière Nuvio + IPTV dans la couleur choisie"</item>
+        <item>"Activé : l’icône et la bannière NuvioMate dans la couleur choisie"</item>
         <item>"Uniquement en pause ou en avance/retour"</item>
         <item>"Ouvrir"</item>
         <item>"Ouvrir dans Sports"</item>
@@ -912,7 +912,7 @@
         <item>"Format"</item>
         <item>"Tirs"</item>
         <item>"Série"</item>
-        <item>"Afficher \"+ IPTV\" sur l’icône"</item>
+        <item>"Utiliser l’icône NuvioMate"</item>
         <item>"Logos de séries et de films (TMDB)"</item>
         <item>"Afficher les chaînes de"</item>
         <item>"Afficher le panneau d’infos"</item>

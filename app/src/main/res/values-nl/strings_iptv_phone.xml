@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="iptv_phone_title">"Toevoegen aan Nuvio + IPTV"</string>
+    <string name="iptv_phone_title">"Toevoegen aan NuvioMate"</string>
     <string name="iptv_phone_connected_to">"Verbonden met %1$s"</string>
     <string name="iptv_phone_heading">"Toevoegen aan je tv"</string>
     <string name="iptv_phone_instructions">"Vul dit in en tik op Naar tv sturen. Het verschijnt meteen op je tv."</string>
