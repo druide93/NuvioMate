@@ -12,7 +12,7 @@ const val NO_GUIDE_TITLE = "No Program Guide Available"
  */
 internal fun prepareGuidePrograms(ch: LiveChannel, list: List<EpgProgram>, nowMs: Long, pastHours: Int): List<EpgProgram> {
     val cu = ch.catchup ?: return list
-    val from = maxOf(nowMs - cu.days.coerceAtMost(7) * 24L * HOUR_BLOCK_MS, nowMs - pastHours * HOUR_BLOCK_MS)
+    val from = maxOf(nowMs - cu.days.coerceAtMost(14) * 24L * HOUR_BLOCK_MS, nowMs - pastHours * HOUR_BLOCK_MS)
     val to = nowMs - Math.floorMod(nowMs, HOUR_BLOCK_MS) + HOUR_BLOCK_MS
     var t = from - Math.floorMod(from, HOUR_BLOCK_MS)
     if (list.isEmpty()) {
@@ -48,8 +48,13 @@ internal fun withoutOverlaps(list: List<EpgProgram>): List<EpgProgram> {
     for (p in sorted) {
         val prev = out.lastOrNull()
         if (prev != null && p.startMs < prev.stopMs) {
-            if (p.title.trim().equals(prev.title.trim(), ignoreCase = true)) {
-                if (p.stopMs > prev.stopMs) out[out.lastIndex] = prev.copy(stopMs = p.stopMs)
+            // The same show, also when only one of the guides marks it new ("X (New)", see XmltvParser):
+            // one listing, kept with its NEW mark.
+            val pm = titleMarks(p.title)
+            val qm = titleMarks(prev.title)
+            if (pm.title.trim().equals(qm.title.trim(), ignoreCase = true)) {
+                val base = if (pm.isNew && !qm.isNew) prev.copy(title = p.title) else prev
+                out[out.lastIndex] = base.copy(stopMs = maxOf(prev.stopMs, p.stopMs))
                 continue
             }
             if (p.startMs <= prev.startMs) continue

@@ -33,10 +33,11 @@ class GuideProgramsTest {
         assertTrue(result.all { it.title == NO_GUIDE_TITLE && it.stopMs - it.startMs == hour })
     }
 
-    @Test fun `provider history is capped at seven days`() {
-        val seven = prepared(channel(7), emptyList(), past = 1_000)
-        assertEquals(169, seven.size)
-        assertEquals(seven, prepared(channel(30), emptyList(), past = 1_000))
+    @Test fun `provider history is capped at fourteen days`() {
+        val fourteen = prepared(channel(14), emptyList(), past = 1_000)
+        assertEquals(337, fourteen.size)
+        assertEquals(fourteen, prepared(channel(30), emptyList(), past = 1_000))
+        assertEquals(169, prepared(channel(7), emptyList(), past = 1_000).size)
         assertEquals(25, prepared(channel(1), emptyList(), past = 1_000).size)
     }
 
@@ -149,6 +150,14 @@ class GuideProgramsTest {
         assertEquals(listOf(EpgProgram(1000 * m, 1055 * m, "French Pop"), c), out)
     }
 
+    @Test fun `the same show is one entry when only one guide marks it new`() {
+        val m = 60_000L
+        val a = EpgProgram(1000 * m, 1053 * m, "French Pop")
+        val b = EpgProgram(1001 * m, 1055 * m, "French Pop (New)")
+        val out = withoutOverlaps(listOf(b, a))
+        assertEquals(listOf(EpgProgram(1000 * m, 1055 * m, "French Pop (New)")), out)
+    }
+
     @Test fun `an overlapping show ends where the next starts and slivers are left out`() {
         val m = 60_000L
         val long = EpgProgram(0, 20 * m, "Long")
@@ -163,7 +172,7 @@ class GuideProgramsTest {
     // Pre-change implementation, retained as a reference for ordering and gap behaviour.
     private fun referencePrograms(ch: LiveChannel, list: List<EpgProgram>, nowMs: Long, pastHours: Int): List<EpgProgram> {
         val cu = ch.catchup ?: return list
-        val from = maxOf(nowMs - cu.days.coerceAtMost(7) * 24L * hour, nowMs - pastHours * hour)
+        val from = maxOf(nowMs - cu.days.coerceAtMost(14) * 24L * hour, nowMs - pastHours * hour)
         val to = nowMs - Math.floorMod(nowMs, hour) + hour
         var t = from - Math.floorMod(from, hour)
         if (list.isEmpty()) {

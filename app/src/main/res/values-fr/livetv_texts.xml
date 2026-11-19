@@ -1339,5 +1339,54 @@
         <item>"◀ ▶ parcourir · OK lecture/pause"</item>
         <item>"{0} de retard sur le direct"</item>
         <item>"En cours : {0}"</item>
+        <item>"Recherche de replays et de temps forts…"</item>
+        <item>"Ouverture de la vidéo…"</item>
+        <item>"Impossible de lire cette vidéo pour le moment. Essayez-en une autre."</item>
+        <item>"Qualifié pour la phase finale"</item>
+        <item>"Qualifié en tant que pays hôte"</item>
+        <item>"En position qualificative"</item>
+        <item>"Ne peut plus se qualifier"</item>
+        <item>"Qualifications pour la CAN"</item>
+        <item>"Match condensé · {0}"</item>
+        <item>"Résumé · {0}"</item>
+        <item>"Temps forts · {0}"</item>
+        <item>"Action · {0}"</item>
+        <item>"{0} · Match condensé"</item>
+        <item>"{0} · Résumé"</item>
+        <item>"{0} · Temps forts"</item>
+        <item>"Tirs au but"</item>
+        <item>"{0} · les 7 prochains jours"</item>
+        <item>"Pas de miniatures pour les vidéos YouTube"</item>
+        <item>"Enregistrer uniquement les nouveaux épisodes"</item>
+        <item>"Répétition"</item>
+        <item>"Jamais"</item>
+        <item>"Tous les jours"</item>
+        <item>"En semaine"</item>
+        <item>"Le week-end"</item>
+        <item>"Personnalisé"</item>
+        <item>"Choisir les jours"</item>
+        <item>"Choisissez au moins un jour de répétition."</item>
+        <item>"Enregistre chaque semaine ces jours-là, jusqu’à ce que vous l’arrêtiez dans Enregistrements."</item>
+        <item>"Jours de répétition"</item>
+        <item>"OK : cocher un jour"</item>
+        <item>"Nouveaux épisodes"</item>
+        <item>"Enregistrer : {0}"</item>
+        <item>"Nouveaux épisodes uniquement"</item>
+        <item>"Tous les épisodes"</item>
+        <item>"Uniquement les diffusions que le guide signale comme nouvelles sur {0} (les rediffusions d’épisodes déjà enregistrés sont ignorées). L’arrêter annule aussi les diffusions programmées qui n’ont pas commencé ; ce qui est enregistré est conservé."</item>
+        <item>"Chaque épisode sur {0} (les rediffusions d’épisodes déjà enregistrés sont ignorées). L’arrêter annule aussi les diffusions programmées qui n’ont pas commencé ; ce qui est enregistré est conservé."</item>
+        <item>"Arrêter la répétition"</item>
+        <item>"{0} · {1} à {2}. L’arrêter annule aussi les diffusions programmées qui n’ont pas commencé ; ce qui est enregistré est conservé."</item>
+        <item>"Enregistrement des nouveaux épisodes de « {0} » sur {1}"</item>
+        <item>"Enregistrement de « {0} » tous les jours à {1}"</item>
+        <item>"Enregistrement de « {0} » en semaine à {1}"</item>
+        <item>"Enregistrement de « {0} » le week-end à {1}"</item>
+        <item>"Enregistrement de « {0} » les {1} à {2}"</item>
+        <item>"Impossible de joindre le portail Stalker."</item>
+        <item>"Le portail Stalker a mis trop de temps à répondre. Réessayez plus tard."</item>
+        <item>"Impossible d’enregistrer les données du portail sur cet appareil. Réessayez."</item>
+        <item>"La connexion au portail Stalker a échoué. Réessayez."</item>
+        <item>"Impossible de mettre à jour le portail Stalker ({0}). Réessayez."</item>
+        <item>"NOUVEAU"</item>
     </string-array>
 </resources>

@@ -223,6 +223,7 @@ private sealed interface LiveDialog {
     data object BannerTime : LiveDialog
     data object PlaylistRefresh : LiveDialog
     data object EpgRefresh : LiveDialog
+    data object Dns : LiveDialog
     data object FutureDays : LiveDialog
     data object PastHours : LiveDialog
     data object SortChoice : LiveDialog
@@ -248,10 +249,21 @@ private sealed interface LiveDialog {
 }
 
 private val EPG_OFFSETS = (-48..48).map { it * 30 }
+
+private fun dnsLabel(context: Context, value: com.nuvio.tv.livetv.data.DnsChoice) = when (value) {
+    com.nuvio.tv.livetv.data.DnsChoice.SYSTEM -> context.getString(R.string.iptv_settings_dns_system)
+    com.nuvio.tv.livetv.data.DnsChoice.CLOUDFLARE -> context.getString(R.string.iptv_settings_dns_cloudflare)
+    com.nuvio.tv.livetv.data.DnsChoice.GOOGLE -> context.getString(R.string.iptv_settings_dns_google)
+}
+
+private fun dnsDescription(context: Context, value: com.nuvio.tv.livetv.data.DnsChoice) = when (value) {
+    com.nuvio.tv.livetv.data.DnsChoice.SYSTEM -> context.getString(R.string.iptv_settings_dns_system_desc)
+    else -> context.getString(R.string.iptv_settings_dns_service_desc)
+}
 private val REFRESH_HOURS = listOf(3, 6, 12, 24, 48, 72, 168)
 private val BANNER_SECONDS = listOf(3, 5, 8, 10, 15)
 private val FUTURE_DAYS = listOf(1, 2, 3, 5, 7, 10, 14)
-private val PAST_HOURS = listOf(6, 12, 24, 48, 72, 168)
+private val PAST_HOURS = listOf(6, 12, 24, 48, 72, 168, 336)
 
 /** Time zones offered for a playlist's catch-up (the common ones IPTV servers run on). */
 private fun catchupZones(context: Context) = listOf(
@@ -310,7 +322,7 @@ private fun openOnLabel(context: Context, page: String): String = when (page) {
 private fun sourceStatus(context: Context, enabled: Boolean, updated: Long, error: String?, count: String): String {
     if (!enabled) return context.getString(R.string.iptv_settings_disabled)
     val parts = mutableListOf<String>()
-    if (error != null) parts += context.getString(R.string.iptv_settings_error_1_s, error)
+    if (error != null) parts += context.getString(R.string.iptv_settings_error_1_s, com.nuvio.tv.livetv.ui.LiveTvTexts.tr(error))
     if (updated > 0) {
         parts += count
         parts += context.getString(R.string.iptv_settings_updated_at, DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, context.settingsLocale).format(Date(updated)))
@@ -343,6 +355,7 @@ internal fun LiveTvSettingsContent(
     val status by viewModel.status.collectAsStateWithLifecycle()
     val accounts by viewModel.accounts.collectAsStateWithLifecycle()
     var dialog by remember { mutableStateOf<LiveDialog?>(null) }
+    var dnsChoice by remember { mutableStateOf(com.nuvio.tv.livetv.data.ForkDns.choice) }
     val drive by viewModel.driveSync.state.collectAsStateWithLifecycle()
     val cloud by viewModel.cloudSync.state.collectAsStateWithLifecycle()
     val syncParts by viewModel.cloudSync.enabledParts.collectAsStateWithLifecycle()
@@ -567,6 +580,12 @@ internal fun LiveTvSettingsContent(
                         s.showImportProgress,
                         { update { it.copy(showImportProgress = !it.showImportProgress) } }
                     )
+                    SubHeading(context.getString(R.string.iptv_settings_connection))
+                    SettingsActionRow(
+                        context.getString(R.string.iptv_settings_dns),
+                        context.getString(R.string.iptv_settings_dns_subtitle),
+                        dnsLabel(context, dnsChoice), onClick = { dialog = LiveDialog.Dns }
+                    )
                 }
             }
 
@@ -606,6 +625,12 @@ internal fun LiveTvSettingsContent(
                         )
                     }
                     SubHeading(context.getString(R.string.iptv_settings_hidden_your_groups))
+                    SettingsToggleRow(
+                        context.getString(R.string.iptv_settings_hide_stray_entries),
+                        context.getString(R.string.iptv_settings_hide_stray_entries_desc),
+                        s.hideStrayEntries,
+                        { viewModel.toggleHideStrayEntries() }
+                    )
                     SettingsActionRow(context.getString(R.string.iptv_settings_hidden_channels), context.getString(R.string.iptv_settings_channels_you_hid_select_one_to_show_it), "${user.hiddenChannels.size}", leadingIcon = Icons.Default.VisibilityOff, onClick = { dialog = LiveDialog.HiddenChannels })
                     SettingsActionRow(context.getString(R.string.iptv_settings_hidden_groups), context.getString(R.string.iptv_settings_groups_you_hid_select_one_to_show_it), "${user.hiddenGroups.size}", leadingIcon = Icons.Default.VisibilityOff, onClick = { dialog = LiveDialog.HiddenGroups })
                     SettingsActionRow(context.getString(R.string.iptv_settings_my_groups), context.getString(R.string.iptv_settings_groups_you_created_select_one_to_delete_it), "${user.customGroups.size}", onClick = { dialog = LiveDialog.CustomGroups })
@@ -1762,16 +1787,17 @@ internal fun LiveTvSettingsContent(
         )
         is LiveDialog.PlaylistActions -> ActionListDialog(
             title = d.source.name,
+            // The account, as the provider last reported it: a line under the name (it can wrap),
+            // not a button, since there's nothing to do with it.
+            subtitle = accounts[d.source.id]?.let { a ->
+                val parts = listOfNotNull(
+                    a.status.takeIf { it.isNotBlank() },
+                    expiryLabel(context, a)?.let { context.getString(R.string.iptv_settings_expires_1_s_2, it) } ?: context.getString(R.string.iptv_settings_no_expiry_date),
+                    a.maxConnections.takeIf { it > 0 }?.let { context.getString(R.string.iptv_settings_1_s_of_2_s_connections_in_use, a.activeConnections, it) }
+                )
+                context.getString(R.string.iptv_settings_account_details, parts.joinToString(" · "))
+            },
             actions = listOfNotNull(
-                // The account, as the provider last reported it (nothing to do: shows the details).
-                accounts[d.source.id]?.let { a ->
-                    val parts = listOfNotNull(
-                        a.status.takeIf { it.isNotBlank() },
-                        expiryLabel(context, a)?.let { context.getString(R.string.iptv_settings_expires_1_s_2, it) } ?: context.getString(R.string.iptv_settings_no_expiry_date),
-                        a.maxConnections.takeIf { it > 0 }?.let { context.getString(R.string.iptv_settings_1_s_of_2_s_connections_in_use, a.activeConnections, it) }
-                    )
-                    (context.getString(R.string.iptv_settings_account_details, parts.joinToString(" · "))) to { viewModel.updatePlaylistNow(d.source); close() }
-                },
                 context.getString(R.string.iptv_settings_edit) to { dialog = LiveDialog.EditPlaylist(d.source) },
                 context.getString(R.string.iptv_settings_update_now) to { viewModel.updatePlaylistNow(d.source); close() },
                 (if (d.source.enabled) context.getString(R.string.iptv_settings_disable) else context.getString(R.string.iptv_settings_enable)) to { viewModel.setPlaylistEnabled(d.source.id, !d.source.enabled); close() },
@@ -2154,6 +2180,14 @@ internal fun LiveTvSettingsContent(
             options = REFRESH_HOURS.map { SettingsPickerOption(it, hoursLabel(context, it)) },
             selectedValue = s.playlistRefreshHours,
             onOptionSelected = { v -> update { it.copy(playlistRefreshHours = v) }; close() },
+            onDismiss = close
+        )
+        LiveDialog.Dns -> SettingsSingleChoiceDialog(
+            title = context.getString(R.string.iptv_settings_dns),
+            subtitle = context.getString(R.string.iptv_settings_dns_dialog_subtitle),
+            options = com.nuvio.tv.livetv.data.DnsChoice.entries.map { SettingsPickerOption(it, dnsLabel(context, it), description = dnsDescription(context, it)) },
+            selectedValue = dnsChoice,
+            onOptionSelected = { v -> com.nuvio.tv.livetv.data.ForkDns.set(context, v); dnsChoice = v; close() },
             onDismiss = close
         )
         LiveDialog.EpgRefresh -> SettingsSingleChoiceDialog(
@@ -2844,14 +2878,16 @@ private fun SourceFormDialog(
 private fun ActionListDialog(
     title: String,
     actions: List<Pair<String, () -> Unit>>,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    /** A line of information under the title (wraps when it's long). */
+    subtitle: String? = null
 ) {
     val first = remember { FocusRequester() }
     LaunchedEffect(Unit) {
         delay(80)
         runCatching { first.requestFocus() }
     }
-    NuvioDialog(onDismiss = onDismiss, title = title, width = 460.dp) {
+    NuvioDialog(onDismiss = onDismiss, title = title, subtitle = subtitle, width = 460.dp) {
         // Scrollable: on a 1080p TV not every option fits, and the last ones were unreachable.
         LazyColumn(
             modifier = Modifier.heightIn(max = 380.dp),

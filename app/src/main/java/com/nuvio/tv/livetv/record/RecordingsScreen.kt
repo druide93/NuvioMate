@@ -112,11 +112,12 @@ class RecordingsViewModel @Inject constructor(
         .map { it.use24HourClock }
         .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, false)
 
-    fun scheduleManual(channel: com.nuvio.tv.livetv.model.LiveChannel, title: String, startMs: Long, stopMs: Long) {
-        LiveTvNotice.show(scheduler.addManual(channel, title, startMs, stopMs))
+    fun scheduleManual(channel: com.nuvio.tv.livetv.model.LiveChannel, title: String, startMs: Long, stopMs: Long, days: Set<Int> = emptySet()) {
+        LiveTvNotice.show(scheduler.addManual(channel, title, startMs, stopMs, days))
     }
     val schedules = scheduler.schedules
     val series = scheduler.series
+    val repeats = scheduler.repeats
 
     init {
         // Anything that should have started already (catch-up saves included) starts now.
@@ -231,6 +232,7 @@ fun RecordingsScreen(
     val recordings by viewModel.recordings.collectAsStateWithLifecycle()
     val schedules by viewModel.schedules.collectAsStateWithLifecycle()
     val seriesRules by viewModel.series.collectAsStateWithLifecycle()
+    val repeatRules by viewModel.repeats.collectAsStateWithLifecycle()
     val posters by viewModel.posters.collectAsStateWithLifecycle()
     val art by viewModel.art.collectAsStateWithLifecycle()
     var scheduleMenu by remember { mutableStateOf<RecordingSchedule?>(null) }
@@ -249,6 +251,7 @@ fun RecordingsScreen(
     }
     var seriesMenu by remember { mutableStateOf<SeriesRule?>(null) }
     var seriesKeepMenu by remember { mutableStateOf<SeriesRule?>(null) }
+    var repeatMenu by remember { mutableStateOf<RepeatRule?>(null) }
     // Which playlist each recording uses: shown on the cards when there's more than one (handy
     // with a one-connection login: don't watch that playlist while it records).
     val playlistNames by viewModel.playlistNames.collectAsStateWithLifecycle()
@@ -300,8 +303,8 @@ fun RecordingsScreen(
     // Which item gets the highlight first: the top of the first section that has anything.
     val firstNowId = now.firstOrNull()?.id
     val firstScheduleId = if (now.isEmpty()) schedules.firstOrNull()?.id else null
-    val firstSeriesId = if (now.isEmpty() && schedules.isEmpty()) seriesRules.firstOrNull()?.id else null
-    val firstDoneId = if (now.isEmpty() && schedules.isEmpty() && seriesRules.isEmpty()) entries.firstOrNull()?.key else null
+    val firstSeriesId = if (now.isEmpty() && schedules.isEmpty()) (seriesRules.firstOrNull()?.id ?: repeatRules.firstOrNull()?.id) else null
+    val firstDoneId = if (now.isEmpty() && schedules.isEmpty() && seriesRules.isEmpty() && repeatRules.isEmpty()) entries.firstOrNull()?.key else null
 
     androidx.compose.runtime.CompositionLocalProvider(
         com.nuvio.tv.livetv.ui.LocalLiveSolidHighlight provides look.solidHighlight,
@@ -341,7 +344,7 @@ fun RecordingsScreen(
                 )
             }
             Spacer(Modifier.height(20.dp))
-            if (recordings.isEmpty() && schedules.isEmpty() && seriesRules.isEmpty()) {
+            if (recordings.isEmpty() && schedules.isEmpty() && seriesRules.isEmpty() && repeatRules.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         LiveText("No recordings yet", size = 20.sp, weight = FontWeight.SemiBold)
@@ -402,7 +405,7 @@ fun RecordingsScreen(
                 }
                 Column(Modifier.weight(1f)) {
                     SectionTitle("Series")
-                    if (seriesRules.isEmpty()) EmptyNote("No series set to record")
+                    if (seriesRules.isEmpty() && repeatRules.isEmpty()) EmptyNote("No series set to record")
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                         contentPadding = PaddingValues(bottom = 40.dp)
@@ -410,10 +413,22 @@ fun RecordingsScreen(
                         items(seriesRules, key = { it.id }) { r ->
                             InfoCard(
                                 title = r.title,
-                                line = withPlaylist(r.channel.name, r.channel.sourceId) + " · " + (if (r.keepLast > 0) LiveTvTexts.trf("Keep last {0}", r.keepLast) else "Keep all".tr()),
+                                line = withPlaylist(r.channel.name, r.channel.sourceId) + " · " +
+                                    (if (r.newOnly) "New episodes".tr() + " · " else "") +
+                                    (if (r.keepLast > 0) LiveTvTexts.trf("Keep last {0}", r.keepLast) else "Keep all".tr()),
                                 note = null,
                                 modifier = if (r.id == firstSeriesId) Modifier.focusRequester(first) else Modifier,
                                 onClick = { seriesMenu = r }
+                            )
+                        }
+                        // Repeating recordings set by hand (Schedule a Recording → Repeat).
+                        items(repeatRules, key = { it.id }) { r ->
+                            InfoCard(
+                                title = r.title,
+                                line = withPlaylist(r.channel.name, r.channel.sourceId) + " · " + RepeatRule.daysLabel(r.days).tr() + " " + repeatTime(r.minuteOfDay, use24h),
+                                note = null,
+                                modifier = if (r.id == firstSeriesId) Modifier.focusRequester(first) else Modifier,
+                                onClick = { repeatMenu = r }
                             )
                         }
                     }
@@ -505,7 +520,7 @@ fun RecordingsScreen(
         }
     }
     }
-    val anything = recordings.isNotEmpty() || schedules.isNotEmpty() || seriesRules.isNotEmpty()
+    val anything = recordings.isNotEmpty() || schedules.isNotEmpty() || seriesRules.isNotEmpty() || repeatRules.isNotEmpty()
     LaunchedEffect(anything) {
         kotlinx.coroutines.delay(120)
         // Nothing yet: start on New Recording.
@@ -529,13 +544,35 @@ fun RecordingsScreen(
         RecordingActionDialog(
             title = r.title,
             detail = (playlistOf(r.channel.sourceId)?.let { LiveTvTexts.trf("Recording from playlist: {0}", it) + "\n" } ?: "") +
-                LiveTvTexts.trf("Every new episode on {0} (repeats of episodes already recorded are skipped). Stopping it also cancels the airings it set that haven't started; what's recorded is kept.", r.channel.name),
+                LiveTvTexts.trf(
+                    if (r.newOnly) "Only airings the guide marks as NEW on {0} (repeats of episodes already recorded are skipped). Stopping it also cancels the airings it set that haven't started; what's recorded is kept."
+                    else "Every episode on {0} (repeats of episodes already recorded are skipped). Stopping it also cancels the airings it set that haven't started; what's recorded is kept.",
+                    r.channel.name
+                ),
             actions = listOf(
                 "Stop Recording Series" to { seriesMenu = null; viewModel.scheduler.removeSeries(r.id) },
+                LiveTvTexts.trf("Record: {0}", (if (r.newOnly) "New Episodes Only" else "All Episodes").tr()) to {
+                    seriesMenu = null; viewModel.scheduler.setNewOnly(r.id, !r.newOnly)
+                },
                 LiveTvTexts.trf("Episodes to Keep: {0}", if (r.keepLast == 0) "All".tr() else LiveTvTexts.trf("Last {0}", r.keepLast)) to { seriesMenu = null; seriesKeepMenu = r },
                 "Close" to { seriesMenu = null }
             ),
             onDismiss = { seriesMenu = null }
+        )
+    }
+    repeatMenu?.let { r ->
+        RecordingActionDialog(
+            title = r.title,
+            detail = (playlistOf(r.channel.sourceId)?.let { LiveTvTexts.trf("Recording from playlist: {0}", it) + "\n" } ?: "") +
+                LiveTvTexts.trf(
+                    "{0} · {1} at {2}. Stopping it also cancels the airings it set that haven't started; what's recorded is kept.",
+                    r.channel.name, RepeatRule.daysLabel(r.days).tr(), repeatTime(r.minuteOfDay, use24h)
+                ),
+            actions = listOf(
+                "Stop Repeating" to { repeatMenu = null; viewModel.scheduler.removeRepeat(r.id) },
+                "Close" to { repeatMenu = null }
+            ),
+            onDismiss = { repeatMenu = null }
         )
     }
     seriesKeepMenu?.let { r ->
@@ -603,7 +640,7 @@ fun RecordingsScreen(
         ManualRecordingDialog(
             channel = ch,
             use24h = use24h,
-            onSchedule = { title, start, stop -> manualFor = null; viewModel.scheduleManual(ch, title, start, stop) },
+            onSchedule = { title, start, stop, days -> manualFor = null; viewModel.scheduleManual(ch, title, start, stop, days) },
             onDismiss = { manualFor = null }
         )
     }
@@ -1088,4 +1125,12 @@ internal fun sizeLabel(bytes: Long): String = when {
     bytes >= 1024L * 1024 * 1024 -> String.format(Locale.US, "%.1f GB", bytes / (1024.0 * 1024 * 1024))
     bytes >= 1024L * 1024 -> String.format(Locale.US, "%.0f MB", bytes / (1024.0 * 1024))
     else -> "${bytes / 1024} KB"
+}
+
+/** "8:30 PM" / "20:30" for a time of day in minutes after midnight. */
+private fun repeatTime(minuteOfDay: Int, use24h: Boolean): String {
+    val c = java.util.Calendar.getInstance().apply {
+        set(java.util.Calendar.HOUR_OF_DAY, minuteOfDay / 60); set(java.util.Calendar.MINUTE, minuteOfDay % 60)
+    }
+    return java.text.SimpleDateFormat(if (use24h) "HH:mm" else "h:mm a", java.util.Locale.getDefault()).format(c.time)
 }

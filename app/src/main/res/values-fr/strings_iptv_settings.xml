@@ -204,10 +204,10 @@
     <string name="iptv_settings_smaller_info_panel_preview">"Panneau d’infos et aperçu plus petits"</string>
     <string name="iptv_settings_shrinks_the_top_of_the_guide_to_about">"Réduit le haut du guide à environ deux tiers de sa hauteur, pour afficher plus de chaînes"</string>
     <string name="iptv_settings_guide_darkness">"Assombrissement du guide"</string>
-    <string name="iptv_settings_how_dark_the_info_panel_at_the_top">"Le niveau d’assombrissement du panneau d’infos en haut et des barres du guide. Le plus clair laisse mieux voir l’arrière-plan. Le plus sombre rend le texte le plus lisible."</string>
+    <string name="iptv_settings_how_dark_the_info_panel_at_the_top">"Le niveau d’assombrissement du panneau d’infos en haut et des barres du guide. Clair laisse mieux voir l’arrière-plan. Sombre rend le texte le plus lisible."</string>
     <string name="iptv_settings_standard">"Standard"</string>
-    <string name="iptv_settings_darkest">"Le plus sombre"</string>
-    <string name="iptv_settings_lightest">"Le plus clair"</string>
+    <string name="iptv_settings_darkest">"Sombre"</string>
+    <string name="iptv_settings_lightest">"Clair"</string>
     <string name="iptv_settings_show_posters">"Afficher les affiches"</string>
     <string name="iptv_settings_posters_for_what_s_on_from_your_addons">"Des affiches pour les programmes en cours, depuis vos addons. Désactivé : seulement le logo de la chaîne."</string>
     <string name="iptv_settings_show_playlist_name_in_info_panel">"Afficher le nom de la playlist dans le panneau d’infos"</string>
@@ -300,7 +300,7 @@
     <string name="iptv_settings_1_list">"1 liste"</string>
     <string name="iptv_settings_1_s_lists">"%1$s listes"</string>
     <string name="iptv_settings_play_bar_background">"Arrière-plan de la barre de lecture"</string>
-    <string name="iptv_settings_how_dark_the_play_bar_is_standard_or">"Le niveau d’assombrissement de la barre de lecture. Standard ou Le plus sombre rend le texte plus lisible sur des images claires et chargées."</string>
+    <string name="iptv_settings_how_dark_the_play_bar_is_standard_or">"Le niveau d’assombrissement de la barre de lecture. Standard ou Sombre rend le texte plus lisible sur des images claires et chargées."</string>
     <string name="iptv_settings_info_bar_stays_for">"Durée d’affichage de la barre d’infos"</string>
     <string name="iptv_settings_how_long_the_show_info_stays_on_screen">"Combien de temps les infos du programme restent à l’écran après un changement de chaîne ou un appui sur OK"</string>
     <string name="iptv_settings_1_s_seconds">"%1$s secondes"</string>
@@ -339,6 +339,14 @@
     <string name="iptv_settings_asks_xtream_providers_for_replays_in_hls_m3u8">"Demande d’abord aux fournisseurs Xtream les replays en HLS (m3u8), pour que la barre de progression fonctionne. Revient au TS si le fournisseur ne le propose pas."</string>
     <string name="iptv_settings_catch_up_time_shift_is_set_for_each">"Le décalage horaire du replay se règle pour chaque playlist : Playlists, puis choisissez-en une."</string>
     <string name="iptv_settings_connection">"Connexion"</string>
+    <string name="iptv_settings_dns">"DNS"</string>
+    <string name="iptv_settings_dns_subtitle">"Comment l’app trouve les serveurs de votre fournisseur. Essayez Cloudflare ou Google si les chaînes indiquent que le serveur est introuvable"</string>
+    <string name="iptv_settings_dns_dialog_subtitle">"Non utilisé quand le VPN est activé : c’est le VPN qui s’en charge. Les noms de serveurs locaux (comme nas.local) fonctionnent toujours."</string>
+    <string name="iptv_settings_dns_system">"Système"</string>
+    <string name="iptv_settings_dns_system_desc">"La résolution de noms habituelle de votre réseau. Si elle ne trouve pas le serveur d’un fournisseur, l’app essaie d’elle-même Cloudflare et Google."</string>
+    <string name="iptv_settings_dns_service_desc">"Contourne les fournisseurs d’accès qui bloquent les serveurs IPTV. Passe aussi outre les bloqueurs de pub et le contrôle parental du réseau domestique."</string>
+    <string name="iptv_settings_hide_stray_entries">"Masquer les entrées parasites"</string>
+    <string name="iptv_settings_hide_stray_entries_desc">"Écarte les restes incongrus que certains fournisseurs ajoutent à leurs playlists, comme un épisode de série seul dans son propre groupe. Les vraies chaînes ne sont jamais masquées"</string>
     <string name="iptv_settings_buffer_size">"Taille du tampon"</string>
     <string name="iptv_settings_larger_rides_out_a_slow_connection_or_provider">"Plus grand absorbe une connexion ou un fournisseur lent (moins de pauses) ; plus petit change de chaîne un peu plus vite. Aucun : au plus près du direct et les changements de chaîne les plus rapides, mais le moindre accroc se voit comme une pause"</string>
     <string name="iptv_settings_extra_large_2">"Très grand"</string>

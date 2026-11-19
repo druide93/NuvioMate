@@ -1339,6 +1339,55 @@
         <item>"◀ ▶ seek · OK play/pause"</item>
         <item>"{0} behind live"</item>
         <item>"Now watching: {0}"</item>
+        <item>"Looking for replays and highlights…"</item>
+        <item>"Opening the video…"</item>
+        <item>"That video can't be played right now. Try another one."</item>
+        <item>"Qualified for the finals"</item>
+        <item>"Qualified as hosts"</item>
+        <item>"In a qualifying place"</item>
+        <item>"Can't qualify"</item>
+        <item>"AFCON Qualifying"</item>
+        <item>"Condensed game · {0}"</item>
+        <item>"Recap · {0}"</item>
+        <item>"Highlights · {0}"</item>
+        <item>"Play · {0}"</item>
+        <item>"{0} · Condensed game"</item>
+        <item>"{0} · Recap"</item>
+        <item>"{0} · Highlights"</item>
+        <item>"Shootout"</item>
+        <item>"{0} · the next 7 days"</item>
+        <item>"No thumbnails for YouTube videos"</item>
+        <item>"Record new episodes only"</item>
+        <item>"Repeat"</item>
+        <item>"Never"</item>
+        <item>"Every day"</item>
+        <item>"Weekdays"</item>
+        <item>"Weekends"</item>
+        <item>"Custom"</item>
+        <item>"Pick days"</item>
+        <item>"Pick at least one day to repeat on."</item>
+        <item>"Records every week on these days until you stop it in Recordings."</item>
+        <item>"Repeat on"</item>
+        <item>"OK ticks a day"</item>
+        <item>"New episodes"</item>
+        <item>"Record: {0}"</item>
+        <item>"New Episodes Only"</item>
+        <item>"All Episodes"</item>
+        <item>"Only airings the guide marks as NEW on {0} (repeats of episodes already recorded are skipped). Stopping it also cancels the airings it set that haven't started; what's recorded is kept."</item>
+        <item>"Every episode on {0} (repeats of episodes already recorded are skipped). Stopping it also cancels the airings it set that haven't started; what's recorded is kept."</item>
+        <item>"Stop Repeating"</item>
+        <item>"{0} · {1} at {2}. Stopping it also cancels the airings it set that haven't started; what's recorded is kept."</item>
+        <item>"Recording new episodes of \"{0}\" on {1}"</item>
+        <item>"Recording \"{0}\" every day at {1}"</item>
+        <item>"Recording \"{0}\" weekdays at {1}"</item>
+        <item>"Recording \"{0}\" weekends at {1}"</item>
+        <item>"Recording \"{0}\" on {1} at {2}"</item>
+        <item>"The Stalker portal could not be reached."</item>
+        <item>"The Stalker portal took too long to answer. Try again later."</item>
+        <item>"The portal's data couldn't be saved on this device. Try again."</item>
+        <item>"The connection to the Stalker portal failed. Try again."</item>
+        <item>"The Stalker portal couldn't be updated ({0}). Try again."</item>
+        <item>"NEW"</item>
     </string-array>
     <string-array name="livetv_texts" tools:ignore="MissingTranslation">
         <item>" · Hold OK: 1 other stream"</item>
@@ -2678,5 +2727,54 @@
         <item>"◀ ▶ seek · OK play/pause"</item>
         <item>"{0} behind live"</item>
         <item>"Now watching: {0}"</item>
+        <item>"Looking for replays and highlights…"</item>
+        <item>"Opening the video…"</item>
+        <item>"That video can't be played right now. Try another one."</item>
+        <item>"Qualified for the finals"</item>
+        <item>"Qualified as hosts"</item>
+        <item>"In a qualifying place"</item>
+        <item>"Can't qualify"</item>
+        <item>"AFCON Qualifying"</item>
+        <item>"Condensed game · {0}"</item>
+        <item>"Recap · {0}"</item>
+        <item>"Highlights · {0}"</item>
+        <item>"Play · {0}"</item>
+        <item>"{0} · Condensed game"</item>
+        <item>"{0} · Recap"</item>
+        <item>"{0} · Highlights"</item>
+        <item>"Shootout"</item>
+        <item>"{0} · the next 7 days"</item>
+        <item>"No thumbnails for YouTube videos"</item>
+        <item>"Record new episodes only"</item>
+        <item>"Repeat"</item>
+        <item>"Never"</item>
+        <item>"Every day"</item>
+        <item>"Weekdays"</item>
+        <item>"Weekends"</item>
+        <item>"Custom"</item>
+        <item>"Pick days"</item>
+        <item>"Pick at least one day to repeat on."</item>
+        <item>"Records every week on these days until you stop it in Recordings."</item>
+        <item>"Repeat on"</item>
+        <item>"OK ticks a day"</item>
+        <item>"New episodes"</item>
+        <item>"Record: {0}"</item>
+        <item>"New Episodes Only"</item>
+        <item>"All Episodes"</item>
+        <item>"Only airings the guide marks as NEW on {0} (repeats of episodes already recorded are skipped). Stopping it also cancels the airings it set that haven't started; what's recorded is kept."</item>
+        <item>"Every episode on {0} (repeats of episodes already recorded are skipped). Stopping it also cancels the airings it set that haven't started; what's recorded is kept."</item>
+        <item>"Stop Repeating"</item>
+        <item>"{0} · {1} at {2}. Stopping it also cancels the airings it set that haven't started; what's recorded is kept."</item>
+        <item>"Recording new episodes of \"{0}\" on {1}"</item>
+        <item>"Recording \"{0}\" every day at {1}"</item>
+        <item>"Recording \"{0}\" weekdays at {1}"</item>
+        <item>"Recording \"{0}\" weekends at {1}"</item>
+        <item>"Recording \"{0}\" on {1} at {2}"</item>
+        <item>"The Stalker portal could not be reached."</item>
+        <item>"The Stalker portal took too long to answer. Try again later."</item>
+        <item>"The portal's data couldn't be saved on this device. Try again."</item>
+        <item>"The connection to the Stalker portal failed. Try again."</item>
+        <item>"The Stalker portal couldn't be updated ({0}). Try again."</item>
+        <item>"NEW"</item>
     </string-array>
 </resources>

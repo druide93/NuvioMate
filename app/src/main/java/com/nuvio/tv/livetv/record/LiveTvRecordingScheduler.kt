@@ -29,7 +29,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -106,6 +108,8 @@ data class RecordingSchedule(
     val postMs: Long = -1L,
     val providerProgramId: String? = null,
     val providerSourceIdentity: String? = null,
+    /** The guide marked it as new (null: not known, set before this was saved). */
+    val isNew: Boolean? = null,
 ) {
     val pre: Long get() = if (preMs >= 0) preMs else LiveTvRecordingScheduler.PRE_MS
     val post: Long get() = if (postMs >= 0) postMs else LiveTvRecordingScheduler.POST_MS
@@ -118,6 +122,7 @@ data class RecordingSchedule(
         put("preMs", preMs); put("postMs", postMs)
         providerProgramId?.let { put("providerProgramId", it) }
         providerSourceIdentity?.let { put("providerSourceIdentity", it) }
+        isNew?.let { put("isNew", it) }
     }
 
     companion object {
@@ -137,6 +142,7 @@ data class RecordingSchedule(
             postMs = o.optLong("postMs", -1L),
             providerProgramId = o.optString("providerProgramId").ifBlank { null },
             providerSourceIdentity = o.optString("providerSourceIdentity").ifBlank { null },
+            isNew = if (o.has("isNew")) o.optBoolean("isNew") else null,
         )
     }
 }
@@ -153,20 +159,69 @@ data class SeriesRule(
      * after a recording is deleted or dropped by "keep the last N", so a repeat later in the
      * week is never recorded again.
      */
-    val seen: List<String> = emptyList()
+    val seen: List<String> = emptyList(),
+    /** Only airings the guide marks as new ("NEW", "(New)", or the guide's own new tag). */
+    val newOnly: Boolean = false
 ) {
     val norm: String get() = LiveTvRepository.normalize(title)
 
     fun toJson(): JSONObject = JSONObject().apply {
         put("id", id); put("channel", channel.toJson()); put("title", title); put("keepLast", keepLast)
-        put("seen", org.json.JSONArray(seen))
+        put("seen", org.json.JSONArray(seen)); put("newOnly", newOnly)
     }
 
     companion object {
         fun fromJson(o: JSONObject) = SeriesRule(
             o.optString("id"), ChannelSnapshot.fromJson(o.getJSONObject("channel")), o.optString("title"), o.optInt("keepLast"),
-            o.optJSONArray("seen")?.let { a -> (0 until a.length()).map { a.optString(it) }.filter { it.isNotBlank() } }.orEmpty()
+            o.optJSONArray("seen")?.let { a -> (0 until a.length()).map { a.optString(it) }.filter { it.isNotBlank() } }.orEmpty(),
+            o.optBoolean("newOnly", false)
         )
+    }
+}
+
+/**
+ * A recording set by hand that repeats: the same time on the chosen days of the week
+ * ([days] as Calendar.SUNDAY..SATURDAY). The next week's airings are set ahead of time.
+ */
+data class RepeatRule(
+    val id: String,
+    val channel: ChannelSnapshot,
+    val title: String,
+    /** Start, in minutes after midnight (local time). */
+    val minuteOfDay: Int,
+    val lengthMin: Int,
+    val days: Set<Int>,
+    /** Airings cancelled by hand (their start times), so they aren't set again. */
+    val skipped: List<Long> = emptyList()
+) {
+    fun toJson(): JSONObject = JSONObject().apply {
+        put("id", id); put("channel", channel.toJson()); put("title", title)
+        put("minuteOfDay", minuteOfDay); put("lengthMin", lengthMin)
+        put("days", JSONArray(days.sorted())); put("skipped", JSONArray(skipped))
+    }
+
+    companion object {
+        fun fromJson(o: JSONObject) = RepeatRule(
+            o.optString("id"), ChannelSnapshot.fromJson(o.getJSONObject("channel")), o.optString("title"),
+            o.optInt("minuteOfDay"), o.optInt("lengthMin", 60).coerceAtLeast(1),
+            o.optJSONArray("days")?.let { a -> (0 until a.length()).map { a.optInt(it) }.filter { it in 1..7 }.toSet() }.orEmpty(),
+            o.optJSONArray("skipped")?.let { a -> (0 until a.length()).map { a.optLong(it) } }.orEmpty()
+        )
+
+        /** "Every day", "Weekdays", "Weekends" or "Mon, Wed, Fri". */
+        fun daysLabel(days: Set<Int>): String {
+            val weekdays = setOf(2, 3, 4, 5, 6)
+            return when {
+                days.size == 7 -> "Every day"
+                days == weekdays -> "Weekdays"
+                days == setOf(1, 7) -> "Weekends"
+                else -> {
+                    val names = java.text.DateFormatSymbols.getInstance().shortWeekdays
+                    // Monday first, Sunday last.
+                    listOf(2, 3, 4, 5, 6, 7, 1).filter { it in days }.joinToString(", ") { names[it] }
+                }
+            }
+        }
     }
 }
 
@@ -194,6 +249,10 @@ class LiveTvRecordingScheduler @Inject constructor(
     val schedules: StateFlow<List<RecordingSchedule>> = _schedules.asStateFlow()
     private val _series = MutableStateFlow<List<SeriesRule>>(emptyList())
     val series: StateFlow<List<SeriesRule>> = _series.asStateFlow()
+    private val _repeats = MutableStateFlow<List<RepeatRule>>(emptyList())
+    val repeats: StateFlow<List<RepeatRule>> = _repeats.asStateFlow()
+    /** One pass over the series rules at a time (two at once could each set the same episode). */
+    private val expandLock = Mutex()
 
     @Volatile private var started = false
     /** Extra time before and after recordings (Settings → Live TV → Recordings), kept up to date. */
@@ -214,7 +273,9 @@ class LiveTvRecordingScheduler @Inject constructor(
         scope.launch {
             load()
             armAll()
+            expandRepeats()
             watchNetwork()
+            scope.launch { forgetDeletedPlaylists() }
             // New guide listings: look for new airings of series.
             repository.programs.debounce(10_000).collect { if (_series.value.isNotEmpty()) expandSeries() }
         }
@@ -238,14 +299,71 @@ class LiveTvRecordingScheduler @Inject constructor(
      * A recording set by hand (Schedule a Recording): [title] from [startMs] to [stopMs] on
      * [channel], for channels with no listings. Recorded like a show from the guide.
      */
-    fun addManual(channel: LiveChannel, title: String, startMs: Long, stopMs: Long): String =
-        add(channel, EpgProgram(startMs = startMs, stopMs = stopMs, title = title))
+    fun addManual(channel: LiveChannel, title: String, startMs: Long, stopMs: Long, days: Set<Int> = emptySet()): String {
+        if (days.isEmpty()) return add(channel, EpgProgram(startMs = startMs, stopMs = stopMs, title = title))
+        val cal = java.util.Calendar.getInstance().apply { timeInMillis = startMs }
+        val rule = RepeatRule(
+            id = "m" + System.nanoTime(),
+            channel = ChannelSnapshot.of(channel),
+            title = title,
+            minuteOfDay = cal.get(java.util.Calendar.HOUR_OF_DAY) * 60 + cal.get(java.util.Calendar.MINUTE),
+            lengthMin = ((stopMs - startMs) / 60_000L).toInt().coerceAtLeast(1),
+            days = days
+        )
+        scope.launch {
+            mutex.withLock { _repeats.value = _repeats.value + rule; save() }
+            expandRepeats()
+        }
+        // The device's own way of writing a time (20:30 in French, 8:30 PM in American English).
+        val locale = java.util.Locale.getDefault()
+        val time = java.text.SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(locale, "jmm"), locale).format(java.util.Date(startMs))
+        return when (val d = RepeatRule.daysLabel(days)) {
+            "Every day" -> LiveTvTexts.trf("Recording \"{0}\" every day at {1}", title, time)
+            "Weekdays" -> LiveTvTexts.trf("Recording \"{0}\" weekdays at {1}", title, time)
+            "Weekends" -> LiveTvTexts.trf("Recording \"{0}\" weekends at {1}", title, time)
+            else -> LiveTvTexts.trf("Recording \"{0}\" on {1} at {2}", title, d, time)
+        }
+    }
+
+    /** Stops a repeating recording (and cancels the airings it set that haven't started). */
+    fun removeRepeat(id: String) {
+        scope.launch {
+            mutex.withLock {
+                _repeats.value = _repeats.value.filterNot { it.id == id }
+                val gone = _schedules.value.filter { it.seriesId == id }
+                gone.forEach { disarm(it) }
+                _schedules.value = _schedules.value - gone.toSet()
+                save()
+            }
+        }
+    }
 
     /**
      * Sets [program] on [channel] to record. A show on now on a channel without catch-up starts
      * recording straight away. Returns a message to show.
      */
     fun add(channel: LiveChannel, program: EpgProgram, seriesId: String? = null): String {
+        val (s, message) = prepare(channel, program, seriesId)
+        if (s != null) scope.launch { insert(s) }
+        return message
+    }
+
+    /** Puts a show in the list (unless that airing is already in it) and sets its alarm. */
+    private suspend fun insert(s: RecordingSchedule) {
+        mutex.withLock {
+            if (_schedules.value.none { it.channel.key == s.channel.key && it.startMs == s.startMs }) {
+                _schedules.value = (_schedules.value + s).sortedBy { it.startMs }
+                save()
+            }
+        }
+        arm(s)
+    }
+
+    /**
+     * The recording for [program] and the message to show; null when it records straight away
+     * (on now, no catch-up) or can't record.
+     */
+    private fun prepare(channel: LiveChannel, program: EpgProgram, seriesId: String?): Pair<RecordingSchedule?, String> {
         val now = System.currentTimeMillis()
         val useCatchup = channel.catchup != null && (channel.catchup.days > 0) &&
             (channel.stalkerRef == null || (!program.providerProgramId.isNullOrBlank() &&
@@ -255,11 +373,12 @@ class LiveTvRecordingScheduler @Inject constructor(
             // On now, no catch-up: record from now.
             if (recorder.activeFor(channel.key) == null) {
                 recorder.start(channel, channel.url, title, program.episode, program.description,
-                    program.startMs, program.stopMs, program.stopMs + padPostMs)
+                    program.startMs, program.stopMs, program.stopMs + padPostMs,
+                    onFinished = { seriesId?.let { keepOnlyNewest(it) } }, seriesId = seriesId)
             }
-            return LiveTvTexts.trf("Recording \"{0}\" now", title)
+            return null to LiveTvTexts.trf("Recording \"{0}\" now", title)
         }
-        if (program.stopMs <= now && !useCatchup) return "That show has already been on"
+        if (program.stopMs <= now && !useCatchup) return null to "That show has already been on"
         val s = RecordingSchedule(
             id = "s" + System.nanoTime(),
             channel = ChannelSnapshot.of(channel),
@@ -274,23 +393,42 @@ class LiveTvRecordingScheduler @Inject constructor(
             postMs = padPostMs,
             providerProgramId = program.providerProgramId,
             providerSourceIdentity = program.providerSourceIdentity,
+            isNew = isNew(program),
         )
-        scope.launch {
-            mutex.withLock {
-                if (_schedules.value.none { it.channel.key == channel.key && it.startMs == program.startMs }) {
-                    _schedules.value = (_schedules.value + s).sortedBy { it.startMs }
-                    save()
-                }
-            }
-            arm(s)
-        }
         val clash = clashWith(s)
         val whenText = timeLabel(program.startMs)
-        return when {
+        return s to when {
             clash != null -> LiveTvTexts.trf("Set to record \"{0}\" ({1}). It overlaps \"{2}\"; your account may only allow one at a time.", title, whenText, clash.title)
             useCatchup && program.stopMs <= now -> LiveTvTexts.trf("Saving \"{0}\" from catch-up", title)
             useCatchup -> LiveTvTexts.trf("Set to record \"{0}\" ({1}). It's saved from catch-up after it ends.", title, whenText)
             else -> LiveTvTexts.trf("Set to record \"{0}\" ({1})", title, whenText)
+        }
+    }
+
+    /**
+     * Shows and series set to record on a playlist that has been deleted can never record: they
+     * go when it's deleted (or at start, for ones deleted before). Not while there are no
+     * playlists at all at start (a fresh install or a restore on its way), only when the last
+     * one is deleted while the app is open.
+     */
+    private suspend fun forgetDeletedPlaylists() {
+        var hadAny = false
+        prefs.playlists.map { list -> list.mapTo(HashSet()) { it.id } }.distinctUntilChanged().collect { ids ->
+            if (ids.isEmpty() && !hadAny) return@collect
+            hadAny = ids.isNotEmpty()
+            mutex.withLock {
+                fun gone(c: ChannelSnapshot) = c.sourceId.isNotEmpty() && c.sourceId !in ids
+                val deadSchedules = _schedules.value.filter { gone(it.channel) }
+                val deadSeries = _series.value.filter { gone(it.channel) }
+                val deadRepeats = _repeats.value.filter { gone(it.channel) }
+                if (deadSchedules.isEmpty() && deadSeries.isEmpty() && deadRepeats.isEmpty()) return@withLock
+                deadSchedules.forEach { disarm(it) }
+                _schedules.value = _schedules.value - deadSchedules.toSet()
+                _series.value = _series.value - deadSeries.toSet()
+                _repeats.value = _repeats.value - deadRepeats.toSet()
+                save()
+                Log.i(TAG, "Deleted playlists: took out ${deadSchedules.size} scheduled recordings and ${deadSeries.size} series")
+            }
         }
     }
 
@@ -317,19 +455,59 @@ class LiveTvRecordingScheduler @Inject constructor(
         }
     }
 
-    /** Record series: every airing of this show's title on this channel. */
-    fun addSeries(channel: LiveChannel, program: EpgProgram): String {
+    /**
+     * Record series: every episode of this show's title on this channel ([newOnly]: only the
+     * airings the guide marks as new). The airing it was picked from is recorded too when it
+     * counts (it may be on now), so a later repeat of that episode isn't recorded instead.
+     */
+    fun addSeries(channel: LiveChannel, program: EpgProgram, newOnly: Boolean = false): String {
         val title = cleanTitle(program.title)
         seriesFor(channel.key, title)?.let { return "\"$title\" is already set to record" }
-        val rule = SeriesRule("r" + System.nanoTime(), ChannelSnapshot.of(channel), title)
+        val rule = SeriesRule("r" + System.nanoTime(), ChannelSnapshot.of(channel), title, newOnly = newOnly)
+        val now = System.currentTimeMillis()
+        val takePicked = program.stopMs > now && (!newOnly || isNew(program))
         scope.launch {
             mutex.withLock {
                 _series.value = _series.value + rule
                 save()
             }
+            var pickedEp: String? = null
+            if (takePicked) {
+                val (s, _) = prepare(channel, program, rule.id)
+                s?.let { insert(it) }
+                pickedEp = episodeKey(program.episode)
+                if (s == null) pickedEp?.let { ep ->
+                    // Recording now: remember the episode, so its repeats are skipped.
+                    mutex.withLock {
+                        _series.value = _series.value.map { r -> if (r.id == rule.id) r.copy(seen = r.seen + ep) else r }
+                        save()
+                    }
+                }
+            }
             expandSeries()
         }
-        return LiveTvTexts.trf("Recording every \"{0}\" on {1}", title, channel.name)
+        return if (newOnly) LiveTvTexts.trf("Recording new episodes of \"{0}\" on {1}", title, channel.name)
+        else LiveTvTexts.trf("Recording every \"{0}\" on {1}", title, channel.name)
+    }
+
+    /** New episodes only, or every episode, for a series. */
+    fun setNewOnly(seriesId: String, newOnly: Boolean) {
+        scope.launch {
+            mutex.withLock {
+                _series.value = _series.value.map { if (it.id == seriesId) it.copy(newOnly = newOnly) else it }
+                if (newOnly) {
+                    // Repeats it already set that haven't started go.
+                    val now = System.currentTimeMillis()
+                    val gone = _schedules.value.filter {
+                        it.seriesId == seriesId && it.startMs > now && it.isNew == false
+                    }
+                    gone.forEach { disarm(it) }
+                    _schedules.value = _schedules.value - gone.toSet()
+                }
+                save()
+            }
+            if (!newOnly) expandSeries()
+        }
     }
 
     /** Stops a series rule (and cancels the airings it set that haven't started). */
@@ -378,32 +556,64 @@ class LiveTvRecordingScheduler @Inject constructor(
 
     // ------------------------------------------------------------------ series
 
-    private suspend fun expandSeries() {
+    private suspend fun expandSeries() = expandLock.withLock {
         val rules = _series.value
-        if (rules.isEmpty()) return
+        if (rules.isEmpty()) return@withLock
         val now = System.currentTimeMillis()
         for (rule in rules) {
-            // Episodes set in this pass: add() puts a recording in the list a moment later, so a
-            // repeat later in the same listing wouldn't see the first and was set as well.
+            // Episodes set in this pass (and the ones set before it, which are in the list now:
+            // each one is put in the list before the next airing is looked at).
             val setNow = mutableSetOf<String>()
             val listings = runCatching { repository.upcomingListings(rule.channel.key, days = 7) }.getOrDefault(emptyList())
             val channel = repository.channels.value.firstOrNull { it.key == rule.channel.key } ?: rule.channel.toChannel()
             listings.filter { LiveTvRepository.normalize(cleanTitle(it.title)) == rule.norm && it.stopMs > now }.forEach { p ->
+                // New episodes only: repeats (airings without the guide's NEW mark) are left out.
+                if (rule.newOnly && !isNew(p)) return@forEach
                 // The episode by its season and episode number from the guide, however the guide
                 // writes it ("S02E05", "S2 E5", "1.4."): a repeat of one recorded before (even
                 // one deleted since) or already set is skipped. Airings without an episode
                 // number are all recorded, as before.
                 val ep = episodeKey(p.episode)
-                val current = _series.value.firstOrNull { it.id == rule.id } ?: rule
+                val current = _series.value.firstOrNull { it.id == rule.id } ?: return@forEach
                 val already = _schedules.value.any { it.channel.key == rule.channel.key && it.startMs == p.startMs } ||
                     recorder.recordings.value.any { it.channelKey == rule.channel.key && it.programStartMs == p.startMs } ||
-                    (ep != null && (ep in current.seen ||
+                    (ep != null && (ep in current.seen || ep in setNow ||
                         _schedules.value.any { it.seriesId == rule.id && episodeKey(it.episode) == ep } ||
                         recorder.recordings.value.any {
                             (it.seriesId == rule.id || it.channelKey == rule.channel.key) && episodeKey(it.episode) == ep &&
                                 LiveTvRepository.normalize(cleanTitle(it.title)) == rule.norm
                         }))
-                if (!already && p.startMs > now && (ep == null || setNow.add(ep))) add(channel, p, seriesId = rule.id)
+                if (already || p.startMs <= now) return@forEach
+                ep?.let { setNow.add(it) }
+                prepare(channel, p, rule.id).first?.let { insert(it) }
+            }
+        }
+    }
+
+    /** Sets the next week of airings of each repeating recording. */
+    private suspend fun expandRepeats() {
+        val rules = _repeats.value
+        if (rules.isEmpty()) return
+        val now = System.currentTimeMillis()
+        for (rule in rules) {
+            val channel = repository.channels.value.firstOrNull { it.key == rule.channel.key } ?: rule.channel.toChannel()
+            for (dayAhead in 0..7) {
+                val cal = java.util.Calendar.getInstance().apply {
+                    timeInMillis = now
+                    add(java.util.Calendar.DAY_OF_YEAR, dayAhead)
+                    set(java.util.Calendar.HOUR_OF_DAY, rule.minuteOfDay / 60)
+                    set(java.util.Calendar.MINUTE, rule.minuteOfDay % 60)
+                    set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
+                }
+                if (cal.get(java.util.Calendar.DAY_OF_WEEK) !in rule.days) continue
+                val start = cal.timeInMillis
+                val stop = start + rule.lengthMin * 60_000L
+                // Only airings still to come (one on now is recorded by the alarm already set).
+                if (start <= now || start in rule.skipped) continue
+                if (_schedules.value.any { it.channel.key == rule.channel.key && it.startMs == start }) continue
+                if (recorder.recordings.value.any { it.channelKey == rule.channel.key && it.programStartMs == start }) continue
+                val program = EpgProgram(startMs = start, stopMs = stop, title = rule.title)
+                prepare(channel, program, rule.id).first?.let { insert(it) }
             }
         }
     }
@@ -478,6 +688,7 @@ class LiveTvRecordingScheduler @Inject constructor(
                     onFinished = { rec -> s.seriesId?.let { keepOnlyNewest(it) } }, seriesId = s.seriesId)
                 remove(s)
                 LiveTvNotice.show(LiveTvTexts.trf("Recording \"{0}\" on {1}", s.title, channel.name))
+                if (_repeats.value.any { it.id == s.seriesId }) expandRepeats()
                 return@launch
             }
             // Catch-up: download the whole show.
@@ -529,6 +740,7 @@ class LiveTvRecordingScheduler @Inject constructor(
                 if (recorder.catchupBusy(channel.sourceId) || earlierWaiting) return@withLock null
                 remove(s)
                 markSeen(s)
+                if (_repeats.value.any { it.id == s.seriesId }) scope.launch { expandRepeats() }
                 recorder.start(
                 channel, url, s.title, s.episode, s.description, s.startMs, s.stopMs,
                 stopAtMs = now + (s.stopMs - s.startMs) * 3 + 30 * 60_000L,
@@ -652,6 +864,13 @@ class LiveTvRecordingScheduler @Inject constructor(
      */
     private fun markSeenLocked(s: RecordingSchedule) {
         val id = s.seriesId ?: return
+        if (_repeats.value.any { it.id == id }) {
+            // A repeating recording's airing cancelled by hand: not set again.
+            _repeats.value = _repeats.value.map { r ->
+                if (r.id == id && s.startMs !in r.skipped) r.copy(skipped = (r.skipped + s.startMs).takeLast(60)) else r
+            }
+            return
+        }
         val ep = episodeKey(s.episode) ?: return
         _series.value = _series.value.map { r ->
             if (r.id == id && ep !in r.seen) r.copy(seen = (r.seen + ep).takeLast(500)) else r
@@ -692,6 +911,7 @@ class LiveTvRecordingScheduler @Inject constructor(
             val o = JSONObject()
             o.put("schedules", JSONArray().apply { _schedules.value.forEach { put(it.toJson()) } })
             o.put("series", JSONArray().apply { _series.value.forEach { put(it.toJson()) } })
+            o.put("repeats", JSONArray().apply { _repeats.value.forEach { put(it.toJson()) } })
             val tmp = File(file.parentFile, file.name + ".tmp")
             tmp.writeText(o.toString())
             if (!tmp.renameTo(file)) { tmp.copyTo(file, overwrite = true); tmp.delete() }
@@ -705,9 +925,14 @@ class LiveTvRecordingScheduler @Inject constructor(
         _schedules.value = (0 until (s?.length() ?: 0)).mapNotNull { i -> runCatching { RecordingSchedule.fromJson(s!!.getJSONObject(i)) }.getOrNull() }
             .sortedBy { it.startMs }
         _series.value = (0 until (r?.length() ?: 0)).mapNotNull { i -> runCatching { SeriesRule.fromJson(r!!.getJSONObject(i)) }.getOrNull() }
+        val m = o.optJSONArray("repeats")
+        _repeats.value = (0 until (m?.length() ?: 0)).mapNotNull { i -> runCatching { RepeatRule.fromJson(m!!.getJSONObject(i)) }.getOrNull() }
     }
 
     private fun cleanTitle(raw: String): String = com.nuvio.tv.livetv.ui.titleMarks(raw).title.trim()
+
+    /** The guide marks this airing as new. */
+    private fun isNew(p: EpgProgram): Boolean = com.nuvio.tv.livetv.ui.titleMarks(p.title).isNew
 
     private fun timeLabel(ms: Long): String {
         val sameDay = java.text.SimpleDateFormat("yyyyMMdd", java.util.Locale.US).let { it.format(java.util.Date(ms)) == it.format(java.util.Date()) }

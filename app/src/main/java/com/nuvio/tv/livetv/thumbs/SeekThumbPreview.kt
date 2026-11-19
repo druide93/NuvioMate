@@ -140,7 +140,7 @@ private fun seekThumbMessageText(context: android.content.Context, message: Stri
         "This video's format can't make thumbnails on this device" -> R.string.iptv_thumbs_msg_format
         "This video couldn't be opened for thumbnails" -> R.string.iptv_thumbs_msg_open_failed
         "No thumbnails for this catch-up stream" -> R.string.iptv_thumbs_msg_catchup_stream
-        else -> return message
+        else -> return com.nuvio.tv.livetv.ui.LiveTvTexts.tr(message)
     }
     return context.getString(res)
 }

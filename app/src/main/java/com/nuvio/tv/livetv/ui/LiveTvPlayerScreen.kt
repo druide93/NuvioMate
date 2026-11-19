@@ -131,6 +131,8 @@ fun LiveTvPlayerScreen(
     val view = LocalView.current
 
     if (!embedded) PauseLiveTvInBackground(viewModel.playback)
+    // A replay or highlight from Sports that played to its end: back where it was opened.
+    LaunchedEffect(Unit) { viewModel.playback.videoFinished.collect { onBack() } }
     // Seek thumbnails for recordings and sports addon replays (off unless turned on in Settings).
     com.nuvio.tv.livetv.thumbs.LiveTvSeekThumbsHook(viewModel)
 
@@ -973,6 +975,13 @@ fun LiveTvPlayerScreen(
                                 viewModel.playback.shiftSeekBy((if (forward) 10_000L else -10_000L) * (1 + minOf(r, 11)))
                                 grabTimeline()
                             }
+                            // A Sports highlight or replay (a video, never live): back / forward in it,
+                            // even while it loads or when it's too short for its own timeline. It isn't
+                            // in the channel list, so a channel change would jump to the list's first.
+                            playback.channelKey?.startsWith("video:") == true || current?.sourceId == com.nuvio.tv.livetv.sports.SportsVideos.SOURCE_ID -> {
+                                viewModel.playback.seekBy((if (forward) 10_000L else -10_000L) * (1 + minOf(r, 11)))
+                                showBanner()
+                            }
                             // Channel surfing (Settings): look through the channels on the bar
                             // without switching, as CH+ / CH− do; held, on at a steady pace.
                             settings.channelSurf && current != null -> { infoOpen = false; browseStep(if (forward) 1 else -1, e) }
@@ -1702,7 +1711,6 @@ fun LiveTvPlayerScreen(
         PlayerDialog.BACKUPS -> if (backups.isEmpty()) dialog = PlayerDialog.NONE else if (backupMenuFor == null) BackupChannelsDialog(
             anchor = backupsAnchor,
             channels = backups,
-            showGroup = BarPart.GROUP !in BarPart.hiddenOf(settings.barHidden),
             playingKey = playback.channelKey,
             startKey = backupMenuLastKey,
             onLongPress = { ch -> backupMenuFor = ch; backupMenuLastKey = ch.key },
