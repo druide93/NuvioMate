@@ -65,9 +65,9 @@ internal fun rememberCalendarWeekDays(entries: List<CalendarEntry>, start: Local
     }
 }
 
-/** The week-start setting ("SUNDAY", "MONDAY", "SATURDAY"); anything else is Sunday. */
+/** The week-start setting ("MONDAY", "SATURDAY", "SUNDAY"); anything else is Monday. */
 internal fun calendarFirstDay(setting: String): DayOfWeek =
-    runCatching { DayOfWeek.valueOf(setting) }.getOrNull()?.takeIf { it == DayOfWeek.MONDAY || it == DayOfWeek.SATURDAY } ?: DayOfWeek.SUNDAY
+    runCatching { DayOfWeek.valueOf(setting) }.getOrNull()?.takeIf { it == DayOfWeek.SUNDAY || it == DayOfWeek.SATURDAY } ?: DayOfWeek.MONDAY
 
 /** Where [day] sits in a week starting on [first] (0 = first day). */
 internal fun calendarDayIndex(day: LocalDate, first: DayOfWeek): Int = (day.dayOfWeek.value - first.value + 7) % 7

@@ -9,12 +9,16 @@ class CalendarWeekStartTest {
     // Thursday 19 November 2026.
     private val thursday = LocalDate.of(2026, 11, 19)
 
-    @Test fun `setting falls back to Sunday`() {
+    @Test fun `setting falls back to Monday`() {
         assertEquals(DayOfWeek.MONDAY, calendarFirstDay("MONDAY"))
         assertEquals(DayOfWeek.SATURDAY, calendarFirstDay("SATURDAY"))
         assertEquals(DayOfWeek.SUNDAY, calendarFirstDay("SUNDAY"))
-        assertEquals(DayOfWeek.SUNDAY, calendarFirstDay("WEDNESDAY"))
-        assertEquals(DayOfWeek.SUNDAY, calendarFirstDay("junk"))
+        assertEquals(DayOfWeek.MONDAY, calendarFirstDay("WEDNESDAY"))
+        assertEquals(DayOfWeek.MONDAY, calendarFirstDay("junk"))
+    }
+
+    @Test fun `default setting is Monday`() {
+        assertEquals(DayOfWeek.MONDAY, calendarFirstDay(com.nuvio.tv.livetv.model.LiveTvSettings().calendarWeekStart))
     }
 
     @Test fun `week starts on the chosen day`() {

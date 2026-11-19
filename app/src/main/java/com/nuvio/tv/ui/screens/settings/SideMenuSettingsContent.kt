@@ -408,10 +408,10 @@ fun CalendarSettingsContent(initialFocusRequester: FocusRequester? = null) {
                     SettingsActionRow(
                         title = "Week Starts On",
                         subtitle = "The first day of the week in the Week and Month views",
-                        value = when (s.calendarWeekStart) { "MONDAY" -> "Monday"; "SATURDAY" -> "Saturday"; else -> "Sunday" },
+                        value = when (s.calendarWeekStart) { "SUNDAY" -> "Sunday"; "SATURDAY" -> "Saturday"; else -> "Monday" },
                         onClick = {
                             update {
-                                it.copy(calendarWeekStart = when (it.calendarWeekStart) { "MONDAY" -> "SATURDAY"; "SATURDAY" -> "SUNDAY"; else -> "MONDAY" })
+                                it.copy(calendarWeekStart = when (it.calendarWeekStart) { "SUNDAY" -> "MONDAY"; "SATURDAY" -> "SUNDAY"; else -> "SATURDAY" })
                             }
                         }
                     )
