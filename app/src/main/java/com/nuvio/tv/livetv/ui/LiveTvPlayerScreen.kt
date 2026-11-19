@@ -1550,7 +1550,7 @@ fun LiveTvPlayerScreen(
     }
 
     // Menus over the video are as dark as the play bar (Settings › Play Bar Background).
-    androidx.compose.runtime.CompositionLocalProvider(LocalLiveDialogGlass provides settings.panelBackground) {
+    androidx.compose.runtime.CompositionLocalProvider(LocalLiveDialogGlass provides settings.panelBackground, LocalLiveMenuColor provides null) {
     when (dialog) {
         PlayerDialog.OPTIONS -> current?.let { ch ->
             val archive = playback.catchupTitle != null

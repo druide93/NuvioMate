@@ -15,6 +15,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -75,6 +76,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.layout
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -82,6 +84,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -458,6 +461,10 @@ private fun LiveTvGuideScreenBody(
     /** Schedule a Recording (long-press menu): the channel it's for. */
     var manualRecordingFor by remember { mutableStateOf<LiveChannel?>(null) }
     var infoTarget by remember { mutableStateOf<MenuTarget?>(null) }
+    /** TiviMate style: OK on a show that can't be played opens its menu right under it. */
+    var showMenu by remember { mutableStateOf<Pair<MenuTarget, androidx.compose.ui.geometry.Rect>?>(null) }
+    /** Where the highlighted show is on screen (not state: only read when its menu opens). */
+    val focusedCellBounds = remember { arrayOfNulls<androidx.compose.ui.geometry.Rect>(1) }
     var searchOpen by remember { mutableStateOf(false) }
     var textPrompt by remember { mutableStateOf<TextPrompt?>(null) }
     var groupMenu by remember { mutableStateOf<ChannelGroup?>(null) }
@@ -556,7 +563,8 @@ private fun LiveTvGuideScreenBody(
             cursorMs = now
         }
     }
-    // Opening Live TV from the menu: show the group list on the group you last watched in.
+    // Opening Live TV from the menu: show the group list on the group you last watched in (or
+    // the channel names, with "Land on channel names").
     // Coming back from full screen: stay on the channel.
     LaunchedEffect(Unit) {
         delay(150)
@@ -728,7 +736,12 @@ private fun LiveTvGuideScreenBody(
     LaunchedEffect(focusGroupsOnOpen) {
         if (focusGroupsOnOpen) {
             focusGroupsOnOpen = false
-            focusGroups()
+            // "Land on channel names (like a cable box)": Live TV opens on the channels, not the groups.
+            if (settings.browseByChannelName) {
+                column = GuideColumn.CHANNEL
+                nameFocus = true
+                runCatching { gridFocus.requestFocus() }
+            } else focusGroups()
         }
     }
 
@@ -951,7 +964,11 @@ private fun LiveTvGuideScreenBody(
                 CatchupUrlBuilder.isAvailable(ch, block.program, now) -> {
                 if (viewModel.playCatchup(ch, block.program)) goFullscreen()
             }
-            else -> infoTarget = MenuTarget(ch, block)
+            else -> {
+                val at = focusedCellBounds[0]
+                if (settings.guideTiviMateStyle && block.program != null && at != null) showMenu = MenuTarget(ch, block) to at
+                else infoTarget = MenuTarget(ch, block)
+            }
         }
     }
 
@@ -1032,7 +1049,9 @@ private fun LiveTvGuideScreenBody(
     CompositionLocalProvider(
         LocalLiveSolidHighlight provides settings.solidHighlight,
         LocalGuideDarkness provides settings.guideInfoBackground,
-        LocalGuideTiviMate provides settings.guideTiviMateStyle
+        LocalGuideTiviMate provides settings.guideTiviMateStyle,
+        // TiviMate: every menu over the guide in its flat grey.
+        LocalLiveMenuColor provides (if (settings.guideTiviMateStyle) TiviMateColors.Menu else null)
     ) {
     val hostActivity = androidx.compose.ui.platform.LocalContext.current as? com.nuvio.tv.MainActivity
     // Where the preview window is (the video view sits there when not full screen).
@@ -1347,11 +1366,16 @@ private fun LiveTvGuideScreenBody(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(34.dp * guideScale(settings).coerceAtLeast(1f))
+                            // TiviMate: a thin line under the times, above the channels.
+                            .then(if (settings.guideTiviMateStyle) Modifier.drawBehind {
+                                val h = 1.dp.toPx()
+                                drawRect(TiviMateColors.Rule, topLeft = androidx.compose.ui.geometry.Offset(0f, size.height - h), size = androidx.compose.ui.geometry.Size(size.width, h))
+                            } else Modifier)
                             .padding(end = if (settings.guideTiviMateStyle) 0.dp else 24.dp, bottom = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         // Date and time above the channels (like TiviMate), or the Unassigned filter.
-                        Box(Modifier.width(channelColWidth).padding(start = 8.dp)) {
+                        Box(Modifier.width(channelColWidth).padding(start = if (settings.guideTiviMateStyle) 0.dp else 8.dp)) {
                             LiveText(
                                 when {
                                     epgUnassignedOnly -> "Unassigned channels"
@@ -1361,7 +1385,8 @@ private fun LiveTvGuideScreenBody(
                                     else -> guideDayLabel(windowStart, now)
                                 },
                                 color = if (settings.guideTiviMateStyle && !epgUnassignedOnly) TiviMateColors.Accent else NuvioTheme.colors.TextPrimary,
-                                size = (13f * guideScale(settings)).sp,
+                                // TiviMate's date is bigger than the times beside it.
+                                size = ((if (settings.guideTiviMateStyle) 15.5f else 13f) * guideScale(settings)).sp,
                                 weight = FontWeight.Bold
                             )
                         }
@@ -1380,7 +1405,7 @@ private fun LiveTvGuideScreenBody(
                                         .align(Alignment.CenterStart)
                                         .padding(start = 6.dp),
                                     color = NuvioTheme.colors.TextSecondary,
-                                    size = (13f * guideScale(settings)).sp
+                                    size = ((if (settings.guideTiviMateStyle) 14f else 13f) * guideScale(settings)).sp
                                 )
                             }
                             // The current time at the right end (past the last time label); in the
@@ -1417,7 +1442,8 @@ private fun LiveTvGuideScreenBody(
                             .weight(1f)
                             .fillMaxWidth()
                             // TiviMate: the grid runs to the right edge of the screen.
-                            .padding(end = if (settings.guideTiviMateStyle) 0.dp else 24.dp, bottom = 12.dp)
+                            // TiviMate: the rows run off the bottom of the screen.
+                            .padding(end = if (settings.guideTiviMateStyle) 0.dp else 24.dp, bottom = if (settings.guideTiviMateStyle) 0.dp else 12.dp)
                             .focusRequester(gridFocus)
                             .focusRequester(contentFocus)
                             .onFocusChanged {
@@ -1741,6 +1767,10 @@ private fun LiveTvGuideScreenBody(
                                     contentPadding = PaddingValues(bottom = endPadding),
                                     userScrollEnabled = false
                                 ) {
+                                    // On the channel names or in the groups, the show lit is the one on
+                                    // now on the channel you're watching; in the shows it follows the cursor.
+                                    val browsingList = (nameFocus || groupsOpen) && !reorderActive
+                                    val watchingKey = playback.channelKey ?: if (!settings.showPreview) user.lastChannelKey else null
                                     itemsIndexed(channels, key = { _, c -> c.key }) { index, ch ->
                                         androidx.compose.runtime.CompositionLocalProvider(LocalGuideScale provides guideScale(settings)) { GuideRow(
                                             channel = ch,
@@ -1754,7 +1784,13 @@ private fun LiveTvGuideScreenBody(
                                             isFavorite = if (favoritesMode) ch.key in pendingFavorites else ch.key in user.favorites,
                                             // Preview window off: nothing plays behind the guide, so mark the channel last watched.
                                             isPlaying = ch.key == (playback.channelKey ?: if (!settings.showPreview) user.lastChannelKey else null),
-                                            focusColumn = if (index == row && (gridFocused || epgPickerFor != null || logoPickerFor != null) && !nameFocus && !reorderActive) column else null,
+                                            // The show under the cursor (and its row) is lit, also under a
+                                            // menu opened on it.
+                                            focusColumn = if (index == row && !browsingList && (gridFocused || epgPickerFor != null || logoPickerFor != null ||
+                                                    menuTarget != null || infoTarget != null || showMenu != null) &&
+                                                !reorderActive) column else null,
+                                            litNow = browsingList && ch.key == watchingKey,
+                                            onFocusedBounds = if (index == row) ({ r -> focusedCellBounds[0] = r }) else null,
                                             focusedBlock = if (index == row) focusedBlock else null,
                                             visible = if (visibilityMode) ch.key !in pendingHidden else null,
                                             picked = if (copyPickMode) ch.key in copyPicked else null,
@@ -2306,6 +2342,25 @@ private fun LiveTvGuideScreenBody(
                 }
             )
         }
+        showMenu?.let { (target, at) ->
+            val p = target.block?.program
+            if (p != null) ShowMenuPopup(
+                target = target,
+                program = p,
+                anchor = at,
+                now = now,
+                reminderSet = user.reminders.any { it.channelKey == target.channel.key && it.startMs == p.startMs },
+                recordLabel = recordLabel(target.channel, p),
+                seriesLabel = seriesLabel(target.channel, p),
+                onDismiss = { showMenu = null },
+                onRemind = { viewModel.toggleReminder(target.channel, p); showMenu = null },
+                onRecord = { showMenu = null; doRecord(target.channel, p) },
+                onSeries = { showMenu = null; doSeries(target.channel, p) },
+                onFind = { showMenu = null; findInNuvio(p) },
+                onWatch = { showMenu = null; playChannel(target.channel) },
+                onInfo = { showMenu = null; infoTarget = target }
+            )
+        }
         textPrompt?.let { prompt ->
             TextInputDialog(
                 title = prompt.title,
@@ -2544,6 +2599,14 @@ private fun LiveTvGuideScreenBody(
 private fun channelColumnWidth(s: LiveTvSettings): Dp {
     // Wider with a bigger Guide Size, so longer names still fit at the bigger text.
     val k = guideScale(s).coerceAtLeast(1f)
+    if (s.guideTiviMateStyle) {
+        // TiviMate: logo, then the name, with the ▶ and replay marks at the end of the column.
+        var t = 12.dp
+        if (s.showChannelNumbers) t += 52.dp * k
+        if (s.showChannelLogos) t += 60.dp * k
+        if (s.showChannelNames) t += 184.dp * k
+        return t.coerceAtLeast(80.dp)
+    }
     var w = 16.dp
     if (s.showChannelNumbers) w += 52.dp * k
     if (s.showChannelLogos) w += 72.dp * k
@@ -2894,7 +2957,11 @@ private fun GuideRow(
     /** Start times of shows set to record (a red dot too). */
     scheduledStarts: Set<Long> = emptySet(),
     /** Width of the shows part of the row, measured once for the whole guide (null: measure here). */
-    programAreaWidth: Dp? = null
+    programAreaWidth: Dp? = null,
+    /** Told where the highlighted show is on screen (bounds in the window). */
+    onFocusedBounds: ((androidx.compose.ui.geometry.Rect) -> Unit)? = null,
+    /** Light the show on now (the channel you're watching, while browsing the channel names or groups). */
+    litNow: Boolean = false
 ) {
     val windowEnd = windowStart + guideWindowMs(settings)
     val cellShape = RoundedCornerShape(liveCorner())
@@ -2902,7 +2969,8 @@ private fun GuideRow(
         modifier = Modifier
             .fillMaxWidth()
             .height(rowHeight)
-            .padding(vertical = 2.dp)
+            // TiviMate: 3 dp between rows.
+            .padding(vertical = if (settings.guideTiviMateStyle) 1.5.dp else 2.dp)
             .graphicsLayer { alpha = if (visible == false) 0.45f else 1f }
             .then(if (onToggleVisibility != null) Modifier.clickable(onClick = onToggleVisibility) else Modifier)
     ) {
@@ -2932,7 +3000,8 @@ private fun GuideRow(
                     // playing outline stays thick so it can still be seen).
                     edgeWidth = if (channelFocused || playingMark) 2.dp else 1.dp
                 )
-                .padding(horizontal = 8.dp),
+                // TiviMate: the logos line up with the preview and the date above them.
+                .padding(start = if (settings.guideTiviMateStyle && !channelFocused) 0.dp else 8.dp, end = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (settings.showChannelNumbers) {
@@ -2951,7 +3020,8 @@ private fun GuideRow(
                 Spacer(Modifier.width(6.dp))
             }
             if (settings.showChannelLogos) {
-                ChannelLogo(channel.logo, (rowHeight - 12.dp).coerceAtLeast(18.dp))
+                // TiviMate: the logos fill the row (about 45 × 30 dp at the standard size).
+                ChannelLogo(channel.logo, (rowHeight - if (settings.guideTiviMateStyle) 7.dp else 12.dp).coerceAtLeast(18.dp))
                 Spacer(Modifier.width(8.dp))
             }
             if (settings.showChannelNames) {
@@ -2996,7 +3066,7 @@ private fun GuideRow(
                     imageVector = Icons.Default.History,
                     contentDescription = "Catch-up",
                     tint = if (channelFocused) cell.text else NuvioTheme.colors.TextSecondary,
-                    modifier = Modifier.size(gdp(14f))
+                    modifier = Modifier.size(gdp(if (settings.guideTiviMateStyle) 16f else 14f))
                 )
                 Spacer(Modifier.width(3.dp))
             }
@@ -3005,7 +3075,7 @@ private fun GuideRow(
                     imageVector = Icons.Default.Star,
                     contentDescription = null,
                     tint = if (channelFocused && LocalLiveSolidHighlight.current) cell.text else NuvioTheme.colors.Rating,
-                    modifier = Modifier.size(gdp(14f))
+                    modifier = Modifier.size(gdp(if (settings.guideTiviMateStyle) 16f else 14f))
                 )
             }
             // Reordering: every channel shows the up/down marker; the one picked up in its color.
@@ -3090,7 +3160,8 @@ private fun GuideRow(
             val gapFill = if (tivimate) TiviMateColors.Gap else guideSurface().copy(alpha = 0.55f)
             // TiviMate: the row you're on is a shade lighter, every show in it the same.
             val idleFill = if (tivimate && focusColumn != null) TiviMateColors.CellNow else guideSurface()
-            val nowFill = idleFill
+            // TiviMate: in the other rows, what's on now is a shade lighter.
+            val nowFill = if (tivimate && focusColumn == null) TiviMateColors.CellLive else idleFill
             val edge = guideEdge()
             val strip = ArrayList<StripItem>()
             if (visible.isNotEmpty()) {
@@ -3111,7 +3182,8 @@ private fun GuideRow(
             var focusedShow: (@Composable () -> Unit)? = null
             visible.forEach { p ->
                 val x = xOf(p.startMs)
-                val isFocused = focusColumn != null && focusedBlock?.program == p
+                val isFocused = (focusColumn != null && focusedBlock?.program == p) ||
+                    (litNow && focusColumn == null && now >= p.startMs && now < p.stopMs)
                 // The highlighted show keeps its whole length (drawn over any it overlaps); the
                 // others end where the next one starts, and a sliver too thin to read is left out.
                 val shownW = xOf(if (isFocused) p.stopMs else laid.endOf(p)) - x
@@ -3150,7 +3222,8 @@ private fun GuideRow(
                             episode = episode,
                             reminder = reminder,
                             recording = recording,
-                            catchup = catchup
+                            catchup = catchup,
+                            modifier = if (onFocusedBounds != null) Modifier.onGloballyPositioned { onFocusedBounds(it.boundsInWindow()) } else Modifier
                         )
                     }
                 } else {
@@ -3259,7 +3332,8 @@ private fun ProgramBlock(
     /** Already shown, and the channel has catch-up: a replay symbol. */
     catchup: Boolean = false,
     /** Being recorded: a red dot before the title. */
-    recording: Boolean = false
+    recording: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
     val shape = RoundedCornerShape(liveCorner())
     Box(
@@ -3267,6 +3341,7 @@ private fun ProgramBlock(
             .offset(x = x)
             .width(width)
             .fillMaxHeight()
+            .then(modifier)
             .padding(horizontal = if (LocalGuideTiviMate.current) 2.dp else 3.dp)
             // A soft glass edge on every tile (not focused ones only), to match the bar and header.
             .glassTile(colors.background, if (colors.border == Color.Transparent) guideEdge() else colors.border, shape, clipChildren = progress != null)
@@ -3871,7 +3946,15 @@ private fun ChannelContextMenu(
     val canCatchup = program != null && program.stopMs <= now && CatchupUrlBuilder.isAvailable(ch, program, now)
     // The Calendar's bell: follow this show, or put this movie's airing on the Calendar.
     val bell = com.nuvio.tv.livetv.calendar.rememberLiveBell(program ?: streamProgram, ch)
-    LiveDialog(onDismiss = onDismiss, width = 460.dp) {
+    // TiviMate: a panel down the right side, the guide still showing beside it.
+    val tmMenu = LocalLiveMenuColor.current != null
+    LiveDialog(
+        onDismiss = onDismiss,
+        width = if (tmMenu) 360.dp else 460.dp,
+        minWidth = if (tmMenu) 300.dp else 320.dp,
+        pad = if (tmMenu) 10.dp else 20.dp,
+        side = tmMenu
+    ) {
         LiveText("${ch.number}  ${ch.name}", size = 20.sp, weight = FontWeight.Bold)
         LiveText(ch.group, color = NuvioTheme.colors.TextSecondary, size = 13.sp)
         Spacer(Modifier.height(14.dp))
@@ -4083,7 +4166,10 @@ private fun EpgSidePanel(
     val panelShape = if (classic) androidx.compose.ui.graphics.RectangleShape
     else RoundedCornerShape(com.nuvio.tv.ui.theme.NuvioComponents.tokens.sidebar.panelRadius)
     // The theme's own surfaces (they carry its tint), like the rest of the guide.
+    val tmMenu = LocalLiveMenuColor.current
     val panelBackground = when {
+        // TiviMate style: the guide's menu grey.
+        tmMenu != null -> tmMenu
         classic -> NuvioTheme.colors.Background
         amoled -> Color.Black
         style == LiveMenuStyle.MODERN_BLUR -> NuvioTheme.colors.BackgroundElevated.copy(alpha = 0.65f)
@@ -4552,6 +4638,26 @@ internal object GuideInfoPart {
 /** A small heading that groups the items under it in a menu. */
 @Composable
 internal fun MenuHeader(title: String, first: Boolean = false) {
+    // TiviMate: a thin line between sections, and the title in blue (as written, not in capitals).
+    if (LocalLiveMenuColor.current != null) {
+        Column {
+            if (!first) Box(
+                Modifier
+                    .padding(start = 14.dp, end = 14.dp, top = 6.dp, bottom = 8.dp)
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(TiviMateColors.MenuDivider)
+            )
+            LiveText(
+                title,
+                size = 13.sp,
+                weight = FontWeight.Bold,
+                color = TiviMateColors.MenuHeading,
+                modifier = Modifier.padding(start = 14.dp, top = if (first) 2.dp else 0.dp, bottom = 2.dp)
+            )
+        }
+        return
+    }
     LiveText(
         title.uppercase(),
         size = 11.sp,
@@ -4650,6 +4756,62 @@ private fun ProgramInfoDialog(
                 }
             }
             LiveFocusRow(onClick = onDismiss) { f -> LiveText("Close", color = focusedTextColor(f)) }
+        }
+    }
+    LaunchedEffect(Unit) { delay(60); runCatching { first.requestFocus() } }
+}
+
+/**
+ * TiviMate style: OK on a show that can't be played (later today, or past with no catch-up) opens
+ * a short menu right under it, the guide still in view. The description is in the info at the
+ * top; "Program info" opens the full card.
+ */
+@Composable
+private fun ShowMenuPopup(
+    target: MenuTarget,
+    program: EpgProgram,
+    anchor: androidx.compose.ui.geometry.Rect,
+    now: Long,
+    reminderSet: Boolean,
+    recordLabel: String?,
+    seriesLabel: String?,
+    onDismiss: () -> Unit,
+    onRemind: () -> Unit,
+    onRecord: () -> Unit,
+    onSeries: () -> Unit,
+    onFind: () -> Unit,
+    onWatch: () -> Unit,
+    onInfo: () -> Unit
+) {
+    val first = remember { FocusRequester() }
+    val upcoming = program.startMs > now
+    val bell = com.nuvio.tv.livetv.calendar.rememberLiveBell(program, target.channel)
+    val items = buildList<Pair<String, () -> Unit>> {
+        if (upcoming) add((if (reminderSet) "Cancel reminder" else "Remind me") to onRemind)
+        if (recordLabel != null) add(recordLabel to onRecord)
+        if (seriesLabel != null) add(seriesLabel to onSeries)
+        if (bell != null) add(bell.label to { bell.toggle(); onDismiss() })
+        add("Find & stream in Nuvio" to onFind)
+        add("Watch channel now" to onWatch)
+        add("Program info" to onInfo)
+    }
+    LiveDialog(
+        onDismiss = onDismiss,
+        anchor = anchor,
+        belowAnchor = true,
+        width = 340.dp,
+        minWidth = 220.dp,
+        corner = 10.dp,
+        pad = 6.dp
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.width(IntrinsicSize.Max)) {
+            items.forEachIndexed { i, (label, action) ->
+                LiveFocusRow(
+                    modifier = (if (i == 0) Modifier.focusRequester(first) else Modifier).fillMaxWidth(),
+                    onClick = action,
+                    verticalPadding = 9.dp
+                ) { f -> LiveText(label, color = focusedTextColor(f), size = 15.sp) }
+            }
         }
     }
     LaunchedEffect(Unit) { delay(60); runCatching { first.requestFocus() } }
@@ -4757,6 +4919,14 @@ internal const val LONG_PRESS_MS = 550L
 
 /** How tall each channel row is: compact or normal, taller when show times are shown. */
 private fun guideRowHeight(s: LiveTvSettings): Dp {
+    // TiviMate: its own tighter rows (measured on TiviMate). The cells never show times there,
+    // and two lines of name already fit.
+    if (s.guideTiviMateStyle) return when (s.effectiveGuideSize) {
+        "COMPACT" -> 35.dp
+        "LARGE" -> 47.dp
+        "XLARGE" -> 55.dp
+        else -> 39.dp
+    }
     val h = when (s.effectiveGuideSize) {
         "COMPACT" -> if (s.showProgramTimes) 44.dp else 32.dp
         "LARGE" -> if (s.showProgramTimes) 64.dp else 47.dp
@@ -4938,7 +5108,10 @@ private fun LogoSidePanel(
     val classic = style == LiveMenuStyle.CLASSIC
     val panelShape = if (classic) androidx.compose.ui.graphics.RectangleShape
     else RoundedCornerShape(com.nuvio.tv.ui.theme.NuvioComponents.tokens.sidebar.panelRadius)
+    val tmMenu = LocalLiveMenuColor.current
     val panelBackground = when {
+        // TiviMate style: the guide's menu grey.
+        tmMenu != null -> tmMenu
         classic -> NuvioTheme.colors.Background
         amoled -> Color.Black
         style == LiveMenuStyle.MODERN_BLUR -> NuvioTheme.colors.BackgroundElevated.copy(alpha = 0.65f)

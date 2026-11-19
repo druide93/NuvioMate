@@ -83,16 +83,33 @@ internal val LocalGuideTiviMate = staticCompositionLocalOf { false }
 
 /** TiviMate-style palette: near-black screen, flat charcoal cells, a lighter cell for what's on now. */
 internal object TiviMateColors {
-    val Background = Color(0xFF0F1012)
+    // Measured on TiviMate's own guide.
+    val Background = Color(0xFF131619)
     val Channel = Color(0xFF1A1B1F)
-    val Cell = Color(0xFF1E1F23)
-    val CellNow = Color(0xFF2A2C31)
+    val Cell = Color(0xFF1B1E21)
+    /** Every show in the row you're on (and the group on screen). */
+    val CellNow = Color(0xFF424547)
+    /** A show on now, in the other rows: a shade lighter than the rest. */
+    val CellLive = Color(0xFF232629)
     val Gap = Color(0xFF16171A)
-    val Focus = Color(0xFFE9E9EC)
-    val FocusText = Color(0xFF0F1012)
+    val Focus = Color(0xFFDEE0E2)
+    val FocusText = Color(0xFF131619)
     /** The date above the channels and the now line. */
     val Accent = Color(0xFF4DA3E8)
+    /** The line under the times. */
+    val Rule = Color(0xFF313336)
+    /** Menus over the guide (the long-press menu, a show's menu, the other guide dialogs). */
+    val Menu = Color(0xFF232629)
+    /** Section titles in those menus. */
+    val MenuHeading = Color(0xFF2196F3)
+    val MenuDivider = Color(0xFF383B3E)
 }
+
+/**
+ * The background of menus and dialogs over the guide, or null for the usual glass. The guide sets
+ * it in the TiviMate style; the player over it sets it back to null (its menus follow the bar).
+ */
+internal val LocalLiveMenuColor = staticCompositionLocalOf<Color?> { null }
 
 private val TEXT_OVER_PICTURE = androidx.compose.ui.graphics.Shadow(
     color = Color.Black.copy(alpha = 0.55f),
@@ -421,8 +438,12 @@ internal fun LiveFocusRow(
 }
 
 @Composable
-internal fun focusedTextColor(focused: Boolean): Color =
-    if (focused && LocalLiveSolidHighlight.current) NuvioTheme.colors.OnSecondary else NuvioTheme.colors.TextPrimary
+internal fun focusedTextColor(focused: Boolean): Color = when {
+    // TiviMate: the highlight is a light fill, so dark text on it.
+    focused && LocalGuideTiviMate.current -> TiviMateColors.FocusText
+    focused && LocalLiveSolidHighlight.current -> NuvioTheme.colors.OnSecondary
+    else -> NuvioTheme.colors.TextPrimary
+}
 
 @Composable
 internal fun focusedSecondaryTextColor(focused: Boolean): Color =
@@ -585,6 +606,10 @@ internal fun LiveDialog(
     minWidth: Dp = 320.dp,
     corner: Dp = 20.dp,
     pad: Dp = 20.dp,
+    /** With [anchor]: open just below it (above it when there's no room below), like TiviMate's show menu. */
+    belowAnchor: Boolean = false,
+    /** A panel down the right side of the screen instead of a centered one (TiviMate's long-press menu). */
+    side: Boolean = false,
     content: @Composable () -> Unit
 ) {
     // A dialog opened by a long press appears while OK is still held. Swallow the rest of that
@@ -592,6 +617,9 @@ internal fun LiveDialog(
     var sawKeyDown by remember { mutableStateOf(false) }
     val openedAt = remember { android.os.SystemClock.uptimeMillis() }
     val glassLevel = LocalLiveDialogGlass.current
+    // The guide's menu color (TiviMate style): flat, with small corners.
+    val menuColor = LocalLiveMenuColor.current
+    val shape = RoundedCornerShape(if (menuColor != null) minOf(corner, 10.dp) else corner)
     val body: @Composable () -> Unit = {
         Column(
             modifier = Modifier
@@ -617,22 +645,52 @@ internal fun LiveDialog(
                 }
                 .widthIn(min = minWidth, max = width)
                 .heightIn(max = 620.dp)
-                // The same dark glass as the play bar and the ⚙ panels.
-                .glass(glassColor(glassLevel), RoundedCornerShape(corner))
+                .then(
+                    if (menuColor != null) Modifier.clip(shape).background(menuColor)
+                    // The same dark glass as the play bar and the ⚙ panels.
+                    else Modifier.glass(glassColor(glassLevel), shape)
+                )
                 .padding(pad)
         ) {
             content()
         }
     }
-    if (anchor == null) {
+    if (anchor == null && side) {
+        Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            // The whole screen, so the panel can sit at its right edge.
+            Box(Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.TopEnd) { body() }
+        }
+    } else if (anchor == null) {
         Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) { body() }
     } else {
-        val gap = with(androidx.compose.ui.platform.LocalDensity.current) { 8.dp.roundToPx() }
+        val gap = with(androidx.compose.ui.platform.LocalDensity.current) { (if (belowAnchor) 4.dp else 8.dp).roundToPx() }
         androidx.compose.ui.window.Popup(
-            popupPositionProvider = remember(anchor, gap) { AboveAnchor(anchor, gap) },
+            popupPositionProvider = remember(anchor, gap, belowAnchor) {
+                if (belowAnchor) BelowAnchor(anchor, gap) else AboveAnchor(anchor, gap)
+            },
             onDismissRequest = onDismiss,
             properties = androidx.compose.ui.window.PopupProperties(focusable = true)
         ) { body() }
+    }
+}
+
+/**
+ * Puts a popup's top-left corner just below [anchor] (bounds in the window), its left edge on the
+ * anchor's; above the anchor instead when it doesn't fit below. Kept on screen.
+ */
+private class BelowAnchor(private val anchor: androidx.compose.ui.geometry.Rect, private val gapPx: Int) :
+    androidx.compose.ui.window.PopupPositionProvider {
+    override fun calculatePosition(
+        anchorBounds: androidx.compose.ui.unit.IntRect,
+        windowSize: androidx.compose.ui.unit.IntSize,
+        layoutDirection: androidx.compose.ui.unit.LayoutDirection,
+        popupContentSize: androidx.compose.ui.unit.IntSize
+    ): androidx.compose.ui.unit.IntOffset {
+        val x = anchor.left.toInt().coerceIn(0, (windowSize.width - popupContentSize.width).coerceAtLeast(0))
+        val below = anchor.bottom.toInt() + gapPx
+        val y = if (below + popupContentSize.height <= windowSize.height) below
+            else (anchor.top.toInt() - gapPx - popupContentSize.height).coerceAtLeast(0)
+        return androidx.compose.ui.unit.IntOffset(x, y)
     }
 }
 

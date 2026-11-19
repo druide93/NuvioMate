@@ -428,69 +428,84 @@ internal fun LiveTvPlayerPanel(
 
                 // ---- middle: channel line, title, description, the controls and progress
                 Column(Modifier.weight(1f).onSizeChanged { middleHeight = with(density) { it.height.toDp() } }) {
-                    if (showChannel || showTags || groupName != null) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (showChannel) {
-                                if (showPoster && !poster.isNullOrBlank() && !channel.logo.isNullOrBlank()) {
-                                    ChannelLogo(channel.logo, 22.dp)
-                                    Spacer(Modifier.width(8.dp))
+                    // The channel's line: number, name, group and the tags (live, quality, sound…).
+                    val channelLine: @Composable () -> Unit = {
+                        if (showChannel || showTags || groupName != null) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (showChannel) {
+                                    if (showPoster && !poster.isNullOrBlank() && !channel.logo.isNullOrBlank()) {
+                                        ChannelLogo(channel.logo, 22.dp)
+                                        Spacer(Modifier.width(8.dp))
+                                    }
+                                    if (showNumber) {
+                                        LiveText("${channel.number}", size = 13.sp, weight = FontWeight.Bold, color = colors.TextPrimary)
+                                        Spacer(Modifier.width(6.dp))
+                                    }
+                                    LiveText(channel.name, size = 13.sp, color = colors.TextSecondary, maxLines = 1, modifier = Modifier.widthIn(max = 320.dp))
+                                    Spacer(Modifier.width(10.dp))
                                 }
-                                if (showNumber) {
-                                    LiveText("${channel.number}", size = 13.sp, weight = FontWeight.Bold, color = colors.TextPrimary)
-                                    Spacer(Modifier.width(6.dp))
+                                // The channel's group (e.g. "US | Sports"): a small tag, cut short if it's long.
+                                if (groupName != null) {
+                                    LiveText(
+                                        groupName,
+                                        size = 10.sp, weight = FontWeight.Bold, color = Color.White.copy(alpha = 0.9f), maxLines = 1,
+                                        modifier = Modifier.widthIn(max = 200.dp).clip(RoundedCornerShape(5.dp)).background(Color.White.copy(alpha = 0.14f)).padding(horizontal = 6.dp, vertical = 1.dp)
+                                    )
+                                    Spacer(Modifier.width(10.dp))
                                 }
-                                LiveText(channel.name, size = 13.sp, color = colors.TextSecondary, maxLines = 1, modifier = Modifier.widthIn(max = 320.dp))
-                                Spacer(Modifier.width(10.dp))
-                            }
-                            // The channel's group (e.g. "US | Sports"): a small tag, cut short if it's long.
-                            if (groupName != null) {
-                                LiveText(
-                                    groupName,
-                                    size = 10.sp, weight = FontWeight.Bold, color = Color.White.copy(alpha = 0.9f), maxLines = 1,
-                                    modifier = Modifier.widthIn(max = 200.dp).clip(RoundedCornerShape(5.dp)).background(Color.White.copy(alpha = 0.14f)).padding(horizontal = 6.dp, vertical = 1.dp)
-                                )
-                                Spacer(Modifier.width(10.dp))
-                            }
-                            if (showTags) {
-                                when (mode) {
-                                    PanelMode.LIVE -> LiveTag("● LIVE", LIVE_RED, Color.White)
-                                    PanelMode.CATCHUP -> LiveTag("CATCH-UP", accent, colors.OnSecondary)
-                                    PanelMode.SHIFT -> LiveTag(timeline?.status?.uppercase() ?: "PAUSED LIVE", Color.White.copy(alpha = 0.22f), Color.White)
+                                if (showTags) {
+                                    when (mode) {
+                                        PanelMode.LIVE -> LiveTag("● LIVE", LIVE_RED, Color.White)
+                                        PanelMode.CATCHUP -> LiveTag("CATCH-UP", accent, colors.OnSecondary)
+                                        PanelMode.SHIFT -> LiveTag(timeline?.status?.uppercase() ?: "PAUSED LIVE", Color.White.copy(alpha = 0.22f), Color.White)
+                                    }
+                                    // The score first, so a long line of chips can't push it off the bar.
+                                    if (mode == PanelMode.LIVE) com.nuvio.tv.livetv.sports.SportsScoreTag(channel.key)
+                                    resolution?.let { Spacer(Modifier.width(6.dp)); GlassChip(it.uppercase()) }
+                                    audioBadge?.let { Spacer(Modifier.width(6.dp)); GlassChip(it) }
+                                    if (catchupAvailable && mode == PanelMode.LIVE) { Spacer(Modifier.width(6.dp)); GlassChip("CATCH-UP") }
                                 }
-                                // The score first, so a long line of chips can't push it off the bar.
-                                if (mode == PanelMode.LIVE) com.nuvio.tv.livetv.sports.SportsScoreTag(channel.key)
-                                resolution?.let { Spacer(Modifier.width(6.dp)); GlassChip(it.uppercase()) }
-                                audioBadge?.let { Spacer(Modifier.width(6.dp)); GlassChip(it) }
-                                if (catchupAvailable && mode == PanelMode.LIVE) { Spacer(Modifier.width(6.dp)); GlassChip("CATCH-UP") }
                             }
                         }
-                        Spacer(Modifier.height(4.dp))
                     }
-                    LiveText(title, size = 20.sp, weight = if (tivimate) FontWeight.Bold else FontWeight.ExtraBold, maxLines = 1, marquee = true, color = colors.TextPrimary)
+                    val hasChannelLine = showChannel || showTags || groupName != null
+                    val titleText: @Composable () -> Unit = {
+                        LiveText(title, size = 20.sp, weight = if (tivimate) FontWeight.Bold else FontWeight.ExtraBold, maxLines = 1, marquee = true, color = colors.TextPrimary)
+                    }
                     val line = listOfNotNull(meta.takeIf { it.isNotBlank() }, desc).joinToString("  ·  ")
-                    if (on(BarPart.DESCRIPTION) && (line.isNotEmpty() || browsing)) {
-                        Spacer(Modifier.height(2.dp))
-                        ScrollingDescription(line.ifEmpty { " " }, size = 12.sp, color = colors.TextSecondary, maxLines = descriptionLines ?: if (full) 2 else 1)
+                    val descText: @Composable () -> Unit = {
+                        if (on(BarPart.DESCRIPTION) && (line.isNotEmpty() || browsing)) {
+                            Spacer(Modifier.height(2.dp))
+                            ScrollingDescription(line.ifEmpty { " " }, size = 14.sp, color = colors.TextSecondary, maxLines = descriptionLines ?: if (full) 2 else 1)
+                        }
                     }
+                    // TiviMate's order, in the banner (▲) and the channel menu (OK) alike: the title, the
+                    // channel's line, the progress (with the menu's buttons), the description, then
+                    // what's next (Up next, can be switched off).
+                    titleText()
+                    if (hasChannelLine) { Spacer(Modifier.height(3.dp)); channelLine() }
                     controlsRow()
+                    descText()
+                    if (showNext) {
+                        Spacer(Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            nextTime?.let {
+                                LiveText(it, size = 13.sp, color = colors.TextTertiary)
+                                Spacer(Modifier.width(10.dp))
+                            }
+                            LiveText(nextTitle!!, size = 13.sp, weight = FontWeight.Medium, color = colors.TextPrimary, maxLines = 1)
+                        }
+                    }
                 }
 
-                // ---- right: the clock and what's next
-                if (showClock || showNext) {
+                // ---- right: the clock (what's next is a line under the description)
+                if (showClock) {
                     Spacer(Modifier.width(14.dp))
                     if (!tivimate) Box(Modifier.width(1.dp).height(60.dp).background(Color.White.copy(alpha = 0.10f)))
                     Spacer(Modifier.width(14.dp))
-                    Column(Modifier.widthIn(min = 70.dp, max = if (showNext) 190.dp else 110.dp)) {
+                    Column(Modifier.widthIn(min = 70.dp, max = 110.dp)) {
                         // TiviMate: a lighter, grey clock.
-                        if (showClock) LiveText(clock, size = 19.sp, weight = if (tivimate) FontWeight.Normal else FontWeight.ExtraBold, color = if (tivimate) colors.TextSecondary else colors.TextPrimary)
-                        if (showNext) {
-                            if (showClock) Spacer(Modifier.height(4.dp))
-                            LiveText(
-                                "UP NEXT".tr() + (nextTime?.let { " · " + it.substringBefore(" –") } ?: ""),
-                                size = 10.sp, weight = FontWeight.Bold, color = colors.TextTertiary
-                            )
-                            LiveText(nextTitle!!, size = 13.sp, weight = FontWeight.Bold, color = colors.TextPrimary, maxLines = 2)
-                        }
+                        LiveText(clock, size = 19.sp, weight = if (tivimate) FontWeight.Normal else FontWeight.ExtraBold, color = if (tivimate) colors.TextSecondary else colors.TextPrimary)
                     }
                 }
             }

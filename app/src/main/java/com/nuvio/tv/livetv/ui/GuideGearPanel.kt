@@ -80,7 +80,11 @@ internal fun GuideGearPanel(
                 .align(Alignment.TopEnd)
                 .padding(end = 36.dp, top = 24.dp)
                 .width(470.dp)
-                .glass(glassColor("darker"), RoundedCornerShape(20.dp))
+                .then(
+                    // TiviMate style: the guide's flat menu grey, like its other menus.
+                    LocalLiveMenuColor.current?.let { Modifier.background(it, RoundedCornerShape(10.dp)) }
+                        ?: Modifier.glass(glassColor("darker"), RoundedCornerShape(20.dp))
+                )
                 .padding(12.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)) {
