@@ -818,6 +818,9 @@ class LiveTvDriveSync @Inject constructor(
         val SCOPE_ATTEMPTS = listOf(
             "openid email https://www.googleapis.com/auth/drive.appdata" to MODE_APPDATA,
             "https://www.googleapis.com/auth/drive.appdata" to MODE_APPDATA,
+            // NuvioMate: Google no longer allows drive.appdata in the TV sign-in flow (Nov 2026,
+            // "Invalid device flow scope"), so this is the one used: still with the email shown.
+            "openid email https://www.googleapis.com/auth/drive.file" to MODE_FILE,
             "https://www.googleapis.com/auth/drive.file" to MODE_FILE
         )
         const val FILE_NAME = "Nuvio Live TV backup.json"

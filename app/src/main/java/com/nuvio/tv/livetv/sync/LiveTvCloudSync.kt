@@ -103,7 +103,11 @@ class LiveTvCloudSync @Inject constructor(
         .build()
     private val json = "application/json; charset=utf-8".toMediaType()
 
+    // NuvioMate: the livetv-cloud service only answers builds that carry its app key (without it,
+    // /v1 says "update_required" and /v2 "app_not_allowed"), so without the key Setup Sync is
+    // hidden and never started: no settings section, no first-time questions, no failing syncs.
     private val available: Boolean =
+        ForkService.hasKey &&
         !serverConfiguration.isCustom &&
             serverConfiguration.backendUrl.toHttpUrlOrNull()?.host.equals("api.nuvio.tv", ignoreCase = true)
 
