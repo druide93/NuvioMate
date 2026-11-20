@@ -71,7 +71,10 @@ Avec l'option **Guide style TiviMate** (paramètres de la TV en direct, avec la 
 - **Heures des enregistrements** au format de l'appareil : 20:30 plutôt que 8:30 PM.
 - **Fichiers de traduction :** compléments aux traductions françaises du projet d'origine.
 
-### Compilation
+## Compilation
+
+Pour compiler NuvioMate soi-même. Rien de cette partie ne change l'app installée.
+
 - **Compilations release** (`assembleFullRelease`) : elles s'installent sous `com.nuviomate.tv`.
 - **Publier une mise à jour :** `scripts/nuviomate_release.sh` choisit la version suivante (`1.2.0-beta.2.mate.1`, `.mate.2`… : la version de Nuvio plus le numéro de build NuvioMate), compile les APK signés, les copie dans `../apk-nuviomate/<version>/` et pose le tag git. Il reste à pousser `main` puis à créer la release GitHub sur ce tag avec les APK : les apps installées la proposent alors. `--dry-run` affiche seulement la version.
 - **Compilations debug (NuvioMate Dev)** : toujours signées avec la clé de debug standard, sous `com.nuviomate.tv.debug`, à côté de NuvioMate et de l'app officielle. `scripts/nuviomate_dev.sh` compile et installe sur la télé (ou `scripts/nuviomate_dev.sh emulator-5554`), sans lancer l'app.
