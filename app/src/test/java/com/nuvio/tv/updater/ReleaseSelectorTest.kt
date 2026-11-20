@@ -6,45 +6,50 @@ import org.junit.Test
 
 class ReleaseSelectorTest {
     @Test
-    fun `stable channel excludes GitHub and tag prereleases`() {
+    fun `stable channel excludes only GitHub pre-releases`() {
         val releases = listOf(
-            release("1.1.0-beta.2", prerelease = true),
-            release("1.1.0-beta.1"),
-            release("1.0.1"),
-            release("1.0.0")
+            release("1.2.0-beta.2.mate.3", prerelease = true),
+            release("1.2.0-beta.2.mate.2"),
+            release("1.2.0-beta.2.mate.1")
         )
 
         val selected = ReleaseSelector.eligibleReleases(releases, UpdateChannel.STABLE)
 
-        assertEquals(listOf("1.0.1", "1.0.0"), selected.map { it.tagName })
+        assertEquals(listOf("1.2.0-beta.2.mate.2", "1.2.0-beta.2.mate.1"), selected.map { it.tagName })
     }
 
     @Test
-    fun `beta channel prefers final promotion over its betas`() {
+    fun `beta channel takes stable and beta releases, newest first`() {
         val releases = listOf(
-            release("1.1.0-beta.10", prerelease = true),
-            release("1.1.0"),
-            release("1.1.0-beta.9", prerelease = true)
+            release("1.2.0-beta.2.mate.2"),
+            release("1.2.0-beta.2.mate.3", prerelease = true),
+            release("1.2.0-beta.2.mate.1")
         )
 
         val selected = ReleaseSelector.eligibleReleases(releases, UpdateChannel.BETA)
 
         assertEquals(
-            listOf("1.1.0", "1.1.0-beta.10", "1.1.0-beta.9"),
+            listOf("1.2.0-beta.2.mate.3", "1.2.0-beta.2.mate.2", "1.2.0-beta.2.mate.1"),
             selected.map { it.tagName }
         )
     }
 
     @Test
-    fun `legacy release title marks beta without tag suffix`() {
+    fun `beta in the version or title does not make a beta`() {
         val releases = listOf(
-            release(tag = "0.7.18", name = "Beta 0.7.18 Hotfix"),
-            release(tag = "0.7.17")
+            release(tag = "1.2.0-beta.3.mate.1", name = "NuvioMate 1.2.0-beta.3.mate.1 (beta)"),
+            release(tag = "1.2.0-beta.2.mate.4")
         )
 
         val selected = ReleaseSelector.eligibleReleases(releases, UpdateChannel.STABLE)
 
-        assertEquals(listOf("0.7.17"), selected.map { it.tagName })
+        assertEquals(listOf("1.2.0-beta.3.mate.1", "1.2.0-beta.2.mate.4"), selected.map { it.tagName })
+    }
+
+    @Test
+    fun `new installs start on stable, whatever the version`() {
+        assertEquals(UpdateChannel.STABLE, UpdateChannel.defaultForVersion("1.2.0-beta.2.mate.1"))
+        assertEquals(UpdateChannel.STABLE, UpdateChannel.defaultForVersion("1.2.0-mate.1"))
     }
 
     @Test

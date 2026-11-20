@@ -144,7 +144,10 @@ class UpdateViewModel @Inject constructor(
                             showUnknownSourcesDialog = false,
                             errorMessage = null,
                             feedbackMessage = if (showNoUpdateFeedback && !remoteNewer) {
-                                noUpdateFeedback(channel)
+                                noUpdateFeedback(
+                                    channel,
+                                    installedAhead = VersionUtils.isRemoteNewer(BuildConfig.VERSION_NAME, update.tag)
+                                )
                             } else {
                                 null
                             }
@@ -165,7 +168,7 @@ class UpdateViewModel @Inject constructor(
                             errorMessage = null,
                             feedbackMessage = if (showNoUpdateFeedback) {
                                 if (error is NoEligibleUpdateException) {
-                                    noUpdateFeedback(channel)
+                                    noUpdateFeedback(channel, installedAhead = true)
                                 } else {
                                     error.message ?: context.getString(R.string.update_error_check_failed)
                                 }
@@ -178,8 +181,10 @@ class UpdateViewModel @Inject constructor(
         }
     }
 
-    private fun noUpdateFeedback(channel: UpdateChannel): String =
-        if (channel == UpdateChannel.STABLE && VersionUtils.isPrerelease(BuildConfig.VERSION_NAME)) {
+    // NuvioMate: on Stable, an installed build newer than the latest stable release (a beta, or no
+    // stable release yet) waits for the next stable one. The version suffix can't tell (see ReleaseSelector).
+    private fun noUpdateFeedback(channel: UpdateChannel, installedAhead: Boolean): String =
+        if (channel == UpdateChannel.STABLE && installedAhead) {
             context.getString(R.string.update_waiting_for_stable)
         } else {
             context.getString(R.string.update_latest_version)

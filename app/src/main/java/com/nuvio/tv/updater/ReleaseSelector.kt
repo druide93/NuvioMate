@@ -3,11 +3,9 @@ package com.nuvio.tv.updater
 import com.nuvio.tv.data.remote.dto.GitHubReleaseDto
 
 internal object ReleaseSelector {
-    private val prereleaseNamePattern = Regex(
-        "(?:^|[\\s._-])(alpha|beta|rc|preview)(?:[\\s._-]|$)",
-        RegexOption.IGNORE_CASE
-    )
-
+    // NuvioMate: a beta is a GitHub release marked "pre-release", and nothing else. Every NuvioMate
+    // version has a suffix ("1.2.0-beta.2.mate.3": it builds on a Nuvio beta), so neither the version
+    // nor the release name can tell a beta from a stable release.
     fun eligibleReleases(
         releases: List<GitHubReleaseDto>,
         channel: UpdateChannel
@@ -19,7 +17,7 @@ internal object ReleaseSelector {
             ReleaseCandidate(
                 release = release,
                 version = version,
-                prerelease = isPrerelease(release, version)
+                prerelease = release.prerelease
             )
         }
         .filter { candidate -> channel == UpdateChannel.BETA || !candidate.prerelease }
@@ -29,13 +27,6 @@ internal object ReleaseSelector {
 
     private fun releaseVersion(release: GitHubReleaseDto): SemanticVersion? =
         VersionUtils.parse(release.tagName) ?: VersionUtils.parse(release.name)
-
-    private fun isPrerelease(
-        release: GitHubReleaseDto,
-        version: SemanticVersion
-    ): Boolean = release.prerelease ||
-        version.prerelease.isNotEmpty() ||
-        prereleaseNamePattern.containsMatchIn(release.name.orEmpty())
 
     private data class ReleaseCandidate(
         val release: GitHubReleaseDto,

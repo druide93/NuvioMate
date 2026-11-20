@@ -9,15 +9,26 @@
 # Run it on main, after merging dev into main.
 # Then publish the release on GitHub (the script prints the steps).
 #
+# Stable or beta is decided on GitHub, not by the version: a release marked "pre-release" is a beta
+# (only the Beta channel gets it); unticking that box later makes the same APKs the stable release.
+#
 # Usage (from the repository root):
-#   scripts/nuviomate_release.sh            build the next version
+#   scripts/nuviomate_release.sh            build the next version, to publish as a stable release
+#   scripts/nuviomate_release.sh --beta     the same, to publish as a beta (GitHub page opens pre-ticked)
 #   scripts/nuviomate_release.sh --dry-run  only show which version would be built
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 ROOT_PARENT="$(cd .. && pwd)"
 DRY_RUN=false
-[ "${1:-}" = "--dry-run" ] && DRY_RUN=true
+BETA=false
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    --beta) BETA=true ;;
+    *) echo "Unknown option: $arg (use --beta and/or --dry-run)" >&2; exit 1 ;;
+  esac
+done
 
 export JAVA_HOME="${JAVA_HOME_NUVIOMATE:-$ROOT_PARENT/jdk17/jdk-17.0.21+9/Contents/Home}"
 export NUVIO_GO="${NUVIO_GO:-$ROOT_PARENT/go-sdk/go/bin/go}"
@@ -42,7 +53,8 @@ done
 N=$((LAST + 1))
 [ "$N" -le 99 ] || { echo "Too many NuvioMate builds on Nuvio $BASE (max 99)" >&2; exit 1; }
 VERSION="$PREFIX$N"
-echo "Nuvio base $BASE -> NuvioMate $VERSION (build $N)"
+KIND=stable; $BETA && KIND=beta
+echo "Nuvio base $BASE -> NuvioMate $VERSION (build $N), $KIND"
 $DRY_RUN && exit 0
 
 # Releases are made from main only: work happens on dev, then dev is merged into main.
@@ -75,13 +87,22 @@ $found || { echo "No APK was built" >&2; exit 1; }
 
 git tag -a "$VERSION" -m "NuvioMate $VERSION"
 
+URL="https://github.com/druide93/NuvioMate/releases/new?tag=$VERSION&title=NuvioMate%20$VERSION"
+if $BETA; then
+  URL="$URL&prerelease=1"
+  BOX='"Set as a pre-release" is ticked: only the Beta channel gets it. Untick it later to make it the stable release.'
+else
+  BOX='Leave "Set as a pre-release" unticked: both channels get it.'
+fi
+
 cat <<EOF
 
-NuvioMate $VERSION is built: $OUT
+NuvioMate $VERSION ($KIND) is built: $OUT
 $(ls -1 "$OUT")
 
 To publish it (the installed NuvioMate apps then offer the update):
   1. In GitHub Desktop, push main (the tag goes with it).
-  2. Open https://github.com/druide93/NuvioMate/releases/new?tag=$VERSION&title=NuvioMate%20$VERSION
+  2. Open $URL
      write what changed, drag the APKs above into the page, and click "Publish release".
+     $BOX
 EOF
