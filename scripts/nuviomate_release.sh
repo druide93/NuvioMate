@@ -6,6 +6,7 @@
 #   2. builds the release APKs (signed with the release key, so they update the installed NuvioMate),
 #   3. copies them to ../apk-nuviomate/<version>/ with names the updater understands,
 #   4. tags the commit with the version.
+# Run it on main, after merging dev into main.
 # Then publish the release on GitHub (the script prints the steps).
 #
 # Usage (from the repository root):
@@ -43,6 +44,13 @@ N=$((LAST + 1))
 VERSION="$PREFIX$N"
 echo "Nuvio base $BASE -> NuvioMate $VERSION (build $N)"
 $DRY_RUN && exit 0
+
+# Releases are made from main only: work happens on dev, then dev is merged into main.
+BRANCH=$(git symbolic-ref --quiet --short HEAD || true)
+if [ "$BRANCH" != "main" ]; then
+  echo "Releases are built from main, not '${BRANCH:-detached HEAD}': merge dev into main and run this on main." >&2
+  exit 1
+fi
 
 if [ -n "$(git status --porcelain)" ]; then
   echo "There are uncommitted changes: commit them first, so the tag matches what is built." >&2
