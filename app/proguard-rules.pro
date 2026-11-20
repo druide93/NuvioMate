@@ -156,3 +156,8 @@
 # still optimised), so a crash or freeze report names the real screen and function instead
 # of scrambled letters like "za.q2.f".
 -keep,allowshrinking,allowoptimization class com.nuvio.tv.** { *; }
+
+# Home Assistant (NuvioMate): Paho MQTT finds its network modules and logger by name
+# (ServiceLoader / Class.forName), which R8 would otherwise strip.
+-keep class org.eclipse.paho.client.mqttv3.** { *; }
+-dontwarn org.eclipse.paho.client.mqttv3.**

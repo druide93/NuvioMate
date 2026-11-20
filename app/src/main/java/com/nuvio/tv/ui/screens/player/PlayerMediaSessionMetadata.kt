@@ -53,6 +53,33 @@ internal fun PlayerRuntimeController.buildMediaSessionMetadata(): MediaMetadata 
         .build()
 }
 
+/** The same information as [buildMediaSessionMetadata], in the shape Home Assistant gets (NuvioMate). */
+internal fun PlayerRuntimeController.buildHomeAssistantNowPlaying(
+    state: PlayerUiState
+): com.nuvio.tv.core.homeassistant.NowPlaying {
+    val isSeries = contentType?.lowercase() in listOf("series", "tv")
+    val status = when {
+        state.playbackEnded -> com.nuvio.tv.core.homeassistant.NowPlayingStatus.STOPPED
+        state.isPlaying -> com.nuvio.tv.core.homeassistant.NowPlayingStatus.PLAYING
+        state.isBuffering -> com.nuvio.tv.core.homeassistant.NowPlayingStatus.LOADING
+        else -> com.nuvio.tv.core.homeassistant.NowPlayingStatus.PAUSED
+    }
+    return com.nuvio.tv.core.homeassistant.NowPlaying(
+        activity = if (isSeries) {
+            com.nuvio.tv.core.homeassistant.NowPlayingActivity.EPISODE
+        } else {
+            com.nuvio.tv.core.homeassistant.NowPlayingActivity.MOVIE
+        },
+        status = status,
+        mediaTitle = state.contentName?.takeIf { it.isNotBlank() } ?: state.title.takeIf { it.isNotBlank() },
+        season = if (isSeries) state.currentSeason else null,
+        episode = if (isSeries) state.currentEpisode else null,
+        episodeTitle = if (isSeries) state.currentEpisodeTitle?.takeIf { it.isNotBlank() } else null,
+        year = if (isSeries) null else state.releaseYear?.takeIf { it.isNotBlank() },
+        imageUrl = poster?.takeIf { it.isNotBlank() } ?: backdrop?.takeIf { it.isNotBlank() }
+    )
+}
+
 /**
  * Pushes the current media metadata into the active [MediaSession] so that
  * Google Home and other system surfaces display up-to-date information.

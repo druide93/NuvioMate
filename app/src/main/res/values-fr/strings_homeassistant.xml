@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- NuvioMate : réglages Home Assistant (MQTT). -->
+<resources>
+    <string name="ha_title">Home Assistant</string>
+    <string name="ha_subtitle">Montre ce qui passe dans Home Assistant, par son broker MQTT (Mosquitto). Rien ne sort de ton réseau local.</string>
+    <string name="ha_hub_subtitle">Ce qui passe, pour tes automatisations Home Assistant</string>
+    <string name="ha_enable_title">Se connecter à Home Assistant</string>
+    <string name="ha_enable_subtitle">NuvioMate apparaît dans Home Assistant comme un appareil : ce qui passe, la chaîne, lecture ou pause.</string>
+    <string name="ha_status_title">Connexion</string>
+    <string name="ha_status_off">Désactivée</string>
+    <string name="ha_status_incomplete">Adresse du broker manquante</string>
+    <string name="ha_status_connecting">Connexion…</string>
+    <string name="ha_status_connected">Connecté</string>
+    <string name="ha_status_bad_credentials">Utilisateur ou mot de passe refusé</string>
+    <string name="ha_status_unreachable">Broker injoignable (adresse ou port ?)</string>
+    <string name="ha_status_timeout">Pas de réponse du broker</string>
+    <string name="ha_status_other">Erreur : %1$s</string>
+    <string name="ha_phone_title">Configurer depuis le téléphone</string>
+    <string name="ha_phone_subtitle">Scanne un QR code et remplis la connexion sur ton téléphone</string>
+    <string name="ha_phone_dialog_text">Scanne ce code avec un téléphone sur le même Wi-Fi, remplis le formulaire, puis appuie sur Envoyer.</string>
+    <string name="ha_phone_no_network">Connecte cette TV au réseau de la maison pour utiliser ton téléphone.</string>
+    <string name="ha_phone_received">Reçu. Les réglages sont enregistrés.</string>
+    <string name="ha_broker_title">Broker MQTT</string>
+    <string name="ha_broker_subtitle">L\'adresse de Home Assistant sur ton réseau, et le port (1883 par défaut)</string>
+    <string name="ha_broker_placeholder">192.168.1.10:1883</string>
+    <string name="ha_username_title">Utilisateur</string>
+    <string name="ha_username_subtitle">Un utilisateur Home Assistant créé pour NuvioMate</string>
+    <string name="ha_password_title">Mot de passe</string>
+    <string name="ha_password_subtitle">Enregistré chiffré sur cette TV</string>
+    <string name="ha_device_name_title">Nom de l\'appareil</string>
+    <string name="ha_device_name_subtitle">Le nom de la TV dans Home Assistant</string>
+    <string name="ha_page_intro">Ces réglages vont directement à ta TV, sur ton réseau local.</string>
+    <string name="ha_page_host">Adresse de Home Assistant (broker MQTT)</string>
+    <string name="ha_page_port">Port</string>
+    <string name="ha_page_username">Utilisateur</string>
+    <string name="ha_page_password">Mot de passe</string>
+    <string name="ha_page_password_hint">(laisser vide pour garder l\'actuel)</string>
+    <string name="ha_page_device_name">Nom de l\'appareil</string>
+    <string name="ha_page_send">Envoyer à la TV</string>
+    <string name="ha_page_sent">Envoyé. Regarde ta TV.</string>
+    <string name="ha_page_missing_host">L\'adresse est obligatoire.</string>
+</resources>

@@ -33,6 +33,7 @@ cloudstream = "v4.7.0"
 nicehttp = "0.4.16"
 conscrypt = { strictly = "2.5.2" }
 zxing = "3.5.3"
+pahoMqtt = "1.2.5"
 supabase = "3.2.1"
 ktor = "3.1.1"
 kotlinxSerialization = "1.8.0"
@@ -119,6 +120,8 @@ cloudstream-library = { group = "com.github.recloudstream.cloudstream", name = "
 nicehttp = { group = "com.github.Blatzar", name = "NiceHttp", version.ref = "nicehttp" }
 conscrypt-android = { group = "org.conscrypt", name = "conscrypt-android", version.ref = "conscrypt" }
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+paho-mqtt = { group = "org.eclipse.paho", name = "org.eclipse.paho.client.mqttv3", version.ref = "pahoMqtt" }
+androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleRuntimeKtx" }
 
 # Markdown rendering
 markdown-renderer-m3 = { group = "com.mikepenz", name = "multiplatform-markdown-renderer-m3", version.ref = "markdownRenderer" }

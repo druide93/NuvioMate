@@ -44,6 +44,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.FastForward
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Link
@@ -114,7 +115,8 @@ private enum class IntegrationSettingsSection {
     Debrid,
     Tmdb,
     MdbList,
-    AnimeSkip
+    AnimeSkip,
+    HomeAssistant
 }
 
 internal enum class SettingsSectionDestination {
@@ -1139,6 +1141,7 @@ private fun IntegrationSettingsContent(
     BackHandler(enabled = selectedSection != IntegrationSettingsSection.Hub) {
         onSelectSection(IntegrationSettingsSection.Hub)
     }
+    val homeAssistantFocusRequester = remember { FocusRequester() }
     val hubEntryFocusRequester = when (hubReturnSection) {
         IntegrationSettingsSection.Hub ->
             initialFocusRequester ?: hubFocusRequester
@@ -1146,6 +1149,7 @@ private fun IntegrationSettingsContent(
         IntegrationSettingsSection.Tmdb -> tmdbFocusRequester
         IntegrationSettingsSection.MdbList -> mdbListFocusRequester
         IntegrationSettingsSection.AnimeSkip -> animeSkipFocusRequester
+        IntegrationSettingsSection.HomeAssistant -> homeAssistantFocusRequester
     }
     val hubEntryTargetSection = hubReturnSection.takeIf {
         it != IntegrationSettingsSection.Hub
@@ -1159,6 +1163,7 @@ private fun IntegrationSettingsContent(
             IntegrationSettingsSection.Tmdb -> tmdbFocusRequester
             IntegrationSettingsSection.MdbList -> mdbListFocusRequester
             IntegrationSettingsSection.AnimeSkip -> animeSkipFocusRequester
+            IntegrationSettingsSection.HomeAssistant -> homeAssistantFocusRequester
         }
         runCatching { requester.requestFocus() }
     }
@@ -1237,6 +1242,19 @@ private fun IntegrationSettingsContent(
                                     }
                                 )
                             }
+                            item(key = "integration_hub_home_assistant") {
+                                SettingsActionRow(
+                                    title = stringResource(R.string.ha_title),
+                                    subtitle = stringResource(R.string.ha_hub_subtitle),
+                                    leadingIcon = Icons.Default.Home,
+                                    onClick = { onSelectSection(IntegrationSettingsSection.HomeAssistant) },
+                                    modifier = if (hubEntryTargetSection == IntegrationSettingsSection.HomeAssistant) {
+                                        Modifier.focusRequester(hubEntryFocusRequester)
+                                    } else {
+                                        Modifier
+                                    }
+                                )
+                            }
                         }
                         SettingsVerticalScrollIndicators(state = integrationHubState)
                     }
@@ -1265,6 +1283,12 @@ private fun IntegrationSettingsContent(
         IntegrationSettingsSection.AnimeSkip -> {
             AnimeSkipSettingsContent(
                 initialFocusRequester = animeSkipFocusRequester
+            )
+        }
+
+        IntegrationSettingsSection.HomeAssistant -> {
+            HomeAssistantSettingsContent(
+                initialFocusRequester = homeAssistantFocusRequester
             )
         }
     }

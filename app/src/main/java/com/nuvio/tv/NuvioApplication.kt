@@ -51,6 +51,7 @@ class NuvioApplication : Application(), SingletonImageLoader.Factory {
     @Inject lateinit var imagePerformancePreferences: ImagePerformancePreferences
     @Inject lateinit var simklAnimeIdPreferenceHolder: SimklAnimeIdPreferenceHolder
     @Inject lateinit var serverUserStateProjection: ServerUserStateProjection
+    @Inject lateinit var homeAssistantBridge: com.nuvio.tv.core.homeassistant.HaMqttBridge
 
     companion object {
         /**
@@ -98,6 +99,7 @@ class NuvioApplication : Application(), SingletonImageLoader.Factory {
         com.nuvio.tv.livetv.data.ForkDns.init(this)
         androidTvChannelSyncService.start()
         serverUserStateProjection.start()
+        homeAssistantBridge.start()
         // Load locale synchronously so it's available before Activity.attachBaseContext.
         // SharedPreferences reads are fast (cached in memory after first access).
         val tag = getSharedPreferences("app_locale", Context.MODE_PRIVATE)

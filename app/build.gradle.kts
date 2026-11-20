@@ -664,6 +664,9 @@ dependencies {
     // QR code + local server for addon management
     implementation(libs.nanohttpd)
     implementation(libs.zxing.core)
+    // Home Assistant: MQTT client + app foreground/background state
+    implementation(libs.paho.mqtt)
+    implementation(libs.androidx.lifecycle.process)
 
 
     // Supabase

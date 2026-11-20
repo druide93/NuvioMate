@@ -283,6 +283,7 @@ class PlayerRuntimeController(
     fun getCurrentHeaders(): Map<String, String> = currentHeaders
 
     fun stopAndRelease() {
+        com.nuvio.tv.core.homeassistant.VodNowPlaying.clear(this)
         vpnSettingsSubscription.close()
         leavePartyPlayback()
         // Cache counters only reach the card on a natural finish, so capture them when the user exits too.
@@ -360,6 +361,13 @@ class PlayerRuntimeController(
                 .collect { isPlaying ->
                     com.nuvio.tv.core.recommendations.TvRecommendationManager.isPlaybackActive.value = isPlaying
                 }
+        }
+        // NuvioMate: tells Home Assistant what this player is showing.
+        scope.launch {
+            _uiState
+                .map { buildHomeAssistantNowPlaying(it) }
+                .distinctUntilChanged()
+                .collect { com.nuvio.tv.core.homeassistant.VodNowPlaying.publish(this@PlayerRuntimeController, it) }
         }
     }
 
@@ -877,6 +885,7 @@ class PlayerRuntimeController(
     }
 
     fun onCleared() {
+        com.nuvio.tv.core.homeassistant.VodNowPlaying.clear(this)
         playerSession.close()
         stopServerPlayback()
         releasePlayer()
