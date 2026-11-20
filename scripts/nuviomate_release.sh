@@ -2,7 +2,8 @@
 # NuvioMate: builds a new release that the in-app updater offers.
 #
 # The app checks the GitHub releases of druide93/NuvioMate. This script:
-#   1. picks the next version, e.g. "1.2.0-beta.2.mate.3" (Nuvio's base version + our build number),
+#   1. picks the next version, e.g. "1.2.0-beta.2.nuviomate.1.3" (Nuvio's base version, untouched,
+#      + NuvioMate's own version X.Y),
 #   2. builds the release APKs (signed with the release key, so they update the installed NuvioMate),
 #   3. copies them to ../apk-nuviomate/<version>/ with names the updater understands,
 #   4. tags the commit with the version.
@@ -15,6 +16,7 @@
 # Usage (from the repository root):
 #   scripts/nuviomate_release.sh            build the next version, to publish as a stable release
 #   scripts/nuviomate_release.sh --beta     the same, to publish as a beta (GitHub page opens pre-ticked)
+#   scripts/nuviomate_release.sh --major    NuvioMate X + 1 (e.g. 1.4 -> 2.0) instead of Y + 1
 #   scripts/nuviomate_release.sh --dry-run  only show which version would be built
 set -euo pipefail
 
@@ -22,39 +24,52 @@ cd "$(dirname "$0")/.."
 ROOT_PARENT="$(cd .. && pwd)"
 DRY_RUN=false
 BETA=false
+MAJOR=false
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
     --beta) BETA=true ;;
-    *) echo "Unknown option: $arg (use --beta and/or --dry-run)" >&2; exit 1 ;;
+    --major) MAJOR=true ;;
+    *) echo "Unknown option: $arg (use --beta, --major and/or --dry-run)" >&2; exit 1 ;;
   esac
 done
 
 export JAVA_HOME="${JAVA_HOME_NUVIOMATE:-$ROOT_PARENT/jdk17/jdk-17.0.21+9/Contents/Home}"
 export NUVIO_GO="${NUVIO_GO:-$ROOT_PARENT/go-sdk/go/bin/go}"
 
-# Nuvio's base version, e.g. "1.2.0-beta.2".
+# Nuvio's base version, e.g. "1.2.0-beta.2". It is never changed: NuvioMate's own version goes after it.
 BASE=$(grep -m1 -E '^\s*versionName = "' app/build.gradle.kts | sed -E 's/.*"(.*)".*/\1/')
 [ -n "$BASE" ] || { echo "Couldn't read versionName from app/build.gradle.kts" >&2; exit 1; }
-# "1.2.0-beta.2" -> "1.2.0-beta.2.mate.N"; "1.2.0" -> "1.2.0-mate.N" (always newer than the base).
+# "1.2.0-beta.2" -> "1.2.0-beta.2.nuviomate.X.Y"; "1.2.0" -> "1.2.0-nuviomate.X.Y" (always newer than the base,
+# and newer than the earlier "<base>.mate.N" releases).
 case "$BASE" in
-  *-*) PREFIX="$BASE.mate." ;;
-  *)   PREFIX="$BASE-mate." ;;
+  *-*) PREFIX="$BASE.nuviomate." ;;
+  *)   PREFIX="$BASE-nuviomate." ;;
 esac
 
-# Next build number: one more than the highest tag already made here or on GitHub.
-LAST=0
-for tag in $(git tag --list "${PREFIX}*") \
-           $(git ls-remote --tags origin "refs/tags/${PREFIX}*" 2>/dev/null | sed -E 's#.*refs/tags/##; s#\^\{\}##'); do
-  n="${tag#"$PREFIX"}"
-  case "$n" in ''|*[!0-9]*) continue ;; esac
-  [ "$n" -gt "$LAST" ] && LAST=$n
+# Every NuvioMate tag made here or on GitHub.
+ALL_TAGS=$( { git tag --list
+              git ls-remote --tags origin 2>/dev/null | sed -E 's#.*refs/tags/##; s#\^\{\}##'; } | sort -u)
+
+# NuvioMate's own version X.Y goes on across Nuvio bases: Y + 1 each release, --major for X + 1 (Y back to 0).
+# The first release before this scheme ("1.2.0-beta.2.mate.1") counts as 1.0.
+MAJ=1; MIN=0
+for tag in $(printf '%s\n' "$ALL_TAGS" | grep -E '[.-]nuviomate\.[0-9]+\.[0-9]+$' || true); do
+  xy="${tag##*nuviomate.}"; x="${xy%%.*}"; y="${xy#*.}"
+  if [ "$x" -gt "$MAJ" ] || { [ "$x" -eq "$MAJ" ] && [ "$y" -gt "$MIN" ]; }; then MAJ=$x; MIN=$y; fi
 done
-N=$((LAST + 1))
+if $MAJOR; then MAJ=$((MAJ + 1)); MIN=0; else MIN=$((MIN + 1)); fi
+VERSION="$PREFIX$MAJ.$MIN"
+if printf '%s\n' "$ALL_TAGS" | grep -qxF "$VERSION"; then
+  echo "Tag $VERSION already exists" >&2; exit 1
+fi
+
+# Build number for Android's versionCode (Nuvio's code x 100 + N): one more per release on this Nuvio base,
+# old "<base>.mate.N" tags included, so each release installs as an upgrade.
+N=$(( $(printf '%s\n' "$ALL_TAGS" | grep -cE "^${BASE//./\\.}[.-](nuvio)?mate\.[0-9.]+$" || true) + 1 ))
 [ "$N" -le 99 ] || { echo "Too many NuvioMate builds on Nuvio $BASE (max 99)" >&2; exit 1; }
-VERSION="$PREFIX$N"
 KIND=stable; $BETA && KIND=beta
-echo "Nuvio base $BASE -> NuvioMate $VERSION (build $N), $KIND"
+echo "Nuvio base $BASE -> NuvioMate $VERSION (NuvioMate $MAJ.$MIN, versionCode build $N), $KIND"
 $DRY_RUN && exit 0
 
 # Releases are made from main only: work happens on dev, then dev is merged into main.
