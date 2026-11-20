@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,7 +53,8 @@ enum class HaFailure { BAD_CREDENTIALS, UNREACHABLE, TIMEOUT, OTHER }
 class HaMqttBridge @Inject constructor(
     private val settingsStore: HomeAssistantSettingsDataStore,
     private val hub: dagger.Lazy<NowPlayingHub>,
-    private val profileManager: ProfileManager
+    private val profileManager: ProfileManager,
+    private val live: dagger.Lazy<com.nuvio.tv.livetv.player.LiveTvPlaybackController>
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val _status = MutableStateFlow<HaConnectionStatus>(HaConnectionStatus.Off)
@@ -79,12 +81,17 @@ class HaMqttBridge @Inject constructor(
             return
         }
         val discovery = HaDiscovery(settings.deviceId, settings.deviceName, settings.discoveryPrefix, BuildConfig.VERSION_NAME)
+        val player = HaMediaPlayer(settings.deviceId, settings.deviceName, settings.discoveryPrefix)
         val client = MqttAsyncClient("tcp://${settings.host}:${settings.port}", "nuviomate-${settings.deviceId}", MemoryPersistence())
         val connected = MutableStateFlow(false)
         client.setCallback(object : MqttCallbackExtended {
             override fun connectComplete(reconnect: Boolean, serverURI: String?) {
                 // Discovery first, so the entities exist before their first state arrives.
                 publish(client, discovery.discoveryTopic, discovery.discoveryPayload())
+                // The media player card, through the "MQTT Media Player" integration (ignored without it).
+                publish(client, player.discoveryTopic, player.discoveryPayload())
+                runCatching { client.subscribe(player.commandFilter, 1) }
+                    .onFailure { Log.w(TAG, "MQTT subscribe failed: ${it.message}") }
                 publish(client, discovery.availabilityTopic, HaDiscovery.ONLINE)
                 _status.value = HaConnectionStatus.Connected
                 connected.value = true
@@ -95,7 +102,11 @@ class HaMqttBridge @Inject constructor(
                 _status.value = HaConnectionStatus.Connecting
             }
 
-            override fun messageArrived(topic: String?, message: MqttMessage?) = Unit
+            override fun messageArrived(topic: String?, message: MqttMessage?) {
+                val command = topic?.let(HaCommand::ofTopic) ?: return
+                Log.i(TAG, "Command from Home Assistant: $command")
+                scope.launch(Dispatchers.Main) { runCatching { handleCommand(command) } }
+            }
             override fun deliveryComplete(token: IMqttDeliveryToken?) = Unit
         })
         val options = MqttConnectOptions().apply {
@@ -123,15 +134,28 @@ class HaMqttBridge @Inject constructor(
                     wait = (wait * 2).coerceAtMost(MAX_RETRY_MS)
                 }
             }
-            combine(hub.get().nowPlaying, profileManager.activeProfileId, profileManager.profiles, connected) { now, id, profiles, up ->
-                Snapshot(now, profiles.firstOrNull { it.id == id }?.name, up)
-            }
-                .filter { it.connected }
-                .debounce(PUBLISH_DEBOUNCE_MS)
-                .collect { snapshot ->
-                    publish(client, discovery.stateTopic, discovery.statePayload(snapshot.now, snapshot.profileName))
-                    publish(client, discovery.imageTopic, discovery.imageUrl(snapshot.now))
+            coroutineScope {
+                // The media player's picture: Home Assistant wants the image itself (base64), so
+                // it's fetched here, once per poster or logo.
+                launch {
+                    combine(hub.get().nowPlaying, connected) { now, up -> discovery.imageUrl(now) to up }
+                        .filter { it.second }
+                        .distinctUntilChanged()
+                        .collectLatest { (url, _) ->
+                            albumArt(url)?.let { publish(client, player.albumArtTopic, it) }
+                        }
                 }
+                combine(hub.get().nowPlaying, profileManager.activeProfileId, profileManager.profiles, connected) { now, id, profiles, up ->
+                    Snapshot(now, profiles.firstOrNull { it.id == id }?.name, up)
+                }
+                    .filter { it.connected }
+                    .debounce(PUBLISH_DEBOUNCE_MS)
+                    .collect { snapshot ->
+                        publish(client, discovery.stateTopic, discovery.statePayload(snapshot.now, snapshot.profileName))
+                        publish(client, discovery.imageTopic, discovery.imageUrl(snapshot.now))
+                        player.statePayloads(snapshot.now).forEach { (topic, payload) -> publish(client, topic, payload) }
+                    }
+            }
         } finally {
             withContext(NonCancellable) {
                 runCatching {
@@ -143,6 +167,46 @@ class HaMqttBridge @Inject constructor(
                 runCatching { client.close(true) }
             }
         }
+    }
+
+    /** Runs a command from Home Assistant's media player on whatever is playing (main thread). */
+    private fun handleCommand(command: HaCommand) {
+        val now = hub.get().nowPlaying.value
+        if (now.activity == NowPlayingActivity.NONE) return
+        val isVod = VodNowPlaying.state.value != null
+        val playing = now.status == NowPlayingStatus.PLAYING || now.status == NowPlayingStatus.LOADING
+        val toggle = when (command) {
+            HaCommand.PLAY_PAUSE -> true
+            HaCommand.PLAY -> !playing
+            HaCommand.PAUSE -> playing
+            HaCommand.NEXT, HaCommand.PREVIOUS -> false
+        }
+        when {
+            command == HaCommand.NEXT -> if (!isVod) HaRemoteCommands.zapLive(1)
+            command == HaCommand.PREVIOUS -> if (!isVod) HaRemoteCommands.zapLive(-1)
+            !toggle -> Unit
+            isVod -> HaRemoteCommands.toggleVod()
+            else -> live.get().togglePause()
+        }
+    }
+
+    /** The picture at [url] as base64, or null if it can't be fetched. Kept small: posters and logos. */
+    private suspend fun albumArt(url: String): String? = withContext(Dispatchers.IO) {
+        runCatching {
+            val conn = (java.net.URL(url).openConnection() as java.net.HttpURLConnection).apply {
+                connectTimeout = 6_000
+                readTimeout = 8_000
+                instanceFollowRedirects = true
+            }
+            try {
+                if (conn.responseCode !in 200..299) return@runCatching null
+                val bytes = conn.inputStream.use { it.readBytes() }
+                if (bytes.isEmpty() || bytes.size > MAX_ART_BYTES) null
+                else android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+            } finally {
+                conn.disconnect()
+            }
+        }.onFailure { Log.w(TAG, "Poster fetch failed: ${it.message}") }.getOrNull()
     }
 
     private data class Snapshot(val now: NowPlaying, val profileName: String?, val connected: Boolean)
@@ -170,5 +234,6 @@ class HaMqttBridge @Inject constructor(
         const val CONNECT_TIMEOUT_S = 10
         const val MAX_RETRY_MS = 60_000L
         const val PUBLISH_DEBOUNCE_MS = 400L
+        const val MAX_ART_BYTES = 1_500_000
     }
 }

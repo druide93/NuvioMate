@@ -369,6 +369,10 @@ class PlayerRuntimeController(
                 .distinctUntilChanged()
                 .collect { com.nuvio.tv.core.homeassistant.VodNowPlaying.publish(this@PlayerRuntimeController, it) }
         }
+        // NuvioMate: play/pause from Home Assistant's media player card.
+        scope.launch {
+            com.nuvio.tv.core.homeassistant.HaRemoteCommands.vodToggle.collect { onEvent(PlayerEvent.OnPlayPause) }
+        }
     }
 
     internal fun consumePendingExitReason() {

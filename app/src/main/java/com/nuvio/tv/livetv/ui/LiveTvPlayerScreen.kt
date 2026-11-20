@@ -479,6 +479,10 @@ fun LiveTvPlayerScreen(
     fun zap(direction: Int) {
         viewModel.zap(playback.channelKey, direction)?.let { viewModel.preview(it) }
     }
+    // NuvioMate: next / previous channel from Home Assistant's media player card.
+    LaunchedEffect(Unit) {
+        com.nuvio.tv.core.homeassistant.HaRemoteCommands.liveZap.collect { zap(it) }
+    }
 
     // What's on now, and the poster Nuvio's catalogs would show for it (looked up ahead of time,
     // so it's ready when the info bar opens).
