@@ -41,7 +41,8 @@ class NowPlayingHub @Inject constructor(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val foreground: Flow<Boolean> = ProcessLifecycleOwner.get().lifecycle.currentStateFlow
+    /** True while the app is on screen. */
+    val onScreen: Flow<Boolean> = ProcessLifecycleOwner.get().lifecycle.currentStateFlow
         .map { it.isAtLeast(Lifecycle.State.STARTED) }
         .distinctUntilChanged()
 
@@ -64,7 +65,7 @@ class NowPlayingHub @Inject constructor(
         liveSnapshot(state, program)
     }
 
-    val nowPlaying: StateFlow<NowPlaying> = combine(foreground, VodNowPlaying.state, liveNowPlaying) { onScreen, vod, liveNow ->
+    val nowPlaying: StateFlow<NowPlaying> = combine(onScreen, VodNowPlaying.state, liveNowPlaying) { onScreen, vod, liveNow ->
         if (!onScreen) NowPlaying.NOTHING else vod ?: liveNow ?: NowPlaying.NOTHING
     }
         .distinctUntilChanged()

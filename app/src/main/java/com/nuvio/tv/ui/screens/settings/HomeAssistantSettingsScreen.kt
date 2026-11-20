@@ -3,6 +3,7 @@
 package com.nuvio.tv.ui.screens.settings
 
 import android.view.KeyEvent
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -63,7 +64,7 @@ import com.nuvio.tv.core.qr.QrCodeGenerator
 import com.nuvio.tv.ui.components.NuvioDialog
 import com.nuvio.tv.ui.theme.NuvioTheme
 
-private enum class HaField { BROKER, USERNAME, PASSWORD, DEVICE_NAME }
+private enum class HaField { BROKER, USERNAME, PASSWORD, DEVICE_NAME, API_URL, TOKEN }
 
 /** Settings › Integrations › Home Assistant (NuvioMate). */
 @Composable
@@ -71,8 +72,37 @@ fun HomeAssistantSettingsContent(
     viewModel: HomeAssistantSettingsViewModel = hiltViewModel(),
     initialFocusRequester: FocusRequester? = null
 ) {
+    // A small back stack: Lights can be opened from the main page or from the ambiance.
+    var stack by remember { mutableStateOf(listOf<HaPage>(HaPage.Main)) }
+    BackHandler(enabled = stack.size > 1) { stack = stack.dropLast(1) }
+    val open: (HaPage) -> Unit = { stack = stack + it }
+    when (val current = stack.last()) {
+        HaPage.Main -> HomeAssistantMainPage(
+            viewModel = viewModel,
+            initialFocusRequester = initialFocusRequester,
+            onOpen = open
+        )
+        HaPage.Lights -> HaLightsPage(viewModel)
+        HaPage.Ambiance -> HaAmbiancePage(
+            viewModel = viewModel,
+            onOpenLights = { open(HaPage.Lights) },
+            onOpenLight = { open(HaPage.Light(it)) }
+        )
+        is HaPage.Light -> HaLightPage(viewModel, current.entityId)
+    }
+}
+
+@Composable
+private fun HomeAssistantMainPage(
+    viewModel: HomeAssistantSettingsViewModel,
+    initialFocusRequester: FocusRequester?,
+    onOpen: (HaPage) -> Unit
+) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val status by viewModel.status.collectAsStateWithLifecycle()
+    val ambiance by viewModel.ambiance.collectAsStateWithLifecycle()
+    val apiCheck by viewModel.apiCheck.collectAsStateWithLifecycle()
+    val hasToken by viewModel.hasLongLivedToken.collectAsStateWithLifecycle()
     var editing by remember { mutableStateOf<HaField?>(null) }
     var phoneSetup by remember { mutableStateOf(false) }
     val notSet = stringResource(R.string.mdblist_not_set)
@@ -150,6 +180,53 @@ fun HomeAssistantSettingsContent(
                             onClick = { editing = HaField.DEVICE_NAME }
                         )
                     }
+                    item(key = "ha_lights_label") {
+                        SettingsSectionLabel(
+                            text = stringResource(R.string.ha_lights_section),
+                            description = stringResource(R.string.ha_lights_section_desc)
+                        )
+                    }
+                    item(key = "ha_ambiance") {
+                        SettingsActionRow(
+                            title = stringResource(R.string.ha_amb_title),
+                            subtitle = stringResource(R.string.ha_amb_row_subtitle),
+                            value = stringResource(if (ambiance.enabled) R.string.ha_amb_on else R.string.ha_amb_off),
+                            onClick = { onOpen(HaPage.Ambiance) }
+                        )
+                    }
+                    item(key = "ha_lights") {
+                        SettingsActionRow(
+                            title = stringResource(R.string.ha_lights_title),
+                            subtitle = stringResource(R.string.ha_lights_row_subtitle),
+                            value = stringResource(R.string.ha_lights_value, ambiance.lights.size),
+                            onClick = { onOpen(HaPage.Lights) }
+                        )
+                    }
+                    item(key = "ha_api_check") {
+                        SettingsActionRow(
+                            title = stringResource(R.string.ha_api_check_title),
+                            subtitle = stringResource(R.string.ha_api_check_subtitle),
+                            value = apiCheckText(apiCheck),
+                            valueColor = if (apiCheck is HaApiCheck.Ok) NuvioTheme.colors.Primary else NuvioTheme.colors.TextSecondary,
+                            onClick = { viewModel.checkApi() }
+                        )
+                    }
+                    item(key = "ha_api_url") {
+                        SettingsActionRow(
+                            title = stringResource(R.string.ha_api_url_title),
+                            subtitle = stringResource(R.string.ha_api_url_subtitle),
+                            value = settings.apiBase.ifBlank { notSet },
+                            onClick = { editing = HaField.API_URL }
+                        )
+                    }
+                    item(key = "ha_token") {
+                        SettingsActionRow(
+                            title = stringResource(R.string.ha_token_title),
+                            subtitle = stringResource(R.string.ha_token_subtitle),
+                            value = if (hasToken) "••••••" else notSet,
+                            onClick = { editing = HaField.TOKEN }
+                        )
+                    }
                 }
                 SettingsVerticalScrollIndicators(state = listState)
             }
@@ -165,12 +242,18 @@ fun HomeAssistantSettingsContent(
                 HaField.USERNAME -> stringResource(R.string.ha_username_title) to settings.username
                 HaField.PASSWORD -> stringResource(R.string.ha_password_title) to ""
                 HaField.DEVICE_NAME -> stringResource(R.string.ha_device_name_title) to settings.deviceName
+                HaField.API_URL -> stringResource(R.string.ha_api_url_title) to settings.apiUrl
+                HaField.TOKEN -> stringResource(R.string.ha_token_title) to ""
             }
             HaTextDialog(
                 title = title,
                 initialValue = initial,
-                placeholder = if (field == HaField.BROKER) stringResource(R.string.ha_broker_placeholder) else "",
-                isPassword = field == HaField.PASSWORD,
+                placeholder = when (field) {
+                    HaField.BROKER -> stringResource(R.string.ha_broker_placeholder)
+                    HaField.API_URL -> settings.apiBase.ifBlank { stringResource(R.string.ha_api_url_placeholder) }
+                    else -> ""
+                },
+                isPassword = field == HaField.PASSWORD || field == HaField.TOKEN,
                 onDismiss = { editing = null },
                 onSave = { value ->
                     when (field) {
@@ -178,6 +261,8 @@ fun HomeAssistantSettingsContent(
                         HaField.USERNAME -> viewModel.setUsername(value)
                         HaField.PASSWORD -> viewModel.setPassword(value)
                         HaField.DEVICE_NAME -> viewModel.setDeviceName(value)
+                        HaField.API_URL -> viewModel.setApiUrl(value)
+                        HaField.TOKEN -> viewModel.setLongLivedToken(value)
                     }
                     editing = null
                 }
@@ -188,6 +273,15 @@ fun HomeAssistantSettingsContent(
     if (phoneSetup) {
         HaPhoneSetupDialog(viewModel = viewModel, onDismiss = { phoneSetup = false })
     }
+}
+
+@Composable
+private fun apiCheckText(check: HaApiCheck): String = when (check) {
+    HaApiCheck.Unknown -> stringResource(R.string.ha_api_check_unknown)
+    HaApiCheck.Checking -> stringResource(R.string.ha_api_check_checking)
+    is HaApiCheck.Ok -> if (check.user.isAdmin) stringResource(R.string.ha_api_check_admin, check.user.name)
+        else stringResource(R.string.ha_api_check_ok, check.user.name)
+    is HaApiCheck.Failed -> apiFailureText(check.reason)
 }
 
 @Composable
