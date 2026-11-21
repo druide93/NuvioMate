@@ -29,6 +29,78 @@ import com.nuvio.tv.livetv.stalker.StalkerMimeProbe
 internal const val REPLAY_LIST_TARGET_SEC = 10
 
 /**
+ * How much of a replay's save is asked for again when it carries on over a new connection, and
+ * checked to be the very bytes already saved. Some providers make the replay afresh for each
+ * request: "the same byte" is then another moment of the show (seen: the picture froze and the
+ * sound went 35 s back), so it can't be carried on that way.
+ */
+internal const val SPLICE_CHECK_BYTES = 188 * 1024
+
+/** The last bytes written, up to [size] (see [SPLICE_CHECK_BYTES]). */
+internal class SavedTail(private val size: Int) {
+    private val ring = ByteArray(size)
+    private var next = 0
+    /** How many bytes it holds (at most [size]). */
+    var filled = 0
+        private set
+
+    fun add(b: ByteArray, off: Int, len: Int) {
+        if (len >= size) {
+            System.arraycopy(b, off + len - size, ring, 0, size)
+            next = 0; filled = size
+            return
+        }
+        val first = minOf(len, size - next)
+        System.arraycopy(b, off, ring, next, first)
+        if (len > first) System.arraycopy(b, off + first, ring, 0, len - first)
+        next = (next + len) % size
+        filled = minOf(size, filled + len)
+    }
+
+    /** The last [n] bytes written, oldest first ([n] at most [filled]). */
+    fun last(n: Int): ByteArray {
+        require(n in 0..filled)
+        val out = ByteArray(n)
+        val start = ((next - n) % size + size) % size
+        val first = minOf(n, size - start)
+        System.arraycopy(ring, start, out, 0, first)
+        if (n > first) System.arraycopy(ring, 0, out, first, n - first)
+        return out
+    }
+}
+
+/** [len] bytes of [a] from [aOff] are the same as those of [b] from [bOff]. */
+internal fun sameBytes(a: ByteArray, aOff: Int, b: ByteArray, bOff: Int, len: Int): Boolean {
+    for (i in 0 until len) if (a[aOff + i] != b[bOff + i]) return false
+    return true
+}
+
+/**
+ * Whether a replay's save, coming in at [rate] (seconds of show saved per second over the last
+ * 20 s) after a best of [peakRate], should carry on over a new connection: it came fast, then the
+ * provider slowed it right down (seen: 17x, then 1.2x after about 16 minutes); a new connection
+ * may get full speed again. Not for a save that's simply slow, even well under real time: on
+ * providers that make the replay afresh for each request it can't be carried on (see
+ * [SPLICE_CHECK_BYTES]), and asking each time cost a 12 s stop and a replay from the whole minute,
+ * over and over (tried, then dropped).
+ */
+internal fun replaySaveThrottled(peakRate: Double, rate: Double): Boolean =
+    peakRate >= 4.0 && rate < 2.0 && rate < peakRate * 0.4
+
+/**
+ * Providers (by host) that sent other bytes when a replay was carried on from the middle (see
+ * [SPLICE_CHECK_BYTES]): a new connection there only ends the save, so none is asked for again
+ * until the app restarts.
+ */
+private val RESENDING_HOSTS: MutableSet<String> = java.util.Collections.synchronizedSet(HashSet())
+
+private fun hostOf(url: String): String? = runCatching { java.net.URI(url).host?.lowercase() }.getOrNull()
+
+internal fun providerResends(url: String): Boolean = hostOf(url)?.let { it in RESENDING_HOSTS } == true
+
+internal fun markProviderResends(url: String) { hostOf(url)?.let { RESENDING_HOSTS += it } }
+
+/**
  * Pause and rewind live TV, for channels without catch-up: when you pause, the channel is
  * recorded to the device (one connection to the provider, the same one playback used), and
  * play continues from the recording, behind live. "Go live" drops it.
@@ -249,6 +321,9 @@ class LiveTvTimeshift(private val context: Context) {
         // known yet), and when the last new connection for full speed was asked for.
         var rangeWorks: Boolean? = null
         var lastBoostAt = 0L
+        // The end of what's saved, and whether carrying on brought other bytes than those.
+        val tail = SavedTail(SPLICE_CHECK_BYTES)
+        var spliceBroken = false
         try {
             // Keeps going until you go live or change channel: a dropped connection is opened
             // again, with the gap marked, instead of ending the buffer (which sent you back to
@@ -274,7 +349,11 @@ class LiveTvTimeshift(private val context: Context) {
                         throw java.io.IOException("The Stalker stream changed its buffer format. Retry playback.")
                     }
                     if (fresh != null) { if (policy !== fresh.policy) policy?.retire(); policy = fresh.policy }
-                    val requestHeaders = if (resuming) headers + ("Range" to "bytes=$totalBytes-") else headers
+                    // Carrying on: asked from a little before where it stopped, so the first bytes
+                    // can be checked against the end of what's saved (see [SavedTail]).
+                    val overlap = if (resuming) minOf(tail.filled.toLong(), totalBytes, SPLICE_CHECK_BYTES.toLong()).toInt() else 0
+                    val expected = if (overlap > 0) tail.last(overlap) else null
+                    val requestHeaders = if (resuming) headers + ("Range" to "bytes=${totalBytes - overlap}-") else headers
                     // Sent from here on: even a request cut (by [stop]) or failed before the provider
                     // answered counts as a connection the provider has to see go.
                     opened = true
@@ -293,7 +372,10 @@ class LiveTvTimeshift(private val context: Context) {
                             else -> {
                                 // The provider sent the replay from its start again (it can't carry on
                                 // from the middle): what's already saved is read again and skipped.
-                                var skip = if (resuming && code == 200) totalBytes else 0L
+                                var skip = if (resuming && code == 200) totalBytes - overlap else 0L
+                                // The overlap, still to be checked: it must be the very bytes saved.
+                                var verified = 0
+                                val verify = expected?.size ?: 0
                                 if (resuming) {
                                     rangeWorks = code == 206
                                     report.add(
@@ -334,10 +416,23 @@ class LiveTvTimeshift(private val context: Context) {
                                             if (off == n) continue
                                             checkAt = System.currentTimeMillis(); checkSaved = savedMs
                                         }
+                                        if (verified < verify && expected != null) {
+                                            val k = minOf(n - off, verify - verified)
+                                            if (!sameBytes(buf, off, expected, verified, k)) {
+                                                spliceBroken = true
+                                                end = "the provider sent other bytes where the save stopped"
+                                                break
+                                            }
+                                            verified += k
+                                            off += k
+                                            if (off == n) continue
+                                            checkAt = System.currentTimeMillis(); checkSaved = savedMs
+                                        }
                                         val m = n - off
                                         bytes += m
                                         totalBytes += m
                                         segmenter.write(buf, off, m)
+                                        tail.add(buf, off, m)
                                         // Only for the save still going: one just replaced (a skip
                                         // asking the provider again) wrote its own length over the new
                                         // save's for a moment, which a replay's copy waits on to start.
@@ -370,9 +465,10 @@ class LiveTvTimeshift(private val context: Context) {
                                         if (!reconnect && nowMs - checkAt >= 20_000) {
                                             val rate = (savedMs - checkSaved) / (nowMs - checkAt).toDouble()
                                             checkAt = nowMs; checkSaved = savedMs
-                                            val throttled = peakRate >= 4.0 && rate < 2.0 && rate < peakRate * 0.4
+                                            val throttled = replaySaveThrottled(peakRate, rate)
                                             if (rate > peakRate) peakRate = rate
-                                            if (throttled && rangeWorks != false && nowMs - lastBoostAt >= 60_000) {
+                                            // Not on a provider that sent other bytes when carried on: it only ends the save there.
+                                            if (throttled && rangeWorks != false && !providerResends(url) && nowMs - lastBoostAt >= 60_000) {
                                                 lastBoostAt = nowMs
                                                 end = "slowed to ${String.format(java.util.Locale.US, "%.1f", rate)}x real time; new connection for full speed"
                                                 break
@@ -397,6 +493,15 @@ class LiveTvTimeshift(private val context: Context) {
                 }
                 if (!alive(dir)) break
                 if (!reconnect) {
+                    // The provider makes this replay afresh for each request (not the same file):
+                    // what it sent from "the same byte" was another moment of the show. Spliced on,
+                    // the picture froze and the sound jumped 35 s back. The save ends where it got
+                    // to, and playback asks again from there, by time.
+                    if (spliceBroken) {
+                        markProviderResends(url)
+                        report.add("$label: the provider doesn't send this replay the same way twice; it can't be carried on, so the save ends at ${savedMs / 1000}s ($why)")
+                        break
+                    }
                     if (knownLength > 0 && totalBytes >= knownLength) complete = true
                     if (bytes > 0) resumeTries = 0 else if (resuming) resumeTries++
                     // Saved to its end, or it can't be carried on (playback then asks the provider

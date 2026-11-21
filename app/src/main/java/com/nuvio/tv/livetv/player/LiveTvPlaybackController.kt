@@ -290,15 +290,33 @@ class LiveTvPlaybackController @Inject constructor(
             if (replayCache.session != session || currentUrl != url) return@launch
             archiveStartPending = true
             if (!f.exists() || f.length() == 0L) {
-                // Nothing came in to save: play it straight from the provider, as before (any
-                // other links for this replay are tried from there if it fails).
-                com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: nothing came in to save; playing it directly")
+                // The save was still waiting after 15 s (the provider sent nothing, as opposed to
+                // refusing): the same link played straight would wait for the same nothing. The
+                // next link goes at once instead. Seen: playing it straight waited 15 s more, and
+                // with the links after it, the replay took 90 s to play again (the last link, a
+                // different kind, answered in 0.2 s).
+                val timedOut = replayCache.isRecording
+                val next = if (timedOut) fallbackUrls.firstOrNull() else null
+                com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
+                    if (next != null) "Catch-up: nothing came in to save for ${waited / 1000} s; trying ${redact(next)}"
+                    else "Catch-up: nothing came in to save; playing it directly"
+                )
                 replayCache.stop()
                 // Once the save has let go of its connection (see openWhenLineFree).
                 ProviderLine.awaitFree()
                 if (currentUrl != url) return@launch
                 copyStarting = false
-                p.setMediaSource(buildMediaSource(url, channel.headers, isLive = false))
+                if (next != null && fallbackUrls.firstOrNull() == next) {
+                    fallbackUrls.removeFirst()
+                    hlsCatchupFailedOn = null
+                    currentUrl = next
+                    // A TS link: saved while it plays, like the one before (this job is replaced).
+                    if (saveFallback(channel, next)) return@launch
+                    lastProgressAt = android.os.SystemClock.elapsedRealtime()
+                    p.setMediaSource(buildMediaSource(next, channel.headers, isLive = false))
+                } else {
+                    p.setMediaSource(buildMediaSource(url, channel.headers, isLive = false))
+                }
             } else {
                 val startAt = copyStartPoint()
                 if (replayCache.session != session || currentUrl != url) return@launch
