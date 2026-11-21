@@ -588,6 +588,9 @@ fun LiveTvPlayerScreen(
     }
     LaunchedEffect(sportsEligible) { if (!sportsEligible) sportsGamesOpen = false }
     val pinList = com.nuvio.tv.livetv.sports.SportsLive.pins.collectAsState().value
+    // Home Assistant's Cinéma ambiance: a button once lights are chosen, lit while it runs.
+    val ambianceInBar = viewModel.ambiance.available.collectAsState(initial = false).value
+    val ambianceOn = viewModel.ambiance.running.collectAsState().value
     // Other copies of this channel for the bar's backup button (live only; hidden channels included).
     val backups = remember(current?.key, panelFull, playback.catchupTitle, backupsTick) {
         current?.takeIf { playback.catchupTitle == null }?.let { viewModel.backupsFor(it) }.orEmpty()
@@ -601,7 +604,7 @@ fun LiveTvPlayerScreen(
     /** The buttons on the bar of controls. */
     fun barControls(): List<PanelControl> {
         val archive = playback.catchupTitle != null
-        return panelControls(barMode(), playback.userPaused, canSkip = archive || viewModel.playback.shiftCanSeek() || liveCatchup, bell = bellInBar, pin = pinGame != null, backups = backups.isNotEmpty(), sports = multiviewEligible, restart = restartInBar, liveSeek = liveCatchup, live = archive && !playingRecording)
+        return panelControls(barMode(), playback.userPaused, canSkip = archive || viewModel.playback.shiftCanSeek() || liveCatchup, bell = bellInBar, pin = pinGame != null, backups = backups.isNotEmpty(), sports = multiviewEligible, restart = restartInBar, liveSeek = liveCatchup, live = archive && !playingRecording, ambiance = ambianceInBar)
     }
     // ▼: the playback controls at the bottom. In a replay
     // (or paused live) the progress bar is grabbed, so ◀ / ▶ go on moving through the show;
@@ -903,6 +906,7 @@ fun LiveTvPlayerScreen(
                                 }
                                 PanelControl.BACKUPS -> dialog = PlayerDialog.BACKUPS
                                 PanelControl.SPORTS -> openMultiview()
+                                PanelControl.AMBIANCE -> toast = if (viewModel.ambiance.toggle()) "Cinéma ambiance on" else "Cinéma ambiance off"
                                 PanelControl.MORE -> openGear()
                                 PanelControl.TIMELINE, null -> Unit
                             }
@@ -1379,7 +1383,7 @@ fun LiveTvPlayerScreen(
                         showPosters = settings.showPosters,
                         timeline = barTimeline,
                         paused = paused,
-                        controls = barButtons ?: panelControls(mode, paused, canSkip = archive || viewModel.playback.shiftCanSeek() || liveCatchup, bell = bellInBar, pin = pinGame != null, backups = backups.isNotEmpty(), sports = multiviewEligible, restart = restartInBar, liveSeek = liveCatchup, live = archive && !playingRecording),
+                        controls = barButtons ?: panelControls(mode, paused, canSkip = archive || viewModel.playback.shiftCanSeek() || liveCatchup, bell = bellInBar, pin = pinGame != null, backups = backups.isNotEmpty(), sports = multiviewEligible, restart = restartInBar, liveSeek = liveCatchup, live = archive && !playingRecording, ambiance = ambianceInBar),
                         onLive = { replayToLive(); controlFocus = PanelControl.PLAY },
                         focused = controlFocus,
                         captionsOn = captionsOn,
@@ -1419,6 +1423,7 @@ fun LiveTvPlayerScreen(
                         hidden = BarPart.hiddenOf(settings.barHidden),
                         bellOn = liveBell?.on == true,
                         pinOn = pinGame != null && pinGame.id in pinList,
+                        ambianceOn = ambianceOn,
                         part = barPart,
                         descriptionLines = barLines,
                         modifier = barModifier

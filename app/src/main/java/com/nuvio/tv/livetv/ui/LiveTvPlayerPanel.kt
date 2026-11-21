@@ -37,6 +37,8 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.filled.Theaters
+import androidx.compose.material.icons.outlined.Theaters
 import androidx.compose.material.icons.filled.Replay30
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SkipPrevious
@@ -84,7 +86,7 @@ internal enum class PanelPart { ALL, CONTROLS }
  * the timeline, back to the start, back 30, play/pause, forward 30 and the gear; the rest are
  * kept for the keys that still name them, and live in the gear panel.
  */
-internal enum class PanelControl { TIMELINE, RESTART, BACK, PLAY, FORWARD, LIVE, CC, AUDIO, SIZE, SLEEP, PIN, BELL, BACKUPS, SPORTS, MORE }
+internal enum class PanelControl { TIMELINE, RESTART, BACK, PLAY, FORWARD, LIVE, CC, AUDIO, SIZE, SLEEP, PIN, BELL, BACKUPS, SPORTS, AMBIANCE, MORE }
 
 /** Timeline: everything in wall-clock milliseconds. */
 internal data class PanelTimeline(
@@ -154,7 +156,7 @@ internal object BarPart {
  * [liveSeek]: live on a catch-up channel, which can skip back through catch-up (so the bar moves even live).
  * [live]: a replay, which can go back to the channel live (a "Live" button beside the gear).
  */
-internal fun panelControls(mode: PanelMode, paused: Boolean, canSkip: Boolean, bell: Boolean = false, pin: Boolean = false, backups: Boolean = false, sports: Boolean = false, restart: Boolean = false, liveSeek: Boolean = false, live: Boolean = false): List<PanelControl> = buildList {
+internal fun panelControls(mode: PanelMode, paused: Boolean, canSkip: Boolean, bell: Boolean = false, pin: Boolean = false, backups: Boolean = false, sports: Boolean = false, restart: Boolean = false, liveSeek: Boolean = false, live: Boolean = false, ambiance: Boolean = false): List<PanelControl> = buildList {
     val transport = mode != PanelMode.LIVE || paused || liveSeek
     // The timeline itself can be grabbed (Up from the buttons) and moved with ◀ / ▶.
     if (transport && canSkip) add(PanelControl.TIMELINE)
@@ -170,6 +172,8 @@ internal fun panelControls(mode: PanelMode, paused: Boolean, canSkip: Boolean, b
     // Other copies of this channel (same name, any quality or playlist), right before the gear.
     if (backups) add(PanelControl.BACKUPS)
     if (sports) add(PanelControl.SPORTS)
+    // Home Assistant: the Cinéma ambiance, on or off now (once lights are chosen).
+    if (ambiance) add(PanelControl.AMBIANCE)
     // A replay: back to the channel live, right before the gear (it was only in the gear panel).
     if (live) add(PanelControl.LIVE)
     add(PanelControl.MORE)
@@ -264,6 +268,8 @@ internal fun LiveTvPlayerPanel(
     bellOn: Boolean = false,
     /** The game on this channel is pinned to the corner (the pin button shows filled). */
     pinOn: Boolean = false,
+    /** The Cinéma ambiance is running (its button shows filled). */
+    ambianceOn: Boolean = false,
     /** Where the backup button is on screen (bounds in the window), so its list can open right above it. */
     onBackupsBounds: (androidx.compose.ui.geometry.Rect) -> Unit = {},
     /** Opens the Sports games, streams and layout controls from the Now Playing bar. */
@@ -297,7 +303,7 @@ internal fun LiveTvPlayerPanel(
 
     if (part == PanelPart.CONTROLS) ControlsBar(
         channel = channel, title = title, timeline = timeline, paused = paused, controls = controls,
-        focused = focused?.takeIf { !inRow }, showNumber = showNumber, bellOn = bellOn, pinOn = pinOn,
+        focused = focused?.takeIf { !inRow }, showNumber = showNumber, bellOn = bellOn, pinOn = pinOn, ambianceOn = ambianceOn,
         onBackupsBounds = onBackupsBounds, onMultiview = onMultiview, onLive = onLive,
         row = if (withRow && rowOpen && selectedTab != null) {
             {
@@ -387,6 +393,13 @@ internal fun LiveTvPlayerPanel(
                             }
                             if (PanelControl.SPORTS in controls) {
                                 RoundButton(Icons.Default.GridView, focused = focused == PanelControl.SPORTS && !inRow, big = false)
+                                Spacer(Modifier.width(8.dp))
+                            }
+                            if (PanelControl.AMBIANCE in controls) {
+                                RoundButton(
+                                    if (ambianceOn) Icons.Default.Theaters else Icons.Outlined.Theaters,
+                                    focused = focused == PanelControl.AMBIANCE && !inRow, big = false
+                                )
                                 Spacer(Modifier.width(8.dp))
                             }
                             if (PanelControl.LIVE in controls) {
@@ -542,6 +555,7 @@ private fun ControlsBar(
     showNumber: Boolean,
     bellOn: Boolean,
     pinOn: Boolean,
+    ambianceOn: Boolean,
     onBackupsBounds: (androidx.compose.ui.geometry.Rect) -> Unit,
     onMultiview: () -> Unit,
     onLive: () -> Unit,
@@ -630,6 +644,8 @@ private fun ControlsBar(
                             PlayerIconButton(Icons.Default.FilterNone, focused = focused == PanelControl.BACKUPS)
                         }
                     if (PanelControl.SPORTS in controls) PlayerIconButton(Icons.Default.GridView, focused = focused == PanelControl.SPORTS)
+                    if (PanelControl.AMBIANCE in controls)
+                        PlayerIconButton(if (ambianceOn) Icons.Default.Theaters else Icons.Outlined.Theaters, focused = focused == PanelControl.AMBIANCE)
                     if (PanelControl.LIVE in controls) LiveBadgeButton(focused = focused == PanelControl.LIVE, onClick = onLive)
                     PlayerIconButton(Icons.Default.Settings, focused = focused == PanelControl.MORE)
                 }

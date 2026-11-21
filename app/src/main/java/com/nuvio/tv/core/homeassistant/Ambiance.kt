@@ -62,6 +62,13 @@ data class LightSetup(
 
 enum class AmbianceMoment { START, PAUSE, END }
 
+/**
+ * The player's Cinéma button. [FORCED_ON]: the ambiance runs on whatever plays (live included),
+ * whatever the kinds, days and times chosen. [FORCED_OFF]: it stays off even where it would
+ * start by itself. Both last until playback stops, then it's [AUTO] again.
+ */
+enum class AmbianceOverride { AUTO, FORCED_ON, FORCED_OFF }
+
 @Serializable
 enum class AmbianceTimeMode { ALWAYS, NIGHT, RANGE }
 
@@ -98,9 +105,13 @@ object AmbianceRules {
     /** Where playback stands for the ambiance; null when it shouldn't change anything (loading). */
     enum class Phase { NONE, PLAYING, PAUSED }
 
-    fun phase(now: NowPlaying, ambiance: Ambiance): Phase? {
-        if (!ambiance.enabled || ambiance.lights.isEmpty()) return Phase.NONE
-        if (now.activity == NowPlayingActivity.NONE || now.activity.haValue !in ambiance.kinds) return Phase.NONE
+    fun phase(now: NowPlaying, ambiance: Ambiance, override: AmbianceOverride = AmbianceOverride.AUTO): Phase? {
+        if (ambiance.lights.isEmpty() || now.activity == NowPlayingActivity.NONE) return Phase.NONE
+        when (override) {
+            AmbianceOverride.FORCED_OFF -> return Phase.NONE
+            AmbianceOverride.FORCED_ON -> Unit
+            AmbianceOverride.AUTO -> if (!ambiance.enabled || now.activity.haValue !in ambiance.kinds) return Phase.NONE
+        }
         return when (now.status) {
             NowPlayingStatus.PLAYING -> Phase.PLAYING
             NowPlayingStatus.PAUSED -> Phase.PAUSED
@@ -109,10 +120,11 @@ object AmbianceRules {
         }
     }
 
-    fun delayBefore(phase: Phase, onScreen: Boolean): Long = when (phase) {
+    /** [switchedOff]: the Cinéma button just ended it, so the lights come back at once. */
+    fun delayBefore(phase: Phase, onScreen: Boolean, switchedOff: Boolean = false): Long = when (phase) {
         Phase.PLAYING -> 0L
         Phase.PAUSED -> PAUSE_DELAY_MS
-        Phase.NONE -> if (onScreen) END_DELAY_MS else END_OFF_SCREEN_DELAY_MS
+        Phase.NONE -> if (switchedOff) 0L else if (onScreen) END_DELAY_MS else END_OFF_SCREEN_DELAY_MS
     }
 
     /** Day and time conditions; [isNight] is null when HA couldn't say (then night-only doesn't apply). */

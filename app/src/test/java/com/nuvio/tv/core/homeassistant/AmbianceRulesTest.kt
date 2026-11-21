@@ -42,6 +42,25 @@ class AmbianceRulesTest {
     }
 
     @Test
+    fun `the Cinema button forces it on live, even switched off, and forces it off on a film`() {
+        val live = film.copy(activity = NowPlayingActivity.LIVE)
+        val off = cinema.copy(enabled = false)
+        assertEquals(AmbianceRules.Phase.PLAYING, AmbianceRules.phase(live, off, AmbianceOverride.FORCED_ON))
+        assertEquals(AmbianceRules.Phase.PAUSED, AmbianceRules.phase(live.copy(status = NowPlayingStatus.PAUSED), off, AmbianceOverride.FORCED_ON))
+        assertNull(AmbianceRules.phase(live.copy(status = NowPlayingStatus.LOADING), off, AmbianceOverride.FORCED_ON))
+        assertEquals(AmbianceRules.Phase.NONE, AmbianceRules.phase(film, cinema, AmbianceOverride.FORCED_OFF))
+        // Nothing playing, or no light chosen: nothing to force.
+        assertEquals(AmbianceRules.Phase.NONE, AmbianceRules.phase(NowPlaying.NOTHING, cinema, AmbianceOverride.FORCED_ON))
+        assertEquals(AmbianceRules.Phase.NONE, AmbianceRules.phase(live, cinema.copy(lights = emptyList()), AmbianceOverride.FORCED_ON))
+    }
+
+    @Test
+    fun `switched off with the button, the lights come back at once`() {
+        assertEquals(0L, AmbianceRules.delayBefore(AmbianceRules.Phase.NONE, true, switchedOff = true))
+        assertEquals(1_500L, AmbianceRules.delayBefore(AmbianceRules.Phase.PAUSED, true, switchedOff = true))
+    }
+
+    @Test
     fun `pause waits, end waits longer, but not once the app left the screen`() {
         assertEquals(0L, AmbianceRules.delayBefore(AmbianceRules.Phase.PLAYING, true))
         assertEquals(1_500L, AmbianceRules.delayBefore(AmbianceRules.Phase.PAUSED, true))

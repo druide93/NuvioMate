@@ -98,7 +98,9 @@ class LiveTvViewModel @Inject constructor(
     driveSync: com.nuvio.tv.livetv.sync.LiveTvDriveSync,
     val recorder: com.nuvio.tv.livetv.record.LiveTvRecorder,
     val scheduler: com.nuvio.tv.livetv.record.LiveTvRecordingScheduler,
-    private val hooks: com.nuvio.tv.livetv.player.LiveTvPlayerHooks
+    private val hooks: com.nuvio.tv.livetv.player.LiveTvPlayerHooks,
+    /** Home Assistant's Cinéma ambiance, for the player's button. */
+    val ambiance: com.nuvio.tv.core.homeassistant.AmbianceEngine
 ) : ViewModel(), com.nuvio.tv.livetv.player.LiveTvPlayerHooks.Owner {
 
     init {

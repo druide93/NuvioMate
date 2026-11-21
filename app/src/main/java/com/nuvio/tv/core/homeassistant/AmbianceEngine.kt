@@ -12,6 +12,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -67,35 +69,68 @@ class AmbianceEngine @Inject constructor(
     )
 
     private var session: Session? = null
+        set(value) { field = value; _running.value = value != null }
     private var previewJob: Job? = null
+
+    /** The player's Cinéma button (see [AmbianceOverride]); back to AUTO when playback stops. */
+    private val override = MutableStateFlow(AmbianceOverride.AUTO)
+
+    private val _running = MutableStateFlow(false)
+    /** True while the lights are in the ambiance (the player's Cinéma button shows lit). */
+    val running: StateFlow<Boolean> = _running.asStateFlow()
+
+    /** The player shows its Cinéma button once at least one light is chosen. */
+    val available: Flow<Boolean> = store.cinema.map { it.lights.isNotEmpty() }.distinctUntilChanged()
+
+    /** One step of playback for the ambiance; [stopped] when nothing plays any more. */
+    private data class Step(val phase: AmbianceRules.Phase?, val onScreen: Boolean, val stopped: Boolean)
 
     fun start() {
         if (started) return
         started = true
         Log.i(TAG, "Ambiance engine started")
         scope.launch {
-            store.cinema.collectLatest { ambiance ->
-                Log.i(TAG, "Ambiance: enabled=${ambiance.enabled} lights=${ambiance.lights.size} kinds=${ambiance.kinds} time=${ambiance.timeMode} days=${ambiance.days}")
-                if (!ambiance.enabled || ambiance.lights.isEmpty()) {
+            combine(store.cinema, override) { ambiance, manual -> ambiance to manual }.collectLatest { (ambiance, manual) ->
+                Log.i(TAG, "Ambiance: enabled=${ambiance.enabled} manual=$manual lights=${ambiance.lights.size} kinds=${ambiance.kinds} time=${ambiance.timeMode} days=${ambiance.days}")
+                if (ambiance.lights.isEmpty() || (!ambiance.enabled && manual != AmbianceOverride.FORCED_ON)) {
                     withContext(NonCancellable) { mutex.withLock { endSession(ambiance) } }
+                    // Switched off by hand while it can't start by itself anyway: nothing left to hold.
+                    if (manual == AmbianceOverride.FORCED_OFF) override.value = AmbianceOverride.AUTO
                     return@collectLatest
                 }
                 val nowPlayingHub = hub.get()
                 combine(nowPlayingHub.nowPlaying, nowPlayingHub.onScreen) { now, onScreen ->
-                    val phase = AmbianceRules.phase(now, ambiance)
-                    Log.d(TAG, "Now: ${now.activity}/${now.status} onScreen=$onScreen -> $phase")
-                    phase to onScreen
+                    val phase = AmbianceRules.phase(now, ambiance, manual)
+                    Log.d(TAG, "Now: ${now.activity}/${now.status} onScreen=$onScreen manual=$manual -> $phase")
+                    Step(phase, onScreen, stopped = now.activity == NowPlayingActivity.NONE)
                 }
-                    .filter { it.first != null }
+                    .filter { it.phase != null }
                     .distinctUntilChanged()
-                    .collectLatest { (phase, onScreen) ->
-                        Log.i(TAG, "Phase $phase (onScreen=$onScreen), acting in ${AmbianceRules.delayBefore(phase!!, onScreen)} ms")
-                        delay(AmbianceRules.delayBefore(phase, onScreen))
+                    .collectLatest { step ->
+                        val phase = step.phase!!
+                        val wait = AmbianceRules.delayBefore(phase, step.onScreen, switchedOff = manual == AmbianceOverride.FORCED_OFF && !step.stopped)
+                        Log.i(TAG, "Phase $phase (onScreen=${step.onScreen}, stopped=${step.stopped}), acting in $wait ms")
+                        delay(wait)
                         // Once started, a step finishes: half the lights changed would be worse than a late change.
-                        withContext(NonCancellable) { mutex.withLock { handle(phase, ambiance) } }
+                        withContext(NonCancellable) {
+                            mutex.withLock { handle(phase, ambiance, manual) }
+                            // Playback is over: the button's choice was for what played.
+                            if (step.stopped && manual != AmbianceOverride.AUTO) override.compareAndSet(manual, AmbianceOverride.AUTO)
+                        }
                     }
             }
         }
+    }
+
+    /**
+     * The player's Cinéma button: ends the ambiance now if it runs, else starts it now on what's
+     * playing (live included, whatever the conditions). Returns true when it's being switched on.
+     */
+    fun toggle(): Boolean {
+        val on = !_running.value
+        override.value = if (on) AmbianceOverride.FORCED_ON else AmbianceOverride.FORCED_OFF
+        Log.i(TAG, "Cinéma button: ${override.value}")
+        return on
     }
 
     /**
@@ -122,15 +157,16 @@ class AmbianceEngine @Inject constructor(
         }
     }
 
-    private suspend fun handle(phase: AmbianceRules.Phase, ambiance: Ambiance) {
+    private suspend fun handle(phase: AmbianceRules.Phase, ambiance: Ambiance, manual: AmbianceOverride) {
         Log.i(TAG, "Handle $phase, session=${session != null}")
         try {
             when (phase) {
                 AmbianceRules.Phase.PLAYING -> {
                     val current = session
                     if (current == null) {
-                        val night = isNight(ambiance)
-                        if (!AmbianceRules.timeAllows(ambiance, LocalDateTime.now(), night)) {
+                        // Started by hand: now, whatever the day and time.
+                        val night = if (manual == AmbianceOverride.FORCED_ON) null else isNight(ambiance)
+                        if (manual != AmbianceOverride.FORCED_ON && !AmbianceRules.timeAllows(ambiance, LocalDateTime.now(), night)) {
                             Log.i(TAG, "Not now: day/time conditions not met (night=$night)")
                             return
                         }
@@ -152,6 +188,8 @@ class AmbianceEngine @Inject constructor(
                     }
                 }
                 AmbianceRules.Phase.PAUSED -> {
+                    // Started by hand on a paused show: the start first, then the pause.
+                    if (session == null && manual == AmbianceOverride.FORCED_ON) handle(AmbianceRules.Phase.PLAYING, ambiance, manual)
                     val current = session ?: return
                     if (current.paused) return
                     current.paused = true
