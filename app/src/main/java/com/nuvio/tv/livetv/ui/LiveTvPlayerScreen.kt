@@ -355,13 +355,16 @@ fun LiveTvPlayerScreen(
     var scrubTargetMs by remember { mutableStateOf<Long?>(null) }
     var scrubToken by remember { mutableIntStateOf(0) }
     var positionMs by remember { mutableStateOf(0L) }
-    // How far you can seek without waiting (saved on the box, or loaded ahead): the bar's lighter part.
+    // The stretch you can seek in without waiting (saved on the box, or loaded ahead), in ms into
+    // the program: the bar shows the part behind where you are in its own colour.
+    var readyFromMs by remember { mutableStateOf<Long?>(null) }
     var readyUntilMs by remember { mutableStateOf<Long?>(null) }
     LaunchedEffect(playback.catchupTitle, catchupSession) {
         while (playback.catchupTitle != null && catchupSession != null) {
             viewModel.followCatchup()
             viewModel.catchupPositionMs()?.let { positionMs = it }
             readyUntilMs = viewModel.catchupReadyUntilMs()
+            readyFromMs = viewModel.catchupReadyFromMs()
             delay(500)
         }
     }
@@ -1278,7 +1281,14 @@ fun LiveTvPlayerScreen(
                             rightLabel = formatClock(session.program.stopMs, use24h),
                             status = formatDuration(pos) + " / " + formatDuration(len) +
                                 (if (behind < 12 * 3_600_000L) "  ·  " + LiveTvTexts.trf("{0} behind live", formatDuration(behind)) else ""),
-                            statusLive = stillOn
+                            statusLive = stillOn,
+                            // In its own colour, behind where you are: the part already saved (Faster Catch-Up
+                            // Skipping) that a skip back plays at once.
+                            cached = readyUntilMs?.let { until ->
+                                val from = session.program.startMs + (readyFromMs ?: 0L)
+                                val to = (session.program.startMs + until).coerceAtMost(aired)
+                                if (to > from) from..to else null
+                            }
                         )
                     }
                     PanelMode.SHIFT -> if (ownTimeline) viewModel.playback.ownTimelineNow()?.let { o ->
@@ -1327,7 +1337,9 @@ fun LiveTvPlayerScreen(
                             leftLabel = "From " + formatClock(showStart, use24h),
                             rightLabel = "Live " + formatClock(tick, use24h),
                             status = LiveTvTexts.trf("{0} behind live", formatDuration(behind)),
-                            statusLive = true
+                            statusLive = true,
+                            // The pause buffer, from its earliest point (its own colour up to where you are).
+                            cached = if (tick > start) start..tick else null
                         )
                     }
                     PanelMode.LIVE -> nowProgram?.let { p ->

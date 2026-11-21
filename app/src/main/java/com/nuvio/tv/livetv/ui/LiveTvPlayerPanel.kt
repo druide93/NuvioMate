@@ -1,6 +1,7 @@
 package com.nuvio.tv.livetv.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -100,8 +101,41 @@ internal data class PanelTimeline(
     val leftLabel: String,
     val rightLabel: String,
     val status: String,
-    val statusLive: Boolean = false
+    val statusLive: Boolean = false,
+    /**
+     * What you can seek to without waiting (saved on the box, the pause buffer, or loaded ahead),
+     * same clock as [startMs]..[endMs]: the part behind where you are is shown in its own colour.
+     */
+    val cached: LongRange? = null
 )
+
+/**
+ * The colour of the cache behind where you are: a soft sage green, or a soft lavender when the
+ * accent is itself green (the bar in the controls is filled in the accent colour).
+ */
+internal fun cachedColor(accent: Color): Color {
+    val hsv = FloatArray(3)
+    android.graphics.Color.colorToHSV(accent.toArgb(), hsv)
+    val greenLike = hsv[1] > 0.25f && hsv[0] in 80f..175f
+    return if (greenLike) Color(0xFFA99BD1) else Color(0xFF8DB79A)
+}
+
+/**
+ * The part of the cache behind where you are, drawn over the bar (under the dot and the live
+ * line): going back there plays at once. Ahead stays as it was (the lighter part).
+ */
+@Composable
+private fun androidx.compose.foundation.layout.BoxWithConstraintsScope.CachedStretch(
+    t: PanelTimeline, frac: (Long) -> Float, line: Dp, corner: Dp, color: Color
+) {
+    val r = t.cached ?: return
+    val w = maxWidth
+    val a = frac(r.first); val b = frac(minOf(r.last, t.positionMs))
+    if (b > a) Box(
+        Modifier.align(Alignment.CenterStart).offset(x = w * a).width((w * (b - a)).coerceAtLeast(1.dp)).height(line)
+            .clip(RoundedCornerShape(corner)).background(color)
+    )
+}
 
 /** The parts of the bar you can switch off (⚙ → Play bar layout). Saved by these names. */
 internal object BarPart {
@@ -712,6 +746,7 @@ private fun SeekLine(t: PanelTimeline, grabbed: Boolean) {
             Box(Modifier.align(Alignment.CenterStart).width(w * frac(r)).height(line).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(alpha = 0.4f)))
         }
         Box(Modifier.align(Alignment.CenterStart).width(w * frac(t.positionMs)).height(line).clip(RoundedCornerShape(2.dp)).background(accent))
+        CachedStretch(t, ::frac, line, 2.dp, cachedColor(accent))
         t.liveMs?.let { l ->
             Box(Modifier.align(Alignment.CenterStart).offset(x = (w * frac(l)) - 1.dp).width(2.dp).fillMaxHeight().background(LIVE_RED))
         }
@@ -799,7 +834,8 @@ private fun GlassTimeline(t: PanelTimeline, grabbed: Boolean, hint: Boolean = fa
     fun frac(ms: Long) = ((ms - t.startMs) / span).coerceIn(0f, 1f)
     val left = t.leftLabel.removePrefix("From ")
     val right = t.rightLabel.removePrefix("Live ")
-    val scrubber = t.liveMs != null || grabbed
+    // The dot also shows where the cached colour (behind you) stops.
+    val scrubber = t.liveMs != null || grabbed || t.cached != null
     Row(verticalAlignment = Alignment.CenterVertically) {
         LiveText(left, size = 11.sp, color = colors.TextSecondary)
         Spacer(Modifier.width(10.dp))
@@ -821,6 +857,7 @@ private fun GlassTimeline(t: PanelTimeline, grabbed: Boolean, hint: Boolean = fa
                 Box(Modifier.align(Alignment.CenterStart).width(w * frac(r)).height(5.dp).clip(RoundedCornerShape(3.dp)).background(Color.White.copy(alpha = 0.36f)))
             }
             Box(Modifier.align(Alignment.CenterStart).width(w * frac(t.positionMs)).height(5.dp).clip(RoundedCornerShape(3.dp)).background(Color.White))
+            CachedStretch(t, ::frac, 5.dp, 3.dp, cachedColor(NuvioTheme.colors.Secondary))
             t.liveMs?.let { l ->
                 Box(Modifier.align(Alignment.CenterStart).offset(x = (w * frac(l)) - 1.dp).width(2.dp).fillMaxHeight().background(LIVE_RED))
             }

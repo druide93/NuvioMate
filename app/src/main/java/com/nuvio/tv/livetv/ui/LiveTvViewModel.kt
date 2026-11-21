@@ -1119,6 +1119,19 @@ class LiveTvViewModel @Inject constructor(
     }
 
     /**
+     * Where the stretch you can seek in without waiting starts (ms into the program), with
+     * [catchupReadyUntilMs] its end: the copy saved on this box starts where it was asked for
+     * (not at the program's start); loaded ahead in the stream, at where you are.
+     */
+    fun catchupReadyFromMs(): Long? {
+        val s = _catchup.value ?: return null
+        if (s.recordingId != null) return null
+        if (playback.replaySavedMs() != null) return s.baseOffsetMs.coerceAtLeast(0L)
+        if (!playback.catchupSeekInStream()) return null
+        return catchupPositionMs()
+    }
+
+    /**
      * Seeks the catch-up program to [offsetMs]. Seeks inside the stream when the provider allows
      * it; otherwise asks the provider for the archive again, starting at that point.
      */
