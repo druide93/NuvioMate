@@ -94,6 +94,13 @@ class LiveTvRepository @Inject constructor(
         .apply { ForgivingTls.trustManager?.let { tm -> ForgivingTls.socketFactory?.let { sslSocketFactory(it, tm) } } }
         .build()
 
+    /**
+     * For guide files: a provider's server builds its guide when asked, and a busy one sends
+     * nothing at all for longer than [http] waits (PureTv: no answer in 90 s, twice in a row,
+     * while the other provider answered in 3 s). Same connections as [http], a longer wait.
+     */
+    private val guideHttp: OkHttpClient by lazy { http.newBuilder().readTimeout(GUIDE_WAIT_MINUTES, TimeUnit.MINUTES).build() }
+
     private val baseDir = File(context.filesDir, "livetv")
     private val playlistDir = File(baseDir, "playlists")
     private val epgDir = File(baseDir, "epg")
@@ -3112,7 +3119,7 @@ class LiveTvRepository @Inject constructor(
                 if (lastModified.isNotBlank()) header("If-Modified-Since", lastModified)
             }
             .build()
-        http.newCall(request).execute().use { response ->
+        (if (reportAs != null) guideHttp else http).newCall(request).execute().use { response ->
             if (response.code == 304 && target.exists()) {
                 target.setLastModified(System.currentTimeMillis()) // checked again after the usual interval
                 reportAs?.let { LIVE_REPORT.add("Guide \"$it\": server said not changed since last time; kept the copy we have") }
@@ -3927,6 +3934,8 @@ class LiveTvRepository @Inject constructor(
 
     companion object {
         private const val TAG = "LiveTvRepository"
+        /** How long a guide file's server may stay silent before the download is given up. */
+        private const val GUIDE_WAIT_MINUTES = 4L
         private const val HOUR = 60L * 60L * 1000L
         /** A server time zone lookup that failed is tried again after this long. */
         private const val ZONE_RETRY_MS = 2L * 60L * 1000L
