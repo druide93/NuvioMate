@@ -3,7 +3,9 @@
 #
 # The app checks the GitHub releases of druide93/NuvioMate. This script:
 #   1. picks the next version, e.g. "1.2.0-beta.2.nuviomate.1.3" (Nuvio's base version, untouched,
-#      + NuvioMate's own version X.Y),
+#      + NuvioMate's own version X.Y; the "beta" in the base is Nuvio's, not ours),
+#      or "1.2.0-beta.2.nuviomate.1.3.beta.1" for a NuvioMate beta (--beta): the betas of 1.3 are
+#      1.3.beta.1, 1.3.beta.2, ... and the stable release they prepare is 1.3,
 #   2. builds the release APKs (signed with the release key, so they update the installed NuvioMate),
 #   3. copies them to ../apk-nuviomate/<version>/ with names the updater understands,
 #   4. tags the commit with the version.
@@ -12,15 +14,16 @@
 # Two branches, two kinds of release:
 #   dev   beta releases (--beta). Work lands on dev, and betas are built from it; main is not touched.
 #   main  stable ("prod") releases (no --beta). Merge dev into main once a beta has proved itself,
-#         then run this on main: it builds a new version from main.
+#         then run this on main: it builds X.Y, the version its betas were preparing.
 #
-# For the app, stable or beta is decided on GitHub, not by the version: a release marked
-# "pre-release" is a beta (only the Beta channel gets it); unticked, both channels get it.
+# For the app, which channel gets a release is decided on GitHub, not by the version: a release
+# marked "pre-release" goes to the Beta channel only; unticked, both channels get it.
 #
 # Usage (from the repository root):
 #   scripts/nuviomate_release.sh            build the next version, to publish as a stable release
 #   scripts/nuviomate_release.sh --beta     the same, to publish as a beta (GitHub page opens pre-ticked)
-#   scripts/nuviomate_release.sh --major    NuvioMate X + 1 (e.g. 1.4 -> 2.0) instead of Y + 1
+#   scripts/nuviomate_release.sh --major    NuvioMate X + 1 (e.g. 1.4 -> 2.0) instead of Y + 1 (add it to
+#                                           each beta of that version too)
 #   scripts/nuviomate_release.sh --dry-run  only show which version would be built
 set -euo pipefail
 
@@ -57,23 +60,44 @@ ALL_TAGS=$( { git tag --list
 
 # NuvioMate's own version X.Y goes on across Nuvio bases: Y + 1 each release, --major for X + 1 (Y back to 0).
 # The first release before this scheme ("1.2.0-beta.2.mate.1") counts as 1.0.
+newer() { [ "$1" -gt "$3" ] || { [ "$1" -eq "$3" ] && [ "$2" -gt "$4" ]; }; }   # X.Y newer than X'.Y'?
+# The last stable release.
 MAJ=1; MIN=0
 for tag in $(printf '%s\n' "$ALL_TAGS" | grep -E '[.-]nuviomate\.[0-9]+\.[0-9]+$' || true); do
   xy="${tag##*nuviomate.}"; x="${xy%%.*}"; y="${xy#*.}"
-  if [ "$x" -gt "$MAJ" ] || { [ "$x" -eq "$MAJ" ] && [ "$y" -gt "$MIN" ]; }; then MAJ=$x; MIN=$y; fi
+  if newer "$x" "$y" "$MAJ" "$MIN"; then MAJ=$x; MIN=$y; fi
 done
-if $MAJOR; then MAJ=$((MAJ + 1)); MIN=0; else MIN=$((MIN + 1)); fi
+# The version being prepared: the newest one that has betas ("…nuviomate.X.Y.beta.N") but no stable release yet.
+BETA_TAGS=$(printf '%s\n' "$ALL_TAGS" | grep -E '[.-]nuviomate\.[0-9]+\.[0-9]+\.beta\.[0-9]+$' || true)
+PMAJ=$MAJ; PMIN=$MIN
+for tag in $BETA_TAGS; do
+  xy="${tag##*nuviomate.}"; xy="${xy%.beta.*}"; x="${xy%%.*}"; y="${xy#*.}"
+  if newer "$x" "$y" "$PMAJ" "$PMIN"; then PMAJ=$x; PMIN=$y; fi
+done
+if $MAJOR; then MAJ=$((MAJ + 1)); MIN=0
+elif newer "$PMAJ" "$PMIN" "$MAJ" "$MIN"; then MAJ=$PMAJ; MIN=$PMIN
+else MIN=$((MIN + 1)); fi
 VERSION="$PREFIX$MAJ.$MIN"
+LABEL="$MAJ.$MIN"
+if $BETA; then
+  # The next beta of that version.
+  BN=0
+  for tag in $(printf '%s\n' "$BETA_TAGS" | grep -E "[.-]nuviomate\.$MAJ\.$MIN\.beta\.[0-9]+$" || true); do
+    n="${tag##*.beta.}"; [ "$n" -gt "$BN" ] && BN=$n
+  done
+  VERSION="$VERSION.beta.$((BN + 1))"
+  LABEL="$LABEL beta $((BN + 1))"
+fi
 if printf '%s\n' "$ALL_TAGS" | grep -qxF "$VERSION"; then
   echo "Tag $VERSION already exists" >&2; exit 1
 fi
 
 # Build number for Android's versionCode (Nuvio's code x 100 + N): one more per release on this Nuvio base,
-# old "<base>.mate.N" tags included, so each release installs as an upgrade.
-N=$(( $(printf '%s\n' "$ALL_TAGS" | grep -cE "^${BASE//./\\.}[.-](nuvio)?mate\.[0-9.]+$" || true) + 1 ))
+# betas and old "<base>.mate.N" tags included, so each release installs as an upgrade.
+N=$(( $(printf '%s\n' "$ALL_TAGS" | grep -cE "^${BASE//./\\.}[.-](nuvio)?mate\.[0-9.]+(\.beta\.[0-9]+)?$" || true) + 1 ))
 [ "$N" -le 99 ] || { echo "Too many NuvioMate builds on Nuvio $BASE (max 99)" >&2; exit 1; }
 KIND=stable; $BETA && KIND=beta
-echo "Nuvio base $BASE -> NuvioMate $VERSION (NuvioMate $MAJ.$MIN, versionCode build $N), $KIND"
+echo "Nuvio base $BASE -> NuvioMate $VERSION (NuvioMate $LABEL, versionCode build $N), $KIND"
 $DRY_RUN && exit 0
 
 # Betas are built from dev, stable releases from main.
@@ -114,7 +138,7 @@ git tag -a "$VERSION" -m "NuvioMate $VERSION"
 URL="https://github.com/druide93/NuvioMate/releases/new?tag=$VERSION&title=NuvioMate%20$VERSION"
 if $BETA; then
   URL="$URL&prerelease=1"
-  BOX='"Set as a pre-release" is ticked: only the Beta channel gets it. Untick it later to make it the stable release.'
+  BOX='"Set as a pre-release" is ticked: only the Beta channel gets it.'
 else
   BOX='Leave "Set as a pre-release" unticked: both channels get it.'
 fi

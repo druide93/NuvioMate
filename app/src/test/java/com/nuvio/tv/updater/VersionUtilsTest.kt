@@ -66,4 +66,22 @@ class VersionUtilsTest {
         assertTrue(VersionUtils.isRemoteNewer("1.2.0-nuviomate.1.5", "1.2.0-beta.3.nuviomate.1.4"))
         assertFalse(VersionUtils.isRemoteNewer("1.2.0-beta.2.nuviomate.1.3", "1.2.0-beta.2.nuviomate.1.3"))
     }
+
+    @Test
+    fun `a NuvioMate beta comes after the release before it and before the release it prepares`() {
+        // After the last release, and betas of one version in order.
+        assertTrue(VersionUtils.isRemoteNewer("1.2.0-beta.2.nuviomate.1.2.beta.1", "1.2.0-beta.2.nuviomate.1.1"))
+        assertTrue(VersionUtils.isRemoteNewer("1.2.0-beta.2.nuviomate.1.2.beta.2", "1.2.0-beta.2.nuviomate.1.2.beta.1"))
+        assertTrue(VersionUtils.isRemoteNewer("1.2.0-beta.2.nuviomate.1.2.beta.10", "1.2.0-beta.2.nuviomate.1.2.beta.9"))
+        // The release is newer than its betas, never the other way round.
+        assertTrue(VersionUtils.isRemoteNewer("1.2.0-beta.2.nuviomate.1.2", "1.2.0-beta.2.nuviomate.1.2.beta.3"))
+        assertFalse(VersionUtils.isRemoteNewer("1.2.0-beta.2.nuviomate.1.2.beta.3", "1.2.0-beta.2.nuviomate.1.2"))
+        assertTrue(VersionUtils.isRemoteNewer("1.2.0-nuviomate.1.2", "1.2.0-nuviomate.1.2.beta.1"))
+        // The next version's beta is newer than this release; a newer Nuvio base wins over both.
+        assertTrue(VersionUtils.isRemoteNewer("1.2.0-beta.2.nuviomate.1.3.beta.1", "1.2.0-beta.2.nuviomate.1.2"))
+        assertTrue(VersionUtils.isRemoteNewer("1.2.0-beta.3.nuviomate.1.2.beta.4", "1.2.0-beta.2.nuviomate.1.2"))
+        // Nuvio's own betas are untouched: more parts is still newer.
+        assertTrue(VersionUtils.isRemoteNewer("1.2.0-beta.2", "1.2.0-beta"))
+        assertTrue(VersionUtils.isRemoteNewer("1.2.0-beta.2.nuviomate.1.1", "1.2.0-beta.2"))
+    }
 }

@@ -22,6 +22,13 @@ internal data class SemanticVersion(
                 other.prerelease[index]
             ).takeIf { it != 0 }?.let { return it }
         }
+        // NuvioMate's own betas: "…nuviomate.1.2.beta.3" comes before "…nuviomate.1.2", the
+        // release it prepares, although it is the longer of the two.
+        val shorter = if (prerelease.size < other.prerelease.size) prerelease else other.prerelease
+        val longer = if (prerelease.size < other.prerelease.size) other.prerelease else prerelease
+        if (longer.size > sharedSize && longer[sharedSize] == "beta" && "nuviomate" in shorter) {
+            return if (longer === prerelease) -1 else 1
+        }
         return compareValues(prerelease.size, other.prerelease.size)
     }
 
