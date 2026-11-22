@@ -7,11 +7,15 @@
 #   2. builds the release APKs (signed with the release key, so they update the installed NuvioMate),
 #   3. copies them to ../apk-nuviomate/<version>/ with names the updater understands,
 #   4. tags the commit with the version.
-# Run it on main, after merging dev into main.
 # Then publish the release on GitHub (the script prints the steps).
 #
-# Stable or beta is decided on GitHub, not by the version: a release marked "pre-release" is a beta
-# (only the Beta channel gets it); unticking that box later makes the same APKs the stable release.
+# Two branches, two kinds of release:
+#   dev   beta releases (--beta). Work lands on dev, and betas are built from it; main is not touched.
+#   main  stable ("prod") releases (no --beta). Merge dev into main once a beta has proved itself,
+#         then run this on main: it builds a new version from main.
+#
+# For the app, stable or beta is decided on GitHub, not by the version: a release marked
+# "pre-release" is a beta (only the Beta channel gets it); unticked, both channels get it.
 #
 # Usage (from the repository root):
 #   scripts/nuviomate_release.sh            build the next version, to publish as a stable release
@@ -72,10 +76,15 @@ KIND=stable; $BETA && KIND=beta
 echo "Nuvio base $BASE -> NuvioMate $VERSION (NuvioMate $MAJ.$MIN, versionCode build $N), $KIND"
 $DRY_RUN && exit 0
 
-# Releases are made from main only: work happens on dev, then dev is merged into main.
+# Betas are built from dev, stable releases from main.
 BRANCH=$(git symbolic-ref --quiet --short HEAD || true)
-if [ "$BRANCH" != "main" ]; then
-  echo "Releases are built from main, not '${BRANCH:-detached HEAD}': merge dev into main and run this on main." >&2
+if $BETA; then WANTED=dev; else WANTED=main; fi
+if [ "$BRANCH" != "$WANTED" ]; then
+  if $BETA; then
+    echo "Beta releases are built from dev, not '${BRANCH:-detached HEAD}': switch to dev and run this again." >&2
+  else
+    echo "Stable releases are built from main, not '${BRANCH:-detached HEAD}': merge dev into main and run this on main (or add --beta for a beta from dev)." >&2
+  fi
   exit 1
 fi
 
@@ -116,7 +125,7 @@ NuvioMate $VERSION ($KIND) is built: $OUT
 $(ls -1 "$OUT")
 
 To publish it (the installed NuvioMate apps then offer the update):
-  1. In GitHub Desktop, push main (the tag goes with it).
+  1. In GitHub Desktop, push $WANTED (the tag goes with it).
   2. Open $URL
      write what changed, drag the APKs above into the page, and click "Publish release".
      $BOX
