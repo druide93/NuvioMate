@@ -273,8 +273,11 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
             lists.forEach { (gid, list) ->
                 checkpoint?.invoke()
                 list.sortBy { it.startMs }
-                list.trimToSize()
-                group.byGid[gid]?.forEach { ch -> out[ch] = list }
+                // One show at a time, whatever was stored (a guide stored before listings were
+                // tidied across a file's runs, or a provider's catch-up list written over part of it).
+                val tidied = GuideSchedule.tidy(list)
+                if (tidied === list) list.trimToSize()
+                group.byGid[gid]?.forEach { ch -> out[ch] = tidied }
             }
         }
         return out
@@ -440,6 +443,14 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
         private val gids = HashMap<String, Long>()
         private val meta = HashMap<String, LongArray>() // count, lastStop, placeholders
         private val countedOnly = HashSet<String>()
+        /** Guide channels with rows stored, and those the file came back to after other channels. */
+        private val storedIds = HashSet<String>()
+        private val repeated = HashSet<String>()
+        private var placeholderTest: ((String) -> Boolean)? = null
+        /** After [finish]: guide channels the file listed in several runs that had to be put right, the listings that took out, and how long it took. */
+        var tidied = 0; private set
+        var tidiedAway = 0; private set
+        var tidyMs = 0L; private set
         private var open = true
 
         init {
@@ -467,6 +478,8 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
             val gid = gidFor(xid)
             val m = meta.getOrPut(xid) { LongArray(3) }
             if (!keepRows) countedOnly += xid
+            else if (!storedIds.add(xid)) repeated += xid
+            placeholderTest = isPlaceholder
             programs.forEach { p ->
                 if (keepRows) {
                     bindListing(stmt, gid, p, 0L)
@@ -498,8 +511,14 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
             channels: List<Triple<String, List<String>, String?>>,
             kept: Collection<String>,
             listed: Int = channels.size,
-            extraIds: Collection<String> = emptyList()
+            extraIds: Collection<String> = emptyList(),
+            tidy: ((List<EpgProgram>) -> List<EpgProgram>)? = null
         ): Map<String, StagedMeta> {
+            if (tidy != null) {
+                val t0 = System.currentTimeMillis()
+                repeated.forEach { xid -> if (xid !in countedOnly) tidyRepeated(xid, tidy) }
+                tidyMs = System.currentTimeMillis() - t0
+            }
             kept.forEach { gidFor(it) }
             val upd = db.compileStatement("UPDATE guide_ch SET cnt = ?, last_stop = ?, placeholders = ? WHERE gid = ?")
             meta.forEach { (xid, m) ->
@@ -561,6 +580,54 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
                 val m = meta[xid]
                 StagedMeta(m?.get(0)?.toInt() ?: 0, m?.get(1) ?: 0L, m?.get(2)?.toInt() ?: 0, hasRows = xid !in countedOnly)
             }
+        }
+
+        /**
+         * A guide channel the file listed in several separate runs (a provider's file put together
+         * from several guides gives the same channel id again further down, sometimes with the
+         * times an hour off). Each run was tidied and stored on its own, so the runs ended up on
+         * top of each other. Its rows are read back in the file's order, made into one schedule
+         * by [tidy] and stored again.
+         */
+        private fun tidyRepeated(xid: String, tidy: (List<EpgProgram>) -> List<EpgProgram>) {
+            val gid = gids[xid] ?: return
+            // Put back in the file's order here, not by the database: asked for in that order,
+            // it went through every stored listing for each channel (a minute on a big guide).
+            val read = ArrayList<Pair<Long, EpgProgram>>()
+            db.rawQuery(
+                "SELECT start, stop, title, descr, cat, ep, icon, year, people, provider_id, provider_source, rowid FROM listings WHERE gid = ?",
+                arrayOf(gid.toString())
+            ).use { c ->
+                while (c.moveToNext()) read += c.getLong(11) to EpgProgram(
+                    startMs = c.getLong(0),
+                    stopMs = c.getLong(1),
+                    title = c.getString(2),
+                    description = if (c.isNull(3)) null else c.getString(3),
+                    category = if (c.isNull(4)) null else c.getString(4),
+                    episode = if (c.isNull(5)) null else c.getString(5),
+                    icon = if (c.isNull(6)) null else c.getString(6),
+                    year = if (c.isNull(7)) null else c.getInt(7),
+                    people = if (c.isNull(8)) emptyList() else c.getString(8).split('\u001F'),
+                    providerProgramId = if (c.isNull(9)) null else c.getString(9),
+                    providerSourceIdentity = if (c.isNull(10)) null else c.getString(10)
+                )
+            }
+            read.sortBy { it.first }
+            val rows = read.map { it.second }
+            val clean = tidy(rows)
+            if (clean === rows) return
+            tidied++
+            tidiedAway += rows.size - clean.size
+            db.delete("listings", "gid = ?", arrayOf(gid.toString()))
+            val m = LongArray(3)
+            clean.forEach { p ->
+                bindListing(stmt, gid, p, 0L)
+                stmt.executeInsert()
+                m[0]++
+                if (p.stopMs > m[1]) m[1] = p.stopMs
+                if (placeholderTest?.invoke(p.title) == true) m[2]++
+            }
+            meta[xid] = m
         }
 
         /** Something went wrong: what this read wrote is dropped, and the guide stays as it was. */

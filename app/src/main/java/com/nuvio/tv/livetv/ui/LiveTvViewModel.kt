@@ -1727,6 +1727,9 @@ class LiveTvViewModel @Inject constructor(
         detailCache[key]?.let { return it }
         val shift = settings.value.epgOffsetMinutes * 60_000L
         val full = repository.programDetails(channelKey, program.startMs - shift) ?: return program
+        // A guide update since this listing was read can have put another show at that time:
+        // its description must not go under this show's title.
+        if (!full.title.trim().equals(program.title.trim(), ignoreCase = true)) return program
         val merged = program.copy(
             description = full.description,
             category = full.category,

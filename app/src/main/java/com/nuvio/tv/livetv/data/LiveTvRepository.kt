@@ -1571,8 +1571,8 @@ class LiveTvRepository @Inject constructor(
                         if (past.isEmpty() && later.isEmpty()) return@runCatching
                         val from = past.firstOrNull()?.startMs ?: pastEnd
                         val keep = existing.filter { it.startMs >= pastEnd || it.startMs < from }
-                        val merged = (past + keep + later).sortedBy { it.startMs }
-                            .fold(ArrayList<EpgProgram>()) { acc, p -> if (acc.isEmpty() || p.startMs >= acc.last().stopMs - 60_000) acc += p; acc }
+                        val merged = GuideSchedule.tidy((past + keep + later).sortedBy { it.startMs }
+                            .fold(ArrayList<EpgProgram>()) { acc, p -> if (acc.isEmpty() || p.startMs >= acc.last().stopMs - 60_000) acc += p; acc })
                         if (guideInDb) runCatching {
                             if (past.isNotEmpty()) guideDb.putChannelRange(ch.key, from, pastEnd, past)
                             if (later.isNotEmpty()) guideDb.putChannelRange(ch.key, later.first().startMs, later.last().stopMs, later)
@@ -1682,7 +1682,8 @@ class LiveTvRepository @Inject constructor(
         if (cur.isNullOrEmpty()) return list
         val starts = cur.mapTo(HashSet()) { it.startMs }
         val extra = list.filter { it.startMs !in starts }
-        return if (extra.isEmpty()) cur else (cur + extra).sortedBy { it.startMs }
+        // Still one show at a time once both are together (see [GuideSchedule]).
+        return if (extra.isEmpty()) cur else GuideSchedule.tidy((cur + extra).sortedBy { it.startMs })
     }
 
     /** Everything the matched guide depends on; a different value means the cache is stale. */
@@ -2348,7 +2349,8 @@ class LiveTvRepository @Inject constructor(
             val reused: Boolean
         )
         // What a guide's stored listings depend on besides the file itself: the hours kept.
-        val windowStamp = "|${settings.epgPastHours}|${settings.epgFutureDays}"
+        // With how listings are tidied as they're stored: a file stored the older way is read once more.
+        val windowStamp = "|${settings.epgPastHours}|${settings.epgFutureDays}|t$GUIDE_CACHE_VERSION"
 
         /**
          * A guide file's listings, in the guide database: used as they are when the file was
@@ -2522,13 +2524,16 @@ class LiveTvRepository @Inject constructor(
             val listedIds = entries.mapTo(HashSet()) { it.id }
             val extraIds = if (selected == null) parsed.programChannelIds.filter { it !in listedIds } else emptyList()
             val kept = selected ?: wantedUnlistedFrom(listedIds + extraIds)
-            val meta = runCatching { writer.finish(stamp, entries.map { Triple(it.id, it.names, it.icon) }, kept, listed, extraIds) }
+            val meta = runCatching { writer.finish(stamp, entries.map { Triple(it.id, it.names, it.icon) }, kept, listed, extraIds, tidy = { cleanListings(it) }) }
                 .onFailure { writer.abort(); Log.w(TAG, "Couldn't store ${target.name}", it) }
                 .getOrNull() ?: run { LIVE_REPORT.add("Guide \"${target.name}\": couldn't be stored"); return fallBack() }
             LIVE_REPORT.add(
                 "Guide \"${target.name}\": read and stored in ${(System.currentTimeMillis() - readStart) / 1000} s " +
                     "(${meta.values.sumOf { if (it.hasRows) it.count else 0 }} listings" +
                     (if (countOnly.isEmpty()) ")" else ", ${meta.values.sumOf { if (it.hasRows) 0 else it.count }} more not needed)")
+            )
+            if (writer.tidied > 0) LIVE_REPORT.add(
+                "Guide \"${target.name}\": ${writer.tidied} channels were listed several times over (${writer.tidiedAway} listings on top of others left out, ${writer.tidyMs} ms)"
             )
             return done(entries, meta, reused = false)
         }
@@ -2753,7 +2758,8 @@ class LiveTvRepository @Inject constructor(
             }
             list.filter { p -> !isPlaceholder(p.title) || !overlapsReal(p) }
         }
-        return resolveOverlaps(kept)
+        // One schedule first (a channel listed several times over, see [GuideSchedule]).
+        return resolveOverlaps(GuideSchedule.tidy(kept))
     }
 
     /**
@@ -3834,7 +3840,7 @@ class LiveTvRepository @Inject constructor(
         // Hours read ahead of what's asked for (each read only adds the hours not loaded yet).
         private const val RANGE_SLACK_MS = 6 * HOUR
         // 2: guides compared by how far ahead they go (matched again once after updating).
-        private const val GUIDE_CACHE_VERSION = 2
+        private const val GUIDE_CACHE_VERSION = 5
         /**
          * A guide file that had more days than were kept is read again after this long even when
          * the file itself hasn't changed, so its later days come in (see buildProgramsInner).
