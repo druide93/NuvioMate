@@ -162,6 +162,46 @@ internal object GuideSchedule {
     }
 
     /**
+     * What [other] has for the times [own] has nothing: its shows, cut to the holes in [own]
+     * (two minutes or more), in time order. Before [own]'s first show and after its last count as
+     * holes too, so a list that goes further back or ahead adds those days. [own] itself is never
+     * touched: a provider's catch-up list used to replace the guide's past, holes and all; now
+     * it only fills in where the guide says nothing.
+     */
+    fun fillers(own: List<EpgProgram>, other: List<EpgProgram>): List<EpgProgram> {
+        if (other.isEmpty()) return emptyList()
+        val from = tidy(other.sortedBy { it.startMs })
+        if (own.isEmpty()) return from
+        // The stretches [own] covers, joined up, in time order.
+        val spans = ArrayList<LongArray>()
+        for (o in own.sortedBy { it.startMs }) {
+            if (o.stopMs <= o.startMs) continue
+            val last = spans.lastOrNull()
+            if (last != null && o.startMs <= last[1]) { if (o.stopMs > last[1]) last[1] = o.stopMs }
+            else spans += longArrayOf(o.startMs, o.stopMs)
+        }
+        val out = ArrayList<EpgProgram>()
+        var first = 0
+        for (p in from) {
+            // Stretches over before this show starts are over for every later show too.
+            while (first < spans.size && spans[first][1] <= p.startMs) first++
+            var cursor = p.startMs
+            var k = first
+            while (cursor < p.stopMs) {
+                val span = if (k < spans.size && spans[k][0] < p.stopMs) spans[k] else null
+                val freeTo = span?.get(0)?.coerceAtLeast(cursor) ?: p.stopMs
+                if (freeTo - cursor >= 2 * MINUTE) {
+                    out += if (cursor == p.startMs && freeTo == p.stopMs) p else p.copy(startMs = cursor, stopMs = freeTo)
+                }
+                if (span == null) break
+                cursor = maxOf(cursor, span[1])
+                k++
+            }
+        }
+        return out
+    }
+
+    /**
      * A channel's listings with exactly one show at any time, in time order: [oneSchedule], then
      * a show that runs into the next ends where the next one starts (one left under a minute
      * long is left out). Listings already like that come back as they are (the very same list).

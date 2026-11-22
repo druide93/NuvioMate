@@ -101,6 +101,44 @@ class GuideScheduleTest {
         assertEquals(listOf(show(10, 35, "A"), show(35, 60, "B")), GuideSchedule.tidy(list))
     }
 
+    @Test fun `a catch-up list only fills in where the guide has nothing`() {
+        val guide = listOf(show(100, 160, "Film"), show(160, 220, "Série"), show(280, 340, "Journal"))
+        val provider = listOf(show(0, 60, "Avant-hier"), show(60, 110, "Hier soir"), show(110, 170, "Autre titre"),
+            show(215, 275, "Dans le trou"), show(275, 345, "Autre journal"), show(345, 400, "Après"))
+        val extra = GuideSchedule.fillers(guide, provider)
+        assertEquals(listOf(show(0, 60, "Avant-hier"), show(60, 100, "Hier soir"), show(220, 275, "Dans le trou"),
+            show(275, 280, "Autre journal"), show(340, 345, "Autre journal"), show(345, 400, "Après")), extra)
+        // Together: one show at a time, and nothing of the guide's changed.
+        val all = GuideSchedule.tidy((guide + extra).sortedBy { it.startMs })
+        guide.forEach { g -> assertTrue(all.any { it == g }) }
+        for (i in 1 until all.size) assertTrue(all[i].startMs >= all[i - 1].stopMs)
+        // A second time round there is nothing left to add.
+        assertEquals(emptyList<EpgProgram>(), GuideSchedule.fillers(all, provider))
+    }
+
+    @Test fun `a catch-up list is all there is when the guide has nothing`() {
+        val provider = listOf(show(0, 60, "A"), show(60, 120, "B"))
+        assertEquals(provider, GuideSchedule.fillers(emptyList(), provider))
+        assertEquals(emptyList<EpgProgram>(), GuideSchedule.fillers(provider, emptyList()))
+    }
+
+    @Test fun `fillers never overlap the guide, whatever the input`() {
+        val random = java.util.Random(3)
+        repeat(300) {
+            fun some() = GuideSchedule.tidy(List(random.nextInt(30) + 1) {
+                val start = random.nextInt(600)
+                show(start, start + 1 + random.nextInt(90), "S" + random.nextInt(9))
+            }.sortedBy { it.startMs })
+            val guide = some()
+            val extra = GuideSchedule.fillers(guide, some())
+            extra.forEach { e ->
+                assertTrue(e.stopMs - e.startMs >= 2 * m)
+                assertTrue(guide.none { it.startMs < e.stopMs && it.stopMs > e.startMs })
+            }
+            for (i in 1 until extra.size) assertTrue(extra[i].startMs >= extra[i - 1].stopMs)
+        }
+    }
+
     @Test fun `a sloppy guide keeps its shows, cut to fit`() {
         // B starts half an hour before A ends: both stay, B from where A ends.
         val list = listOf(show(0, 90, "A"), show(60, 120, "B"), show(120, 180, "C"))

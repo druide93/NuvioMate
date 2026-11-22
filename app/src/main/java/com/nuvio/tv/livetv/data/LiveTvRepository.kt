@@ -1555,32 +1555,28 @@ class LiveTvRepository @Inject constructor(
                         // Moved like the rest of this channel's listings (its guide's time shift).
                         val shift = guideShiftMs(ch, overrides)
                         if (shift != 0L) for (i in list.indices) list[i] = list[i].let { it.copy(startMs = it.startMs + shift, stopMs = it.stopMs + shift) }
-                        val now = System.currentTimeMillis()
-                        // Keep what the guide file already has from about now on; the archive
-                        // fills in the past.
-                        val pastEnd = minOf(now, list.last().stopMs)
                         // Only as far back as "Past guide kept", like the guide file's listings
                         // (the provider's list went back its whole catch-up, whatever the setting).
-                        val keptFrom = now - settings.epgPastHours.coerceAtLeast(1) * HOUR
-                        val past = list.filter { it.startMs < pastEnd && it.stopMs > keptFrom }
-                        val existing = _programs.value[ch.key].orEmpty()
-                        // Beyond the end of the guide file's listings, the archive's later
-                        // shows are used too (some guide files only cover a day ahead).
-                        val existingEnd = existing.maxOfOrNull { it.stopMs } ?: now
-                        val later = list.filter { it.startMs >= maxOf(existingEnd, now) }
-                        if (past.isEmpty() && later.isEmpty()) return@runCatching
-                        val from = past.firstOrNull()?.startMs ?: pastEnd
-                        val keep = existing.filter { it.startMs >= pastEnd || it.startMs < from }
-                        val merged = GuideSchedule.tidy((past + keep + later).sortedBy { it.startMs }
-                            .fold(ArrayList<EpgProgram>()) { acc, p -> if (acc.isEmpty() || p.startMs >= acc.last().stopMs - 60_000) acc += p; acc })
-                        if (guideInDb) runCatching {
-                            if (past.isNotEmpty()) guideDb.putChannelRange(ch.key, from, pastEnd, past)
-                            if (later.isNotEmpty()) guideDb.putChannelRange(ch.key, later.first().startMs, later.last().stopMs, later)
-                        }
+                        val keptFrom = System.currentTimeMillis() - settings.epgPastHours.coerceAtLeast(1) * HOUR
+                        val wanted = list.filter { it.stopMs > keptFrom }
+                        if (wanted.isEmpty()) return@runCatching
+                        // The guide stays as it is; the provider's list only fills in where the
+                        // guide has nothing: the days before the guide file starts, holes in it,
+                        // and what comes after its end. It used to replace the guide's whole past,
+                        // so a good guide got the provider's holes back as soon as you looked at
+                        // yesterday, on every channel sharing that guide.
+                        val inMemory = _programs.value[ch.key].orEmpty()
+                        val existing = if (guideInDb) runCatching {
+                            guideDb.channelRange(ch.key, wanted.first().startMs - 6 * HOUR, wanted.last().stopMs)
+                        }.getOrDefault(inMemory) else inMemory
+                        val extra = GuideSchedule.fillers(existing, wanted)
+                        if (extra.isEmpty()) return@runCatching
+                        if (guideInDb) runCatching { guideDb.addChannelListings(ch.key, extra) }
                         // With the guide's other writers: a write at the same moment lost one of the two.
                         rangeMutex.withLock {
-                            _programs.value = _programs.value + (ch.key to merged)
-                            loadedFrom = minOf(loadedFrom, from)
+                            val cur = _programs.value
+                            _programs.value = cur + (ch.key to GuideSchedule.tidy((existing + extra + cur[ch.key].orEmpty()).distinctBy { it.startMs }.sortedBy { it.startMs }))
+                            loadedFrom = minOf(loadedFrom, extra.first().startMs)
                         }
                         if (missingOnly && !apiFillReported) {
                             apiFillReported = true
@@ -3840,7 +3836,7 @@ class LiveTvRepository @Inject constructor(
         // Hours read ahead of what's asked for (each read only adds the hours not loaded yet).
         private const val RANGE_SLACK_MS = 6 * HOUR
         // 2: guides compared by how far ahead they go (matched again once after updating).
-        private const val GUIDE_CACHE_VERSION = 5
+        private const val GUIDE_CACHE_VERSION = 6
         /**
          * A guide file that had more days than were kept is read again after this long even when
          * the file itself hasn't changed, so its later days come in (see buildProgramsInner).

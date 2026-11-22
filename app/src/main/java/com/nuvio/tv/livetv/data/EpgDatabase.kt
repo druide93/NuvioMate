@@ -902,7 +902,12 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
      * stored for it in that span. They go to the guide channel it points at (so channels sharing
      * that guide channel get them too); a channel with no guide gets a guide channel of its own.
      */
-    fun putChannelRange(ch: String, fromMs: Long, toMs: Long, programs: List<EpgProgram>) {
+    /** [programs] added to a channel's listings as they are, nothing taken out (see [putChannelRange]). */
+    fun addChannelListings(ch: String, programs: List<EpgProgram>) {
+        if (programs.isNotEmpty()) putChannelRange(ch, 0L, 0L, programs, replace = false)
+    }
+
+    fun putChannelRange(ch: String, fromMs: Long, toMs: Long, programs: List<EpgProgram>, replace: Boolean = true) {
         changes++
         try {
             val db = writableDatabase
@@ -925,7 +930,7 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
                         SQLiteDatabase.CONFLICT_REPLACE)
                     made
                 }
-                db.delete("listings", "gid = ? AND start >= ? AND start < ?", arrayOf(id.toString(), (fromMs - sh).toString(), (toMs - sh).toString()))
+                if (replace) db.delete("listings", "gid = ? AND start >= ? AND start < ?", arrayOf(id.toString(), (fromMs - sh).toString(), (toMs - sh).toString()))
                 val stmt = db.compileStatement(
                     "INSERT INTO listings (gid, start, stop, title, descr, cat, ep, icon, year, people, provider_id, provider_source) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
                 )
