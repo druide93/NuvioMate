@@ -286,7 +286,8 @@ class LiveTvPlaybackController @Inject constructor(
             com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: not enough room on the device to save the replay (about 4.5 GB needed); playing it straight from the provider")
             return false
         }
-        val session = replayCache.start(url, channel.headers, keepMinutes = null, reconnect = false, label = "Catch-up save", refreshStream = bufferResolver(channel), policy = stalkerMediaPolicy, mimeType = stalkerMimeType) ?: return false
+        val session = replayCache.start(url, channel.headers, keepMinutes = null, reconnect = false, label = "Catch-up save", refreshStream = bufferResolver(channel), policy = stalkerMediaPolicy, mimeType = stalkerMimeType,
+            linkStartMs = archiveExpectWallMs) ?: return false
         com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: saving the replay while it plays, for instant skipping")
         p.stop()
         // Loading until the copy plays, though the stopped player says it's idle: the small

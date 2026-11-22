@@ -914,7 +914,10 @@ class LiveTvViewModel @Inject constructor(
             url,
             CatchupUrlBuilder.alternatives(
                 url, zone,
-                showMinutes = (program.stopMs - from) / 60_000,
+                // The show alone, but half an hour at least (of what has aired): a skip to a
+                // show's last minute on a provider that only answers this kind of link got a
+                // one-minute replay, asked again at its end, with a wait each time.
+                showMinutes = (maxOf(program.stopMs, minOf(from + SHORT_LINK_MIN_MS, now - 30_000)) - from) / 60_000,
                 airedMinutes = if (now < program.stopMs) (now - from) / 60_000 else null
             ),
             catchupForms[channel.sourceId]
@@ -2191,6 +2194,8 @@ private const val ROW_LIST_MAX = 300
 
 /** How far past the end of a show a catch-up replay keeps going (into the next shows). */
 private const val CONTINUE_MS = 3L * 60 * 60 * 1000
+/** The least a "just the show" catch-up link asks for (see startCatchup). */
+private const val SHORT_LINK_MIN_MS = 30 * 60_000L
 
 /** How long a replay waits for the server's time zone before playing without it. */
 private const val ZONE_WAIT_MS = 5_000L

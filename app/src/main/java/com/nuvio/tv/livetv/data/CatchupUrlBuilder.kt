@@ -173,6 +173,25 @@ object CatchupUrlBuilder {
         return out.toList()
     }
 
+    /**
+     * The link that carries on where [url] ends, for a replay that isn't far behind live: what
+     * has aired since [url] was asked for (it could only hold what had aired by then), with the
+     * wall-clock time that link starts at. [linkStartMs]: when [url] starts. Null when it isn't
+     * this kind of link, or less than a minute more has aired by [nowMs].
+     */
+    fun nextLink(url: String, linkStartMs: Long, nowMs: Long): Pair<String, Long>? {
+        val path = url.substringBefore('?')
+        val m = Regex("""^(.*/timeshift/[^/]+/[^/]+/)(\d+)/(\d{4}-\d{2}-\d{2}:\d{2}-\d{2})/(.+)$""", RegexOption.IGNORE_CASE).find(path) ?: return null
+        val minutes = m.groupValues[2].toLongOrNull() ?: return null
+        val endMs = linkStartMs + minutes * 60_000
+        val more = ((nowMs - 30_000 - endMs) / 60_000).coerceAtMost(180)
+        if (more < 1) return null
+        // Minutes added to the time as written, whatever clock it's in.
+        val utc = stampFormat(TimeZone.getTimeZone("UTC"))
+        val stamp = runCatching { utc.parse(m.groupValues[3])?.time }.getOrNull() ?: return null
+        return "${m.groupValues[1]}$more/${utc.format(java.util.Date(stamp + minutes * 60_000))}/${m.groupValues[4]}${url.substring(path.length)}" to endMs
+    }
+
     /** The start time written in a catch-up link (Xtream timeshift or timeshift.php), or null for other kinds. */
     fun askedStamp(url: String): String? =
         Regex("""\d{4}-\d{2}-\d{2}:\d{2}-\d{2}""").find(url)?.value

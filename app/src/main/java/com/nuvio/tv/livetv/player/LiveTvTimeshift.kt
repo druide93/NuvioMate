@@ -202,6 +202,8 @@ class LiveTvTimeshift(private val context: Context) {
         refreshStream: (suspend () -> StalkerPlayback)? = null,
         policy: StalkerMediaPolicy? = null,
         mimeType: String? = null,
+        /** A replay: when (wall clock) its link starts, to carry on with what airs after it (see recordTs). */
+        linkStartMs: Long? = null,
     ): Session? {
         if (mimeType == StalkerMimeProbe.DASH) return null
         stop()
@@ -226,7 +228,7 @@ class LiveTvTimeshift(private val context: Context) {
         job = if (isHls) {
             scope.launch { recordHls(url, headers, dir, local, keepMinutes ?: 24 * 60, live = reconnect, leadMs = leadMs, audioLanguage = audioLanguage, label = label, refreshStream = refreshStream, initialPolicy = policy, lines = open) }
         } else {
-            scope.launch { recordTs(url, headers, dir, keepMinutes, reconnect, label, refreshStream, policy, open) }
+            scope.launch { recordTs(url, headers, dir, keepMinutes, reconnect, label, refreshStream, policy, open, linkStartMs) }
         }
         return s
     }
@@ -322,7 +324,15 @@ class LiveTvTimeshift(private val context: Context) {
         initialPolicy: StalkerMediaPolicy?,
         /** This recording's open connections, which [stop] closes at once. */
         lines: MutableCollection<HttpURLConnection>,
+        firstLinkStartMs: Long? = null,
     ) {
+        // The link being saved, and when it starts: a replay close to live carries on with the
+        // next one (see below).
+        var url = url
+        var linkStartMs = firstLinkStartMs
+        var carriedBytes = 0L
+        // Up to three hours carried on in all, as a replay's first link asks for at most.
+        var carryLeftMs = 3 * 3_600_000L
         // Pieces past the time limit are dropped as new ones come in (it records on, behind you).
         // A replay (kept whole): a 10 s target, so playback close to what's saved sees new
         // pieces within seconds instead of freezing up to 20 s.
@@ -487,7 +497,7 @@ class LiveTvTimeshift(private val context: Context) {
                                             trimmedMs = (segmenter.trimmedSec * 1000).toLong()
                                             savedMs = (segmenter.totalSec * 1000).toLong()
                                             // A replay keeps all it saved (a rewind buffer drops its oldest pieces).
-                                            if (keepMinutes == null) savedBytes = totalBytes
+                                            if (keepMinutes == null) savedBytes = carriedBytes + totalBytes
                                         }
                                         if (!reconnect && !firstPieceReported && segmenter.totalSec > 0) {
                                             firstPieceReported = true
@@ -553,6 +563,33 @@ class LiveTvTimeshift(private val context: Context) {
                     if (bytes > 0) resumeTries = 0 else if (resuming) resumeTries++
                     // Saved to its end, or it can't be carried on (playback then asks the provider
                     // again from where it got to): the save ends here.
+                    if (complete && totalBytes > 0) {
+                        // All of that link is in, and more of the channel has aired since it was
+                        // asked for (a replay a few minutes behind live: its link could only hold
+                        // those few minutes): the save carries on with the link after it, put back
+                        // in place by the stream's clock. Before, playback ran to the end of the
+                        // link every couple of minutes and waited some 10 s on a new one. With
+                        // under a minute more aired, it waits for that minute.
+                        var next: Pair<String, Long>? = null
+                        val start = linkStartMs
+                        while (start != null && carryLeftMs > 0 && alive(dir)) {
+                            val more = com.nuvio.tv.livetv.data.CatchupUrlBuilder.nextLink(url, start, System.currentTimeMillis())
+                            if (more != null) { next = more; break }
+                            // Not this kind of link, or far from live no more: nothing to wait for.
+                            if (com.nuvio.tv.livetv.data.CatchupUrlBuilder.nextLink(url, start, Long.MAX_VALUE / 2) == null) break
+                            delay(5_000)
+                        }
+                        if (next != null && alive(dir)) {
+                            report.add("$label: ${totalBytes / 1024 / 1024} MB saved, all of that link; carrying on with what has aired since (${com.nuvio.tv.livetv.data.CatchupUrlBuilder.askedStamp(next.first)})")
+                            url = next.first
+                            linkStartMs = next.second
+                            carryLeftMs -= (Regex("""/timeshift/[^/]+/[^/]+/(\d+)/""").find(url)?.groupValues?.get(1)?.toLongOrNull() ?: 180L) * 60_000
+                            carriedBytes += totalBytes
+                            totalBytes = 0L; knownLength = -1L; resumeTries = 0; rangeWorks = null; attempt = 0
+                            segmenter.rejoin()
+                            continue
+                        }
+                    }
                     if (complete || resumeTries >= 6 || (totalBytes == 0L && attempt >= 2)) {
                         report.add("$label: ${totalBytes / 1024 / 1024} MB saved ($why)")
                         break
