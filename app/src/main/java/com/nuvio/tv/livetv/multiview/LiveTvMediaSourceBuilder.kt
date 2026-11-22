@@ -46,12 +46,7 @@ internal class LiveTvMediaSourceBuilder(
             buildDrmMediaSource(url, headers, isLive, protection)?.let { return it }
             check(!strictDrm) { "Protected stream could not be prepared" }
         }
-        val http = stalkerPolicy?.httpFactory() ?: com.nuvio.tv.core.vpn.protectHttpFactory(DefaultHttpDataSource.Factory()
-            .setUserAgent(headers["User-Agent"] ?: LiveTvRepository.DEFAULT_UA)
-            .setDefaultRequestProperties(headers.filterKeys { it != "User-Agent" })
-            .setAllowCrossProtocolRedirects(true)
-            .setConnectTimeoutMs(15_000)
-            .setReadTimeoutMs(20_000), headers, headers["User-Agent"] ?: LiveTvRepository.DEFAULT_UA)
+        val http = stalkerPolicy?.httpFactory() ?: httpFactory(headers)
         val item = buildMediaItem(url, isLive)
         // Closed captions: TV channels usually carry them inside the video (CEA-608/708) without
         // announcing them, so the player never offered them and Subtitles only showed "Off".
@@ -77,8 +72,20 @@ internal class LiveTvMediaSourceBuilder(
             // CC1–CC4 and the digital (708) captions; the menu only offers those with text.
             .setTsSubtitleFormats(LiveCaptions.formats)
         return DefaultMediaSourceFactory(http, if (observeCaptions) LiveCaptions.Extractors(extractors) else extractors)
-            .setLoadErrorHandlingPolicy(errorPolicy(isLive))
+            .setLoadErrorHandlingPolicy(if (!isLive && com.nuvio.tv.livetv.player.providerResends(url)) NotCarriedOn else errorPolicy(isLive))
             .createMediaSource(item)
+    }
+
+    /**
+     * A replay from a provider that sends it differently each time it's asked (see
+     * providerResends): after a cut, the player's own retry asks for the rest of the file from
+     * the byte it got to, which there is another moment of the show. Spliced on, the sound jumped
+     * back over a frozen picture. Not retried once something came in: the error reaches the app,
+     * which asks again by time from where it got to. Before anything came in, the usual retries.
+     */
+    private object NotCarriedOn : androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy() {
+        override fun getRetryDelayMsFor(loadErrorInfo: androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy.LoadErrorInfo): Long =
+            if (loadErrorInfo.loadEventInfo.bytesLoaded > 0) androidx.media3.common.C.TIME_UNSET else super.getRetryDelayMsFor(loadErrorInfo)
     }
 
     /**
@@ -118,12 +125,7 @@ internal class LiveTvMediaSourceBuilder(
         isLive: Boolean,
         drm: com.nuvio.tv.livetv.model.DrmInfo
     ): androidx.media3.exoplayer.source.MediaSource? = runCatching {
-        val http = com.nuvio.tv.core.vpn.protectHttpFactory(DefaultHttpDataSource.Factory()
-            .setUserAgent(headers["User-Agent"] ?: LiveTvRepository.DEFAULT_UA)
-            .setDefaultRequestProperties(headers.filterKeys { it != "User-Agent" })
-            .setAllowCrossProtocolRedirects(true)
-            .setConnectTimeoutMs(15_000)
-            .setReadTimeoutMs(20_000), headers, headers["User-Agent"] ?: LiveTvRepository.DEFAULT_UA)
+        val http = httpFactory(headers)
         val itemBuilder = buildMediaItem(url, isLive).buildUpon()
         if (drm.manifestType == "mpd" || url.lowercase().contains(".mpd")) itemBuilder.setMimeType(MimeTypes.APPLICATION_MPD)
         if (drm.manifestType == "hls") itemBuilder.setMimeType(MimeTypes.APPLICATION_M3U8)
@@ -212,12 +214,23 @@ internal class LiveTvMediaSourceBuilder(
         return org.json.JSONObject().put("keys", org.json.JSONArray(keys)).put("type", "temporary").toString()
     }
 
+    /** Reads a provider's stream with the channel's own [headers] (through the VPN when it's on). */
+    private fun httpFactory(headers: Map<String, String>): androidx.media3.datasource.HttpDataSource.Factory {
+        val userAgent = headers["User-Agent"] ?: LiveTvRepository.DEFAULT_UA
+        return com.nuvio.tv.core.vpn.protectHttpFactory(DefaultHttpDataSource.Factory()
+            .setUserAgent(userAgent)
+            .setDefaultRequestProperties(headers.filterKeys { it != "User-Agent" })
+            .setAllowCrossProtocolRedirects(true)
+            .setConnectTimeoutMs(15_000)
+            .setReadTimeoutMs(20_000), headers, userAgent)
+    }
+
     private fun buildMediaItem(url: String, isLive: Boolean): MediaItem {
         val builder = MediaItem.Builder().setUri(Uri.parse(url))
         val lower = url.lowercase().substringBefore('?')
         when {
             forcedMime != null -> builder.setMimeType(forcedMime)
-            lower.endsWith(".m3u8") || lower.contains("/hls/") || lower.contains("m3u8") ||
+            lower.contains("/hls/") || lower.contains("m3u8") ||
                 com.nuvio.tv.livetv.model.PlaylistSource.asksForHls(url) -> builder.setMimeType(MimeTypes.APPLICATION_M3U8)
             lower.endsWith(".mpd") -> builder.setMimeType(MimeTypes.APPLICATION_MPD)
             lower.endsWith(".ts") -> builder.setMimeType(MimeTypes.VIDEO_MP2T)

@@ -276,9 +276,11 @@ internal object HlsPieces {
                 for (t in 1..tries.coerceAtLeast(1)) {
                     got = download(HlsPieces.resolve(url, p.uri), File(dir, name))
                     if (got != null || stopNow()) break
-                    Thread.sleep(1_000L * t)
+                    if (t < tries) Thread.sleep(1_000L * t)
                 }
-                if (got == null) continue
+                // Missed: the next piece saved is marked as a break (the provider's own mark on the
+                // missed piece went with it), so the player carries on across the hole.
+                if (got == null) { markGap(); continue }
                 val dur = p.dur * got
                 saved += Saved(dur, name, saved.isNotEmpty() && (gap || (p.disc && i > from)))
                 gap = false
@@ -328,8 +330,9 @@ internal object HlsPieces {
          */
         private fun download(url: String, to: File): Double? {
             val tmp = File(to.parentFile, to.name + ".part")
+            var open: HttpURLConnection? = null
             return runCatching {
-                val c = connect(url, headers)
+                val c = connect(url, headers).also { open = it }
                 val length = c.contentLengthLong
                 var got = 0L
                 var cut = false
@@ -353,7 +356,12 @@ internal object HlsPieces {
                 }
                 if (share == null) { tmp.delete(); null }
                 else if (tmp.renameTo(to)) share else null
-            }.getOrElse { tmp.delete(); null }
+            }.getOrElse {
+                // Refused or dropped (reading an HTTP error's answer throws): let go of it now.
+                runCatching { open?.disconnect() }
+                tmp.delete()
+                null
+            }
         }
     }
 }

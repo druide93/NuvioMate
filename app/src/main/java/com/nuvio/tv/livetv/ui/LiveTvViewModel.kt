@@ -238,7 +238,7 @@ class LiveTvViewModel @Inject constructor(
         if (catchupZoneJob?.isActive == true || seekJob?.isActive == true) return false
         val catchup = s.channel.catchup ?: return false
         val absolute = s.program.startMs + s.baseOffsetMs + inStreamMs.coerceAtLeast(0L)
-        val at = programs.value[s.channel.key].orEmpty().firstOrNull { absolute >= it.startMs && absolute < it.stopMs } ?: s.program
+        val at = currentProgram(s.channel.key, absolute) ?: s.program
         if (!CatchupUrlBuilder.isAvailable(catchup, at.startMs, System.currentTimeMillis())) return false
         return startCatchup(s.channel, catchup, at, absolute - at.startMs,
             playlistZones.value[s.channel.sourceId]?.takeIf { it.isNotBlank() }, forceReload = true, plays = plays)
@@ -248,9 +248,11 @@ class LiveTvViewModel @Inject constructor(
     override fun onCatchupStalled(): Boolean {
         val s = _catchup.value
         val pos = catchupPositionMs()
+        // A skip of yours on its way asks the provider itself, from its own point.
+        if (seekJob?.isActive == true) return true
         return if (s == null || pos == null) false else {
             val absolute = s.program.startMs + pos
-            val at = programs.value[s.channel.key].orEmpty().firstOrNull { absolute >= it.startMs && absolute < it.stopMs } ?: s.program
+            val at = currentProgram(s.channel.key, absolute) ?: s.program
             playCatchup(s.channel, at, absolute - at.startMs, fresh = false)
         }
     }
@@ -916,7 +918,15 @@ class LiveTvViewModel @Inject constructor(
                 airedMinutes = if (now < program.stopMs) (now - from) / 60_000 else null
             ),
             catchupForms[channel.sourceId]
-        )
+        ).let { all ->
+            // HLS found not to work on this provider (the TS link played after it sent nothing):
+            // its HLS forms aren't tried after the TS ones either, for that week. Before, only the
+            // first link stopped being HLS, and each replay that had to move on to another link
+            // still waited on an HLS one (PureTv: 8.5 s more before the picture).
+            val noHls = !url.substringBefore('?').endsWith(".m3u8", ignoreCase = true) &&
+                now - (playlistNoHls.value[channel.sourceId] ?: 0L) <= HLS_RETRY_MS
+            if (noHls) all.filterNot { it.substringBefore('?').endsWith(".m3u8", ignoreCase = true) }.ifEmpty { all } else all
+        }
         // The waiting screen up before this pick's own (a kept picture, while a skip loads).
         val upBefore = _replayWait.value?.takeIf { it.channel.key == channel.key && !it.seeThrough }
         if (markWait) markReplayOpening(channel)
@@ -1027,16 +1037,17 @@ class LiveTvViewModel @Inject constructor(
         }
         // Asked for and not started yet: nothing to follow (it's where it was asked to start).
         if (s.startAtMs != null && !playback.state.value.started) return
+        // A skip on its way goes by the show as it is now: moved on to the next one meanwhile,
+        // its point was read as one in that show (the seek bar and title jumped a show ahead).
+        if (pendingSeekMs != null) return
         val pos = catchupPositionMs() ?: return
         val absolute = s.program.startMs + pos
         val list = programs.value[s.channel.key].orEmpty()
         val p = playback.player
         if (p?.playbackState == androidx.media3.common.Player.STATE_ENDED) {
-            // Already asked for, waiting for the time zone: let that finish.
-            if (catchupZoneJob?.isActive == true) return
-            // The window we asked for ran out: start a new one right where we are.
-            val at = list.firstOrNull { absolute >= it.startMs && absolute < it.stopMs } ?: return
-            if (absolute < System.currentTimeMillis() - 60_000) playCatchup(s.channel, at, absolute - at.startMs, fresh = false)
+            // The window we asked for ran out, or the copy's save stopped early: start a new one
+            // right where we are.
+            continueEndedCatchup()
             return
         }
         if (absolute < s.program.stopMs) return
@@ -1061,6 +1072,21 @@ class LiveTvViewModel @Inject constructor(
      * Live (or paused) on a catch-up channel, skipped back to [atMs] (wall clock): plays the show
      * on at that moment through catch-up, from there. The time into that show, or null if it can't.
      */
+    /**
+     * A skip in the replay playing, to [offsetMs] into the show that started at [programStartMs]:
+     * the show the skip was made in. The replay may have run on into the next show since (skips
+     * wait a moment for more presses): the point is then worked out in the show playing now, or,
+     * when it's before that show, asked as a replay of the show at that time. Before, the old
+     * show's point was applied to the new one (10 s back at the very end of a show went to its
+     * last seconds' place in the next: an hour ahead).
+     */
+    fun seekCatchupTo(programStartMs: Long, offsetMs: Long) {
+        val s = _catchup.value ?: return
+        val inShow = offsetMs + (programStartMs - s.program.startMs)
+        if (s.recordingId != null || inShow >= 0) { seekCatchupTo(inShow.coerceAtLeast(0L)); return }
+        if (replayFrom(s.channel, programStartMs + offsetMs) == null) seekCatchupTo(0L)
+    }
+
     fun replayFrom(channel: LiveChannel, atMs: Long): Long? {
         val p = programs.value[channel.key]?.firstOrNull { atMs >= it.startMs && atMs < it.stopMs } ?: return null
         val offset = (atMs - p.startMs).coerceAtLeast(0L)
@@ -1168,7 +1194,6 @@ class LiveTvViewModel @Inject constructor(
         // that's in it or about to be. The waiting screen up over it (or the small "Loading…")
         // stays until its picture.
         if (playback.retargetCopy(inStream)) {
-            pendingSeekMs = null
             // The waiting screen of a skip still waiting for the time zone went with it (see
             // cancelPendingCatchup): back over the copy on its way.
             if (_replayWait.value == null && upBefore != null) waitForCopy(upBefore)
@@ -1188,40 +1213,7 @@ class LiveTvViewModel @Inject constructor(
                 p != null && playback.catchupSeekInStream() && p.isCurrentMediaItemSeekable &&
                     p.duration != androidx.media3.common.C.TIME_UNSET && it >= 0 && it <= p.duration
             }
-        fun stillThere() = _catchup.value?.let { it.channel.key == s.channel.key && it.recordingId == null } == true &&
-            playback.state.value.let { it.catchupTitle != null && it.channelKey == s.channel.key }
-        /**
-         * The waiting screen over the picture as it is now (kept and shown frozen: once the player
-         * lets go of the stream, the video layer is left with it stretched to the whole screen on
-         * channels that aren't 16:9, or black on some TVs), then [letGo]. Kept as it is when the
-         * waiting screen is already up on black or on a kept picture (a second skip while loading).
-         * [reload]: what [letGo] does asks for the replay again. False from [letGo]: nothing to wait for.
-         */
-        fun overKeptPicture(reload: Boolean, letGo: () -> Boolean) {
-            pendingSeekMs = target
-            seekJob = viewModelScope.launch {
-                val up = _replayWait.value?.takeIf { it.channel.key == s.channel.key && !it.seeThrough } ?: upBefore
-                val frozen = when {
-                    up != null -> up.frozen
-                    s.channel.drm != null -> null // protected: can't be copied
-                    else -> LiveVideoFrame.capture()
-                }
-                if (!stillThere()) { pendingSeekMs = null; return@launch }
-                val wait = ReplayWait(s.channel, frozen, instant = true)
-                showReplayWait(wait, reload = reload)
-                // On screen before the player lets go of the picture.
-                awaitFrames(3)
-                if (!stillThere() || !letGo()) {
-                    pendingSeekMs = null
-                    clearReplayWait()
-                } else if (!reload) {
-                    // Watched again from now that the player has let go: until then the point left
-                    // was still playing, which counted as "playing with no picture" and took the
-                    // screen down after 3 s whatever the picture was doing.
-                    showReplayWait(wait, reload = false)
-                }
-            }
-        }
+        fun overKeptPicture(reload: Boolean, letGo: () -> Boolean) = this@LiveTvViewModel.overKeptPicture(s, target, upBefore, reload, letGo)
         if (p != null && streamAt != null && playback.copyRereadNeeded(streamAt)) {
             // In the copy, past what the player has read of its list: the copy is read again from
             // there, which lets go of the picture for a moment (see overKeptPicture).
@@ -1263,6 +1255,226 @@ class LiveTvViewModel @Inject constructor(
             // the time zone to look up first, that's found out once it's asked for.)
             asked && (catchupDeferred || playback.requests.value != requestsBefore)
         }
+    }
+
+    /** The replay of [s] is still what plays (not another channel, a recording, or live). */
+    private fun catchupStillOn(s: CatchupSession) = _catchup.value?.let { it.channel.key == s.channel.key && it.recordingId == null } == true &&
+        playback.state.value.let { it.catchupTitle != null && it.channelKey == s.channel.key }
+
+    /**
+     * The waiting screen over the picture as it is now (kept and shown frozen: once the player
+     * lets go of the stream, the video layer is left with it stretched to the whole screen on
+     * channels that aren't 16:9, or black on some TVs), then [letGo], for a skip to [target] (ms
+     * into [s]'s show). Kept as it is when the waiting screen is already up on black or on a kept
+     * picture ([upBefore]: a second skip while loading). [reload]: what [letGo] does asks for the
+     * replay again. False from [letGo]: nothing to wait for.
+     */
+    private fun overKeptPicture(s: CatchupSession, target: Long, upBefore: ReplayWait?, reload: Boolean, letGo: () -> Boolean) {
+        pendingSeekMs = target
+        seekJob = viewModelScope.launch {
+            val up = _replayWait.value?.takeIf { it.channel.key == s.channel.key && !it.seeThrough } ?: upBefore
+            val frozen = when {
+                up != null -> up.frozen
+                s.channel.drm != null -> null // protected: can't be copied
+                else -> LiveVideoFrame.capture()
+            }
+            if (!catchupStillOn(s)) { pendingSeekMs = null; return@launch }
+            val wait = ReplayWait(s.channel, frozen, instant = true)
+            showReplayWait(wait, reload = reload)
+            // On screen before the player lets go of the picture.
+            awaitFrames(3)
+            if (!catchupStillOn(s) || !letGo()) {
+                pendingSeekMs = null
+                clearReplayWait()
+            } else if (!reload) {
+                // Watched again from now that the player has let go: until then the point left
+                // was still playing, which counted as "playing with no picture" and took the
+                // screen down after 3 s whatever the picture was doing.
+                showReplayWait(wait, reload = false)
+            }
+        }
+    }
+
+    /**
+     * The replay's copy ran dry: it plays faster than the provider sends (see the playback
+     * controller's copyStarved). Asked again from where it is, the way a skip past what's saved
+     * is (the waiting screen over the picture kept, then a new request, which gets the provider's
+     * fast start again): before, the picture stayed frozen until you skipped yourself. The new
+     * copy starts at that very point (the controller waits for it). The show at that point, as
+     * the replay may have run on into the next one. False when something of yours is on its way
+     * (a skip, a replay picked): that goes on instead.
+     */
+    override fun onCatchupStarved(): Boolean {
+        val s = _catchup.value ?: return false
+        if (s.recordingId != null || catchupPickPending() || seekJob?.isActive == true || catchupZoneJob?.isActive == true) return false
+        val pos = catchupPositionMs() ?: return false
+        val absolute = s.program.startMs + pos
+        val at = currentProgram(s.channel.key, absolute) ?: s.program
+        val upBefore = _replayWait.value?.takeIf { it.channel.key == s.channel.key && !it.seeThrough }
+        playback.cancelCatchupLead()
+        overKeptPicture(s, pos, upBefore, reload = true) {
+            val requestsBefore = playback.requests.value
+            val asked = playCatchup(s.channel, at, absolute - at.startMs, fresh = false)
+            asked && (catchupDeferred || playback.requests.value != requestsBefore)
+        }
+        return true
+    }
+
+    /** The replay's copy played to the end of what was saved, outside full screen too: on from there. */
+    override fun onCatchupEnded(): Boolean = continueEndedCatchup()
+
+    /**
+     * A replay that freezes because its provider sends it slower than it plays, offered on a
+     * lighter copy of the same channel from the same provider: [to] ("|FR| BEIN SPORTS 1 HD",
+     * [quality] "HD") for [from] ("… FHD"), from the same point. Seen on PureTv: the FHD replays
+     * came in at 0.2-0.4x real time and froze every few seconds, the HD ones of the same channels
+     * at 30x. A little less picture, but no freezes.
+     */
+    data class LighterReplayOffer(val from: LiveChannel, val to: LiveChannel, val quality: String, val programStartMs: Long)
+
+    private val _lighterOffer = MutableStateFlow<LighterReplayOffer?>(null)
+    /** The offer up in full screen (OK switches, Back stays), or null. */
+    val lighterOffer: StateFlow<LighterReplayOffer?> = _lighterOffer
+    private var lighterOfferJob: kotlinx.coroutines.Job? = null
+    /** Replays (channel key | show start) where the offer was turned down: not offered again. */
+    private val lighterDeclined = HashSet<String>()
+    /** Replays where no lighter copy was found, said once in the report. */
+    private val lighterNoneSaid = HashSet<String>()
+
+    init {
+        // The offer goes with the replay it was for (another replay, another channel, live).
+        // (Here, after the offer's own fields: the first value comes at once.)
+        viewModelScope.launch {
+            _catchup.collect { c ->
+                val offer = _lighterOffer.value ?: return@collect
+                if (c == null || c.recordingId != null || c.channel.key != offer.from.key) dismissLighterOffer()
+            }
+        }
+    }
+
+    override fun onCatchupSlow() {
+        val s = _catchup.value ?: return
+        if (s.recordingId != null || s.channel.stalkerRef != null) return
+        if (playback.state.value.channelKey != s.channel.key) return
+        val id = "${s.channel.key}|${s.program.startMs}"
+        if (id in lighterDeclined) return
+        // Still up: it stays as it is (its time starts again).
+        val up = _lighterOffer.value?.takeIf { it.from.key == s.channel.key }
+        val offer = up ?: run {
+            val at = catchupPositionMs()?.let { s.program.startMs + it } ?: s.program.startMs
+            val twin = lighterTwin(s.channel, at)
+            if (twin == null) {
+                if (lighterNoneSaid.add(id)) com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
+                    "Catch-up on ${s.channel.name}: too slow from this provider, and no lower-quality copy of the channel with a replay there"
+                )
+                return
+            }
+            com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
+                "Catch-up on ${s.channel.name}: too slow from this provider; offering ${twin.first.name} (${twin.second}) from the same point"
+            )
+            LighterReplayOffer(s.channel, twin.first, twin.second, s.program.startMs)
+        }
+        _lighterOffer.value = offer
+        lighterOfferJob?.cancel()
+        lighterOfferJob = viewModelScope.launch {
+            delay(LIGHTER_OFFER_MS)
+            if (_lighterOffer.value == offer) _lighterOffer.value = null
+        }
+    }
+
+    /**
+     * [ch] in a lower quality from the same playlist, with a replay at [atMs] (wall clock): the
+     * best quality below [ch]'s ("HD" before "SD" for an "FHD" one), with its quality. Null when
+     * [ch]'s name says no quality, or there's none. Other playlists aren't looked at: their
+     * archive is another provider's, with its own times and gaps (and often none at all). Hidden
+     * channels and groups count (the HD copies are often hidden); locked ones and other local
+     * stations don't.
+     */
+    internal fun lighterTwin(ch: LiveChannel, atMs: Long): Pair<LiveChannel, String>? {
+        val index = backupIndex ?: return null
+        // The provider's own names (yours may have dropped the "FHD").
+        val raw = repository.channels.value
+        fun quality(c: LiveChannel): String? =
+            backupQuality(raw.firstOrNull { it.key == c.key }?.name ?: c.name) ?: backupQuality(c.name)
+        val own = quality(ch)
+        if (qualityRank(own) < 2) return null
+        val name = backupName(raw.firstOrNull { it.key == ch.key }?.name ?: ch.name)
+        if (name.length < 2) return null
+        val s = settings.value
+        val locked = userState.value.lockedGroups
+        val note = stationNote(ch.name)
+        val now = System.currentTimeMillis()
+        val candidates = index[name].orEmpty().asSequence()
+            .filter { it.key != ch.key && it.sourceId == ch.sourceId && it.stalkerRef == null }
+            .filter { CatchupUrlBuilder.isAvailable(it.catchup, atMs, now) }
+            .filter { c -> val b = stationNote(c.name); note == null || b == null || note == b }
+            .filter { !com.nuvio.tv.livetv.parental.ParentalControls.isLocked(it.groupId, it.group, s, locked) }
+            .map { it to quality(it) }
+            .toList()
+        return pickLighter(own, candidates)
+    }
+
+    /** OK on the offer: the replay goes on from the same point on the lighter copy. */
+    fun acceptLighterReplay(): Boolean {
+        val offer = _lighterOffer.value ?: return false
+        dismissLighterOffer()
+        val s = _catchup.value?.takeIf { it.channel.key == offer.from.key && it.recordingId == null } ?: return false
+        val pos = catchupPositionMs() ?: return false
+        val absolute = s.program.startMs + pos
+        // The show at that point in its own guide, else in this one's (they share a guide on PureTv),
+        // else the show it started on (a replay is asked by its times, not its title).
+        fun showAt(key: String) = programs.value[key].orEmpty().firstOrNull { absolute >= it.startMs && absolute < it.stopMs }
+        val at = showAt(offer.to.key) ?: showAt(s.channel.key) ?: s.program
+        com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
+            "Catch-up: switched from ${s.channel.name} to ${offer.to.name} (${offer.quality}), ${pos / 1000} s into \"${s.program.title}\""
+        )
+        return playCatchup(offer.to, at, absolute - at.startMs, fresh = true)
+    }
+
+    /** Back on the offer: this replay stays as it is, and isn't offered again. */
+    fun declineLighterReplay() {
+        val offer = _lighterOffer.value ?: return
+        lighterDeclined += "${offer.from.key}|${offer.programStartMs}"
+        // The show playing now too: the replay may have run on into the next one while the offer
+        // was up, and its next freeze offered it again.
+        _catchup.value?.takeIf { it.channel.key == offer.from.key }?.let { lighterDeclined += "${offer.from.key}|${it.program.startMs}" }
+        com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up on ${offer.from.name}: stays as it is (${offer.to.name} turned down)")
+        dismissLighterOffer()
+    }
+
+    private fun dismissLighterOffer() {
+        lighterOfferJob?.cancel()
+        lighterOfferJob = null
+        _lighterOffer.value = null
+    }
+
+    /**
+     * The replay reached the end of what it had (the window asked for, or a copy whose save
+     * stopped early): a new one is asked for right where it is, unless that's within the last
+     * minute (not in the archive yet). The show there, or the one it started on when the guide
+     * has none at that time (before, the replay then stayed on its last picture).
+     */
+    private fun continueEndedCatchup(): Boolean {
+        val s = _catchup.value ?: return false
+        if (s.recordingId != null) return false
+        // Already asked for, waiting for the time zone, or a skip of yours on its way (it asks
+        // from its own point): let that finish. Before, a skip made over an ended replay was
+        // asked of the provider twice, a few pictures apart.
+        if (catchupZoneJob?.isActive == true || seekJob?.isActive == true) return true
+        val pos = catchupPositionMs() ?: return false
+        val absolute = s.program.startMs + pos
+        if (absolute >= System.currentTimeMillis() - 60_000) return false
+        // The show it started on only while still inside it: past its end with no show in the
+        // guide, a new link there would be a minute long (and a portal's can't start there at all),
+        // asked again and again.
+        val at = currentProgram(s.channel.key, absolute)
+            ?: s.program.takeIf { absolute < it.stopMs } ?: return false
+        val requestsBefore = playback.requests.value
+        val asked = playCatchup(s.channel, at, absolute - at.startMs, fresh = false)
+        if (asked && playback.requests.value != requestsBefore) {
+            com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: the replay reached the end of what it had; asking again from ${pos / 1000} s into \"${s.program.title}\"")
+        }
+        return asked
     }
 
     fun backToLive(channel: LiveChannel) {
@@ -2001,6 +2213,35 @@ private fun com.nuvio.tv.livetv.data.LiveTv247Matcher.Match.toMeta() = com.nuvio
 
 /** How long catch-up sticks to TS on a provider whose HLS replays failed, before trying HLS again. */
 private const val HLS_RETRY_MS = 7L * 24 * 3_600_000L
+
+/** How long the offer of a lighter copy of a replay that freezes stays up (it comes back at the next freeze). */
+private const val LIGHTER_OFFER_MS = 25_000L
+
+/**
+ * Of [candidates] (copies of a channel and the quality in each one's name), the best one below
+ * [quality]: "HD" before "SD" for an "FHD" channel, the first of equals. Null when [quality] is
+ * unknown or already the lowest, or none is below it ("FHD+" isn't lighter than "FHD").
+ */
+internal fun <T> pickLighter(quality: String?, candidates: List<Pair<T, String?>>): Pair<T, String>? {
+    val rank = qualityRank(quality)
+    if (rank < 2) return null
+    var best: Pair<T, String>? = null
+    for ((c, q) in candidates) {
+        val r = qualityRank(q)
+        if (q == null || r !in 1 until rank) continue
+        if (best == null || r > qualityRank(best.second)) best = c to q
+    }
+    return best
+}
+
+/** "4K" 4, "FHD" 3, "HD" 2, "SD" 1, none 0 (see [backupQuality]). */
+internal fun qualityRank(quality: String?): Int = when (quality) {
+    "4K" -> 4
+    "FHD" -> 3
+    "HD" -> 2
+    "SD" -> 1
+    else -> 0
+}
 
 /**
  * A channel's name without what differs between copies of the same channel: a country or

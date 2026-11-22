@@ -163,7 +163,7 @@ class LiveTvPlaybackController @Inject constructor(
         // Off the copy (or what played) meanwhile: it isn't what was asked for any more. Still
         // loading (the stop says idle): "Loading…" stays up.
         p.stop()
-        if (!_state.value.isBuffering) _state.value = _state.value.copy(isBuffering = true)
+        showLoading()
         lineWaitJob = scope.launch {
             ProviderLine.awaitFree()
             // Something else asked for meanwhile, a recording playing included.
@@ -174,6 +174,11 @@ class LiveTvPlaybackController @Inject constructor(
             open(true)
         }
     }
+    /** Still loading, though the player itself is stopped meanwhile (it says idle). */
+    private fun showLoading() {
+        if (!_state.value.isBuffering) _state.value = _state.value.copy(isBuffering = true)
+    }
+
     /** Waiting at the end of the saved part of a replay: how much was saved, and since when. */
     private var replayWaitSavedMs = -1L
     private var replayWaitSince = 0L
@@ -189,6 +194,18 @@ class LiveTvPlaybackController @Inject constructor(
      * asked to be: if the wait runs out, it still starts there (see [copyStartPoint]).
      */
     @Volatile private var copyExact = false
+    /**
+     * The copy on its way carries a replay on by itself from where it froze (see [copyStarved]):
+     * it starts at that very point, waiting for it under the picture kept, rather than on the
+     * whole minute its link starts at. PureTv sends the first seconds at about real time, so the
+     * usual 10 s wait started it up to a minute back, and each restart played again what had just
+     * been watched (and could come back to the same minute, over and over).
+     */
+    @Volatile private var copyKeepsPoint = false
+    /** Until when the next copy started keeps its point (see [copyKeepsPoint]); 0: none. */
+    @Volatile private var keepPointUntil = 0L
+    /** A catch-up's link: the time it starts at, by the guide's clock (null: not a replay). */
+    @Volatile private var linkStartWallMs: Long? = null
     /**
      * What's starting plays once in (false: it's there paused). Set by each start of a replay
      * (see [playResolved]) and by Play/Pause meanwhile; the copy plays by it once in.
@@ -225,6 +242,7 @@ class LiveTvPlaybackController @Inject constructor(
         replayJob = null
         replayLocal = false
         copyStarting = false
+        copyKeepsPoint = false
         replayWaitSavedMs = -1L
         if (replayCache.session != null) replayCache.stop()
     }
@@ -262,7 +280,12 @@ class LiveTvPlaybackController @Inject constructor(
             return false
         }
         replayCache.baseDir = timeshift.baseDir
-        if (!replayCache.hasRoomFor(120)) return false
+        if (!replayCache.hasRoomFor(120)) {
+            // Said, as it changes how replays behave (no instant skips, and the provider's own
+            // hiccups reach playback).
+            com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: not enough room on the device to save the replay (about 4.5 GB needed); playing it straight from the provider")
+            return false
+        }
         val session = replayCache.start(url, channel.headers, keepMinutes = null, reconnect = false, label = "Catch-up save", refreshStream = bufferResolver(channel), policy = stalkerMediaPolicy, mimeType = stalkerMimeType) ?: return false
         com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: saving the replay while it plays, for instant skipping")
         p.stop()
@@ -270,7 +293,9 @@ class LiveTvPlaybackController @Inject constructor(
         // "Loading…" shows where there's no waiting screen, and the waiting screen doesn't take
         // the stopped player for the replay being ready.
         copyStarting = true
-        copyExact = false
+        copyKeepsPoint = android.os.SystemClock.elapsedRealtime() < keepPointUntil
+        keepPointUntil = 0L
+        copyExact = copyKeepsPoint
         copyWaitFrom = 0L
         copyPlays = plays
         // The stopped player says whether it plays once in, like the screen: kept paused from what
@@ -278,15 +303,25 @@ class LiveTvPlaybackController @Inject constructor(
         // count it as playing. Before, it always said it plays: a paused replay picked up again
         // after the background, or skipped in so far the provider was asked again, then played.
         if (backgroundJob?.isActive != true) p.playWhenReady = plays
-        if (!_state.value.isBuffering) _state.value = _state.value.copy(isBuffering = true)
+        showLoading()
         replayJob?.cancel()
         replayJob = scope.launch {
             val f = java.io.File(session.playUri.path ?: "")
             var waited = 0
+            val askedAt = System.currentTimeMillis()
             // Not past the save giving up (the provider sent nothing, or refused twice): it then
             // goes straight to playing it directly or the next link, instead of waiting out the
-            // 15 s for a copy that won't come.
-            while (waited < 15_000 && !(f.exists() && f.length() > 0) && replayCache.isRecording) { delay(200); waited += 200 }
+            // time for a copy that won't come. That time counts from the provider's answer, not
+            // from asking: PureTv answered a replay 14.9 s after it was asked, and the 15 s from
+            // asking threw the save away 0.1 s later, just before its first piece (then 90 s
+            // before the replay played, through the other links). 15 s as before, and up to 10 s
+            // after a late answer; 20 s at most with no answer at all.
+            while (!(f.exists() && f.length() > 0) && replayCache.isRecording) {
+                val t = System.currentTimeMillis()
+                val answered = replayCache.answeredAtMs
+                if (if (answered > 0L) t - askedAt >= 15_000 && t - answered >= 10_000 else t - askedAt >= 20_000) break
+                delay(200); waited += 200
+            }
             if (replayCache.session != session || currentUrl != url) return@launch
             archiveStartPending = true
             if (!f.exists() || f.length() == 0L) {
@@ -309,11 +344,9 @@ class LiveTvPlaybackController @Inject constructor(
                 if (next != null && fallbackUrls.firstOrNull() == next) {
                     fallbackUrls.removeFirst()
                     hlsCatchupFailedOn = null
-                    currentUrl = next
                     // A TS link: saved while it plays, like the one before (this job is replaced).
-                    if (saveFallback(channel, next)) return@launch
+                    if (playCatchupLink(p, channel, next)) return@launch
                     lastProgressAt = android.os.SystemClock.elapsedRealtime()
-                    p.setMediaSource(buildMediaSource(next, channel.headers, isLive = false))
                 } else {
                     p.setMediaSource(buildMediaSource(url, channel.headers, isLive = false))
                 }
@@ -381,8 +414,11 @@ class LiveTvPlaybackController @Inject constructor(
             val saved = replayCache.savedMs
             val waitedMs = android.os.SystemClock.elapsedRealtime() - maxOf(began, copyWaitFrom)
             val missingMs = lead + REPLAY_COPY_AHEAD_MS - saved
-            val giveUp = waitedMs >= REPLAY_COPY_WAIT_MS ||
-                missingMs > (REPLAY_COPY_WAIT_MS - waitedMs) * REPLAY_FASTEST_SAVE
+            // Carrying on by itself from where it froze: it waits longer for that point (under the
+            // picture kept), as starting earlier plays again what was just watched.
+            val budgetMs = if (copyKeepsPoint) REPLAY_KEEP_POINT_WAIT_MS else REPLAY_COPY_WAIT_MS
+            val giveUp = waitedMs >= budgetMs ||
+                missingMs > (budgetMs - waitedMs) * REPLAY_FASTEST_SAVE
             val startAt = when {
                 missingMs <= 0 -> lead
                 // Saved to its end, or the save stopped: nothing more is coming to wait for.
@@ -396,7 +432,7 @@ class LiveTvPlaybackController @Inject constructor(
                 leadSeekMs = 0L
                 com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
                     "Catch-up: copy played from ${startAt / 1000} s in" +
-                        (if (lead > 0) " (the point asked for is ${lead / 1000} s in)" else "") +
+                        (if (lead > 0) " (the point asked for is ${lead / 1000} s in${if (copyKeepsPoint) ", where it froze" else ""})" else "") +
                         ", ${saved / 1000} s saved after ${waitedMs / 100 / 10.0} s more"
                 )
                 return startAt
@@ -469,9 +505,10 @@ class LiveTvPlaybackController @Inject constructor(
         p.seekTo(at)
         copyStarting = true
         copyExact = true
+        copyKeepsPoint = false
         copyWaitFrom = 0L
         leadSeekMs = at
-        if (!_state.value.isBuffering) _state.value = _state.value.copy(isBuffering = true)
+        showLoading()
         replayJob?.cancel()
         replayJob = scope.launch {
             val startAt = copyStartPoint()
@@ -482,14 +519,18 @@ class LiveTvPlaybackController @Inject constructor(
         return true
     }
 
-    /** How much of the stream playing the player has read so far (null: not known yet). */
-    private fun listedMs(p: ExoPlayer): Long? {
-        val tl = p.currentTimeline
-        if (tl.isEmpty) return null
-        val w = tl.getWindow(p.currentMediaItemIndex.coerceIn(0, tl.windowCount - 1), androidx.media3.common.Timeline.Window())
-        if (w.isPlaceholder || w.durationMs == C.TIME_UNSET) return null
-        return w.durationMs
+    /**
+     * What's playing in [timeline] (null: nothing yet, or only the stand-in the player shows until
+     * the stream answers).
+     */
+    private fun windowOf(p: ExoPlayer, timeline: androidx.media3.common.Timeline = p.currentTimeline): androidx.media3.common.Timeline.Window? {
+        if (timeline.isEmpty) return null
+        return timeline.getWindow(p.currentMediaItemIndex.coerceIn(0, timeline.windowCount - 1), androidx.media3.common.Timeline.Window())
+            .takeUnless { it.isPlaceholder }
     }
+
+    /** How much of the stream playing the player has read so far (null: not known yet). */
+    private fun listedMs(p: ExoPlayer): Long? = windowOf(p)?.durationMs?.takeIf { it != C.TIME_UNSET }
     var timeshiftEnabled: Boolean = true
     var timeshiftMinutes: Int = 10
     /** Rewind anytime: full-screen channels play through a rolling buffer (see [startAlwaysBuffer]). */
@@ -557,6 +598,11 @@ class LiveTvPlaybackController @Inject constructor(
         bufferFailedKey = ch.key
         com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Rewind buffer failed on ${ch.name}; playing it directly")
         goLiveFresh()
+    }
+
+    /** Rewind Anytime's buffer stopped coming in or playing: started over, or played directly when it failed straight away. */
+    private fun bufferDropped() {
+        if (System.currentTimeMillis() - bufferStartedAt < 20_000) bufferFailed() else goLiveFresh()
     }
 
     /** Drops the buffer and plays the channel again from now (a new buffer, if it's on). */
@@ -808,6 +854,11 @@ class LiveTvPlaybackController @Inject constructor(
         }
     }
 
+    /** No longer watching from a recording that's being made (the recording itself carries on). */
+    private fun stopWatchingRecording() {
+        if (_recordingPlayback.value != null) { _recordingPlayback.value = null; shiftJob?.cancel() }
+    }
+
     /** Watching a recording that ended (or failed): carry on with the channel live. */
     private fun recordingPlaybackEnded() {
         _recordingPlayback.value = null
@@ -941,15 +992,15 @@ class LiveTvPlaybackController @Inject constructor(
 
     /** Go live: drop the recording and play the channel live again. */
     fun goLive() {
-        // A sports addon game's own rewind window: back to its newest part.
-        if (_ownTimeline.value) { _player?.seekToDefaultPosition(); _player?.play(); return }
-        // Rewind anytime: back to the newest part of the buffer (it keeps your rewind history).
-        if (alwaysBuffer && _shiftStartedAt.value != null && shiftPrepared) {
+        // Back to the newest part of what's playing, which stays: a sports addon game's own
+        // rewind window, Rewind Anytime's buffer (it keeps your rewind history), or a recording
+        // of this channel being watched (live, a few seconds behind, on the recording's one
+        // connection).
+        if (_ownTimeline.value || (alwaysBuffer && _shiftStartedAt.value != null && shiftPrepared) ||
+            _recordingPlayback.value != null
+        ) {
             _player?.seekToDefaultPosition(); _player?.play(); return
         }
-        // Watching from a recording of this channel: jump to its newest part (live, a few
-        // seconds behind), keeping the one connection the recording uses.
-        if (_recordingPlayback.value != null) { _player?.seekToDefaultPosition(); _player?.play(); return }
         val ch = currentChannel
         val url = currentUrl
         stopShift()
@@ -981,11 +1032,6 @@ class LiveTvPlaybackController @Inject constructor(
     var autoReconnect: Boolean = true
 
     /**
-     * Audio passthrough. Off: Dolby / DTS audio is decoded by the app and sent as plain PCM,
-     * which is far more robust with Alexa Home Theater / Echo speakers on Fire TV. Changing it
-     * rebuilds the player (and carries on with the same channel).
-     */
-    /**
      * The video's frame rate as measured from the frames themselves (for Match Frame Rate).
      * Many live streams don't state their frame rate, so the player's own value is often
      * missing and the display was never switched.
@@ -1007,29 +1053,32 @@ class LiveTvPlaybackController @Inject constructor(
         set(value) {
             if (field == value) return
             field = value
-            val p = _player ?: return
-            val ch = currentChannel
-            val url = currentUrl
-            val title = _state.value.catchupTitle
-            val providerRef = activeStalkerRef
-            val wasPlaying = p.playWhenReady
-            release()
-            if (ch != null && wasPlaying) play(ch, overrideUrl = url.takeIf { it != ch.url }, catchupTitle = title, stalkerStream = providerRef)
+            rebuildPlayer()
         }
 
+    /**
+     * Audio passthrough. Off: Dolby / DTS audio is decoded by the app and sent as plain PCM,
+     * which is far more robust with Alexa Home Theater / Echo speakers on Fire TV. Changing it
+     * rebuilds the player (and carries on with the same channel).
+     */
     var audioPassthrough: Boolean = true
         set(value) {
             if (field == value) return
             field = value
-            val p = _player ?: return
-            val ch = currentChannel
-            val url = currentUrl
-            val title = _state.value.catchupTitle
-            val providerRef = activeStalkerRef
-            val wasPlaying = p.playWhenReady
-            release()
-            if (ch != null && wasPlaying) play(ch, overrideUrl = url.takeIf { it != ch.url }, catchupTitle = title, stalkerStream = providerRef)
+            rebuildPlayer()
         }
+
+    /** A setting the player is built with changed: built again, carrying on with what was playing. */
+    private fun rebuildPlayer() {
+        val p = _player ?: return
+        val ch = currentChannel
+        val url = currentUrl
+        val title = _state.value.catchupTitle
+        val providerRef = activeStalkerRef
+        val wasPlaying = p.playWhenReady
+        release()
+        if (ch != null && wasPlaying) play(ch, overrideUrl = url.takeIf { it != ch.url }, catchupTitle = title, stalkerStream = providerRef)
+    }
 
     @Volatile private var watchingFullscreen = false
 
@@ -1179,8 +1228,9 @@ class LiveTvPlaybackController @Inject constructor(
         savedRecordingPlaylist = null
         _ownTimeline.value = false
         if (_shiftStartedAt.value != null) stopShift()
-        if (_recordingPlayback.value != null) { _recordingPlayback.value = null; shiftJob?.cancel() }
+        stopWatchingRecording()
         archiveStartWallMs = if (catchupTitle != null) catchupStartMs else null
+        linkStartWallMs = if (catchupTitle != null && catchupStartMs != null) catchupStartMs - catchupLeadMs.coerceAtLeast(0L) else null
         archiveWallMapped = false
         archiveExpectWallMs = if (catchupTitle != null) catchupExpectWallMs else null
         wrongShowSkips = 0
@@ -1257,6 +1307,10 @@ class LiveTvPlaybackController @Inject constructor(
         // A replay picked from the guide, live channels, and a replay asked again where its window
         // ran out (it was playing) play as before.
         val playsNow = plays && !(forceReload && catchupTitle != null && replayPausedNow())
+        // A new replay or channel (not the same one asked again from a point): its copy is
+        // watched for running dry afresh (see copyStarved).
+        if (!forceReload || catchupTitle == null) starvation.reset()
+        copyEndedSince = 0L
         farLeadDirect = false
         // A new request (not a skip, a restart or a reconnect): an earlier failure doesn't carry over.
         if (!forceReload && reconnectAttempt == 0) farDirectFailed = false
@@ -1332,10 +1386,10 @@ class LiveTvPlaybackController @Inject constructor(
     private fun checkCatchupClock(timeline: androidx.media3.common.Timeline) {
         val expect = archiveExpectWallMs ?: return
         val url = currentUrl ?: return
-        if (_state.value.catchupTitle == null || wallCheckedFor == url || timeline.isEmpty) return
+        if (_state.value.catchupTitle == null || wallCheckedFor == url) return
         val p = _player ?: return
-        val w = timeline.getWindow(p.currentMediaItemIndex.coerceIn(0, timeline.windowCount - 1), androidx.media3.common.Timeline.Window())
-        if (w.isPlaceholder || w.windowStartTimeMs == C.TIME_UNSET) return
+        val w = windowOf(p, timeline) ?: return
+        if (w.windowStartTimeMs == C.TIME_UNSET) return
         wallCheckedFor = url
         val from = w.windowStartTimeMs
         val to = if (w.durationMs != C.TIME_UNSET && w.durationMs > 0) from + w.durationMs else System.currentTimeMillis()
@@ -1361,12 +1415,7 @@ class LiveTvPlaybackController @Inject constructor(
             fallbackUrls.addAll(other)
             val fb = fallbackUrls.removeFirst()
             pl.stop()
-            currentUrl = fb
-            if (saveFallback(ch, fb)) return@launch
-            archiveStartPending = true
-            pl.setMediaSource(buildMediaSource(fb, ch.headers, isLive = false))
-            pl.prepare()
-            // Paused or playing stays as it was: a replay asked for while paused stays paused.
+            playCatchupLink(pl, ch, fb)
         }
     }
 
@@ -1378,13 +1427,8 @@ class LiveTvPlaybackController @Inject constructor(
         private set
 
     /** The stream's clock time at the current position, when the stream carries one. */
-    private fun streamWallMs(p: ExoPlayer): Long? {
-        val tl = p.currentTimeline
-        if (tl.isEmpty) return null
-        val w = tl.getWindow(p.currentMediaItemIndex.coerceIn(0, tl.windowCount - 1), androidx.media3.common.Timeline.Window())
-        if (w.isPlaceholder || w.windowStartTimeMs == C.TIME_UNSET) return null
-        return w.windowStartTimeMs + p.currentPosition
-    }
+    private fun streamWallMs(p: ExoPlayer): Long? =
+        windowOf(p)?.windowStartTimeMs?.takeIf { it != C.TIME_UNSET }?.let { it + p.currentPosition }
 
     /**
      * Time into the show that started at [programStartMs], for a replay that came as the live
@@ -1482,14 +1526,19 @@ class LiveTvPlaybackController @Inject constructor(
         }
     }
 
-    fun stop() {
-        _stops.value = _stops.value + 1
+    /** Lets go of the Stalker link in use, and of one still being obtained. */
+    private fun dropStalker() {
         stalkerMediaPolicy?.retire()
         stalkerMediaPolicy = null
         stalkerMimeType = null
         stalkerResolveJob?.cancel()
         stalkerGeneration++
         activeStalkerRef = null
+    }
+
+    fun stop() {
+        _stops.value = _stops.value + 1
+        dropStalker()
         savedRecordingId = null
         savedRecordingPlaylist = null
         clearStarting()
@@ -1499,7 +1548,7 @@ class LiveTvPlaybackController @Inject constructor(
         // A pause buffer lets go of its provider connection too (a recording you're watching
         // from carries on; only watching it stops).
         if (_shiftStartedAt.value != null || timeshift.session != null) stopShift()
-        if (_recordingPlayback.value != null) { _recordingPlayback.value = null; shiftJob?.cancel() }
+        stopWatchingRecording()
         _player?.stop()
         _player?.clearMediaItems()
         currentChannel = null
@@ -1534,11 +1583,95 @@ class LiveTvPlaybackController @Inject constructor(
         }
     }
 
+    /** Watches a replay's copy for running dry on a slow save (see [copyStarved]). */
+    private val starvation = CopyStarvation()
+    /** The copy [starvation] is measuring (a new one has its own amounts). */
+    private var starvationCopy: java.io.File? = null
+    /** Since when a replay's copy has sat at its end (see [copyRanOut]); 0: it hasn't, -1: asked again. */
+    private var copyEndedSince = 0L
+
+    /**
+     * A replay playing from its copy caught up with the save, which comes in slower than it plays
+     * (see [CopyStarvation]): asked again from where it is, as a skip there does (true if done).
+     * Seen on PureTv: the picture froze, played a few seconds as each piece came in, and froze
+     * again, and only a skip by hand got it going; a new request gets the provider's fast start.
+     */
+    private fun copyStarved(p: ExoPlayer, ch: LiveChannel, now: Long, pos: Long): Boolean {
+        val copy = replayCache.session
+        val saved = replayCache.savedMs
+        // Not a portal (Stalker) replay: its link always starts at the show's start, so asking again
+        // from a point far in plays it straight from the provider or from the start. Nor close to
+        // live (a show still airing): a new request can't send faster than it airs.
+        val nearLive = linkStartWallMs?.let { it + saved >= System.currentTimeMillis() - 120_000L } ?: true
+        // Nor while the save drops what the provider sent again over a new connection (half a
+        // minute at most, see LiveTvTimeshift.catchingUp): asking again there would be a cut.
+        if (_state.value.catchupTitle == null || !replayLocal || copy == null || copy.kind != LiveTvTimeshift.Kind.TS ||
+            !replayCache.isRecording || copyOnItsWay() || onCatchupStarved == null || activeStalkerRef != null || nearLive ||
+            replayCache.catchingUp
+        ) {
+            starvation.notWatching()
+            return false
+        }
+        if (starvationCopy != copy.dir) { starvationCopy = copy.dir; starvation.newCopy() }
+        val waiting = p.playWhenReady && p.playbackState == Player.STATE_BUFFERING
+        return when (starvation.check(now, saved, pos, waiting)) {
+            CopyStarvation.Verdict.WAIT -> false
+            CopyStarvation.Verdict.GIVE_UP -> {
+                com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
+                    "Catch-up on ${ch.name}: asking the provider again didn't help either (it sends slower than the replay plays from the start); waiting for the save instead"
+                )
+                onCatchupSlow?.invoke()
+                false
+            }
+            CopyStarvation.Verdict.ASK_AGAIN -> {
+                com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
+                    "Catch-up on ${ch.name}: playback caught up with the save (${saved / 1000} s saved, " +
+                        "${String.format(java.util.Locale.US, "%.2f", starvation.askedAtRate)}x real time lately); " +
+                        "asking the provider again from this point, as a skip there does"
+                )
+                lastProgressAt = now
+                // A lighter copy of the channel offered meanwhile (the view model's own call).
+                onCatchupSlow?.invoke()
+                // The copy that comes next starts where it froze (see copyKeepsPoint).
+                keepPointUntil = now + 15_000L
+                if (onCatchupStarved?.invoke() == true) return true
+                // Not asked (a skip of yours on its way, say): yours goes on, and this doesn't count.
+                keepPointUntil = 0L
+                starvation.declined()
+                false
+            }
+        }
+    }
+
+    /**
+     * A replay's copy played to the end of what was saved (the save stopped early: the provider
+     * ended the stream and can't carry it on, see [LiveTvTimeshift]) and nothing carried it on:
+     * asked again from there (true if done). Full screen does that within half a second (the
+     * view model's followCatchup); this is for the guide's preview window, and for the end of a
+     * copy where the guide has no show, which were left on their last picture until a skip.
+     */
+    private fun copyRanOut(p: ExoPlayer, ch: LiveChannel, now: Long): Boolean {
+        if (p.playbackState != Player.STATE_ENDED || _state.value.catchupTitle == null || !replayLocal ||
+            replayCache.isRecording || !p.playWhenReady || pausedForBackground || _state.value.error != null || onCatchupEnded == null
+        ) {
+            copyEndedSince = 0L
+            return false
+        }
+        if (copyEndedSince == 0L) { copyEndedSince = now; return false }
+        if (copyEndedSince < 0L || now - copyEndedSince < 3_000L) return false
+        copyEndedSince = -1L
+        lastProgressAt = now
+        keepPointUntil = now + 15_000L
+        com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up on ${ch.name}: its copy played to the end of what was saved (${replayCache.savedMs / 1000} s)")
+        return onCatchupEnded?.invoke() == true
+    }
+
     private fun checkStall() {
         val p = _player ?: return
         if (_shiftStartedAt.value != null || _recordingPlayback.value != null || savedRecordingId != null) { lastProgressAt = android.os.SystemClock.elapsedRealtime(); return }
         val now = android.os.SystemClock.elapsedRealtime()
         val ch = currentChannel
+        if (ch != null && copyRanOut(p, ch, now)) return
         // A replay asked for while paused (a skip that asks the provider again) and not in yet, with
         // no copy and no picture: still watched, so a link that sends nothing moves on to the next
         // one, still paused. Left alone, it sat on "Loading…" until Play was pressed. Ready to play
@@ -1551,11 +1684,13 @@ class LiveTvPlaybackController @Inject constructor(
         ) {
             lastProgressAt = now
             lastPosition = p.currentPosition
+            starvation.notWatching()
             return
         }
         val pos = p.currentPosition
         val moving = p.playbackState == Player.STATE_READY && ((p.isPlaying && pos != lastPosition) || pausedLoading)
         lastPosition = pos
+        if (copyStarved(p, ch, now, pos)) return
         if (moving) {
             lastProgressAt = now
             if (_state.value.catchupTitle != null) { archiveStarted = true; catchupRestarts = 0; farDirectFailed = false }
@@ -1583,13 +1718,7 @@ class LiveTvPlaybackController @Inject constructor(
                 val wasHls = isHlsReplayLink(currentUrl)
                 val toTs = isTsReplayLink(fb)
                 hlsCatchupFailedOn = if (wasHls && toTs) ch.sourceId else null
-                currentUrl = fb
-                // A TS replay: saved while it plays, like one that started as TS.
-                if (saveFallback(ch, fb)) return
-                archiveStartPending = true
-                p.setMediaSource(buildMediaSource(fb, ch.headers, isLive = false))
-                p.prepare()
-                // Paused or playing stays as it was: a replay asked for while paused stays paused.
+                playCatchupLink(p, ch, fb)
             } else {
                 scheduleReconnect("Catch-up didn't start: the provider sent nothing for this show")
             }
@@ -2256,6 +2385,35 @@ class LiveTvPlaybackController @Inject constructor(
                 addAnalyticsListener(object : androidx.media3.exoplayer.analytics.AnalyticsListener {
                     private var droppedTotal = 0L
                     private var lastReportAt = 0L
+                    private var lastJumpReportAt = 0L
+
+                    /**
+                     * The sound's own clock jumped inside the stream (not a skip): what the
+                     * provider sent is spliced from two moments of the show. The sound plays on
+                     * from the other moment while the picture holds until it catches up (seen on
+                     * a replay carried on from the middle on a provider that sends it differently
+                     * each time). In the Start-Up Report, so it shows where it came from.
+                     */
+                    override fun onAudioSinkError(
+                        eventTime: androidx.media3.exoplayer.analytics.AnalyticsListener.EventTime,
+                        audioSinkError: Exception
+                    ) {
+                        val jump = audioSinkError as? androidx.media3.exoplayer.audio.AudioSink.UnexpectedDiscontinuityException ?: return
+                        val deltaMs = (jump.actualPresentationTimeUs - jump.expectedPresentationTimeUs) / 1000
+                        if (kotlin.math.abs(deltaMs) < 1_000) return
+                        val now = android.os.SystemClock.elapsedRealtime()
+                        if (now - lastJumpReportAt < 10_000) return
+                        lastJumpReportAt = now
+                        val what = when {
+                            _state.value.catchupTitle == null -> "channel ${currentChannel?.name}"
+                            replayLocal -> "replay, from its copy on this box"
+                            else -> "replay, straight from the provider · ${redact(currentUrl.orEmpty())}"
+                        }
+                        com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
+                            "Sound jumped ${if (deltaMs < 0) "back" else "ahead"} ${String.format(java.util.Locale.US, "%.1f", kotlin.math.abs(deltaMs) / 1000.0)} s " +
+                                "inside the stream ($what); the picture holds until it catches up"
+                        )
+                    }
                     override fun onDroppedVideoFrames(
                         eventTime: androidx.media3.exoplayer.analytics.AnalyticsListener.EventTime,
                         droppedFrames: Int,
@@ -2390,31 +2548,21 @@ class LiveTvPlaybackController @Inject constructor(
             // The wrong show came and another link is asked for: the rest of this is the old
             // link's timeline (it cleared the new link's skip into the minute, or its own start).
             if (currentUrl != urlBefore || copyOnItsWay()) return
-            if (shiftStartPending && !timeline.isEmpty) {
-                val pl = _player
-                if (pl != null) {
-                    val w = timeline.getWindow(pl.currentMediaItemIndex.coerceIn(0, timeline.windowCount - 1), androidx.media3.common.Timeline.Window())
-                    if (!w.isPlaceholder) {
-                        shiftStartPending = false
-                        pl.seekTo(0L)
-                        com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Pause buffer: timeline in (buffer holds ${if (w.durationMs != C.TIME_UNSET) w.durationMs / 1000 else -1} s); started at the pause point (was at ${pl.currentPosition / 1000} s)")
-                    }
-                }
-            }
-            if (!archiveStartPending && leadSeekMs > 0 && !timeline.isEmpty) {
-                _player?.let { pl ->
-                    val w = timeline.getWindow(pl.currentMediaItemIndex.coerceIn(0, timeline.windowCount - 1), androidx.media3.common.Timeline.Window())
-                    if (!w.isPlaceholder) tryLeadSeek(pl, w)
-                }
-            }
-            if (!archiveStartPending || timeline.isEmpty) return
             val p = _player ?: return
-            val window = timeline.getWindow(p.currentMediaItemIndex.coerceIn(0, timeline.windowCount - 1), androidx.media3.common.Timeline.Window())
             // The first timeline is only a stand-in until the stream answers. A seek to 0 made
             // then is ignored by the player (it reads 0 as "no seek" and starts live streams at
             // the live edge), which is why "Watch from start" still began at now on some
             // providers. Wait for the real one.
-            if (window.isPlaceholder) return
+            val window = windowOf(p, timeline) ?: return
+            if (shiftStartPending) {
+                shiftStartPending = false
+                p.seekTo(0L)
+                com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Pause buffer: timeline in (buffer holds ${if (window.durationMs != C.TIME_UNSET) window.durationMs / 1000 else -1} s); started at the pause point (was at ${p.currentPosition / 1000} s)")
+            }
+            if (!archiveStartPending) {
+                if (leadSeekMs > 0) tryLeadSeek(p, window)
+                return
+            }
             archiveStartPending = false
             if (_state.value.catchupTitle == null) return
             if (!(window.isDynamic || window.isLive())) { tryLeadSeek(p, window); return }
@@ -2446,6 +2594,11 @@ class LiveTvPlaybackController @Inject constructor(
                 error = if (playbackState == Player.STATE_READY) null else _state.value.error,
                 reconnectAttempt = if (playbackState == Player.STATE_READY) 0 else _state.value.reconnectAttempt
             )
+            if (playbackState == Player.STATE_ENDED && _state.value.catchupTitle != null && replayLocal && savedRecordingId == null) {
+                // The replay's copy played to its end: it's carried on from here (followCatchup, or
+                // copyRanOut), and the next copy starts at this very point (see copyKeepsPoint).
+                keepPointUntil = android.os.SystemClock.elapsedRealtime() + 15_000L
+            }
             if (playbackState == Player.STATE_ENDED && _shiftStartedAt.value != null && timeshift.isRecording) {
                 // Caught up with the end of what's recorded while it's still recording: carry on
                 // from here (the newest pieces come in), rather than dropping back to live.
@@ -2460,7 +2613,7 @@ class LiveTvPlaybackController @Inject constructor(
             if (playbackState == Player.STATE_ENDED && _shiftStartedAt.value != null && alwaysBuffer) {
                 // The buffer stopped coming in (the stream dropped): start over, or play directly
                 // if it fails straight away.
-                if (System.currentTimeMillis() - bufferStartedAt < 20_000) bufferFailed() else goLiveFresh()
+                bufferDropped()
                 return
             }
             if (playbackState == Player.STATE_ENDED && _recordingPlayback.value != null) {
@@ -2502,7 +2655,7 @@ class LiveTvPlaybackController @Inject constructor(
             }
             if (_shiftStartedAt.value != null && alwaysBuffer) {
                 Log.w(TAG, "Buffer playback failed", error)
-                if (System.currentTimeMillis() - bufferStartedAt < 20_000) bufferFailed() else goLiveFresh()
+                bufferDropped()
                 return
             }
             if (_shiftStartedAt.value != null) {
@@ -2521,6 +2674,24 @@ class LiveTvPlaybackController @Inject constructor(
             if (replayLocal) {
                 val ch0 = currentChannel
                 val url0 = currentUrl
+                // The player gave up on the copy's list because it hadn't grown for 35 s (a piece
+                // took that long to save: PureTv at 0.15x), while the save goes on. The copy is
+                // fine: it's read again from here and goes on waiting for the save. Asking the
+                // provider again is left to the watch for a copy running dry (copyStarved), which
+                // keeps its place and doesn't keep asking where that doesn't help. Before, this
+                // threw the copy away and asked again from the whole minute, every time.
+                val copy0 = replayCache.session
+                val pos0 = _player?.currentPosition ?: 0L
+                if (copy0 != null && replayCache.isRecording && copy0.kind == LiveTvTimeshift.Kind.TS && _player != null &&
+                    generateSequence<Throwable>(error) { it.cause }.take(8)
+                        .any { it is androidx.media3.exoplayer.hls.playlist.HlsPlaylistTracker.PlaylistStuckException }
+                ) {
+                    com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
+                        "Catch-up: the player stopped waiting for the copy (nothing new in its list for 35 s; ${replayCache.savedMs / 1000} s saved); reading it again from ${pos0 / 1000} s"
+                    )
+                    playCopyFrom(_player!!, copy0, pos0)
+                    return
+                }
                 // First ask again from where it got to (a new copy from there), instead of
                 // starting the replay over from its beginning with no copy; up to 3 times running.
                 if (onCatchupStalled != null && catchupRestarts < 3) {
@@ -2543,6 +2714,18 @@ class LiveTvPlaybackController @Inject constructor(
                     }
                     return
                 }
+            }
+            // A replay played straight from the provider that had been playing (not one that
+            // never started, which tries the other links as before): asked again from where it got
+            // to, saved while it plays. The other forms of the link, and the same link again,
+            // start where the link starts: a replay ten minutes in went back ten minutes.
+            if (_state.value.catchupTitle != null && archiveStarted && !replayLocal && activeStalkerRef == null &&
+                onCatchupStalled != null && catchupRestarts < 3
+            ) {
+                catchupRestarts++
+                com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up stopped while playing straight from the provider (${error.errorCodeName}); asking again from this point (try $catchupRestarts)")
+                _player?.stop()
+                if (onCatchupStalled?.invoke() == true) return
             }
             val p = _player
             // The provider doesn't offer this as HLS: switch to the TS link once.
@@ -2644,6 +2827,22 @@ class LiveTvPlaybackController @Inject constructor(
     /** A replay from the provider froze: ask for it again from where it stopped (true if done). */
     var onCatchupStalled: (() -> Boolean)? = null
     /**
+     * A replay's copy ran dry on a save slower than it plays (see [copyStarved]): ask the provider
+     * again from where it is, as a skip there does, over the picture kept (true if asked).
+     */
+    var onCatchupStarved: (() -> Boolean)? = null
+    /**
+     * The same replay froze because the provider sends it slower than it plays (each time
+     * [copyStarved] steps in, and when asking again stops helping): the view model offers the
+     * channel in a lower quality from the same provider, whose replay comes in faster.
+     */
+    var onCatchupSlow: (() -> Unit)? = null
+    /**
+     * A replay's copy played to the end of what was saved and nothing carried it on (see
+     * [copyRanOut]): ask again from there (true if asked).
+     */
+    var onCatchupEnded: (() -> Boolean)? = null
+    /**
      * A replay picked up after the background far into its link: ask the provider for it again
      * from [inStreamMs] into the link playing, as a skip there does, playing or paused as [plays]
      * says (true if asked, straight away).
@@ -2656,7 +2855,7 @@ class LiveTvPlaybackController @Inject constructor(
      * asks the provider for part of the file, which many providers don't handle (it froze).
      */
     fun catchupSeekInStream(): Boolean =
-        replayLocal || archiveWallMapped || stalkerMimeType == StalkerMimeProbe.HLS || stalkerMimeType == StalkerMimeProbe.DASH || currentUrl?.substringBefore('?')?.contains("m3u8", ignoreCase = true) == true
+        replayLocal || archiveWallMapped || stalkerMimeType == StalkerMimeProbe.HLS || stalkerMimeType == StalkerMimeProbe.DASH || saysHls(currentUrl)
 
     /**
      * Faster Catch-Up Skipping: how much of the replay is saved on this box so far (ms into what
@@ -2674,11 +2873,26 @@ class LiveTvPlaybackController @Inject constructor(
 
     /** Seek thumbnails: the replay is a streamed (HLS) link that plays straight from the provider. */
     fun catchupIsHls(): Boolean =
-        !replayLocal && (stalkerMimeType == StalkerMimeProbe.HLS || currentUrl?.substringBefore('?')?.contains("m3u8", ignoreCase = true) == true)
+        !replayLocal && (stalkerMimeType == StalkerMimeProbe.HLS || saysHls(currentUrl))
+
+    /**
+     * Moves the replay on to [url], another of its links: a TS link is saved while it plays, like
+     * one that started as TS (true: its copy takes it from here), any other is played straight
+     * from the provider. Paused or playing stays as it was: a replay asked for while paused stays
+     * paused.
+     */
+    private fun playCatchupLink(p: ExoPlayer, ch: LiveChannel, url: String): Boolean {
+        currentUrl = url
+        if (saveFallback(ch, url)) return true
+        archiveStartPending = true
+        p.setMediaSource(buildMediaSource(url, ch.headers, isLive = false))
+        p.prepare()
+        return false
+    }
 
     /** A TS catch-up link tried after another failed: saved while it plays (false if it can't be); paused stays paused. */
     private fun saveFallback(ch: LiveChannel, url: String): Boolean =
-        catchupCache && ch.drm == null && !url.substringBefore('?').contains("m3u8", ignoreCase = true) &&
+        catchupCache && ch.drm == null && !saysHls(url) &&
             startReplayCache(ch, url, plays = !replayPausedNow())
 
     /**
@@ -2903,7 +3117,7 @@ class LiveTvPlaybackController @Inject constructor(
      * it after a freeze or an error carries on there instead of starting over. Unset otherwise.
      */
     private fun ownReplayResumeAt(p: ExoPlayer): Long =
-        if (_ownTimeline.value && !p.isCurrentMediaItemDynamic) p.currentPosition.coerceAtLeast(0L) else C_TIME_UNSET
+        if (_ownTimeline.value && !p.isCurrentMediaItemDynamic) p.currentPosition.coerceAtLeast(0L) else C.TIME_UNSET
 
     /**
      * Lets go of the player (and its hold on the audio output) right away. Called when Nuvio's
@@ -2916,12 +3130,7 @@ class LiveTvPlaybackController @Inject constructor(
 
     private fun release() {
         lineWaitJob?.cancel()
-        stalkerMediaPolicy?.retire()
-        stalkerMediaPolicy = null
-        stalkerMimeType = null
-        stalkerResolveJob?.cancel()
-        stalkerGeneration++
-        activeStalkerRef = null
+        dropStalker()
         backgroundJob?.cancel()
         backgroundJob = null
         resumeAfterBackground = null
@@ -2990,6 +3199,12 @@ class LiveTvPlaybackController @Inject constructor(
         private const val REPLAY_COPY_AHEAD_MS = REPLAY_LIST_TARGET_SEC * 1_000L + 3_000L
         /** The longest a replay's copy waits for that: no longer than the player would have stopped for anyway. */
         private const val REPLAY_COPY_WAIT_MS = REPLAY_LIST_TARGET_SEC * 1_000L
+        /**
+         * How long a copy that carries a replay on from where it froze waits for that point (see
+         * copyKeepsPoint): about what PureTv takes to send the whole minute up to it again at its
+         * real-time start (under the waiting screen, whose own limit is a minute).
+         */
+        private const val REPLAY_KEEP_POINT_WAIT_MS = 45_000L
         /** About the fastest a provider sends a replay (times real time, 17x seen): more than that won't come in time. */
         private const val REPLAY_FASTEST_SAVE = 20L
         /**
@@ -3009,8 +3224,10 @@ class LiveTvPlaybackController @Inject constructor(
         private const val FRAME_TIMEOUT_MS = 2_500L
         /** Still loading this long after the video moved to a new screen = stuck. */
         private const val LOADING_AFTER_MOVE_MS = 7_000L
-        private const val C_TIME_UNSET = Long.MIN_VALUE + 1
         private const val TAG = "LiveTvPlayback"
+
+        /** The link says it's HLS ("m3u8" in it, before any "?"). */
+        private fun saysHls(url: String?): Boolean = url?.substringBefore('?')?.contains("m3u8", ignoreCase = true) == true
 
         /** An Xtream catch-up link for HLS (…/timeshift/….m3u8). */
         private fun isHlsReplayLink(url: String?): Boolean =

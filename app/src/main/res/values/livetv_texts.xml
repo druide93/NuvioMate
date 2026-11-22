@@ -660,6 +660,7 @@
         <item>"OK to pick a game"</item>
         <item>"OK to play now · Back to stop"</item>
         <item>"OK to replace or retry this pane"</item>
+        <item>"OK to switch · Back to stay"</item>
         <item>"OK turns a league on or off, and opens or closes a sport. Leagues you follow always show."</item>
         <item>"OK uses that copy."</item>
         <item>"OK watches it (or records it, if it hasn't started there) · Hold OK to record"</item>
@@ -914,6 +915,10 @@
         <item>"Shape"</item>
         <item>"Shots"</item>
         <item>"Show"</item>
+        <item>"Switch to {0}?"</item>
+        <item>"This replay comes in slower than it plays"</item>
+        <item>"This channel can't replay that moment"</item>
+        <item>"That lower-quality replay isn't there any more"</item>
         <item>"Use the NuvioMate icon"</item>
         <item>"Show &amp; movie logos (TMDB)"</item>
         <item>"Show channels from"</item>
@@ -2050,6 +2055,7 @@
         <item>"OK to pick a game"</item>
         <item>"OK to play now · Back to stop"</item>
         <item>"OK to replace or retry this pane"</item>
+        <item>"OK to switch · Back to stay"</item>
         <item>"OK turns a league on or off, and opens or closes a sport. Leagues you follow always show."</item>
         <item>"OK uses that copy."</item>
         <item>"OK watches it (or records it, if it hasn't started there) · Hold OK to record"</item>
@@ -2304,6 +2310,10 @@
         <item>"Shape"</item>
         <item>"Shots"</item>
         <item>"Show"</item>
+        <item>"Switch to {0}?"</item>
+        <item>"This replay comes in slower than it plays"</item>
+        <item>"This channel can't replay that moment"</item>
+        <item>"That lower-quality replay isn't there any more"</item>
         <item>"Use the NuvioMate icon"</item>
         <item>"Show &amp; movie logos (TMDB)"</item>
         <item>"Show channels from"</item>

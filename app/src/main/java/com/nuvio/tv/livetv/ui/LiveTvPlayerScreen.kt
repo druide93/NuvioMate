@@ -353,6 +353,8 @@ fun LiveTvPlayerScreen(
     // Catch-up seeking: Left/Right move a target time; the seek happens once you stop pressing.
     val catchupSession by viewModel.catchup.collectAsStateWithLifecycle()
     var scrubTargetMs by remember { mutableStateOf<Long?>(null) }
+    /** The show (its start) the skip waiting in [scrubTargetMs] was made in. */
+    var scrubProgramStartMs by remember { mutableStateOf<Long?>(null) }
     var scrubToken by remember { mutableIntStateOf(0) }
     var positionMs by remember { mutableStateOf(0L) }
     // The stretch you can seek in without waiting (saved on the box, or loaded ahead), in ms into
@@ -372,6 +374,11 @@ fun LiveTvPlayerScreen(
     // (OK plays it now, Back goes back), or straight back when there's none.
     val recordingEnd by viewModel.recordingEnded.collectAsStateWithLifecycle()
     val upNext = recordingEnd?.next
+    // A replay that freezes (its provider sends it too slowly): the same channel in a lower
+    // quality from the same provider, offered from the same point. OK switches, Back stays.
+    val lighterOffer by viewModel.lighterOffer.collectAsStateWithLifecycle()
+    /** The OK or Back pressed while the offer was up (its key-up only counts then). */
+    var lighterKeyDown by remember { mutableStateOf<Key?>(null) }
     var upNextSec by remember { mutableIntStateOf(UP_NEXT_SECONDS) }
     LaunchedEffect(recordingEnd) {
         val end = recordingEnd ?: return@LaunchedEffect
@@ -384,9 +391,12 @@ fun LiveTvPlayerScreen(
         if (!viewModel.playNextRecording()) onBack()
     }
     LaunchedEffect(scrubToken) {
-        val target = scrubTargetMs ?: return@LaunchedEffect
+        if (scrubTargetMs == null) return@LaunchedEffect
         delay(700)
         val s = catchupSession
+        // The show the skip was made in; the replay may have moved on to the next one meanwhile.
+        val madeIn = scrubProgramStartMs ?: s?.program?.startMs
+        val target = (scrubTargetMs ?: return@LaunchedEffect) + if (s != null && madeIn != null) madeIn - s.program.startMs else 0L
         // Skipped forward up to live in a show still on air: back to watching it live.
         if (s != null && s.recordingId == null && target > positionMs &&
             s.program.startMs + target >= System.currentTimeMillis() - LIVE_EDGE_MS
@@ -395,8 +405,8 @@ fun LiveTvPlayerScreen(
             viewModel.backToLive(s.channel)
             return@LaunchedEffect
         }
-        viewModel.seekCatchupTo(target)
-        positionMs = target
+        if (s != null) viewModel.seekCatchupTo(s.program.startMs, target) else viewModel.seekCatchupTo(target)
+        positionMs = target.coerceAtLeast(0L)
         scrubTargetMs = null
     }
     // Each press 10 seconds (as in the Nuvio player and Rewind Anytime); held, faster.
@@ -405,8 +415,11 @@ fun LiveTvPlayerScreen(
         val s = catchupSession ?: return
         val step = stepMs ?: holdStepMs(repeat)
         val length = s.program.stopMs - s.program.startMs
-        val from = scrubTargetMs ?: positionMs
+        // A skip still waiting, made in the show before this one: its point in this show.
+        val waiting = scrubTargetMs?.let { it + ((scrubProgramStartMs ?: s.program.startMs) - s.program.startMs) }
+        val from = waiting ?: positionMs
         scrubTargetMs = (from + if (forward) step else -step).coerceIn(0L, length)
+        scrubProgramStartMs = s.program.startMs
         scrubToken++
         showBanner()
     }
@@ -530,7 +543,7 @@ fun LiveTvPlayerScreen(
         liveRewindAtMs = null
         val ch = current ?: return@LaunchedEffect
         val offset = viewModel.replayFrom(ch, at)
-        if (offset == null) toast = "This channel can't replay it from the start" else positionMs = offset
+        if (offset == null) toast = "This channel can't replay that moment" else positionMs = offset
     }
     LaunchedEffect(playback.channelKey, playback.catchupTitle) { liveRewindAtMs = null }
     /**
@@ -679,6 +692,17 @@ fun LiveTvPlayerScreen(
                     if (e.type == KeyEventType.KeyUp) {
                         if (isOk) { if (!viewModel.playNextRecording()) onBack() }
                         else if (e.key == Key.Back) onBack()
+                    }
+                    return@onPreviewKeyEvent true
+                }
+                // ---- a replay that freezes, offered in a lower quality: OK switches, Back stays.
+                // Only with nothing on the bar highlighted (its buttons keep OK and Back).
+                if (lighterOffer != null && controlFocus == null && !infoOpen && browseKey == null && (isOk || e.key == Key.Back)) {
+                    if (e.type == KeyEventType.KeyDown) {
+                        if (e.nativeKeyEvent.repeatCount == 0) lighterKeyDown = e.key
+                    } else if (e.type == KeyEventType.KeyUp && lighterKeyDown == e.key) {
+                        lighterKeyDown = null
+                        if (isOk) { if (viewModel.acceptLighterReplay()) showBanner() else toast = "That lower-quality replay isn't there any more" } else viewModel.declineLighterReplay()
                     }
                     return@onPreviewKeyEvent true
                 }
@@ -1514,6 +1538,24 @@ fun LiveTvPlayerScreen(
                 LiveText(n.episode, size = 15.sp, color = Color.White.copy(alpha = 0.85f))
                 Spacer(Modifier.height(6.dp))
                 LiveText("OK to play now · Back to stop", size = 12.sp, color = Color.White.copy(alpha = 0.6f))
+            }
+        }
+        // Middle right: clear of the bar at the bottom and the clock at the top.
+        if (upNext == null) lighterOffer?.let { o ->
+            Column(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 48.dp)
+                    .widthIn(max = 440.dp)
+                    .glass(glassColor(settings.panelBackground), RoundedCornerShape(16.dp))
+                    .padding(horizontal = 22.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                LiveText("This replay comes in slower than it plays", size = 13.sp, weight = FontWeight.Medium, color = Color.White.copy(alpha = 0.7f))
+                LiveText(LiveTvTexts.trf("Switch to {0}?", o.quality), size = 20.sp, weight = FontWeight.Bold, color = Color.White)
+                LiveText(o.to.name, size = 15.sp, color = Color.White.copy(alpha = 0.85f))
+                Spacer(Modifier.height(6.dp))
+                LiveText("OK to switch · Back to stay", size = 12.sp, color = Color.White.copy(alpha = 0.6f))
             }
         }
         toast?.let {

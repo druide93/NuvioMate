@@ -388,7 +388,7 @@ class LiveTvRecorder @Inject constructor(
                 }
             }
             if (!isHls) {
-                val segmenter = TsSegmenter(dir) { _ -> }
+                val segmenter = TsSegmenter(dir)
                 var first = true
                 var tries = 0
                 while (scope.isActive && rec.id !in stopRequested && System.currentTimeMillis() < currentStop(rec.id)) {

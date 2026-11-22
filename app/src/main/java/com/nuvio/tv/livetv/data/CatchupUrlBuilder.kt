@@ -44,11 +44,11 @@ object CatchupUrlBuilder {
         val duration = (end - start).coerceAtLeast(60)
         // Xtream-style links (server/user/pass/id) whose playlist doesn't say which kind of
         // catch-up: they use Xtream's /timeshift/ links, like TiviMate assumes.
-        val xtreamGuess = { xtream(liveUrl, startMsC, duration, preferHls, serverTimezone) }
+        val zone = zoneOf(serverTimezone)
+        val xtreamGuess = { xtream(liveUrl, startMsC, duration, preferHls, zone, nowMs) }
         // Playlists with their own catch-up link (catchup-source): the times written in it go
         // by the server's clock when it's known, like the links built here (before, they always
         // went by this TV's clock, so a server in another time zone replayed a show hours off).
-        val zone = serverTimezone?.takeIf { it.isNotBlank() }?.let { TimeZone.getTimeZone(it) }
         val fillIn = { t: String -> fill(t, start, end, now, duration, zone) }
         return when (catchup.type) {
             "append" -> catchup.source?.let { liveUrl + fillIn(it) }
@@ -62,10 +62,17 @@ object CatchupUrlBuilder {
             }
             "shift", "timeshift" -> if (catchup.source.isNullOrBlank()) xtreamGuess() ?: shift(liveUrl, start, now) else shift(liveUrl, start, now)
             "flussonic", "flussonic-hls", "flussonic-ts", "fs" -> flussonic(liveUrl, start, duration)
-            "xc", "xtream" -> xtream(liveUrl, startMsC, duration, preferHls, serverTimezone)
+            "xc", "xtream" -> xtream(liveUrl, startMsC, duration, preferHls, zone, nowMs)
             else -> catchup.source?.let { fillIn(it) }
         }
     }
+
+    /** The server's time zone as named ([name] null or blank: not known). */
+    private fun zoneOf(name: String?): TimeZone? = name?.takeIf { it.isNotBlank() }?.let { TimeZone.getTimeZone(it) }
+
+    /** The time as Xtream links write it (to the minute), in [zone] (null: this device's). */
+    private fun stampFormat(zone: TimeZone?): SimpleDateFormat =
+        SimpleDateFormat("yyyy-MM-dd:HH-mm", Locale.US).apply { if (zone != null) timeZone = zone }
 
     private fun shift(url: String, start: Long, now: Long): String {
         val sep = if (url.contains('?')) '&' else '?'
@@ -73,7 +80,7 @@ object CatchupUrlBuilder {
     }
 
     private fun flussonic(url: String, start: Long, duration: Long): String? {
-        val m = Regex("""^(https?://[^/]+)/(.*)/([^/?]*)(\?.*)?$""").find(url) ?: return null
+        val m = Regex("""^(https?://[^/]+)/([^?]*)/([^/?]*)(\?.*)?$""").find(url) ?: return null
         val host = m.groupValues[1]
         val stream = m.groupValues[2]
         val file = m.groupValues[3]
@@ -86,9 +93,9 @@ object CatchupUrlBuilder {
         }
     }
 
-    private fun xtream(url: String, startMs: Long, duration: Long, preferHls: Boolean, serverTimezone: String?): String? {
+    private fun xtream(url: String, startMs: Long, duration: Long, preferHls: Boolean, zone: TimeZone?, nowMs: Long): String? {
         // http://host:port/(live/)?user/pass/id(.ext)
-        val m = Regex("""^(https?://[^/]+)/(?:live/)?([^/]+)/([^/]+)/(\d+)(\.[a-z0-9]+)?(\?.*)?$""", RegexOption.IGNORE_CASE)
+        val m = Regex("""^(https?://[^/]+)/(?:live/)?([^/?]+)/([^/?]+)/(\d+)(\.[a-z0-9]+)?(\?.*)?$""", RegexOption.IGNORE_CASE)
             .find(url) ?: return null
         val query = m.groupValues[6]
         val (host, user, pass, id) = m.destructured
@@ -97,10 +104,22 @@ object CatchupUrlBuilder {
         // HLS too, so with "Prefer HLS" off, or HLS found not to work on this provider, every
         // replay still tried HLS first, and a provider that sends nothing for it cost 15 s.
         val ext = if (preferHls) ".m3u8" else ".ts"
-        val fmt = SimpleDateFormat("yyyy-MM-dd:HH-mm", Locale.US)
-        serverTimezone?.takeIf { it.isNotBlank() }?.let { fmt.timeZone = java.util.TimeZone.getTimeZone(it) }
-        val minutes = (duration / 60).coerceAtLeast(1)
-        return "$host/timeshift/$user/$pass/$minutes/${fmt.format(Date(startMs))}/$id$ext$query"
+        return "$host/timeshift/$user/$pass/${xtreamMinutes(startMs, duration, nowMs)}/${stampFormat(zone).format(Date(startMs))}/$id$ext$query"
+    }
+
+    /**
+     * The length in whole minutes of an Xtream link for [duration] seconds from [startMs]. The link
+     * starts on the whole minute before [startMs], so its length counts from there, rounded up:
+     * counted from [startMs] and rounded down, the replay ended up to two minutes before the end
+     * asked for (the end of a show picked up again by a recording was lost). Rounded down as
+     * before when rounding up would reach past [nowMs]: some panels refuse a window that reaches
+     * into the future.
+     */
+    internal fun xtreamMinutes(startMs: Long, duration: Long, nowMs: Long): Long {
+        val linkStartMs = startMs - Math.floorMod(startMs, 60_000L)
+        val endMs = startMs + duration * 1000
+        val whole = (endMs - linkStartMs + 59_999) / 60_000
+        return (if (linkStartMs + whole * 60_000 <= maxOf(nowMs, endMs)) whole else duration / 60).coerceAtLeast(1)
     }
 
     /**
@@ -132,31 +151,21 @@ object CatchupUrlBuilder {
         // A show still on air: only the part that has aired so far (in both forms). Tried before
         // the other forms below, so a refusal doesn't end with the "other clock" link, which
         // plays an earlier show when the server's time zone was right all along.
-        val aired = airedMinutes?.coerceAtLeast(1)?.takeIf { it < (minutes.toLongOrNull() ?: 0) }
-        if (aired != null) {
-            out += "$host/timeshift/$user/$pass/$aired/$stamp/$id${ext.ifEmpty { ".ts" }}$query"
-            out += "$host/timeshift/$user/$pass/$aired/$stamp/$id${if (ext.equals(".m3u8", true)) ".ts" else ".m3u8"}$query"
-        }
-        // Just the show, without the extra time after it (in both forms).
-        val short = showMinutes?.coerceAtLeast(1)?.takeIf { it < (minutes.toLongOrNull() ?: 0) }
-        if (short != null) {
-            out += "$host/timeshift/$user/$pass/$short/$stamp/$id${ext.ifEmpty { ".ts" }}$query"
-            out += "$host/timeshift/$user/$pass/$short/$stamp/$id${if (ext.equals(".m3u8", true)) ".ts" else ".m3u8"}$query"
+        // Then just the show, without the extra time after it (in both forms).
+        for (shorter in listOf(airedMinutes, showMinutes)) {
+            val n = shorter?.coerceAtLeast(1)?.takeIf { it < (minutes.toLongOrNull() ?: 0) } ?: continue
+            out += "$host/timeshift/$user/$pass/$n/$stamp/$id${ext.ifEmpty { ".ts" }}$query"
+            out += "$host/timeshift/$user/$pass/$n/$stamp/$id${if (ext.equals(".m3u8", true)) ".ts" else ".m3u8"}$query"
         }
         // timeshift.php form (some panels only answer this).
         out += "$host/streaming/timeshift.php?username=$user&password=$pass&stream=$id&start=$stamp&duration=$minutes"
         // Same request with the time written in the other clock (server vs device). Only a guess
         // for when the server's time zone isn't known: once it is known the first link already
         // has the right time, and this one could only land on a show from hours earlier or later.
-        val serverZone = serverTimezone?.takeIf { it.isNotBlank() }?.let { java.util.TimeZone.getTimeZone(it) }
-        if (serverZone == null) {
-            val fmt = SimpleDateFormat("yyyy-MM-dd:HH-mm", Locale.US)
-            fmt.timeZone = java.util.TimeZone.getDefault()
-            val startMs = runCatching { fmt.parse(stamp)?.time }.getOrNull()
+        if (zoneOf(serverTimezone) == null) {
+            val startMs = runCatching { stampFormat(null).parse(stamp)?.time }.getOrNull()
             if (startMs != null) {
-                val other = SimpleDateFormat("yyyy-MM-dd:HH-mm", Locale.US).apply {
-                    timeZone = java.util.TimeZone.getTimeZone("UTC")
-                }.format(Date(startMs))
+                val other = stampFormat(TimeZone.getTimeZone("UTC")).format(Date(startMs))
                 if (other != stamp) out += "$host/timeshift/$user/$pass/$minutes/$other/$id${ext.ifEmpty { ".ts" }}$query"
             }
         }

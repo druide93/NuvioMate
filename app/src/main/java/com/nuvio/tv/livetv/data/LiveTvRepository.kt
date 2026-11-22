@@ -1503,11 +1503,8 @@ class LiveTvRepository @Inject constructor(
         }
         if (wanted.isEmpty()) return
 
+        if (System.currentTimeMillis() < archivePausedUntil) return
         wanted.forEach { archiveFetched += it.key }
-        if (System.currentTimeMillis() < archivePausedUntil) {
-            wanted.forEach { archiveFetched -= it.key }
-            return
-        }
         scope.launch {
             val playlists = prefs.currentPlaylists().associateBy { it.id }
             val settings = prefs.currentSettings()
@@ -1531,10 +1528,7 @@ class LiveTvRepository @Inject constructor(
                     // these lookups never stand between you and playing something.
                     if (System.currentTimeMillis() < archivePausedUntil) { archiveFetched -= ch.key; return@withPermit }
                     runCatching {
-                        val url = "${pl.xtreamBase()}/player_api.php?username=" +
-                            java.net.URLEncoder.encode(pl.xtreamUsername.trim(), "UTF-8") +
-                            "&password=" + java.net.URLEncoder.encode(pl.xtreamPassword.trim(), "UTF-8") +
-                            "&action=get_simple_data_table&stream_id=$streamId"
+                        val url = pl.xtreamApiUrl() + "&action=get_simple_data_table&stream_id=$streamId"
                         val json = JSONObject(getText(url, pl.userAgent.ifBlank { DEFAULT_UA }))
                         val arr = json.optJSONArray("epg_listings") ?: return@runCatching
                         fun b64(v: String): String = runCatching {
@@ -1583,15 +1577,18 @@ class LiveTvRepository @Inject constructor(
                             if (past.isNotEmpty()) guideDb.putChannelRange(ch.key, from, pastEnd, past)
                             if (later.isNotEmpty()) guideDb.putChannelRange(ch.key, later.first().startMs, later.last().stopMs, later)
                         }
-                        _programs.value = _programs.value + (ch.key to merged)
-                        loadedFrom = minOf(loadedFrom, from)
+                        // With the guide's other writers: a write at the same moment lost one of the two.
+                        rangeMutex.withLock {
+                            _programs.value = _programs.value + (ch.key to merged)
+                            loadedFrom = minOf(loadedFrom, from)
+                        }
                         if (missingOnly && !apiFillReported) {
                             apiFillReported = true
                             LIVE_REPORT.add("Guide: listings for channels the guide file doesn't cover are coming from the Xtream API (first: ${ch.name})")
                         }
                     }.onFailure {
                         Log.w(TAG, "Catch-up archive for ${ch.name} unavailable", it)
-                        if (it.message?.contains("429") == true) {
+                        if (it.message?.startsWith("HTTP 429") == true) {
                             archivePausedUntil = System.currentTimeMillis() + 5 * 60_000L
                             archiveFetched -= ch.key
                             LIVE_REPORT.add("Provider said too many requests (HTTP 429): catch-up lookups paused for 5 minutes")

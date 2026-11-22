@@ -27,8 +27,8 @@ class TsSegmenter(
      * to what's saved froze for up to 20 s before it saw the next pieces.
      */
     private val fixedTargetSec: Int? = null,
-    /** A piece was saved (its length in seconds); the playlist is already updated. */
-    private val onSegment: (Double) -> Unit = {}
+    /** The wall clock (tests set their own). */
+    private val clock: () -> Long = System::currentTimeMillis,
 ) {
     data class Piece(val seq: Long, val name: String, val durationSec: Double, val discontinuity: Boolean = false)
 
@@ -107,6 +107,90 @@ class TsSegmenter(
     }
     private var nextIsDiscontinuity = false
 
+    // Rejoining by the stream's clock (see [rejoin]).
+    private var rejoining = false
+    /** The clock where the save stopped (-1: none to go by). */
+    private var rejoinPcr = -1L
+    /** The clock's there (or can't be gone by): now waiting for a picture the player can start from. */
+    private var rejoinAtKey = false
+    private var rejoinSince = 0L
+    private var rejoinFirstPcr = -1L
+    private var rejoinLastPcr = -1L
+    private var rejoinKeyWait = 0
+    private var rejoinWhy = ""
+    @Volatile private var rejoinNote: String? = null
+
+    /**
+     * A replay carried on over a new connection that sent other bytes than those saved: some
+     * providers (PureTv) make the replay afresh for each request, so "the same byte" is another
+     * moment of the show (seen: 35 s earlier). What comes next is dropped until the stream's own
+     * clock reaches where the save stopped, then taken from a picture the player can start from,
+     * as a fresh start (marked, so the player carries on across it). Taken as it comes, from such
+     * a picture, when the clock can't be gone by (another clock, ahead of where it stopped) or
+     * catching up takes more than [REJOIN_MAX_WAIT_MS]: the picture then jumps back (or ahead)
+     * instead. Before, the save ended there, and playback stopped there while it asked again.
+     */
+    fun rejoin() {
+        // Again before it got there: still where the save stopped.
+        val target = if (rejoining) rejoinPcr else lastPcr
+        reconnected()
+        rejoining = true
+        rejoinPcr = target
+        rejoinAtKey = target < 0
+        rejoinWhy = if (target < 0) "the stream has no clock to go by" else ""
+        rejoinSince = clock()
+        rejoinFirstPcr = -1L
+        rejoinLastPcr = -1L
+        rejoinKeyWait = 0
+    }
+
+    /** What the last [rejoin] did, once it's done (for the report), or null. */
+    fun takeRejoinNote(): String? = rejoinNote?.also { rejoinNote = null }
+
+    /** Still dropping what the provider sent again (see [rejoin]). */
+    val isRejoining: Boolean get() = rejoining
+
+    /**
+     * Rejoining (see [rejoin]): whether packet [pid] goes into the copy. Dropped until the
+     * stream's clock reaches where the save stopped, then until a picture the player can start
+     * from (or, when none comes in [REJOIN_KEY_PACKETS] packets, taken as it comes).
+     */
+    private fun rejoinPasses(pid: Int, pcr: Long, randomAccess: Boolean): Boolean {
+        if (!rejoinAtKey) {
+            if (pcr >= 0 && pid == pcrPid) {
+                if (rejoinFirstPcr < 0) rejoinFirstPcr = pcr
+                rejoinLastPcr = pcr
+                val first = rejoinFirstPcr - rejoinPcr
+                val d = pcr - rejoinPcr
+                when {
+                    first > REJOIN_RANGE || first < -REJOIN_RANGE -> { rejoinAtKey = true; rejoinWhy = "its clock isn't the one saved" }
+                    first > 0 -> { rejoinAtKey = true; rejoinWhy = "it came ${secs(first)} s past where the save stopped" }
+                    d >= 0 -> rejoinAtKey = true
+                }
+            }
+            if (!rejoinAtKey && clock() - rejoinSince > REJOIN_MAX_WAIT_MS) {
+                rejoinAtKey = true
+                rejoinWhy = "catching up took too long"
+            }
+            if (!rejoinAtKey) return false
+        }
+        val start = randomAccess && (videoPid < 0 || pid == videoPid || pid == pcrPid)
+        if (!start && ++rejoinKeyWait <= REJOIN_KEY_PACKETS) return false
+        val dropped = if (rejoinFirstPcr >= 0 && rejoinLastPcr >= rejoinFirstPcr) secs(rejoinLastPcr - rejoinFirstPcr) else null
+        val behind = if (rejoinFirstPcr >= 0 && rejoinPcr >= 0) rejoinPcr - rejoinFirstPcr else null
+        rejoinNote = when {
+            rejoinWhy.isEmpty() -> "carried on where the save stopped, by the stream's clock (dropped the ${dropped ?: 0} s it sent again)"
+            rejoinWhy == "catching up took too long" && behind != null && behind in 0..REJOIN_RANGE ->
+                "carried on ${secs(behind - (rejoinLastPcr - rejoinFirstPcr).coerceAtLeast(0))} s before where the save stopped ($rejoinWhy; the picture jumps back that much)"
+            else -> "carried on as it came ($rejoinWhy)"
+        }
+        rejoining = false
+        return true
+    }
+
+    /** Whole seconds, rounded, of a span of the stream's 90 kHz clock. */
+    private fun secs(pcrTicks: Long): Long = (pcrTicks + 45_000) / 90_000
+
     /** Closes the last piece and marks the playlist finished (no more to come). */
     fun finish(ended: Boolean = true) {
         closePiece()
@@ -147,6 +231,8 @@ class TsSegmenter(
         // so: a picture the player can start from begins with the stream's settings (SPS) or
         // is a key picture (IDR).
         if (!randomAccess && pusi && pid == videoPid && startsKeyPicture(p)) randomAccess = true
+        // Carried on over a connection that sent other bytes: dropped until it's back where it stopped.
+        if (rejoining && !rejoinPasses(pid, pcr, randomAccess)) return
 
         // Time to start a new piece?
         if (out == null) {
@@ -179,7 +265,7 @@ class TsSegmenter(
             val d = (lastPcr - pieceStartPcr) / 90_000.0
             if (d < 120) return d
         }
-        return (System.currentTimeMillis() - pieceStartWall) / 1000.0
+        return (clock() - pieceStartWall) / 1000.0
     }
 
     private fun openPiece() {
@@ -190,7 +276,7 @@ class TsSegmenter(
             pmts.values.forEach { o.write(it) }
         }
         pieceStartPcr = lastPcr
-        pieceStartWall = System.currentTimeMillis()
+        pieceStartWall = clock()
         pieceBytes = 0
         pieceDiscontinuity = nextIsDiscontinuity
         nextIsDiscontinuity = false
@@ -218,7 +304,6 @@ class TsSegmenter(
             }
         }
         writePlaylist(ended = false)
-        onSegment(len)
     }
 
     private fun writePlaylist(ended: Boolean) {
@@ -369,5 +454,11 @@ class TsSegmenter(
         val VIDEO_TYPES = setOf(0x01, 0x02, 0x1B, 0x24)
         /** PMT stream types the player reads as tables: SCTE-35 ad markers. */
         val SECTION_TYPES = setOf(0x86)
+        /** Rejoining: a clock further than this (10 min, 90 kHz) from where the save stopped is another one. */
+        const val REJOIN_RANGE = 10L * 60 * 90_000
+        /** Rejoining: catching up for longer than this is given up (the picture then jumps back instead). */
+        const val REJOIN_MAX_WAIT_MS = 30_000L
+        /** Rejoining: packets to wait for a picture the player can start from (about 7 MB). */
+        const val REJOIN_KEY_PACKETS = 40_000
     }
 }

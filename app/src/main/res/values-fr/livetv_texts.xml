@@ -660,6 +660,7 @@
         <item>"OK pour choisir un match"</item>
         <item>"OK pour lire maintenant · Retour pour arrêter"</item>
         <item>"OK pour remplacer ou relancer ce panneau"</item>
+        <item>"OK pour basculer · Retour pour rester"</item>
         <item>"OK active ou désactive une ligue, et ouvre ou ferme un sport. Les ligues que vous suivez s’affichent toujours."</item>
         <item>"OK utilise cette copie."</item>
         <item>"OK pour le regarder (ou l’enregistrer s’il n’a pas encore commencé sur cette chaîne) · Maintenir OK pour enregistrer"</item>
@@ -914,6 +915,10 @@
         <item>"Format"</item>
         <item>"Tirs"</item>
         <item>"Série"</item>
+        <item>"Passer en {0} ?"</item>
+        <item>"Ce replay se charge trop lentement"</item>
+        <item>"Cette chaîne ne peut pas rejouer ce moment"</item>
+        <item>"Ce replay en qualité inférieure n’est plus disponible"</item>
         <item>"Utiliser l’icône NuvioMate"</item>
         <item>"Logos de séries et de films (TMDB)"</item>
         <item>"Afficher les chaînes de"</item>
