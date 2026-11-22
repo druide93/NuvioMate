@@ -1042,21 +1042,30 @@ class LiveTvViewModel @Inject constructor(
         if (pendingSeekMs != null) return
         val pos = catchupPositionMs() ?: return
         val absolute = s.program.startMs + pos
-        val list = programs.value[s.channel.key].orEmpty()
-        val p = playback.player
-        if (p?.playbackState == androidx.media3.common.Player.STATE_ENDED) {
+        // Past the end of its show: the title, info and seek bar move on (before the check below:
+        // a replay that ended past its show had no show to ask the rest of, and stopped there).
+        if (absolute >= s.program.stopMs) moveCatchupOn(s, absolute)
+        if (playback.player?.playbackState == androidx.media3.common.Player.STATE_ENDED) {
             // The window we asked for ran out, or the copy's save stopped early: start a new one
             // right where we are.
             continueEndedCatchup()
-            return
         }
-        if (absolute < s.program.stopMs) return
-        val next = list.firstOrNull { absolute >= it.startMs && absolute < it.stopMs }
-            ?: list.firstOrNull { it.startMs >= s.program.stopMs }
-            ?: return
-        if (next.startMs == s.program.startMs) return
-        _catchup.value = CatchupSession(s.channel, next, s.program.startMs + s.baseOffsetMs - next.startMs)
+    }
+
+    /** The replay of [s] has played past its show, to [absolute]: the session moves to the show on then. */
+    private fun moveCatchupOn(s: CatchupSession, absolute: Long): CatchupSession {
+        val list = programs.value[s.channel.key].orEmpty()
+        val next = showAfter(s.program, list, absolute)
+        if (next.startMs == s.program.startMs && next.stopMs == s.program.stopMs) return s
+        if (list.none { it.startMs == next.startMs }) {
+            com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
+                "Catch-up: the guide has no show after \"${s.program.title}\" on ${s.channel.name}; the seek bar carries on by the clock"
+            )
+        }
+        val moved = CatchupSession(s.channel, next, s.program.startMs + s.baseOffsetMs - next.startMs)
+        _catchup.value = moved
         playback.setCatchupTitle(next.title)
+        return moved
     }
 
     private fun catchupStartPossible(channel: LiveChannel): Boolean {
@@ -1454,6 +1463,9 @@ class LiveTvViewModel @Inject constructor(
      * minute (not in the archive yet). The show there, or the one it started on when the guide
      * has none at that time (before, the replay then stayed on its last picture).
      */
+    /** Where (wall clock) the replay was last asked to carry on from after reaching its end. */
+    private var continuedAtMs = Long.MIN_VALUE / 2
+
     private fun continueEndedCatchup(): Boolean {
         val s = _catchup.value ?: return false
         if (s.recordingId != null) return false
@@ -1464,11 +1476,13 @@ class LiveTvViewModel @Inject constructor(
         val pos = catchupPositionMs() ?: return false
         val absolute = s.program.startMs + pos
         if (absolute >= System.currentTimeMillis() - 60_000) return false
-        // The show it started on only while still inside it: past its end with no show in the
-        // guide, a new link there would be a minute long (and a portal's can't start there at all),
-        // asked again and again.
-        val at = currentProgram(s.channel.key, absolute)
-            ?: s.program.takeIf { absolute < it.stopMs } ?: return false
+        // Asked from this very point already and nothing more came: not again and again.
+        if (kotlin.math.abs(absolute - continuedAtMs) < 5_000) return false
+        continuedAtMs = absolute
+        // Past the end of its show: the show on at that time (the guide's, or the stretch that
+        // stands in where the guide has none; a portal can't be asked for that one, and isn't).
+        val at = if (absolute < s.program.stopMs) currentProgram(s.channel.key, absolute) ?: s.program
+            else moveCatchupOn(s, absolute).program
         val requestsBefore = playback.requests.value
         val asked = playCatchup(s.channel, at, absolute - at.startMs, fresh = false)
         if (asked && playback.requests.value != requestsBefore) {
@@ -2225,6 +2239,24 @@ private const val LIGHTER_OFFER_MS = 25_000L
  * [quality]: "HD" before "SD" for an "FHD" channel, the first of equals. Null when [quality] is
  * unknown or already the lowest, or none is below it ("FHD+" isn't lighter than "FHD").
  */
+/**
+ * The show a replay that began in [cur] is in once it has played past [cur]'s end, to [absolute]
+ * (wall clock): the guide's show at that time. That can be the guide's own, longer listing of
+ * [cur] (same start: the session's copy was read before the provider's listings came in), which
+ * used to leave the title and seek bar on the old show for good. With no show in the guide
+ * there, a stand-in under [cur]'s name (shows that overrun), as long as [cur] or up to the next
+ * listed show: before, the bar stayed full on the old show and the replay stopped at the end
+ * of what it had.
+ */
+internal fun showAfter(cur: EpgProgram, list: List<EpgProgram>, absolute: Long): EpgProgram {
+    list.firstOrNull { absolute >= it.startMs && absolute < it.stopMs }?.let { return it }
+    val from = list.filter { it.stopMs <= absolute }.maxOfOrNull { it.stopMs }?.coerceAtLeast(cur.stopMs) ?: cur.stopMs
+    val len = (cur.stopMs - cur.startMs).coerceAtLeast(30 * 60_000L)
+    val start = from + (absolute - from) / len * len
+    val until = list.filter { it.startMs > absolute }.minOfOrNull { it.startMs } ?: Long.MAX_VALUE
+    return EpgProgram(startMs = start, stopMs = minOf(start + len, until), title = cur.title, category = cur.category, icon = cur.icon)
+}
+
 internal fun <T> pickLighter(quality: String?, candidates: List<Pair<T, String?>>): Pair<T, String>? {
     val rank = qualityRank(quality)
     if (rank < 2) return null
