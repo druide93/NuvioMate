@@ -451,6 +451,8 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
         var tidied = 0; private set
         var tidiedAway = 0; private set
         var tidyMs = 0L; private set
+        /** After [finish]: past listings brought along from the copy of this guide stored before. */
+        var keptPast = 0; private set
         private var open = true
 
         init {
@@ -512,7 +514,8 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
             kept: Collection<String>,
             listed: Int = channels.size,
             extraIds: Collection<String> = emptyList(),
-            tidy: ((List<EpgProgram>) -> List<EpgProgram>)? = null
+            tidy: ((List<EpgProgram>) -> List<EpgProgram>)? = null,
+            keepPastFrom: Long? = null
         ): Map<String, StagedMeta> {
             if (tidy != null) {
                 val t0 = System.currentTimeMillis()
@@ -537,11 +540,29 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
                 }
                 val move = db.compileStatement("UPDATE chan SET gid = ? WHERE gid = ?")
                 val drop = db.compileStatement("DELETE FROM chan WHERE gid = ?")
+                // "Past guide kept": what the copy before had from before this copy's first show
+                // comes along (a guide file only goes back a day or so; the days before that, and
+                // what a provider's catch-up list added to them, were lost at every update, so
+                // the past never went back as far as the setting says).
+                val carry = if (keepPastFrom == null) null else db.compileStatement(
+                    "INSERT INTO listings (gid, start, stop, title, descr, cat, ep, icon, year, people, provider_id, provider_source) " +
+                        "SELECT ?, start, stop, title, descr, cat, ep, icon, year, people, provider_id, provider_source FROM listings " +
+                        "WHERE gid = ? AND stop > ? AND stop <= COALESCE((SELECT MIN(start) FROM listings WHERE gid = ?), ?)"
+                )
+                val nowMs = System.currentTimeMillis()
                 old.forEach { (oldGid, xid) ->
                     val now = gids[xid]
-                    if (now != null) { move.clearBindings(); move.bindLong(1, now); move.bindLong(2, oldGid); move.executeUpdateDelete() }
+                    if (now != null) {
+                        if (carry != null && keepPastFrom != null && xid !in countedOnly) {
+                            carry.clearBindings()
+                            carry.bindLong(1, now); carry.bindLong(2, oldGid); carry.bindLong(3, keepPastFrom); carry.bindLong(4, now); carry.bindLong(5, nowMs)
+                            keptPast += carry.executeUpdateDelete()
+                        }
+                        move.clearBindings(); move.bindLong(1, now); move.bindLong(2, oldGid); move.executeUpdateDelete()
+                    }
                     else { drop.clearBindings(); drop.bindLong(1, oldGid); drop.executeUpdateDelete() }
                 }
+                carry?.close()
                 move.close(); drop.close()
                 db.execSQL("UPDATE guide_ch SET state = $DEAD WHERE src = ? AND state IN ($LIVE, $EMPTIED)", arrayOf<Any>(src))
                 db.execSQL("UPDATE guide_ch SET state = $LIVE WHERE src = ? AND state = $PENDING", arrayOf<Any>(src))
@@ -902,6 +923,26 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
      * stored for it in that span. They go to the guide channel it points at (so channels sharing
      * that guide channel get them too); a channel with no guide gets a guide channel of its own.
      */
+    /** The guide channel a playlist channel points at, or null when it has none. */
+    fun guideChannelOf(ch: String): Long? =
+        readableDatabase.rawQuery("SELECT gid FROM chan WHERE ch = ?", arrayOf(ch)).use { c -> if (c.moveToFirst()) c.getLong(0) else null }
+
+    /** When a channel's first stored listing starts (in the channel's own times), or null when it has none. */
+    fun channelFirstStart(ch: String): Long? =
+        readableDatabase.rawQuery(
+            "SELECT (SELECT MIN(start) FROM listings WHERE gid = chan.gid), sh FROM chan WHERE ch = ?", arrayOf(ch)
+        ).use { c -> if (c.moveToFirst() && !c.isNull(0)) c.getLong(0) + c.getLong(1) else null }
+
+    /** When a channel's provider was last asked for its catch-up list (0: never). */
+    fun archiveAskedAt(ch: String): Long =
+        readableDatabase.rawQuery("SELECT v FROM meta WHERE k = ?", arrayOf("asked|$ch")).use { c ->
+            if (c.moveToFirst()) c.getString(0)?.toLongOrNull() ?: 0L else 0L
+        }
+
+    fun setArchiveAskedAt(ch: String, atMs: Long) {
+        writableDatabase.execSQL("INSERT OR REPLACE INTO meta (k, v) VALUES (?, ?)", arrayOf<Any>("asked|$ch", atMs.toString()))
+    }
+
     /** [programs] added to a channel's listings as they are, nothing taken out (see [putChannelRange]). */
     fun addChannelListings(ch: String, programs: List<EpgProgram>) {
         if (programs.isNotEmpty()) putChannelRange(ch, 0L, 0L, programs, replace = false)

@@ -1521,64 +1521,13 @@ class LiveTvRepository @Inject constructor(
                     }
                     return@forEach
                 }
-                val streamId = Regex("""/(\d+)(?:\.[a-z0-9]+)?(?:\?.*)?$""", RegexOption.IGNORE_CASE)
-                    .find(ch.url)?.groupValues?.get(1) ?: return@forEach
                 archivePermits.withPermit {
                     // The provider said "too many requests": leave it alone for a few minutes, so
                     // these lookups never stand between you and playing something.
                     if (System.currentTimeMillis() < archivePausedUntil) { archiveFetched -= ch.key; return@withPermit }
                     runCatching {
-                        val url = pl.xtreamApiUrl() + "&action=get_simple_data_table&stream_id=$streamId"
-                        val json = JSONObject(getText(url, pl.userAgent.ifBlank { DEFAULT_UA }))
-                        val arr = json.optJSONArray("epg_listings") ?: return@runCatching
-                        fun b64(v: String): String = runCatching {
-                            String(android.util.Base64.decode(v, android.util.Base64.DEFAULT), Charsets.UTF_8)
-                        }.getOrDefault(v)
-                        val list = ArrayList<EpgProgram>()
-                        for (i in 0 until arr.length()) {
-                            val o = arr.optJSONObject(i) ?: continue
-                            val start = o.optString("start_timestamp").toLongOrNull()?.times(1000) ?: continue
-                            val stop = o.optString("stop_timestamp").toLongOrNull()?.times(1000)
-                                ?: o.optString("end_timestamp").toLongOrNull()?.times(1000) ?: continue
-                            if (stop <= start) continue
-                            val title = b64(o.optString("title")).trim()
-                            if (title.isEmpty()) continue
-                            list += EpgProgram(
-                                startMs = start,
-                                stopMs = stop,
-                                title = title,
-                                description = b64(o.optString("description")).trim().takeIf { it.isNotEmpty() }
-                            )
-                        }
-                        if (list.isEmpty()) return@runCatching
-                        list.sortBy { it.startMs }
-                        // Moved like the rest of this channel's listings (its guide's time shift).
-                        val shift = guideShiftMs(ch, overrides)
-                        if (shift != 0L) for (i in list.indices) list[i] = list[i].let { it.copy(startMs = it.startMs + shift, stopMs = it.stopMs + shift) }
-                        // Only as far back as "Past guide kept", like the guide file's listings
-                        // (the provider's list went back its whole catch-up, whatever the setting).
-                        val keptFrom = System.currentTimeMillis() - settings.epgPastHours.coerceAtLeast(1) * HOUR
-                        val wanted = list.filter { it.stopMs > keptFrom }
-                        if (wanted.isEmpty()) return@runCatching
-                        // The guide stays as it is; the provider's list only fills in where the
-                        // guide has nothing: the days before the guide file starts, holes in it,
-                        // and what comes after its end. It used to replace the guide's whole past,
-                        // so a good guide got the provider's holes back as soon as you looked at
-                        // yesterday, on every channel sharing that guide.
-                        val inMemory = _programs.value[ch.key].orEmpty()
-                        val existing = if (guideInDb) runCatching {
-                            guideDb.channelRange(ch.key, wanted.first().startMs - 6 * HOUR, wanted.last().stopMs)
-                        }.getOrDefault(inMemory) else inMemory
-                        val extra = GuideSchedule.fillers(existing, wanted)
-                        if (extra.isEmpty()) return@runCatching
-                        if (guideInDb) runCatching { guideDb.addChannelListings(ch.key, extra) }
-                        // With the guide's other writers: a write at the same moment lost one of the two.
-                        rangeMutex.withLock {
-                            val cur = _programs.value
-                            _programs.value = cur + (ch.key to GuideSchedule.tidy((existing + extra + cur[ch.key].orEmpty()).distinctBy { it.startMs }.sortedBy { it.startMs }))
-                            loadedFrom = minOf(loadedFrom, extra.first().startMs)
-                        }
-                        if (missingOnly && !apiFillReported) {
+                        val added = fillFromXtreamArchive(pl, ch, settings, overrides) ?: return@runCatching
+                        if (added > 0 && missingOnly && !apiFillReported) {
                             apiFillReported = true
                             LIVE_REPORT.add("Guide: listings for channels the guide file doesn't cover are coming from the Xtream API (first: ${ch.name})")
                         }
@@ -1592,6 +1541,163 @@ class LiveTvRepository @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    /** One channel's catch-up list at a time is worked into the stored guide (two at once added the same shows twice). */
+    private val archiveStore = Mutex()
+
+    /**
+     * One Xtream channel's catch-up list from its provider, added to the guide where the guide
+     * has nothing (see [GuideSchedule.fillers]), as far back as "Past guide kept". Returns how
+     * many listings were added, or null when the provider wasn't asked: the stored guide already
+     * goes back that far, or this channel was asked for in the last 20 hours (a provider's list
+     * that doesn't go back as far as the setting was otherwise asked for at every update).
+     * Throws what the request throws (HTTP 429 is for the caller to act on).
+     */
+    private suspend fun fillFromXtreamArchive(
+        pl: PlaylistSource,
+        ch: LiveChannel,
+        settings: LiveTvSettings,
+        overrides: Map<String, EpgAssignment>
+    ): Int? {
+        val streamId = Regex("""/(\d+)(?:\.[a-z0-9]+)?(?:\?.*)?$""", RegexOption.IGNORE_CASE)
+            .find(ch.url)?.groupValues?.get(1) ?: return null
+        val now = System.currentTimeMillis()
+        // Only as far back as "Past guide kept", like the guide file's listings (the provider's
+        // list goes back its whole catch-up, whatever the setting).
+        val keptFrom = now - settings.epgPastHours.coerceAtLeast(1) * HOUR
+        if (guideInDb) {
+            val covered = withContext(Dispatchers.IO) {
+                val first = runCatching { guideDb.channelFirstStart(ch.key) }.getOrNull()
+                val asked = runCatching { guideDb.archiveAskedAt(ch.key) }.getOrDefault(0L)
+                (first != null && first <= keptFrom + 3 * HOUR) || now - asked < 20 * HOUR
+            }
+            if (covered) return null
+        }
+        val url = pl.xtreamApiUrl() + "&action=get_simple_data_table&stream_id=$streamId"
+        val json = JSONObject(getText(url, pl.userAgent.ifBlank { DEFAULT_UA }))
+        if (guideInDb) withContext(Dispatchers.IO) { runCatching { guideDb.setArchiveAskedAt(ch.key, now) } }
+        val arr = json.optJSONArray("epg_listings") ?: return 0
+        fun b64(v: String): String = runCatching {
+            String(android.util.Base64.decode(v, android.util.Base64.DEFAULT), Charsets.UTF_8)
+        }.getOrDefault(v)
+        val list = ArrayList<EpgProgram>()
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            val start = o.optString("start_timestamp").toLongOrNull()?.times(1000) ?: continue
+            val stop = o.optString("stop_timestamp").toLongOrNull()?.times(1000)
+                ?: o.optString("end_timestamp").toLongOrNull()?.times(1000) ?: continue
+            if (stop <= start || stop <= keptFrom) continue
+            val title = b64(o.optString("title")).trim()
+            if (title.isEmpty()) continue
+            list += EpgProgram(
+                startMs = start,
+                stopMs = stop,
+                title = title,
+                description = b64(o.optString("description")).trim().takeIf { it.isNotEmpty() }
+            )
+        }
+        if (list.isEmpty()) return 0
+        list.sortBy { it.startMs }
+        // Moved like the rest of this channel's listings (its guide's time shift).
+        val shift = guideShiftMs(ch, overrides)
+        if (shift != 0L) for (i in list.indices) list[i] = list[i].let { it.copy(startMs = it.startMs + shift, stopMs = it.stopMs + shift) }
+        // The guide stays as it is; the provider's list only fills in where the guide has
+        // nothing: the days before the guide file starts, holes in it, and what comes after its
+        // end. It used to replace the guide's whole past, so a good guide got the provider's
+        // holes back as soon as you looked at yesterday, on every channel sharing that guide.
+        return archiveStore.withLock {
+            val inMemory = _programs.value[ch.key].orEmpty()
+            val existing = if (guideInDb) withContext(Dispatchers.IO) {
+                runCatching { guideDb.channelRange(ch.key, list.first().startMs - 6 * HOUR, list.last().stopMs) }.getOrDefault(inMemory)
+            } else inMemory
+            val extra = GuideSchedule.fillers(existing, list)
+            if (extra.isEmpty()) return@withLock 0
+            if (guideInDb) withContext(Dispatchers.IO) { runCatching { guideDb.addChannelListings(ch.key, extra) } }
+            // With the guide's other writers: a write at the same moment lost one of the two.
+            rangeMutex.withLock {
+                val cur = _programs.value
+                if (!guideInDb) {
+                    // No stored guide to read the past back from: all of it is kept loaded.
+                    _programs.value = cur + (ch.key to GuideSchedule.tidy((existing + extra).distinctBy { it.startMs }.sortedBy { it.startMs }))
+                    loadedFrom = minOf(loadedFrom, extra.first().startMs)
+                } else {
+                    // Only the hours that are loaded: the rest is read from the stored guide
+                    // when you get there, like any other past listing. (Marking a whole week as
+                    // loaded for every channel, for one channel's list, hid the others' past.)
+                    val shown = extra.filter { it.stopMs > loadedFrom && it.startMs < loadedTo }
+                    if (shown.isNotEmpty() && cur.containsKey(ch.key)) {
+                        val merged = addShows(cur[ch.key], shown)
+                        if (merged !== cur[ch.key]) _programs.value = cur + (ch.key to merged)
+                    }
+                }
+            }
+            extra.size
+        }
+    }
+
+    private var historySync: kotlinx.coroutines.Job? = null
+
+    /**
+     * After a guide update: the past days of every catch-up channel, from its provider's catch-up
+     * list, so they are there when you go back in the guide instead of being asked for then.
+     * As far back as "Past guide kept". Quiet work: one channel at a time with a pause between
+     * (a provider answers "too many requests" otherwise), the channels you look at first, one
+     * request per guide channel (TF1 FHD, HD and SD share theirs), nothing while a film plays,
+     * and nothing at all for channels whose stored past already goes back far enough: a guide
+     * file's past is kept from one update to the next ([EpgDatabase.SourceWriter.finish]), so
+     * after the first time there is usually nothing to ask.
+     */
+    private fun syncCatchupHistory(hidden: Set<String>) {
+        if (!guideInDb) return
+        historySync?.cancel()
+        historySync = scope.launch {
+            val playlists = prefs.currentPlaylists().associateBy { it.id }
+            val settings = prefs.currentSettings()
+            val overrides = runCatching { prefs.userState.first().epgOverrides }.getOrDefault(emptyMap())
+            val first = withContext(Dispatchers.IO) { priorityKeys() }.toHashSet()
+            val wanted = _channels.value.filter { ch ->
+                ch.catchup != null && ch.stalkerRef == null && ch.key !in hidden &&
+                    playlists[ch.sourceId]?.let { it.hasCatalog && !it.isStalker } == true
+            }.sortedBy { if (it.key in first) 0 else 1 }
+            if (wanted.isEmpty()) return@launch
+            val t0 = System.currentTimeMillis()
+            val done = HashSet<Long>()
+            var asked = 0
+            var added = 0
+            for (ch in wanted) {
+                kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                BackgroundWork.awaitIdle()
+                if (System.currentTimeMillis() < archivePausedUntil) {
+                    LIVE_REPORT.add("Catch-up history: stopped after $asked channels, the provider asked for a pause; the rest at the next update")
+                    return@launch
+                }
+                // Channels sharing a guide channel share its past: one request fills it for all.
+                val gid = withContext(Dispatchers.IO) { runCatching { guideDb.guideChannelOf(ch.key) }.getOrNull() } ?: continue
+                if (!done.add(gid)) continue
+                val pl = playlists[ch.sourceId] ?: continue
+                val n = try {
+                    fillFromXtreamArchive(pl, ch, settings, overrides)
+                } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                    throw cancelled
+                } catch (e: Exception) {
+                    if (e.message?.startsWith("HTTP 429") == true) {
+                        archivePausedUntil = System.currentTimeMillis() + 5 * 60_000L
+                        LIVE_REPORT.add("Catch-up history: the provider said too many requests after $asked channels; the rest at the next update")
+                        return@launch
+                    }
+                    Log.w(TAG, "Catch-up history for ${ch.name} unavailable", e)
+                    null
+                } ?: continue
+                archiveFetched += ch.key
+                asked++
+                added += n
+                delay(150)
+            }
+            if (asked > 0) LIVE_REPORT.add(
+                "Catch-up history: $asked channels asked of their provider, $added past listings added to the guide in ${(System.currentTimeMillis() - t0) / 1000} s"
+            )
         }
     }
 
@@ -2520,7 +2626,7 @@ class LiveTvRepository @Inject constructor(
             val listedIds = entries.mapTo(HashSet()) { it.id }
             val extraIds = if (selected == null) parsed.programChannelIds.filter { it !in listedIds } else emptyList()
             val kept = selected ?: wantedUnlistedFrom(listedIds + extraIds)
-            val meta = runCatching { writer.finish(stamp, entries.map { Triple(it.id, it.names, it.icon) }, kept, listed, extraIds, tidy = { cleanListings(it) }) }
+            val meta = runCatching { writer.finish(stamp, entries.map { Triple(it.id, it.names, it.icon) }, kept, listed, extraIds, tidy = { cleanListings(it) }, keepPastFrom = windowStart) }
                 .onFailure { writer.abort(); Log.w(TAG, "Couldn't store ${target.name}", it) }
                 .getOrNull() ?: run { LIVE_REPORT.add("Guide \"${target.name}\": couldn't be stored"); return fallBack() }
             LIVE_REPORT.add(
@@ -2528,6 +2634,7 @@ class LiveTvRepository @Inject constructor(
                     "(${meta.values.sumOf { if (it.hasRows) it.count else 0 }} listings" +
                     (if (countOnly.isEmpty()) ")" else ", ${meta.values.sumOf { if (it.hasRows) 0 else it.count }} more not needed)")
             )
+            if (writer.keptPast > 0) LIVE_REPORT.add("Guide \"${target.name}\": ${writer.keptPast} past listings kept from the copy before")
             if (writer.tidied > 0) LIVE_REPORT.add(
                 "Guide \"${target.name}\": ${writer.tidied} channels were listed several times over (${writer.tidiedAway} listings on top of others left out, ${writer.tidyMs} ms)"
             )
@@ -2705,6 +2812,7 @@ class LiveTvRepository @Inject constructor(
             saveSkipped(skipped)
             if (skipped.isNotEmpty()) LIVE_REPORT.add("Guide: ${skipped.size} hidden channels left out")
             scheduleCompact()
+            syncCatchupHistory(skipped)
         } else {
             // Not stored: what was on screen before stays until the next update.
             LIVE_REPORT.add("Guide couldn't be stored: the guide stays as it was until the next update")
