@@ -217,6 +217,12 @@ private suspend fun PlayerRuntimeController.enrichDescriptionFromTmdb(id: String
 }
 
 internal fun PlayerRuntimeController.recomputeNextEpisode(resetVisibility: Boolean) {
+    // Scout Mix: the Mix page plays its next pick when this episode ends, not the show's next episode.
+    if (episodeShufflePlayback.inMix(profileId, contentId, currentVideoId)) {
+        nextEpisodeVideo = null
+        clearNextEpisodeAndCancelPostPlay()
+        return
+    }
     val normalizedType = contentType?.lowercase()
     if (normalizedType !in listOf("series", "tv", "other", "cloud")) {
         nextEpisodeVideo = null
@@ -375,6 +381,7 @@ internal fun PlayerRuntimeController.evaluatePostPlayOverlayVisibility(positionM
         endDetectionArmed = true
     }
     if (!_uiState.value.error.isNullOrBlank()) return
+    if (episodeShufflePlayback.inMix(profileId, contentId, currentVideoId)) return
 
     val state = _uiState.value
     if (state.nextEpisode == null || nextEpisodeVideo == null) {

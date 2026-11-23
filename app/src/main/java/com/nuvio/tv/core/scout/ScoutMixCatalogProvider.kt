@@ -215,10 +215,9 @@ internal fun scoutMixCollection(title: String, mixes: List<ScoutMix>, words: Sco
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class ScoutMixCatalogModule {
-    // NuvioMate: Mix rows stay off Home until the Mix screens are ported (they open a Mix page).
-    // @Binds
-    // @IntoSet
-    // abstract fun provider(impl: ScoutMixCatalogProvider): BuiltInCatalogProvider
+    @Binds
+    @IntoSet
+    abstract fun provider(impl: ScoutMixCatalogProvider): BuiltInCatalogProvider
 }
 
 /** "A, B and C" in the user's language (from Arc's calendar formats). */

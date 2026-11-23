@@ -27,8 +27,12 @@ class EpisodeShufflePlayback @Inject constructor(
     private val shuffle: EpisodeShuffle,
     private val progressRepository: WatchProgressRepository,
     private val watchedPreferences: WatchedItemsPreferences,
-    private val profileManager: ProfileManager
+    private val profileManager: ProfileManager,
+    private val mixSession: ScoutMixSession = ScoutMixSession()
 ) {
+    /** A Scout Mix chooses what plays after this episode, so nothing else should. */
+    fun inMix(profileId: Int, contentId: String?, videoId: String?): Boolean = mixSession.matches(profileId, contentId, videoId)
+
     fun observe(profileId: Int, contentId: String, contentType: String) = combine(
         store.observeProfile(profileId),
         progressRepository.getAllEpisodeProgress(contentId, profileId),

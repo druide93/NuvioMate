@@ -141,6 +141,8 @@ class NuvioApplication : Application(), SingletonImageLoader.Factory {
 
         return ImageLoader.Builder(this)
             .components {
+                // Scout Mix tiles: their picture is drawn from the mix's shows.
+                add(com.nuvio.tv.core.image.ScoutMixArt.Factory())
                 add(CustomPosterFallbackInterceptor())
                 if (Build.VERSION.SDK_INT >= 28) {
                     add(AnimatedImageDecoder.Factory())

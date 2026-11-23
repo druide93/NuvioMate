@@ -552,6 +552,8 @@ internal fun buildCollectionFolderItem(
     // Don't use it as a static poster — it would still animate via Coil's GIF decoder.
     val imageUrl = firstNonBlank(folder.coverImageUrl, collection.backdropImageUrl)
     val heroBackdrop = firstNonBlank(folder.heroBackdropUrl, folder.coverImageUrl, collection.backdropImageUrl)
+    // Scout Mix: what the mix is, shown above the row like a title's details.
+    val mix = folder.scoutMix
 
     return ModernCarouselItem(
         key = "collection_${collection.id}_${folder.id}_$occurrence",
@@ -561,11 +563,12 @@ internal fun buildCollectionFolderItem(
         heroPreview = HeroPreview(
             title = if (folder.hideTitle) "" else title,
             logo = folder.titleLogoUrl,
-            description = null,
-            contentTypeText = null,
+            description = mix?.about?.takeIf(String::isNotBlank),
+            contentTypeText = mix?.kind,
             yearText = null,
+            runtimeText = mix?.shows,
             imdbText = null,
-            genres = emptyList<String>().asStable(),
+            genres = listOfNotNull(mix?.genre).asStable(),
             poster = imageUrl,
             backdrop = heroBackdrop,
             imageUrl = imageUrl

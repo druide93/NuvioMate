@@ -238,6 +238,14 @@ internal class PostPlayRecommendationController(
     }
 
     private fun evaluate(snapshot: PlaybackSnapshot) {
+        // Scout Mix: the Mix page decides what comes next.
+        if (playbackController.episodeShufflePlayback.inMix(
+                playbackController.profileId, playbackController.contentId, playbackController.currentVideoId
+            )
+        ) {
+            clearRecommendationState()
+            return
+        }
         // If the player already has an active auto-play (next episode found and queued),
         // recommendations must not appear — clear any in-flight state and bail out.
         if (snapshot.hasActiveAutoPlay) {
