@@ -1231,7 +1231,9 @@ fun LiveTvPlayerScreen(
                     nextTime = next?.let { formatRange(it.startMs, it.stopMs, use24h) },
                     catchupAvailable = b.catchup != null,
                     browsing = true,
-                    hidden = BarPart.hiddenOf(settings.barHidden)
+                    hidden = BarPart.hiddenOf(settings.barHidden),
+                    // The same description as the ▲ and OK bars.
+                    descriptionLines = 3
                 )
             }
         }
@@ -1248,7 +1250,7 @@ fun LiveTvPlayerScreen(
                 modifier = Modifier.padding(top = 28.dp, end = 36.dp)
             )
         }
-        // ▲: the info bar · OK: the same with more of the description · ▼ (or paused): the
+        // ▲: the info bar · OK: the same with the channel menu's buttons · ▼ (or paused): the
         // playback controls at the bottom, with the show on one line above the progress bar.
         AnimatedVisibility(
             visible = (bannerVisible || panelFull || infoOpen || pausedNow) && current != null && (browseKey == null || panelFull),
@@ -1471,7 +1473,8 @@ fun LiveTvPlayerScreen(
                     if (controlsShown) Bar(PanelPart.CONTROLS, true, timeline, null, bottom)
                     // OK: the channel menu, with its buttons but not the playback ones.
                     else if (infoOpen) Bar(PanelPart.ALL, true, timeline, 3, bottom, infoControls())
-                    else Bar(PanelPart.ALL, false, timeline, null, bottom)
+                    // ▲: the same description as OK (as on TiviMate), not cut to one line.
+                    else Bar(PanelPart.ALL, false, timeline, 3, bottom)
                 }
             }
         }
