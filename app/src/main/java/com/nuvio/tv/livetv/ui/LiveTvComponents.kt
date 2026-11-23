@@ -205,6 +205,70 @@ internal fun ScrollingDescription(
 }
 
 /**
+ * A show's whole description, read at your own pace: nothing moves by itself. Up/Down move it a
+ * few lines at a time (see [dpadScrollsText], put on the window around it), and a small hint
+ * shows when there's more than fits.
+ */
+@Composable
+internal fun ReadableDescription(
+    text: String,
+    scroll: androidx.compose.foundation.ScrollState,
+    modifier: Modifier = Modifier,
+    color: Color = NuvioTheme.colors.TextSecondary,
+    size: TextUnit = 16.sp,
+    maxLines: Int = 12
+) {
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val lineHeight = size * 1.3f
+    val boxHeight = with(density) { lineHeight.toDp() } * maxLines.coerceAtLeast(1)
+    Column(modifier) {
+        Box(Modifier.heightIn(max = boxHeight).clipToBounds()) {
+            Text(
+                text = text,
+                color = color,
+                fontSize = size,
+                lineHeight = lineHeight,
+                modifier = Modifier.verticalScroll(scroll, enabled = false)
+            )
+        }
+        if (scroll.maxValue > 0) {
+            val atTop = scroll.value <= 0
+            val atEnd = scroll.value >= scroll.maxValue
+            val hint = when {
+                atTop -> "▼  Down to read more"
+                atEnd -> "▲  Up to go back"
+                else -> "▲ ▼  Up / Down to read"
+            }
+            LiveText(
+                hint,
+                color = NuvioTheme.colors.TextTertiary,
+                size = size * 0.75f,
+                modifier = Modifier.padding(top = 6.dp)
+            )
+        }
+    }
+}
+
+/** Up/Down move [scroll] three lines at a time while the text is longer than its box. */
+internal fun Modifier.dpadScrollsText(
+    scroll: androidx.compose.foundation.ScrollState,
+    scope: kotlinx.coroutines.CoroutineScope,
+    stepPx: Float
+): Modifier = onPreviewKeyEvent { e ->
+    val k = e.nativeKeyEvent.keyCode
+    val up = k == android.view.KeyEvent.KEYCODE_DPAD_UP
+    val down = k == android.view.KeyEvent.KEYCODE_DPAD_DOWN
+    if ((!up && !down) || scroll.maxValue <= 0) return@onPreviewKeyEvent false
+    if (e.type == KeyEventType.KeyDown) {
+        scope.launch {
+            val target = (scroll.value + if (up) -stepPx else stepPx).toInt().coerceIn(0, scroll.maxValue)
+            scroll.animateScrollTo(target)
+        }
+    }
+    true
+}
+
+/**
  * The backdrop behind the whole guide / Sports hub (Settings → "Guide & Sports Background"). A
  * flat near-black background made the glass cards' translucency invisible — the fill and what's
  * behind it were nearly the same tone, so alpha blending had nothing to show against. Several soft
@@ -1043,10 +1107,17 @@ internal fun Modifier.glassTile(
  */
 @Composable
 internal fun FrameMeter(label: String) {
-    androidx.compose.runtime.DisposableEffect(label) {
+    val view = androidx.compose.ui.platform.LocalView.current
+    androidx.compose.runtime.DisposableEffect(label, view) {
         val choreographer = android.view.Choreographer.getInstance()
         var last = 0L
         var total = 0; var slow = 0; var bad = 0; var worst = 0L
+        // Times the screen was really redrawn. [total] counts every screen refresh while the
+        // screen is open, so an idle screen still showed about 60 a second there.
+        var drawn = 0
+        val onDraw = android.view.ViewTreeObserver.OnDrawListener { drawn++ }
+        val observer = view.viewTreeObserver
+        runCatching { observer.addOnDrawListener(onDraw) }
         var reportedAt = System.currentTimeMillis()
         // Where the screen was stuck: while a frame is held up, the main thread's current
         // position in the code is noted (a few times a second at most), and the most common
@@ -1075,7 +1146,7 @@ internal fun FrameMeter(label: String) {
         fun flush(final: Boolean) {
             if (total >= 30) {
                 com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
-                    "$label frames: $total drawn, $slow slower than 35 ms, $bad slower than 100 ms, worst $worst ms" + if (final) " (screen closed)" else ""
+                    "$label frames: $drawn drawn of $total screen refreshes, $slow slower than 35 ms, $bad slower than 100 ms, worst $worst ms" + if (final) " (screen closed)" else ""
                 )
                 // How full the app's memory is (a full one makes everything stall while it cleans up).
                 val rt = Runtime.getRuntime()
@@ -1087,7 +1158,7 @@ internal fun FrameMeter(label: String) {
                 }
             }
             stuckAt.clear()
-            total = 0; slow = 0; bad = 0; worst = 0
+            total = 0; slow = 0; bad = 0; worst = 0; drawn = 0
             reportedAt = System.currentTimeMillis()
         }
         cb = android.view.Choreographer.FrameCallback { nanos ->
@@ -1106,7 +1177,11 @@ internal fun FrameMeter(label: String) {
             choreographer.postFrameCallback(cb)
         }
         choreographer.postFrameCallback(cb)
-        onDispose { alive.set(false); watcher.interrupt(); choreographer.removeFrameCallback(cb); flush(true) }
+        onDispose {
+            alive.set(false); watcher.interrupt(); choreographer.removeFrameCallback(cb)
+            runCatching { if (observer.isAlive) observer.removeOnDrawListener(onDraw) else view.viewTreeObserver.removeOnDrawListener(onDraw) }
+            flush(true)
+        }
     }
 }
 

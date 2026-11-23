@@ -67,7 +67,10 @@ fun PosterOptionsDialog(
     scoutTitle: com.nuvio.tv.domain.model.ScoutTitle? = null,
     scoutAddonBaseUrl: String? = null,
     scoutAliasId: String? = null,
-    onMoreLike: (() -> Unit)? = null
+    onMoreLike: (() -> Unit)? = null,
+    /** Live TV fork: one more option (On Demand's "Fix Match"), when offered. */
+    extraLabel: String? = null,
+    onExtra: () -> Unit = {}
 ) {
     val primaryFocusRequester = remember { FocusRequester() }
 
@@ -125,6 +128,19 @@ fun PosterOptionsDialog(
                 )
             ) {
                 Text(bellLabel)
+            }
+        }
+
+        if (extraLabel != null) {
+            Button(
+                onClick = onExtra,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.colors(
+                    containerColor = NuvioTheme.colors.BackgroundCard,
+                    contentColor = NuvioTheme.colors.TextPrimary
+                )
+            ) {
+                Text(extraLabel)
             }
         }
 
@@ -268,7 +284,10 @@ fun PosterOptionsHost(
     /** Live TV fork: offer the Calendar's bell for shows (Search). */
     calendarBell: Boolean = false,
     /** Scout: "More like this" for a pick. */
-    onMoreLike: ((com.nuvio.tv.domain.model.MetaPreview) -> Unit)? = null
+    onMoreLike: ((com.nuvio.tv.domain.model.MetaPreview) -> Unit)? = null,
+    /** Live TV fork: one more option at the end (On Demand's "Fix Match"). */
+    extraLabel: String? = null,
+    onExtra: () -> Unit = {}
 ) {
     val target = state.target
     if (target != null) {
@@ -312,6 +331,11 @@ fun PosterOptionsHost(
             onBell = {
                 bell?.toggle?.invoke()
                 controller.dismiss()
+            },
+            extraLabel = extraLabel,
+            onExtra = {
+                controller.dismiss()
+                onExtra()
             }
         )
     }

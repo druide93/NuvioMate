@@ -26,10 +26,11 @@ enum class Sport(val label: String, val icon: String) {
     LACROSSE("Lacrosse", "🥍"),
     GAELIC("Gaelic Games", "☘️"),
     NETBALL("Netball", "🤾"),
+    HANDBALL("Handball", "🤾"),
     OTHER("More Sports", "🏅");
 
     /** Home team first with "v" (UK style) instead of away team first with "at" (US style). */
-    val homeFirst: Boolean get() = this == FOOTBALL || this == RUGBY || this == CRICKET || this == AUSSIE_RULES
+    val homeFirst: Boolean get() = this == FOOTBALL || this == RUGBY || this == CRICKET || this == AUSSIE_RULES || this == HANDBALL
 }
 
 /** How a league's events look: two teams, or one event with many competitors (a race, a fight card). */
@@ -212,7 +213,11 @@ data class SportsSettings(
     /** "Channels from" on the game page ("" = all; see [ChannelRegions]). */
     val channelRegion: String = "",
     /** League Networks: a network's id (see [LeagueNetworks]) -> the channel you picked for it. */
-    val leagueNetworkChannels: Map<String, String> = emptyMap()
+    val leagueNetworkChannels: Map<String, String> = emptyMap(),
+    /** A finished game's page lists highlights, recaps and single plays (off: replays only). */
+    val showHighlights: Boolean = true,
+    /** A finished game's page lists condensed games. */
+    val showCondensed: Boolean = true
 ) {
     fun toJson(): String = JSONObject()
         .put("showInSidebar", showInSidebar)
@@ -237,6 +242,8 @@ data class SportsSettings(
         .put("preferredGroups", JSONArray(preferredGroups.toList()))
         .put("channelRegion", channelRegion)
         .put("leagueNetworkChannels", JSONObject(leagueNetworkChannels as Map<*, *>))
+        .put("showHighlights", showHighlights)
+        .put("showCondensed", showCondensed)
         .toString()
 
     companion object {
@@ -268,7 +275,9 @@ data class SportsSettings(
                     leagueChannels = o.optJSONObject("leagueChannels").stringMap(),
                     preferredGroups = o.optJSONArray("preferredGroups").strings().toSet(),
                     channelRegion = o.optString("channelRegion", ""),
-                    leagueNetworkChannels = o.optJSONObject("leagueNetworkChannels").stringMap()
+                    leagueNetworkChannels = o.optJSONObject("leagueNetworkChannels").stringMap(),
+                    showHighlights = o.optBoolean("showHighlights", d.showHighlights),
+                    showCondensed = o.optBoolean("showCondensed", d.showCondensed)
                 )
             }.getOrDefault(SportsSettings())
         }

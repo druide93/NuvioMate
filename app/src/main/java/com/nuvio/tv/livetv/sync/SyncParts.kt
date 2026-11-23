@@ -1,6 +1,7 @@
 package com.nuvio.tv.livetv.sync
 
 import android.content.SharedPreferences
+import org.json.JSONArray
 import org.json.JSONObject
 
 /** The parts of the Live TV setup that Setup Sync can leave out on one device. */
@@ -8,7 +9,8 @@ enum class SyncPart(val label: String, val description: String, val defaultOn: B
     LOGINS("Playlists and logins", "Your IPTV links, usernames and passwords. Stored encrypted.", true),
     VPN("VPN profiles and protection", "VPN configurations, selected profile and automatic protection scope.", true),
     FAVORITES("Favorites and groups", "Favorite channels, hidden channels and group order.", true),
-    SPORTS("Sports", "Followed teams and leagues, and Choose Leagues.", true),
+    HOME_ROWS("Home rows", "Live TV, Sports and On Demand rows you added to Home. Shared with your phone too.", true),
+    SPORTS("Sports", "Followed teams and leagues, and your league list.", true),
     CALENDAR("Calendar", "Followed and hidden shows.", true),
     BEHAVIOR("Behavior and options", "How often lists and guides refresh, recording and catch-up options, sorting, search sources and Calendar choices. Not the look, so it is shared with your phone too.", true),
     LOOK("Look and layout", "Themes, menu, card styles and other visual options, kept the same on your TVs. Turn off to keep each TV its own.", true)
@@ -26,6 +28,14 @@ internal class SyncParts(private val store: SharedPreferences) {
         // Behavior and options became their own part: the first time, take the saved copy's values for it.
         if (!store.getBoolean(BEHAVIOR_SEEN, false)) {
             store.edit().putBoolean(BEHAVIOR_SEEN, true).putBoolean(FRESH + SyncPart.BEHAVIOR.name, true).apply()
+        }
+        // Home rows became their own part (they were in Look and layout). A TV that kept its look to
+        // itself kept its rows to itself too: the first time, its rows are combined with the saved ones.
+        if (!store.getBoolean(HOME_ROWS_SEEN, false)) {
+            val lookWasOff = !store.getBoolean(KEY + SyncPart.LOOK.name, SyncPart.LOOK.defaultOn)
+            store.edit().putBoolean(HOME_ROWS_SEEN, true).also {
+                if (lookWasOff) it.putBoolean(FRESH + SyncPart.HOME_ROWS.name, true)
+            }.apply()
         }
     }
 
@@ -78,7 +88,12 @@ internal class SyncParts(private val store: SharedPreferences) {
             val base = k.replace(PROFILE_SUFFIX, "")
             val takeSaved = base != "playlists" && base != "epg_sources" &&
                 partOf(k)?.let { it in fresh } == true && remote.has(k)
-            out.put(k, if (takeSaved) remote.get(k) else local.get(k))
+            out.put(k, when {
+                !takeSaved -> local.get(k)
+                // Home rows: the saved rows, plus this device's own rows the saved copy doesn't have.
+                base in HOME_ROWS_KEYS -> combinedRows(local.opt(k), remote.opt(k)) ?: remote.get(k)
+                else -> remote.get(k)
+            })
         }
         return out
     }
@@ -90,20 +105,36 @@ internal class SyncParts(private val store: SharedPreferences) {
         edit.apply()
     }
 
+    /** Both stored row lists ({"t":"str","v":"[…]"}) as one: [remote]'s rows, then [local]'s other rows. */
+    private fun combinedRows(local: Any?, remote: Any?): JSONObject? = runCatching {
+        val l = JSONArray((local as JSONObject).getString("v"))
+        val r = JSONArray((remote as JSONObject).getString("v"))
+        val ids = (0 until r.length()).mapNotNull { r.optJSONObject(it)?.optString("id") }.toSet()
+        var added = false
+        for (i in 0 until l.length()) {
+            val row = l.optJSONObject(i) ?: continue
+            if (row.optString("id") !in ids) { r.put(row); added = true }
+        }
+        if (!added) null else JSONObject(remote.toString()).put("v", r.toString())
+    }.getOrNull()
+
     companion object {
         private const val KEY = "sync_part_"
         private const val FRESH = "sync_part_fresh_"
         private const val BEHAVIOR_SEEN = "sync_part_behavior_seen"
+        private const val HOME_ROWS_SEEN = "sync_part_home_rows_seen"
         private val PROFILE_SUFFIX = Regex("""_p\d+$""")
 
-        private val LOGIN_KEYS = setOf("playlists", "epg_sources", "playlist_accounts", "epg_overrides")
+        private val LOGIN_KEYS = setOf("playlists", "epg_sources", "playlist_accounts", "epg_overrides", "network_folder")
         private val FAVORITE_KEYS = setOf(
-            "favorites", "hidden_channels", "hidden_groups", "channel_names", "channel_logos", "channel_numbers",
+            "favorites", "hidden_channels", "hidden_groups", "hidden_playlists", "channel_names", "channel_logos", "channel_numbers",
             "group_names", "group_order", "custom_groups", "channel_order", "channel_copies", "channel_audio",
-            "picture_shapes", "locked_groups", "name_removals", "reminders",
-            "vod_hidden_categories", "vod_group_order", "vod_group_names"
+            "picture_shapes", "locked_groups", "favorite_groups", "name_removals", "reminders",
+            "vod_hidden_categories", "vod_group_order", "vod_group_names", "title_match_fixes"
         )
         private val SPORTS_KEYS = setOf("sports", "sports_mine")
+        /** The Home rows and the "add the playlist's name" choice for them. */
+        private val HOME_ROWS_KEYS = setOf("home_live_rows", "home_row_playlist_names")
         private val CALENDAR_KEYS = setOf(
             "calendar_follows", "calendar_hidden_shows", "calendar_channel_picks", "calendar_plans", "calendar_country"
         )
@@ -111,10 +142,10 @@ internal class SyncParts(private val store: SharedPreferences) {
         /** Options that act the same on any device (not how the app looks), so phones sync them too. */
         private val BEHAVIOR_KEYS = setOf(
             "playlist_refresh_hours", "epg_refresh_hours", "epg_future_days", "epg_past_hours", "epg_offset_minutes",
-            "record_pre_minutes", "record_post_minutes", "recording_space_rule", "record_series_keep", "reminder_lead_minutes",
+            "record_pre_minutes", "record_post_minutes", "recording_space_rule", "recording_keep_days", "record_series_keep", "reminder_lead_minutes",
             "catchup_prefer_hls", "catchup_cache", "catchup_shift_minutes", "timeshift_enabled", "timeshift_minutes",
             "auto_reconnect", "auto_backup_channel", "hide_stray_entries", "captions_by_default",
-            "channel_sort", "group_sort", "vod_default_sort", "vod_sorts", "vod_merge_duplicates",
+            "channel_sort", "group_sort", "vod_default_sort", "vod_sorts", "vod_merge_duplicates", "vod_hide_non_english",
             "calendar_hide_spoilers", "calendar_hide_watched", "calendar_skip_news_talk", "calendar_sports", "calendar_new_episode_cards",
             "calendar_week_start",
             "guide_search_catalog", "guide_search_live", "guide_search_ondemand",
@@ -125,7 +156,7 @@ internal class SyncParts(private val store: SharedPreferences) {
         )
 
         /** Always synced, whatever is switched off: the parental lock and the profile set-up marker. */
-        private val ALWAYS_KEYS = setOf("parental_pin", "lock_adult_content", "profile_seeded", "profile_match_groups")
+        private val ALWAYS_KEYS = setOf("parental_pin", "lock_adult_content", "lock_logins", "profile_seeded", "profile_match_groups")
 
         /** Which part a stored key belongs to, or null when it is always synced. Everything not named above is "Look and layout". */
         fun partOf(key: String): SyncPart? {
@@ -135,6 +166,7 @@ internal class SyncParts(private val store: SharedPreferences) {
                 base in ALWAYS_KEYS -> null
                 base in LOGIN_KEYS -> SyncPart.LOGINS
                 base in FAVORITE_KEYS -> SyncPart.FAVORITES
+                base in HOME_ROWS_KEYS -> SyncPart.HOME_ROWS
                 base in SPORTS_KEYS -> SyncPart.SPORTS
                 base in CALENDAR_KEYS -> SyncPart.CALENDAR
                 base in BEHAVIOR_KEYS -> SyncPart.BEHAVIOR

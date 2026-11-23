@@ -1524,7 +1524,9 @@ private suspend fun PlayerRuntimeController.selectEpisodeAutoPlayStream(
         source = settings.streamAutoPlaySource,
         installedAddonNames = installedAddonNames,
         selectedAddons = settings.streamAutoPlaySelectedAddons,
-        selectedPlugins = settings.streamAutoPlaySelectedPlugins
+        selectedPlugins = settings.streamAutoPlaySelectedPlugins,
+        qualityRules = settings.streamQualityRules,
+        lowQualityGroups = settings.streamLowQualityGroups
     )
 }
 
@@ -2210,7 +2212,9 @@ internal fun PlayerRuntimeController.playNextEpisode(userInitiated: Boolean = fa
                         null
                     },
                     preferBingeGroupInSelection = playerSettings.streamAutoPlayPreferBingeGroupForNextEpisode,
-                    bingeGroupOnly = bingeGroupOnlyManualMode
+                    bingeGroupOnly = bingeGroupOnlyManualMode,
+                    qualityRules = playerSettings.streamQualityRules,
+                    lowQualityGroups = playerSettings.streamLowQualityGroups
                 )
             }
 
@@ -2253,7 +2257,9 @@ internal fun PlayerRuntimeController.playNextEpisode(userInitiated: Boolean = fa
                     selectedPlugins = effectiveSelectedPlugins,
                     preferredBingeGroup = currentStreamBingeGroup,
                     preferBingeGroupInSelection = true,
-                    bingeGroupOnly = true
+                    bingeGroupOnly = true,
+                    qualityRules = playerSettings.streamQualityRules,
+                    lowQualityGroups = playerSettings.streamLowQualityGroups
                 )
             }
 

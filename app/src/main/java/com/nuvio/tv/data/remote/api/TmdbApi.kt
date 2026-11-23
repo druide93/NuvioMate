@@ -56,6 +56,23 @@ interface TmdbApi {
         @Query("language") language: String? = null
     ): Response<TmdbDetailsResponse>
 
+    /** Live TV fork: On Demand titles looked up by name (their artwork and original language). */
+    @GET("search/movie")
+    suspend fun searchMovies(
+        @Query("api_key") apiKey: String,
+        @Query("query") query: String,
+        @Query("year") year: Int? = null,
+        @Query("include_adult") includeAdult: Boolean = false
+    ): Response<TmdbRecommendationsResponse>
+
+    @GET("search/tv")
+    suspend fun searchTv(
+        @Query("api_key") apiKey: String,
+        @Query("query") query: String,
+        @Query("first_air_date_year") year: Int? = null,
+        @Query("include_adult") includeAdult: Boolean = false
+    ): Response<TmdbRecommendationsResponse>
+
     @GET("movie/{movie_id}/credits")
     suspend fun getMovieCredits(
         @Path("movie_id") movieId: Int,
@@ -274,8 +291,9 @@ interface TmdbApi {
         @Query("page") page: Int = 1
     ): Response<TmdbListDetailsResponse>
 
+    /** Scout (Ask): a title looked up by name, in the profile's language. */
     @GET("search/movie")
-    suspend fun searchMovies(
+    suspend fun searchMoviesInLanguage(
         @Query("api_key") apiKey: String,
         @Query("query") query: String,
         @Query("language") language: String? = null,
@@ -283,7 +301,7 @@ interface TmdbApi {
     ): Response<TmdbDiscoverResponse>
 
     @GET("search/tv")
-    suspend fun searchTv(
+    suspend fun searchTvInLanguage(
         @Query("api_key") apiKey: String,
         @Query("query") query: String,
         @Query("language") language: String? = null,
@@ -583,7 +601,8 @@ data class TmdbCountry(
 @JsonClass(generateAdapter = true)
 data class TmdbSeasonResponse(
     @Json(name = "season_number") val seasonNumber: Int? = null,
-    @Json(name = "episodes") val episodes: List<TmdbEpisode>? = null
+    @Json(name = "episodes") val episodes: List<TmdbEpisode>? = null,
+    @Json(name = "poster_path") val posterPath: String? = null
 )
 
 @JsonClass(generateAdapter = true)

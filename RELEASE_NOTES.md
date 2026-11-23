@@ -1,51 +1,56 @@
-# Nuvio + IPTV 1.2.0-beta.2.1
+# Nuvio + IPTV 1.2.0-beta.3.1
 
 ## What's new
 
-### Sports
-- **Official highlights and condensed games** on finished games, for ESPN, NHL and MLB, plus YouTube highlights that play right in the app
-- **Replays from your sports addons for every sport,** not just football, labelled Full game, Condensed or Highlights, best quality first. They load faster and show as each addon answers
-- When a highlight or replay finishes, you go back to the game's page. Live games that drop still keep reconnecting
-- Team colours are the same everywhere, and games weeks ahead show the real colours
-- **AFCON qualifying** added, with each team's qualification status in its tables
+### Sports (redesigned)
+- **A redesigned Sports hub.** A game preview and the league table sit beside the list, and My Sports follows the card you're on. Team colours show while a game plays
+- **New game page:** a row of the day's games, tabs for Stats, Line-ups, Top Players, Table, Head to Head and more, and a line under every channel saying whether it's showing the game now or later
+- **Top Players with photos:** the player of the game, every leader category, and a player profile when you press OK
+- **Edit League List:** a bar on All Events removes leagues you never want to see, and brings them back
+- **More highlights.** Races, fights, golf, tennis, darts and more get highlights and full replays from the sports' own YouTube channels. Older games keep theirs, and race, fight and tournament rows go back through the whole season. Turn them on or off with **Show Highlights** and **Show Condensed Games** in Settings → Sports
+- **Games list while you watch:** Quick Channels has a Games list with the league's other live games. Sports add-on streams also show next to a game's other channels, in Quick Channels and in Multiview
+- **Handball** plus Czech and Slovak leagues. College tables have conference tabs and real records
+- Followed teams show results from every competition (Nations League, friendlies, cups), and league rows keep the last week's results
+- **Back** on any Sports page brings the highlight to the top first, then opens the menu
 
-### Multiview
-- **Hold OK on a pane to watch it full screen.** Back takes you to all your panes, still playing
-- Pane names, numbers and the highlight fade away with the top bar
-- **Filter the Sports tab:** My Sports, All Events, Live Now, or one sport at a time. Your choice is remembered
+### Recordings
+- **Record anywhere:** to a USB drive, any folder on a drive, or a **network folder** on a NAS or PC (Settings → Live TV → Recordings → Save Recordings To). **Find on Network** looks for computers and NAS boxes on your home network. It works with the VPN in Full app mode too
+- **One file per show,** like "Show - S01E02.ts", which plays in VLC and other apps
+- **One library for every device.** Every TV using the same network folder sees the same recordings, and the phone app can play them while you're at home
+- **Recorded, Scheduled and Series tabs** with posters, and a gear on the Recordings page for Recordings settings
+- **Move To** shows real progress, and you can stop a move part way
+- **Fix Match:** hold OK on a recording or an On Demand title to pick the right show or movie, or paste an IMDb ID or TMDB link
+- **Delete Recordings After** (3 to 30 days), with **Keep Forever** for the ones you pick
 
-### Live TV
-- **A guide for each playlist:** paste a guide link when you add a playlist (on the phone page too, Stalker portals included), and switch each playlist's guides on or off under **Guides**
-- **On Demand from M3U playlists:** movies and series straight from the playlist, and the expiry date for Xtream providers
-- **DNS setting:** System (default), Cloudflare or Google. Try it if channels say your provider's server can't be found or your internet company blocks IPTV. On System, the app tries Cloudflare and Google by itself when it needs to
-- **Copy several channels to a group** at once
-- **Record series: new episodes only.** Switch it on for any series in Recordings to skip repeats
-- **Repeating recordings:** Schedule a Recording can repeat every day, on weekdays, at weekends or on the days you pick
-- **Left goes to the top first** in long lists (guide groups, overlay groups, the Sports top bar, the Multiview picker). Press Left again for the menu
-- **Past guide kept** can now be 14 days, and catch-up goes back up to 14 days
-- **Hide Stray Entries:** leaves out odd leftovers some providers put in their playlists, like a single episode sitting in its own group
-- **Airing Today** now lists shows it used to miss (lots of news shows), with their Live TV options
-- **A cleaner look:** darkness options are now **Light / Standard / Dark**, overlay mode dims shows that already aired and shows what's on now in bold with a LIVE tag, Multiview uses the same background as the Guide and Sports, and the playlist menu shows account details under each name
+### Back up & restore
+- **Back up or restore with your phone:** scan the QR code on the TV to download your setup to your phone, or send a backup from your phone to the TV
+- Or **save a backup file** (.nptv) on the TV and restore it later (Settings → Live TV → Backup File)
 
-### Profiles
-- **Copy Settings** between profiles now includes Live TV favorites, groups, channel order, hidden items, and Sports and Calendar choices
-- **Keep Matched:** keep profiles the same, so a change on one applies to all. **Stop Matching** is in Profile Options
+### Playback
+- **Best quality:** a new auto-play option that picks the best source. Edit the **Quality rules**, or sort sources with **Best quality first** (Settings → Playback → Stream Selection)
+- **Set up for this TV** (first section of Settings → Playback) checks your box, screen and sound and suggests settings, with Apply all and Undo
+- **Seek thumbnails** fill in much sooner when they're turned on
 
-### Calendar
-- F1, NASCAR and IndyCar weekends show each session on its own day and time
-- Golf and tennis tournaments show on every day they're on ("Day 2 of 4")
+### Live TV and Home
+- **Live TV, Sports and On Demand rows on Home:** favorites, a playlist group, games on now, a movie or series category, Recently added or Continue Watching On Demand (Settings → Content & Discovery → Home Screen Rows → Add a row). They sync with your other TVs and your phone
+- **Favorite groups:** hold OK on a group to star it and move it to the top
+- **Show on Profiles:** choose which profiles see each playlist
+- **Lock Playlist Logins** (under Parental Controls): when it's on, editing playlists and guides, backups and the network folder ask for your PIN
+- **Hide Non-English Titles:** a new switch in Settings → Live TV → On Demand. On Demand also keeps its matches, so posters and details come back straight away
+- Episode names show beside the title in the guide, and Up/Down reads a show's whole description
+- A **User agent** box for guides, and a switch to leave movies and series out of M3U playlists
 
-### Nuvio 1.2.0-beta.2
-- Now built on Nuvio 1.2.0-beta.2: support for Stremio tracking addons, a subtitle outline width setting, styled subtitles that keep their colours and positions, your place in the video is kept when you switch sources, and more sources fall back properly when one won't play
-- Arabic translation completed, plus Hebrew, Slovak and French updates
+### Nuvio 1.2.0-beta.3
+- Built on Nuvio 1.2.0-beta.3: automatic audio-based subtitle sync, trailer subtitles, star ratings, drag to reorder collections, season posters in the season tabs and more
 
 ## Fixed
-- **Update now** really re-downloads your playlists instead of keeping the old copy
-- **Overlay mode** now shows the same shows as the guide (later days and catch-up shows no longer go missing)
-- **Record series** now records the airing you picked it from, instead of waiting for a later repeat
-- **Deleting a playlist** now clears everything it left behind (hidden groups, favorites, custom group channels, channel order, reminders and scheduled recordings). Leftovers from playlists you already deleted are cleared too
-- **Sync:** a playlist or guide order you change is no longer undone, and favorites, hidden channels and your own groups now combine between TVs instead of one TV overwriting the other
-- Stalker portal guides now save properly, and update errors no longer show your portal account details
-- **Multiview:** holding OK in the channel list no longer sends a pane to full screen, and holding OK on a game in the Sports tab opens its options on every remote
-- The VPN can no longer end up on without a profile chosen, even after a sync
-- Sports division standings show in the right order (NBA divisions came out worst first)
+- **Multiview** is smoother on more boxes, and panes restart by themselves when the VPN comes back
+- **USB recordings** no longer fail when a drive is sleeping or busy
+- **Sports highlights** close properly at the end, and a highlight in the Sports window no longer loses the TV's picture when you open another page
+- **Race games** like MotoGP now get their channels, and **NFL game tables** show both teams' divisions in full
+- Only real wrestling shows appear in Live & Upcoming, and long-finished games no longer show as live (thanks to dwk001)
+- Turning a playlist off takes its channels off every game right away
+- **Slow-starting channels** (4K, Dispatcharr) get time to load instead of reconnecting
+- Shows marked new no longer show the mark twice
+- A guide that can't finish updating because storage is full keeps the old guide, with a clear message
+- Stalker portals that hand off to another server, or send a few bad listings, now load

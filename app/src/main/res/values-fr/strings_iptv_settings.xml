@@ -669,6 +669,8 @@
     <string name="iptv_settings_sync_vpn_description">"Configurations VPN, profil sélectionné et portée de la protection automatique."</string>
     <string name="iptv_settings_sync_favorites">"Favoris et groupes"</string>
     <string name="iptv_settings_sync_favorites_description">"Chaînes favorites, chaînes masquées et ordre des groupes."</string>
+    <string name="iptv_settings_sync_home_rows">"Rangées de l’accueil"</string>
+    <string name="iptv_settings_sync_home_rows_description">"Rangées TV en direct, Sports et À la demande ajoutées à l’accueil. Partagées aussi avec votre téléphone."</string>
     <string name="iptv_settings_sync_sports_description">"Équipes et ligues suivies, et Choisir les ligues."</string>
     <string name="iptv_settings_sync_calendar">"Calendrier"</string>
     <string name="iptv_settings_sync_calendar_description">"Séries suivies et masquées."</string>
@@ -701,4 +703,19 @@
     <string name="profile_matched_with">"Synchronisé avec %1$s"</string>
     <string name="profile_stop_matching">"Arrêter la synchronisation"</string>
     <string name="profile_stopped_matching">"%1$s n’est plus synchronisé. Il garde ses réglages actuels."</string>
+    <string name="iptv_settings_dns_cloudflare">"Cloudflare (1.1.1.1)"</string>
+    <string name="iptv_settings_dns_google">"Google (8.8.8.8)"</string>
+    <string name="iptv_settings_hide_non_english_titles">"Masquer les titres non anglais"</string>
+    <string name="iptv_settings_hide_non_english_titles_sub">"Masque les films et séries tournés dans une autre langue (vérifié avec TMDB et les groupes et étiquettes de langue de votre fournisseur). Les titres masqués ne sont jamais chargés ni recherchés."</string>
+    <string name="iptv_settings_number_of_channels">"Nombre de chaînes"</string>
+    <string name="iptv_settings_lock_playlist_logins">"Verrouiller les identifiants des playlists"</string>
+    <string name="iptv_settings_lock_playlist_logins_description">"Modifier les playlists, les guides et le dossier réseau, et créer des sauvegardes, demande le code PIN. Les mots de passe s\'affichent en points."</string>
+    <string name="iptv_settings_enter_pin_for_logins">"Saisissez votre code PIN pour voir les identifiants des playlists"</string>
+    <string name="iptv_settings_delete_recordings_after">"Supprimer les enregistrements après"</string>
+    <string name="iptv_settings_delete_recordings_after_off">"Les enregistrements sont gardés jusqu\'à ce que vous les supprimiez"</string>
+    <string name="iptv_settings_delete_recordings_after_on">"Les enregistrements terminés plus anciens sont supprimés automatiquement"</string>
+    <string name="iptv_settings_delete_recordings_after_note">"Les enregistrements déjà plus anciens sont supprimés tout de suite. Ceux marqués Garder pour toujours (dans le menu d\'un enregistrement), en partie regardés ou en cours ne sont jamais supprimés."</string>
+    <string name="iptv_settings_recording_keep_days_n">"%1$d jours"</string>
+    <string name="iptv_settings_picture_sound_and_pausing">"Image, son et pause"</string>
+    <string name="iptv_settings_recordings_tab_subtitle">"Où les enregistrements sont stockés, le dossier réseau et leur durée de conservation"</string>
 </resources>
