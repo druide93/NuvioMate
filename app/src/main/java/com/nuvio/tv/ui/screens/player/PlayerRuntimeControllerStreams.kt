@@ -2081,6 +2081,10 @@ internal fun PlayerRuntimeController.cancelNextEpisodePreload() {
 }
 
 internal fun PlayerRuntimeController.playNextEpisode(userInitiated: Boolean = false) {
+    if (_uiState.value.nextEpisode?.mixName != null) {
+        playMixNext(pressed = userInitiated)
+        return
+    }
     if (isPartyControlLocked) {
         if (userInitiated) partyBlocksControl()
         return

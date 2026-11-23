@@ -28,6 +28,8 @@ interface ScoutNavigationEntryPoint {
 class ScoutNavigation(private val session: ScoutMixSession, private val engine: com.nuvio.tv.core.scout.ScoutEngine) {
     fun playbackEnded(contentId: String?): Boolean = session.returnFromPlayer(contentId, ScoutMixReturn.ENDED)
 
+    fun nextChosen(contentId: String?): Boolean = session.returnFromPlayer(contentId, ScoutMixReturn.NEXT)
+
     fun backPressed(contentId: String?, watched: Boolean): Boolean =
         session.returnFromPlayer(contentId, if (watched) ScoutMixReturn.WATCHED else ScoutMixReturn.LEFT)
 

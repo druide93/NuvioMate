@@ -158,6 +158,9 @@ class StreamScreenViewModel @Inject constructor(
     private val manualSelection: Boolean = savedStateHandle.get<String>("manualSelection")
         ?.toBooleanStrictOrNull()
         ?: false
+    /** A Mix episode with Pick sources for me on. */
+    private val pickForMe: Boolean = !manualSelection &&
+        savedStateHandle.get<String>("pickForMe")?.toBooleanStrictOrNull() == true
     private val streamCacheKey: String = "${contentType.lowercase()}|$videoId"
     private val partyKey: String = com.nuvio.tv.core.party.partyMediaKey(
         metaType = contentType,
@@ -418,7 +421,7 @@ class StreamScreenViewModel @Inject constructor(
         streamLoadScope = newScope
         streamLoadJob = newScope.launch {
             streamLoadCompleted = false
-            val playerSettings = playerSettingsDataStore.playerSettings.first()
+            val playerSettings = playerSettingsDataStore.playerSettings.first().forMixPick(pickForMe)
             if (manualSelection) {
                 directAutoPlayModeInitializedForSession = true
                 directAutoPlayFlowEnabledForSession = false

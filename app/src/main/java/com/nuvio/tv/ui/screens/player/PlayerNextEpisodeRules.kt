@@ -1,5 +1,6 @@
 package com.nuvio.tv.ui.screens.player
 
+import kotlinx.coroutines.delay
 import com.nuvio.tv.data.local.NextEpisodeThresholdMode
 import com.nuvio.tv.data.repository.SkipInterval
 import com.nuvio.tv.core.util.isEpisodeReleaseAired
@@ -9,6 +10,30 @@ import java.time.Clock
 import java.time.LocalDate
 
 object PlayerNextEpisodeRules {
+    enum class MixCardStep { KEEP, STOP_COUNTING, HIDE }
+
+    /** Leaving the window hides the card until playback is back in it; rewinding inside the window only stops the count. */
+    fun mixCardStep(inWindow: Boolean, counting: Boolean, previousPositionMs: Long, positionMs: Long): MixCardStep = when {
+        !inWindow -> MixCardStep.HIDE
+        counting && positionMs < previousPositionMs - MIX_REWIND_TOLERANCE_MS -> MixCardStep.STOP_COUNTING
+        else -> MixCardStep.KEEP
+    }
+
+    /** Only playing time counts, so a pause or a rebuffer holds the number. */
+    suspend fun countMixDown(seconds: Int, running: () -> Boolean, onSecond: (Int) -> Unit) {
+        for (left in seconds downTo 1) {
+            onSecond(left)
+            var played = 0L
+            while (played < 1_000L) {
+                delay(MIX_COUNT_STEP_MS)
+                if (running()) played += MIX_COUNT_STEP_MS
+            }
+        }
+    }
+
+    private const val MIX_REWIND_TOLERANCE_MS = 1_500L
+    private const val MIX_COUNT_STEP_MS = 250L
+
     fun resolveNextEpisode(
         videos: List<Video>,
         currentSeason: Int?,

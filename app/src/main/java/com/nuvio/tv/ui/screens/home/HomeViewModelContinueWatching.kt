@@ -331,8 +331,15 @@ internal fun HomeViewModel.loadContinueWatchingPipeline() {
                 debug.markPhase("filter-snapshot")
                 val cycleStartMs = SystemClock.elapsedRealtime()
                 val useTrackingProvider = watchProgressRepository.hasActiveTrackingProgressProvider()
-                val items = snapshot.items
-                val nextUpSeeds = snapshot.nextUpSeeds
+                // Episodes last played in a Scout Mix resume from the Mix page, not here.
+                val mixPlayed = runCatching { episodeShuffleStore.mixPlayed(pipelineProfileId) }.getOrDefault(emptySet())
+                val items = withoutMixPlays(snapshot.items, mixPlayed)
+                val nextUpSeeds = if (mixPlayed.isEmpty()) snapshot.nextUpSeeds else withoutMixPlaySeeds(
+                    snapshot.nextUpSeeds,
+                    mixPlayed,
+                    watchProgressRepository.watchedItems.first(),
+                    snapshot.nextUpFromFurthestEpisode
+                )
                 val daysCap = snapshot.daysCap
                 val dismissedNextUp = snapshot.dismissedNextUp
                 val showUnairedNextUp = snapshot.showUnairedNextUp

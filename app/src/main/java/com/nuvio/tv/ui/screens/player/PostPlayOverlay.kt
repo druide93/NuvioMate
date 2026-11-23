@@ -52,6 +52,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -188,9 +189,12 @@ private fun AutoPlayBody(
 
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Text(
-                text = stringResource(R.string.next_episode_label),
+                text = nextEpisode.mixName?.let { stringResource(R.string.scout_mixes_next_in, it) }
+                    ?: stringResource(R.string.next_episode_label),
                 color = Color.White.copy(alpha = 0.8f),
                 fontSize = 11.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Medium,
             )
             Spacer(modifier = Modifier.height(NuvioTheme.spacing.xxs))
@@ -204,6 +208,9 @@ private fun AutoPlayBody(
             )
             val statusText = when {
                 !isPlayable && !nextEpisode.unairedMessage.isNullOrBlank() -> nextEpisode.unairedMessage
+                nextEpisode.mixName != null -> mode.countdownSec?.let {
+                    pluralStringResource(R.plurals.scout_mixes_starts_in, it, it)
+                }
                 mode.searching -> stringResource(R.string.next_episode_finding_source)
                 !mode.sourceName.isNullOrBlank() && mode.countdownSec != null ->
                     stringResource(R.string.next_episode_playing_via, mode.sourceName, mode.countdownSec)
@@ -449,5 +456,5 @@ private fun nextEpisodeDisplayLabel(nextEpisode: NextEpisodeInfo): String {
         nextEpisode.episode,
     )
     val localizedTitle = nextEpisode.title.localizeEpisodeTitle(context)
-    return "$code • $localizedTitle"
+    return listOfNotNull(nextEpisode.showName, code, localizedTitle).joinToString(" • ")
 }

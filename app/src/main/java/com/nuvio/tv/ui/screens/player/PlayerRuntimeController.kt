@@ -535,6 +535,7 @@ class PlayerRuntimeController(
     internal var hasRenderedFirstFrame = false
     // Prevent the previous stream's end from completing the new stream.
     internal var endDetectionArmed = false
+    internal var mixCardPositionMs: Long = 0L
     // Ignore EOF until MPV has reported a non-EOF state for this stream.
     internal var mpvEofSeenClear = false
     // Set once the Exo progress loop forced a natural end for a position past duration.

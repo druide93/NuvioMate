@@ -22,7 +22,8 @@ import com.nuvio.tv.domain.model.WatchProgress
 import com.nuvio.tv.ui.components.SourceChipItem
 
 enum class PlayerExitReason {
-    StillWatchingPrompt
+    StillWatchingPrompt,
+    ScoutMixNext
 }
 
 enum class PlaybackIssueReportStatus {
@@ -325,7 +326,10 @@ data class NextEpisodeInfo(
     val hasAired: Boolean,
     val available: Boolean? = null,
     val unairedMessage: String?,
-    val isOtherType: Boolean = false
+    val isOtherType: Boolean = false,
+    /** Set when a Scout Mix chose this episode, possibly from another show. */
+    val mixName: String? = null,
+    val showName: String? = null
 )
 
 data class SubtitleSyncCue(

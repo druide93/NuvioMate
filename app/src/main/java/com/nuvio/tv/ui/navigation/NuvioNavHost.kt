@@ -722,6 +722,11 @@ private fun PlaybackNavHost(
                     nullable = true
                     defaultValue = "false"
                 },
+                navArgument("pickForMe") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = "false"
+                },
                 navArgument("returnToDetailOnBack") {
                     type = NavType.StringType
                     nullable = true
@@ -1230,6 +1235,9 @@ private fun PlaybackNavHost(
                 },
                 onPlaybackEnded = { nextVideoId, nextSeason, nextEpisode, exitReason ->
                     // Scout Mix: the Mix page plays its next pick.
+                    if (exitReason == PlayerExitReason.ScoutMixNext && scoutMixNav.nextChosen(backStackEntry.arguments?.getString("contentId")) &&
+                        navController.popBackStack(Screen.ScoutMix.route, inclusive = false)
+                    ) return@PlayerScreen
                     if (nextVideoId == null && scoutMixNav.playbackEnded(backStackEntry.arguments?.getString("contentId")) &&
                         navController.popBackStack(Screen.ScoutMix.route, inclusive = false)
                     ) return@PlayerScreen
@@ -1849,7 +1857,7 @@ private fun PlaybackNavHost(
         ) {
             com.nuvio.tv.ui.screens.scout.ScoutMixScreen(
                 onBack = { navController.popBackStack() },
-                onPlay = { pick, _ ->
+                onPlay = { pick, pickForMe ->
                     navController.navigate(
                         Screen.Stream.createRoute(
                             videoId = pick.video.id,
@@ -1865,7 +1873,8 @@ private fun PlaybackNavHost(
                             year = pick.meta.releaseInfo,
                             contentId = pick.meta.id,
                             contentName = pick.meta.name,
-                            runtime = pick.video.runtime
+                            runtime = pick.video.runtime,
+                            pickForMe = pickForMe
                         )
                     )
                 },

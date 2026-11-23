@@ -286,7 +286,7 @@ fun PlayerScreen(
                 name = uiState.contentName ?: uiState.title,
                 poster = null,
                 season = uiState.currentSeason,
-                nextEpisodeSeason = uiState.nextEpisode?.season
+                nextEpisodeSeason = uiState.nextEpisode?.takeIf { it.mixName == null }?.season
             )
         )
         val (focusSeason, focusEpisode) = uiState.returnFocusSeasonEpisode(completed)
@@ -316,7 +316,7 @@ fun PlayerScreen(
     val currentOnPlayRecommendation by rememberUpdatedState(onPlayRecommendation)
     val currentOnOpenRecommendationDetails by rememberUpdatedState(onOpenRecommendationDetails)
     val nextEpisodeForEndPrompt = uiState.nextEpisode?.takeIf {
-        it.hasAired && !(it.released.isNullOrBlank() && it.available == false)
+        it.mixName == null && it.hasAired && !(it.released.isNullOrBlank() && it.available == false)
     }
     val shouldConfirmNextEpisodeOnEnd =
         uiState.playbackEnded &&
@@ -456,8 +456,21 @@ fun PlayerScreen(
             uiState.postPlayMode?.blocksNaturalCompletion() != true &&
             !postPlayRecommendationState.blocksNaturalCompletion &&
             !shouldConfirmNextEpisodeOnEnd &&
-            explicitReason == null
+            explicitReason == null &&
+            !exitDispatched
         when {
+            explicitReason == PlayerExitReason.ScoutMixNext -> {
+                exitDispatched = true
+                viewModel.stopAndRelease()
+                val cb = currentOnPlaybackEnded
+                if (cb != null) {
+                    cb(null, null, null, PlayerExitReason.ScoutMixNext)
+                } else {
+                    val (focusSeason, focusEpisode) = uiState.returnFocusSeasonEpisode(completed = true)
+                    currentOnBackPress(uiState.currentVideoId, focusSeason, focusEpisode, autoPlayEnabledForBack, true)
+                }
+                viewModel.consumePendingExitReason()
+            }
             explicitReason == PlayerExitReason.StillWatchingPrompt -> {
                 viewModel.stopAndRelease()
                 val cb = currentOnPlaybackEnded
@@ -478,7 +491,7 @@ fun PlayerScreen(
             shouldDispatchNatural -> {
                 viewModel.stopAndRelease()
                 val next = uiState.nextEpisode?.takeIf {
-                    it.hasAired && !(it.released.isNullOrBlank() && it.available == false)
+                    it.mixName == null && it.hasAired && !(it.released.isNullOrBlank() && it.available == false)
                 }
                 val cb = currentOnPlaybackEnded
                 if (cb != null) {
