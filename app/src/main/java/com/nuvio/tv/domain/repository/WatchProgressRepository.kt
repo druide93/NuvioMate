@@ -22,6 +22,10 @@ interface WatchProgressRepository {
 
     val watchedItems: Flow<List<WatchedItem>>
         get() = flowOf(emptyList())
+
+    /** Everything the user has finished (Scout learns from it). */
+    val tasteHistory: Flow<List<WatchedItem>>
+        get() = watchedItems
     
     /**
      * Get watch progress for a specific content item (movie or series)

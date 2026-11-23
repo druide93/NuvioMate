@@ -111,6 +111,47 @@ interface TmdbApi {
         @Query("page") page: Int = 1
     ): Response<TmdbRecommendationsResponse>
 
+    @GET("movie/{movie_id}?append_to_response=keywords,credits,release_dates")
+    suspend fun getMovieFacts(
+        @Path("movie_id") movieId: Int,
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String? = null
+    ): Response<ScoutTitleFacts>
+
+    @GET("tv/{tv_id}?append_to_response=keywords,credits,content_ratings")
+    suspend fun getTvFacts(
+        @Path("tv_id") tvId: Int,
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String? = null
+    ): Response<ScoutTitleFacts>
+
+    @GET("trending/all/week")
+    suspend fun getTrendingWeek(
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String? = null,
+        @Query("page") page: Int = 1
+    ): Response<TmdbRecommendationsResponse>
+
+    @GET("discover/movie?sort_by=popularity.desc&with_release_type=4%7C5")
+    suspend fun discoverPlayableMovies(
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String? = null,
+        @Query("page") page: Int = 1,
+        @Query("release_date.gte") from: String,
+        @Query("release_date.lte") to: String,
+        @Query("vote_count.gte") votes: Int
+    ): Response<TmdbDiscoverResponse>
+
+    @GET("discover/tv?sort_by=popularity.desc&without_genres=10763,10764,10766,10767")
+    suspend fun discoverAiringTv(
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String? = null,
+        @Query("page") page: Int = 1,
+        @Query("air_date.gte") from: String,
+        @Query("air_date.lte") to: String,
+        @Query("vote_count.gte") votes: Int
+    ): Response<TmdbDiscoverResponse>
+
     @GET("tv/{tv_id}/recommendations")
     suspend fun getTvRecommendations(
         @Path("tv_id") tvId: Int,
@@ -183,7 +224,12 @@ interface TmdbApi {
         @Query("without_companies") withoutCompanies: String? = null,
         @Query("without_genres") withoutGenres: String? = null,
         @Query("without_keywords") withoutKeywords: String? = null,
-        @Query("without_watch_providers") withoutWatchProviders: String? = null
+        @Query("without_watch_providers") withoutWatchProviders: String? = null,
+        @Query("vote_count.lte") voteCountLte: Int? = null,
+        @Query("with_runtime.lte") withRuntimeLte: Int? = null,
+        @Query("with_runtime.gte") withRuntimeGte: Int? = null,
+        @Query("certification_country") certificationCountry: String? = null,
+        @Query("certification.lte") certificationLte: String? = null
     ): Response<TmdbDiscoverResponse>
 
     @GET("discover/tv")
@@ -211,7 +257,13 @@ interface TmdbApi {
         @Query("without_companies") withoutCompanies: String? = null,
         @Query("without_genres") withoutGenres: String? = null,
         @Query("without_keywords") withoutKeywords: String? = null,
-        @Query("without_watch_providers") withoutWatchProviders: String? = null
+        @Query("without_watch_providers") withoutWatchProviders: String? = null,
+        @Query("vote_count.lte") voteCountLte: Int? = null,
+        @Query("with_runtime.lte") withRuntimeLte: Int? = null,
+        @Query("with_runtime.gte") withRuntimeGte: Int? = null,
+        @Query("certification_country") certificationCountry: String? = null,
+        @Query("certification.lte") certificationLte: String? = null,
+        @Query("with_type") withType: String? = null
     ): Response<TmdbDiscoverResponse>
 
     @GET("list/{list_id}")
@@ -221,6 +273,22 @@ interface TmdbApi {
         @Query("language") language: String? = null,
         @Query("page") page: Int = 1
     ): Response<TmdbListDetailsResponse>
+
+    @GET("search/movie")
+    suspend fun searchMovies(
+        @Query("api_key") apiKey: String,
+        @Query("query") query: String,
+        @Query("language") language: String? = null,
+        @Query("include_adult") includeAdult: Boolean = false
+    ): Response<TmdbDiscoverResponse>
+
+    @GET("search/tv")
+    suspend fun searchTv(
+        @Query("api_key") apiKey: String,
+        @Query("query") query: String,
+        @Query("language") language: String? = null,
+        @Query("include_adult") includeAdult: Boolean = false
+    ): Response<TmdbDiscoverResponse>
 
     @GET("search/company")
     suspend fun searchCompanies(
@@ -351,6 +419,8 @@ data class TmdbDetailsResponse(
     @Json(name = "last_air_date") val lastAirDate: String? = null,
     @Json(name = "status") val status: String? = null,
     @Json(name = "belongs_to_collection") val belongsToCollection: TmdbCollectionSummary? = null,
+    @Json(name = "next_episode_to_air") val nextEpisodeToAir: TmdbEpisodeToAir? = null,
+    @Json(name = "last_episode_to_air") val lastEpisodeToAir: TmdbEpisodeToAir? = null,
     @Json(name = "seasons") val seasons: List<TmdbSeasonSummary>? = null
 )
 
@@ -358,6 +428,16 @@ data class TmdbDetailsResponse(
 data class TmdbSeasonSummary(
     @Json(name = "season_number") val seasonNumber: Int? = null,
     @Json(name = "episode_count") val episodeCount: Int? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class TmdbEpisodeToAir(
+    @Json(name = "name") val name: String? = null,
+    @Json(name = "air_date") val airDate: String? = null,
+    @Json(name = "season_number") val seasonNumber: Int? = null,
+    @Json(name = "episode_number") val episodeNumber: Int? = null,
+    @Json(name = "episode_type") val episodeType: String? = null,
+    @Json(name = "runtime") val runtime: Int? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -471,7 +551,9 @@ data class TmdbMovieReleaseDateCountry(
 
 @JsonClass(generateAdapter = true)
 data class TmdbMovieReleaseDateItem(
-    @Json(name = "certification") val certification: String? = null
+    @Json(name = "certification") val certification: String? = null,
+    @Json(name = "type") val type: Int? = null,
+    @Json(name = "release_date") val releaseDate: String? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -512,6 +594,8 @@ data class TmdbEpisode(
     @Json(name = "still_path") val stillPath: String? = null,
     @Json(name = "air_date") val airDate: String? = null,
     @Json(name = "runtime") val runtime: Int? = null,
+    @Json(name = "season_number") val seasonNumber: Int? = null,
+    @Json(name = "episode_type") val episodeType: String? = null,
     @Json(name = "id") val id: Long? = null
 )
 
@@ -620,7 +704,10 @@ data class TmdbDiscoverResult(
     @Json(name = "first_air_date") val firstAirDate: String? = null,
     @Json(name = "vote_average") val voteAverage: Double? = null,
     @Json(name = "vote_count") val voteCount: Int? = null,
-    @Json(name = "popularity") val popularity: Double? = null
+    @Json(name = "genre_ids") val genreIds: List<Int>? = null,
+    @Json(name = "origin_country") val originCountry: List<String>? = null,
+    @Json(name = "popularity") val popularity: Double? = null,
+    @Json(name = "original_language") val originalLanguage: String? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -638,6 +725,7 @@ data class TmdbRecommendationResult(
     @Json(name = "release_date") val releaseDate: String? = null,
     @Json(name = "first_air_date") val firstAirDate: String? = null,
     @Json(name = "vote_average") val voteAverage: Double? = null,
+    @Json(name = "genre_ids") val genreIds: List<Int>? = null,
     @Json(name = "vote_count") val voteCount: Int? = null
 )
 
@@ -699,7 +787,8 @@ data class TmdbPersonCreditCrew(
     @Json(name = "vote_average") val voteAverage: Double? = null,
     @Json(name = "vote_count") val voteCount: Int? = null,
     @Json(name = "overview") val overview: String? = null,
-    @Json(name = "genre_ids") val genreIds: List<Int>? = null
+    @Json(name = "genre_ids") val genreIds: List<Int>? = null,
+    @Json(name = "original_language") val originalLanguage: String? = null
 )
 
 @JsonClass(generateAdapter = true)

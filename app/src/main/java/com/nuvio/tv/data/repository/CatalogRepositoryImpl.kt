@@ -28,7 +28,8 @@ class CatalogRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val api: AddonApi,
     private val layoutPreferenceDataStore: LayoutPreferenceDataStore,
-    private val serverCatalog: ServerCatalog
+    private val serverCatalog: ServerCatalog,
+    private val builtInCatalogs: com.nuvio.tv.core.catalog.BuiltInCatalogs = com.nuvio.tv.core.catalog.BuiltInCatalogs.None
 ) : CatalogRepository {
     companion object {
         private const val TAG = "CatalogRepository"
@@ -48,6 +49,25 @@ class CatalogRepositoryImpl @Inject constructor(
         posterScreen: com.nuvio.tv.core.poster.CustomPosterScreen
     ): Flow<NetworkResult<CatalogRow>> = flow {
         emit(NetworkResult.Loading)
+
+        // Rows the app makes itself (Scout), answered here instead of from an add-on's address.
+        builtInCatalogs.provider(addonBaseUrl)?.let { provider ->
+            val posterPattern = com.nuvio.tv.core.poster.patternForScreen(
+                layoutPreferenceDataStore.customPosterUrlPattern.first(),
+                posterScreen,
+                layoutPreferenceDataStore.customPosterEnabledScreens.first()
+            )
+            val row = try {
+                provider.catalog(addonBaseUrl, addonId, addonName, catalogId, catalogName, type, skip, extraArgs, posterPattern)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                emit(NetworkResult.Error(error.message.orEmpty()))
+                return@flow
+            }
+            emit(NetworkResult.Success(row))
+            return@flow
+        }
 
         if (ServerCatalog.isServerAddon(addonBaseUrl)) {
             val row = try {

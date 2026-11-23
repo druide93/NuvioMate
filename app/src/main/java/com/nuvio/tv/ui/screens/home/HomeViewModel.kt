@@ -93,7 +93,8 @@ class HomeViewModel @Inject constructor(
         tmdbService,
         tmdbMetadataService,
         mdbListRepository
-    )
+    ),
+    internal val builtInCatalogs: com.nuvio.tv.core.catalog.BuiltInCatalogs = com.nuvio.tv.core.catalog.BuiltInCatalogs.None
 ) : ViewModel() {
     companion object {
         internal const val TAG = "HomeViewModel"
@@ -402,6 +403,7 @@ class HomeViewModel @Inject constructor(
             observeProgressSourceChanges()
             observeCollections()
             observeInstalledAddons()
+            observeBuiltInRowChangesPipeline()
             observeManualAddonRefresh()
 
             // Clear CW state when profile changes so items don't leak between profiles.

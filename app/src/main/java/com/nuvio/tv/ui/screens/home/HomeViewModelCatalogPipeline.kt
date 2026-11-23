@@ -46,7 +46,7 @@ private data class CatalogUpdateResult(
 @OptIn(FlowPreview::class)
 internal fun HomeViewModel.observeCollectionsPipeline() {
     viewModelScope.launch {
-        collectionsDataStore.collections
+        combine(collectionsDataStore.collections, builtInCatalogs.collections) { saved, builtIn -> saved + builtIn }
             .distinctUntilChanged()
             .debounce(300)
             .collectLatest { collections ->
@@ -130,8 +130,8 @@ internal fun HomeViewModel.observeTmdbSettingsPipeline() {
 @OptIn(FlowPreview::class)
 internal fun HomeViewModel.observeInstalledAddonsPipeline() {
     viewModelScope.launch {
-        combine(addonRepository.getInstalledAddons(), serverCatalog.addons) { installed, servers ->
-            installed.enabledAddons() + servers
+        combine(addonRepository.getInstalledAddons(), serverCatalog.addons, builtInCatalogs.addons) { installed, servers, builtIn ->
+            installed.enabledAddons() + servers + builtIn
         }
             .distinctUntilChanged()
             .collectLatest { addons ->
@@ -280,7 +280,7 @@ internal suspend fun HomeViewModel.loadAllCatalogsPipeline(
             val custom = titlesSnapshot[key]
             val baseName = if (!custom.isNullOrBlank()) custom else catalog.name
             val catalogName = baseName.replaceFirstChar { it.uppercase() }
-            if (!showTypeSuffix) return catalogName
+            if (!showTypeSuffix || builtInCatalogs.skipsTypeSuffix(addon.id)) return catalogName
             val typeLabel = when (catalog.apiType.lowercase()) {
                 "movie" -> strTypeMovie.ifBlank { catalog.apiType.replaceFirstChar { it.uppercase() } }
                 "series" -> strTypeSeries.ifBlank { catalog.apiType.replaceFirstChar { it.uppercase() } }

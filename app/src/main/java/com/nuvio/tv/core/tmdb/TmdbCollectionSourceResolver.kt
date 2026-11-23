@@ -8,6 +8,7 @@ import com.nuvio.tv.data.local.TmdbSettingsDataStore
 import com.nuvio.tv.data.remote.api.TmdbApi
 import com.nuvio.tv.data.remote.api.TmdbCollectionSearchResult
 import com.nuvio.tv.data.remote.api.TmdbCompanySearchResult
+import com.nuvio.tv.data.remote.api.TmdbDetailsResponse
 import com.nuvio.tv.data.remote.api.TmdbDiscoverResult
 import com.nuvio.tv.data.remote.api.TmdbListItem
 import com.nuvio.tv.data.remote.api.TmdbPersonCreditCast
@@ -21,9 +22,14 @@ import com.nuvio.tv.domain.model.TmdbCollectionSort
 import com.nuvio.tv.domain.model.TmdbCollectionSource
 import com.nuvio.tv.domain.model.TmdbCollectionSourceType
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.util.Locale
@@ -33,8 +39,15 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 
 data class TmdbSourceImportMetadata(
     val title: String? = null,
-    val coverImageUrl: String? = null
-)
+    val coverImageUrl: String? = null,
+    val wideCoverImageUrl: String? = null
+) {
+    fun coverFor(tileShape: PosterShape?): String? =
+        if (tileShape == PosterShape.LANDSCAPE) wideCoverImageUrl ?: coverImageUrl else coverImageUrl
+}
+
+private const val IDS_PAGE = 20
+private const val IDS_AT_ONCE = 4
 
 @Singleton
 class TmdbCollectionSourceResolver @Inject constructor(
@@ -49,6 +62,7 @@ class TmdbCollectionSourceResolver @Inject constructor(
         val result = runCatching {
             withContext(Dispatchers.IO) {
                 val language = tmdbSettingsDataStore.settings.first().language
+                if (source.ids.isNotEmpty()) return@withContext resolveIds(source, language, page)
                 when (source.sourceType) {
                     TmdbCollectionSourceType.LIST -> resolveList(source, language, page)
                     TmdbCollectionSourceType.COLLECTION -> resolveCollection(source, language)
@@ -92,7 +106,8 @@ class TmdbCollectionSourceResolver @Inject constructor(
             ?: error(string(R.string.tmdb_error_collection_not_found))
         TmdbSourceImportMetadata(
             title = body.name?.takeIf { it.isNotBlank() },
-            coverImageUrl = imageUrl(body.posterPath, "w500") ?: imageUrl(body.backdropPath, "w1280")
+            coverImageUrl = imageUrl(body.posterPath, "w500") ?: imageUrl(body.backdropPath, TmdbImageSizes.backdrop),
+            wideCoverImageUrl = imageUrl(body.backdropPath, TmdbImageSizes.backdrop)
         )
     }
 
@@ -188,7 +203,7 @@ class TmdbCollectionSourceResolver @Inject constructor(
                     name = title,
                     poster = imageUrl(it.posterPath, "w500") ?: imageUrl(it.backdropPath, "w780"),
                     posterShape = PosterShape.POSTER,
-                    background = imageUrl(it.backdropPath, "w1280"),
+                    background = imageUrl(it.backdropPath, TmdbImageSizes.backdrop),
                     logo = null,
                     description = it.overview?.takeIf { value -> value.isNotBlank() },
                     releaseInfo = it.releaseDate?.take(4),
@@ -263,7 +278,12 @@ class TmdbCollectionSourceResolver @Inject constructor(
                 withWatchMonetizationTypes = if (!filters.withWatchProviders.isNullOrBlank()) "flatrate|free|ads|rent|buy" else null,
                 withoutCompanies = filters.withoutCompanies,
                 withoutGenres = filters.withoutGenres,
-                withoutWatchProviders = filters.withoutWatchProviders
+                withoutWatchProviders = filters.withoutWatchProviders,
+                voteCountLte = filters.voteCountLte,
+                withRuntimeLte = filters.withRuntimeLte,
+                withRuntimeGte = filters.withRuntimeGte,
+                certificationCountry = filters.certificationCountry,
+                certificationLte = filters.certificationLte
             ).body()
             TmdbCollectionMediaType.TV -> tmdbApi.discoverTv(
                 apiKey = BuildConfig.TMDB_API_KEY,
@@ -279,7 +299,7 @@ class TmdbCollectionSourceResolver @Inject constructor(
                     else -> filters.withNetworks
                 },
                 firstAirDateLte = filters.releaseDateLte ?: if (source.sourceType == TmdbCollectionSourceType.NETWORK) today else null,
-                withStatus = if (source.sourceType == TmdbCollectionSourceType.NETWORK) "0|3|4" else null,
+                withStatus = if (source.sourceType == TmdbCollectionSourceType.NETWORK) "0|3|4" else filters.withStatus,
                 voteCountGte = filters.voteCountGte,
                 withGenres = filters.withGenres,
                 firstAirDateGte = filters.releaseDateGte,
@@ -297,7 +317,13 @@ class TmdbCollectionSourceResolver @Inject constructor(
                 withWatchMonetizationTypes = if (!filters.withWatchProviders.isNullOrBlank()) "flatrate|free|ads|rent|buy" else null,
                 withoutCompanies = filters.withoutCompanies,
                 withoutGenres = filters.withoutGenres,
-                withoutWatchProviders = filters.withoutWatchProviders
+                withoutWatchProviders = filters.withoutWatchProviders,
+                voteCountLte = filters.voteCountLte,
+                withRuntimeLte = filters.withRuntimeLte,
+                withRuntimeGte = filters.withRuntimeGte,
+                certificationCountry = filters.certificationCountry,
+                certificationLte = filters.certificationLte,
+                withType = filters.withType
             ).body()
         } ?: error(string(R.string.tmdb_error_discover_no_data))
         val items = response.results.orEmpty().mapNotNull { it.toPreview(mediaType) }.distinctBy { it.id }
@@ -306,6 +332,56 @@ class TmdbCollectionSourceResolver @Inject constructor(
             page = response.page ?: page,
             hasMore = (response.page ?: page) < (response.totalPages ?: page) && items.isNotEmpty(),
             items = items
+        )
+    }
+
+    /** A fixed list of titles, a page at a time. */
+    private suspend fun resolveIds(source: TmdbCollectionSource, language: String, page: Int): CatalogRow {
+        val tv = source.mediaType == TmdbCollectionMediaType.TV
+        val wanted = source.ids.drop((page - 1) * IDS_PAGE).take(IDS_PAGE)
+        val gate = Semaphore(IDS_AT_ONCE)
+        val items = coroutineScope {
+            wanted.map { id ->
+                async {
+                    gate.withPermit {
+                        val body = runCatching {
+                            if (tv) tmdbApi.getTvDetails(id, BuildConfig.TMDB_API_KEY, language)
+                            else tmdbApi.getMovieDetails(id, BuildConfig.TMDB_API_KEY, language)
+                        }.getOrNull()?.body()
+                        body?.toPreview(source.mediaType)
+                    }
+                }
+            }.awaitAll().filterNotNull()
+        }
+        if (wanted.isNotEmpty() && items.isEmpty()) error(string(R.string.tmdb_error_load_source))
+        return row(source, page, hasMore = page * IDS_PAGE < source.ids.size, items = items)
+    }
+
+    private fun TmdbDetailsResponse.toPreview(mediaType: TmdbCollectionMediaType): MetaPreview? {
+        val shown = title?.takeIf { it.isNotBlank() }
+            ?: name?.takeIf { it.isNotBlank() }
+            ?: originalTitle?.takeIf { it.isNotBlank() }
+            ?: originalName?.takeIf { it.isNotBlank() }
+            ?: return null
+        val series = mediaType == TmdbCollectionMediaType.TV
+        val date = (if (series) firstAirDate else releaseDate)?.takeIf { it.isNotBlank() }
+        return MetaPreview(
+            id = "tmdb:$id",
+            type = if (series) ContentType.SERIES else ContentType.MOVIE,
+            rawType = if (series) "series" else "movie",
+            name = shown,
+            poster = imageUrl(posterPath, "w500") ?: imageUrl(backdropPath, "w780"),
+            posterShape = PosterShape.POSTER,
+            background = imageUrl(backdropPath, TmdbImageSizes.backdrop),
+            logo = null,
+            description = overview?.takeIf { it.isNotBlank() },
+            releaseInfo = date?.take(4),
+            released = date,
+            imdbRating = voteAverage?.toFloat(),
+            voteCount = null,
+            genres = emptyList(),
+            originalLanguage = originalLanguage,
+            tmdbGenreIds = genres?.map { it.id }
         )
     }
 
@@ -365,7 +441,7 @@ class TmdbCollectionSourceResolver @Inject constructor(
             name = title,
             poster = imageUrl(posterPath, "w500") ?: imageUrl(backdropPath, "w780"),
             posterShape = PosterShape.POSTER,
-            background = imageUrl(backdropPath, "w1280"),
+            background = imageUrl(backdropPath, TmdbImageSizes.backdrop),
             logo = null,
             description = overview?.takeIf { it.isNotBlank() },
             releaseInfo = (releaseDate ?: firstAirDate)?.take(4),
@@ -391,7 +467,7 @@ class TmdbCollectionSourceResolver @Inject constructor(
             name = title,
             poster = imageUrl(posterPath, "w500") ?: imageUrl(backdropPath, "w780"),
             posterShape = PosterShape.POSTER,
-            background = imageUrl(backdropPath, "w1280"),
+            background = imageUrl(backdropPath, TmdbImageSizes.backdrop),
             logo = null,
             description = overview?.takeIf { it.isNotBlank() },
             releaseInfo = when (mediaType) {
@@ -404,7 +480,9 @@ class TmdbCollectionSourceResolver @Inject constructor(
             },
             imdbRating = voteAverage?.toFloat(),
             voteCount = voteCount,
-            genres = emptyList()
+            genres = emptyList(),
+            originalLanguage = originalLanguage,
+            tmdbGenreIds = genreIds
         )
     }
 
@@ -422,7 +500,7 @@ class TmdbCollectionSourceResolver @Inject constructor(
             name = title,
             poster = imageUrl(posterPath, "w500") ?: imageUrl(backdropPath, "w780"),
             posterShape = PosterShape.POSTER,
-            background = imageUrl(backdropPath, "w1280"),
+            background = imageUrl(backdropPath, TmdbImageSizes.backdrop),
             logo = null,
             description = overview?.takeIf { it.isNotBlank() },
             releaseInfo = when (mediaType) {
@@ -453,7 +531,7 @@ class TmdbCollectionSourceResolver @Inject constructor(
             name = title,
             poster = imageUrl(posterPath, "w500") ?: imageUrl(backdropPath, "w780"),
             posterShape = PosterShape.POSTER,
-            background = imageUrl(backdropPath, "w1280"),
+            background = imageUrl(backdropPath, TmdbImageSizes.backdrop),
             logo = null,
             description = overview?.takeIf { it.isNotBlank() },
             releaseInfo = when (mediaType) {
@@ -485,6 +563,10 @@ class TmdbCollectionSourceResolver @Inject constructor(
             filters.hashCode().takeIf { sourceType == TmdbCollectionSourceType.DISCOVER }?.let {
                 append("_")
                 append(it.toUInt().toString(16))
+            }
+            if (ids.isNotEmpty()) {
+                append("_ids_")
+                append(ids.hashCode().toUInt().toString(16))
             }
         }
     }

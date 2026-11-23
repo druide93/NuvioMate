@@ -602,7 +602,8 @@ internal fun catalogRowTitle(
     strTypeSeries: String = ""
 ): String {
     val catalogName = row.catalogName.replaceFirstChar { it.uppercase() }
-    if (!showCatalogTypeSuffix) return catalogName
+    // The app's own rows (Scout) mix films and shows, so their title carries no type.
+    if (!showCatalogTypeSuffix || row.addonId.startsWith(com.nuvio.tv.core.catalog.BuiltInCatalogs.ADDON_ID_PREFIX)) return catalogName
     val typeLabel = when (row.apiType.lowercase()) {
         "movie" -> strTypeMovie.ifBlank { row.apiType.replaceFirstChar { it.uppercase() } }
         "series" -> strTypeSeries.ifBlank { row.apiType.replaceFirstChar { it.uppercase() } }

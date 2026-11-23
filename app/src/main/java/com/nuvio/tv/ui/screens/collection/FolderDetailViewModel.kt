@@ -119,6 +119,7 @@ class FolderDetailViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     savedStateHandle: SavedStateHandle,
     private val collectionsDataStore: CollectionsDataStore,
+    private val builtInCatalogs: com.nuvio.tv.core.catalog.BuiltInCatalogs,
     private val addonRepository: AddonRepository,
     private val catalogRepository: CatalogRepository,
     private val layoutPreferenceDataStore: LayoutPreferenceDataStore,
@@ -236,6 +237,7 @@ class FolderDetailViewModel @Inject constructor(
         viewModelScope.launch {
             val collections = collectionsDataStore.collections.first()
             val collection = collections.find { it.id == collectionId }
+                ?: builtInCatalogs.collectionForFolders(collectionId)
             val folder = collection?.folders?.find { it.id == folderId }
 
             if (folder == null || folder.sources.isEmpty()) {

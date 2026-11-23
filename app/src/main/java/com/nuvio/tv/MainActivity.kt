@@ -2928,6 +2928,13 @@ private fun DrawerItemIcon(
 object LocaleCache {
     const val UNSET = "__UNSET__"
 
-    @Volatile
-    var localeTag: String = UNSET
+    private val tag = kotlinx.coroutines.flow.MutableStateFlow(UNSET)
+    /** Follows [localeTag], so text built in the app's language can be rebuilt when it changes (Scout rows). */
+    val tags: kotlinx.coroutines.flow.StateFlow<String> = tag
+
+    var localeTag: String
+        get() = tag.value
+        set(value) {
+            tag.value = value
+        }
 }

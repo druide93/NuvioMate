@@ -34,10 +34,14 @@ internal fun homeCollectionKey(collectionId: String): String {
     return "collection_${collectionId}"
 }
 
+/** Media-server rows and the app's own rows (Scout) depend on this device, so they stay on it. */
+internal fun isDeviceOnlyCatalogKey(key: String): Boolean =
+    ServerCatalog.isServerKey(key) || com.nuvio.tv.core.catalog.BuiltInCatalogs.isBuiltInKey(key)
+
 internal fun List<String>.withLocalServerKeys(local: List<String>): List<String> =
     local.withIndex()
-        .filter { ServerCatalog.isServerKey(it.value) }
-        .fold(filterNot(ServerCatalog::isServerKey).toMutableList()) { keys, (index, key) ->
+        .filter { isDeviceOnlyCatalogKey(it.value) }
+        .fold(filterNot(::isDeviceOnlyCatalogKey).toMutableList()) { keys, (index, key) ->
             keys.apply { add(index.coerceAtMost(size), key) }
         }
 

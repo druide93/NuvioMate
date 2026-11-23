@@ -941,8 +941,9 @@ class LayoutPreferenceDataStore @Inject constructor(
         store().edit { prefs ->
             val local = readHomeCatalogSettingsState(prefs)
             val orderKeys = remoteOrderKeys.withLocalServerKeys(local.orderKeys)
-            val disabledKeys = remoteDisabledKeys + local.disabledKeys.filter(ServerCatalog::isServerKey)
-            val titles = remoteTitles + local.customTitles.filterKeys(ServerCatalog::isServerKey)
+            val disabledKeys = remoteDisabledKeys.filterNot(com.nuvio.tv.core.catalog.BuiltInCatalogs::isBuiltInKey) +
+                local.disabledKeys.filter { com.nuvio.tv.core.sync.isDeviceOnlyCatalogKey(it) }
+            val titles = remoteTitles + local.customTitles.filterKeys { com.nuvio.tv.core.sync.isDeviceOnlyCatalogKey(it) }
             prefs[hideUnreleasedContentKey] = payload.hideUnreleasedContent
             if (orderKeys.isNotEmpty()) {
                 prefs[homeCatalogOrderKeysKey] = gson.toJson(orderKeys)

@@ -124,7 +124,8 @@ class MetaDetailsViewModel @Inject constructor(
     private val itemId: String = savedStateHandle["itemId"] ?: ""
     private val isServerItem = ServerItemRef.isServerId(itemId)
     private val itemType: String = savedStateHandle["itemType"] ?: ""
-    private val preferredAddonBaseUrl: String? = savedStateHandle["addonBaseUrl"]
+    private val preferredAddonBaseUrl: String? = savedStateHandle.get<String>("addonBaseUrl")
+        ?.takeUnless { it.startsWith(com.nuvio.tv.core.catalog.BuiltInCatalogs.BASE_PREFIX) }
 
     private val _uiState = MutableStateFlow(MetaDetailsUiState())
     private val shuffleVisit = System.nanoTime()
