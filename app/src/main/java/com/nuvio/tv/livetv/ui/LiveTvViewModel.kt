@@ -2400,7 +2400,8 @@ internal fun buildUi(
     }
 
     val groups = mutableListOf<ChannelGroup>()
-    groups += ChannelGroup(ChannelGroup.SEARCH, "Search", 0, special = true)
+    // No "Search" entry at the top of the groups any more: it broke the list and the menu.
+    // The remote's search key still opens search.
     if (s.showFavoritesGroup) groups += ChannelGroup(ChannelGroup.FAVORITES, "Favorites", favorites.size, special = true)
     if (s.showRecentGroup) groups += ChannelGroup(ChannelGroup.RECENT, "Recently watched", recent.size, special = true)
     if (s.showAllChannelsGroup) groups += ChannelGroup(ChannelGroup.ALL, "All channels", visible.size, special = true)

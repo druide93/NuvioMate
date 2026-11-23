@@ -80,6 +80,7 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.layout
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -134,6 +135,12 @@ private enum class GuideColumn { CHANNEL, PROGRAM }
 private data class GuideBlock(val startMs: Long, val stopMs: Long, val program: EpgProgram?)
 
 private data class MenuTarget(val channel: LiveChannel, val block: GuideBlock?)
+
+/**
+ * "Land on channel names": the channel name is a stop of its own between the shows and the
+ * groups. Not in the TiviMate style, where Left from the shows goes straight to the groups.
+ */
+private val LiveTvSettings.landOnNames: Boolean get() = browseByChannelName && !guideTiviMateStyle
 
 private fun floorSlot(ms: Long) = ms - Math.floorMod(ms, SLOT_MS)
 
@@ -282,6 +289,8 @@ private fun LiveTvGuideScreenBody(
     // The guide's width, measured once for every row (see ProgramArea).
     var gridWidthPx by remember { mutableIntStateOf(0) }
     var gridHeightPx by remember { mutableIntStateOf(0) }
+    /** Where the channel list starts on screen (y, px): the TiviMate group list lines up with it. */
+    var gridTopY by remember { mutableStateOf<Float?>(null) }
 
     /** The Record item for a show, or null when it can't be recorded (already over, no catch-up). */
     fun recordLabel(ch: LiveChannel, p: EpgProgram?): String? {
@@ -572,7 +581,7 @@ private fun LiveTvGuideScreenBody(
         val returning = viewModel.consumeReturningFromFullscreen()
         val toGroups = returning && viewModel.consumeGroupsOnReturn()
         if (returning && !toGroups) {
-            nameFocus = viewModel.settings.value.browseByChannelName
+            nameFocus = viewModel.settings.value.landOnNames
             runCatching { gridFocus.requestFocus() }
         } else {
             val loaded = viewModel.awaitGroups()
@@ -641,13 +650,16 @@ private fun LiveTvGuideScreenBody(
             val visible = gInfo.visibleItemsInfo
                 .filter { it.offset >= gInfo.viewportStartOffset && it.offset + it.size <= gInfo.viewportEndOffset }
                 .map { it.index }
-            if (idx !in visible) runCatching { groupsListState.scrollToItem((idx - 3).coerceAtLeast(0)) }
+            // TiviMate: the group is always held level with the top channel.
+            val pinned = settings.guideTiviMateStyle
+            if (pinned) runCatching { groupsListState.scrollToItem(idx) }
+            else if (idx !in visible) runCatching { groupsListState.scrollToItem((idx - 3).coerceAtLeast(0)) }
             // Try a few times: the group's tile has to be on screen before it can take focus.
             for (attempt in 0 until 4) {
                 repeat(3) { androidx.compose.runtime.withFrameNanos { } }
                 if (fullscreenComing || fullscreen) break
                 if (runCatching { groupsFocus.requestFocus() }.isSuccess) break
-                runCatching { groupsListState.scrollToItem((idx - 3).coerceAtLeast(0)) }
+                runCatching { groupsListState.scrollToItem(if (pinned) idx else (idx - 3).coerceAtLeast(0)) }
             }
         }
     }
@@ -737,7 +749,7 @@ private fun LiveTvGuideScreenBody(
         if (focusGroupsOnOpen) {
             focusGroupsOnOpen = false
             // "Land on channel names (like a cable box)": Live TV opens on the channels, not the groups.
-            if (settings.browseByChannelName) {
+            if (settings.landOnNames) {
                 column = GuideColumn.CHANNEL
                 nameFocus = true
                 runCatching { gridFocus.requestFocus() }
@@ -833,7 +845,7 @@ private fun LiveTvGuideScreenBody(
                 cursorMs = now
             }
             // Browse by channel name: from the shows, Back goes to the channel name first.
-            settings.browseByChannelName && !nameFocus && !groupsOpen -> nameFocus = true
+            settings.landOnNames && !nameFocus && !groupsOpen -> nameFocus = true
             // Back from the channels: the group list, with the group you're in highlighted.
             !groupsOpen -> focusGroups()
             else -> openSidebar()
@@ -1026,7 +1038,7 @@ private fun LiveTvGuideScreenBody(
         } else floorSlot(now)
         if (atNow && !held) {
             resetToNow()
-            if (settings.browseByChannelName) nameFocus = true else focusGroups()
+            if (settings.landOnNames) nameFocus = true else focusGroups()
             return
         }
         // At the oldest show (or no catch-up on this channel): a tap opens the groups; holding
@@ -1034,7 +1046,7 @@ private fun LiveTvGuideScreenBody(
         if (block.startMs <= earliest || (ch.catchup == null && block.startMs <= now)) {
             if (!held) {
                 resetToNow()
-                if (settings.browseByChannelName) nameFocus = true else focusGroups()
+                if (settings.landOnNames) nameFocus = true else focusGroups()
             }
             return
         }
@@ -1240,7 +1252,11 @@ private fun LiveTvGuideScreenBody(
                     // icon (about 40), and a little slack.
                     val extra = 12.dp + 10.dp + 8.dp + 40.dp + 8.dp
                     with(groupsDensity) { longest.toDp() } + extra
-                }.coerceIn(minOf(130.dp, groupsFullWidth), groupsFullWidth)
+                }.coerceIn(minOf(130.dp, groupsFullWidth), groupsFullWidth).let {
+                    // TiviMate: the same width whatever the names (measured on TiviMate, without
+                    // its icon bar): a 220dp list and a 32dp gap before the guide.
+                    if (settings.guideTiviMateStyle) 252.dp * guideScale(settings).coerceAtLeast(1f) else it
+                }
                 val groupsWidth by androidx.compose.animation.core.animateDpAsState(
                     targetValue = if (groupsOpen) groupsFitWidth else 0.dp,
                     animationSpec = androidx.compose.animation.core.tween(220),
@@ -1251,6 +1267,8 @@ private fun LiveTvGuideScreenBody(
                     width = groupsWidth,
                     // A channel row's height minus its 2dp above and below.
                     tileHeight = guideRowHeight(settings) - 4.dp,
+                    // TiviMate: the highlighted group stays level with the top channel's tile.
+                    pinRootY = if (settings.guideTiviMateStyle) gridTopY?.let { it + with(groupsDensity) { 2.dp.toPx() } } else null,
                     groups = when {
                         groupVisibilityList != null -> groupVisibilityList!!
                         groupReorderMode -> ui.groups.filter { it.special } + groupWorking.map { g ->
@@ -1297,7 +1315,7 @@ private fun LiveTvGuideScreenBody(
                             groupTicked = emptySet()
                             scope.launch {
                                 val index = ui.groups.count { it.special && it.id != ChannelGroup.SEARCH } + groupWorking.indexOfFirst { it.id == lead }
-                                runCatching { groupsListState.scrollToItem((index - 3).coerceAtLeast(0)) }
+                                runCatching { groupsListState.scrollToItem(if (settings.guideTiviMateStyle) index else (index - 3).coerceAtLeast(0)) }
                                 androidx.compose.runtime.withFrameNanos { }
                                 runCatching { groupsFocus.requestFocus() }
                             }
@@ -1310,7 +1328,7 @@ private fun LiveTvGuideScreenBody(
                             groupWorking = groupWorking.toMutableList().apply { add(to, removeAt(from)) }
                             scope.launch {
                                 val index = ui.groups.count { it.special && it.id != ChannelGroup.SEARCH } + to
-                                runCatching { groupsListState.scrollToItem((index - 3).coerceAtLeast(0)) }
+                                runCatching { groupsListState.scrollToItem(if (settings.guideTiviMateStyle) index else (index - 3).coerceAtLeast(0)) }
                             }
                         }
                     },
@@ -1342,7 +1360,7 @@ private fun LiveTvGuideScreenBody(
                             }
                             resetToNow()
                             groupsOpen = false
-                            nameFocus = settings.browseByChannelName
+                            nameFocus = settings.landOnNames
                             scope.launch { delay(60); runCatching { gridFocus.requestFocus() } }
                         }
                     },
@@ -1351,7 +1369,7 @@ private fun LiveTvGuideScreenBody(
                     onRight = {
                         column = GuideColumn.CHANNEL
                         groupsOpen = false
-                        nameFocus = settings.browseByChannelName
+                        nameFocus = settings.landOnNames
                         runCatching { gridFocus.requestFocus() }
                     }
                 ) } }
@@ -1763,6 +1781,9 @@ private fun LiveTvGuideScreenBody(
                                     modifier = Modifier.fillMaxSize().onSizeChanged {
                                         if (it.width != gridWidthPx) gridWidthPx = it.width
                                         if (it.height != gridHeightPx) gridHeightPx = it.height
+                                    }.onGloballyPositioned {
+                                        val y = it.positionInRoot().y
+                                        if (y != gridTopY) gridTopY = y
                                     },
                                     contentPadding = PaddingValues(bottom = endPadding),
                                     userScrollEnabled = false
@@ -2486,7 +2507,7 @@ private fun LiveTvGuideScreenBody(
                             favoritesMode = true
                             row = 0
                             groupsOpen = false
-                            nameFocus = settings.browseByChannelName
+                            nameFocus = settings.landOnNames
                             scope.launch { delay(80); listState.scrollToItem(0); runCatching { gridFocus.requestFocus() } }
                         }
                     })
@@ -2502,7 +2523,7 @@ private fun LiveTvGuideScreenBody(
                             copyPickMode = true
                             row = 0
                             groupsOpen = false
-                            nameFocus = settings.browseByChannelName
+                            nameFocus = settings.landOnNames
                             scope.launch { delay(80); listState.scrollToItem(0); runCatching { gridFocus.requestFocus() } }
                         }
                     })
@@ -3486,8 +3507,18 @@ private fun GroupColumn(
     onShowAllGroups: () -> Unit = {},
     onVisibilityDone: () -> Unit = {},
     /** Height of a group tile: the same as a channel tile, so the two lists line up. */
-    tileHeight: Dp = 32.dp
+    tileHeight: Dp = 32.dp,
+    /**
+     * TiviMate: where the top channel tile is on screen (y, in px from the window's top). The
+     * highlighted group is then always held level with it and the list moves under it.
+     */
+    pinRootY: Float? = null
 ) {
+    // How far down the list the highlighted group is held (null: not held, the list moves only
+    // when the highlight would leave the screen).
+    var listTopY by remember { mutableStateOf<Float?>(null) }
+    val pinPx: Int? = if (pinRootY != null && listTopY != null) (pinRootY - listTopY!!).toInt().coerceAtLeast(0) else null
+    var listHeightPx by remember { mutableIntStateOf(0) }
     var focusedGroupId by remember { mutableStateOf<String?>(null) }
     // The row (group id, or "header:<playlist>") that has focus, and whether Search has it.
     var focusedKey by remember { mutableStateOf<String?>(null) }
@@ -3523,7 +3554,7 @@ private fun GroupColumn(
         val at = focusedKey?.let { rowKeys.indexOf(it) } ?: -1
         if (at < 0) return false
         val to = at + if (down) 1 else -1
-        if (to < 0) return false // the first group: Up goes on to Search
+        if (to < 0) return !hasSearch // the first group: Up goes on to Search, if there is one
         if (to > rowKeys.lastIndex) return true // the end of the list
         if (stepping[0]) return true
         val dir = if (down) androidx.compose.ui.focus.FocusDirection.Down else androidx.compose.ui.focus.FocusDirection.Up
@@ -3536,6 +3567,20 @@ private fun GroupColumn(
         val last = full.lastOrNull()?.index
         // The row number moves at once, so a quick second press carries on from here.
         focusedKey = rowKeys[to]
+        if (pinPx != null) {
+            // TiviMate: the list moves a row and the highlight stays level with the top channel.
+            stepping[0] = true
+            stepScope.launch {
+                try {
+                    listState.scrollToItem(to)
+                    androidx.compose.runtime.withFrameNanos { }
+                    focusRow()
+                } finally {
+                    stepping[0] = false
+                }
+            }
+            return true
+        }
         if (first != null && last != null && to in first..last) {
             focusRow() // wholly on screen already: just the highlight moves, nothing scrolls
             return true
@@ -3559,7 +3604,8 @@ private fun GroupColumn(
         modifier = Modifier
             .fillMaxHeight()
             .width(width)
-            .padding(end = 8.dp, bottom = 12.dp)
+            // TiviMate: a wider gap before the guide, as on TiviMate.
+            .padding(end = if (LocalGuideTiviMate.current) 32.dp else 8.dp, bottom = 12.dp)
             .onPreviewKeyEvent { e ->
                 if (hiddenPending != null) {
                     // Manage visibility: OK toggles, Left hides all, Right shows all, Back saves.
@@ -3642,13 +3688,22 @@ private fun GroupColumn(
         androidx.compose.runtime.CompositionLocalProvider(
             androidx.compose.foundation.gestures.LocalBringIntoViewSpec provides NoBringIntoView
         ) {
+        val listDensity = androidx.compose.ui.platform.LocalDensity.current
         LazyColumn(
             state = listState,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().onGloballyPositioned {
+                listTopY = it.positionInRoot().y
+                listHeightPx = it.size.height
+            },
             // Each channel row has 2dp above its tile: the same here, so the lines run straight across.
             verticalArrangement = Arrangement.spacedBy(4.dp),
+            contentPadding = if (pinPx != null) with(listDensity) {
+                // TiviMate: the groups above the highlighted one fill the space over it, and the
+                // last group can still come up level with the top channel.
+                PaddingValues(top = pinPx.toDp(), bottom = (listHeightPx - pinPx).coerceAtLeast(0).toDp())
+            }
             // Room for one more row at the end, so the list can always line up with the channels.
-            contentPadding = PaddingValues(top = 2.dp, bottom = 2.dp + tileHeight + 4.dp)
+            else PaddingValues(top = 2.dp, bottom = 2.dp + tileHeight + 4.dp)
         ) {
             fun groupItem(g: ChannelGroup) {
                 item(key = g.id) {
@@ -3875,12 +3930,13 @@ private fun GroupItem(
             .padding(end = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Spacer(Modifier.width(if (tivimate) 20.dp else 12.dp))
+        Spacer(Modifier.width(if (tivimate) 24.dp else 12.dp))
         LiveText(
             group.title,
             modifier = Modifier.weight(1f),
             color = colors.text,
-            size = gsp(if (tivimate) 15f else 14f),
+            // TiviMate's group names are as big as its channel names (measured on TiviMate).
+            size = gsp(if (tivimate) 16f else 14f),
             weight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             marquee = focused
         )
