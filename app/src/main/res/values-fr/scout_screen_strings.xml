@@ -124,7 +124,7 @@
     <string name="scout_for_you">Pour toi</string>
     <string name="scout_details">Détails</string>
     <string name="scout_taste_titles">Titres</string>
-    <string name="scout_taste_shaping_short">Ce qui façonne tes suggestions</string>
+    <string name="scout_taste_shaping_short">Ce qui guide Scout</string>
     <string name="scout_mixes_coming_up">À venir</string>
     <string name="scout_time_short">Court</string>
     <string name="scout_time_long">Long</string>
@@ -145,8 +145,9 @@
     <string name="scout_pick_more_like">Plus comme ça</string>
     <string name="scout_taste_headline_two">Surtout %1$s et %2$s</string>
     <string name="scout_taste_headline_one">Surtout %1$s</string>
-    <string name="scout_taste_headline_decades">, %1$s et %2$s</string>
-    <string name="scout_taste_headline_decade">, %1$s</string>
+    <string name="scout_taste_headline_decades">, années %3$s et %4$s</string>
+    <string name="scout_taste_decade_bar">%1$s</string>
+    <string name="scout_taste_headline_decade">, années %2$s</string>
     <string name="scout_taste_lately_both">Dernièrement : plus de %1$s, plus de titres de %2$s</string>
     <string name="scout_taste_lately_genre">Dernièrement : plus de %1$s</string>
     <string name="scout_taste_lately_country">Dernièrement : plus de titres de %1$s</string>
@@ -154,10 +155,10 @@
     <string name="scout_taste_stat_loved">Adorés</string>
     <string name="scout_taste_stat_liked">Aimés</string>
     <string name="scout_taste_stat_no">Pas pour vous</string>
-    <string name="scout_taste_directors">Réalisateurs et créateurs</string>
+    <string name="scout_taste_directors">Réalisateurs</string>
     <string name="scout_taste_actors">Acteurs</string>
     <string name="scout_taste_shaping">Titres qui façonnent vos suggestions</string>
-    <string name="scout_taste_learn">Aider Scout à apprendre</string>
+    <string name="scout_taste_learn">Aider Scout</string>
     <string name="scout_taste_seen">Avez-vous vu %1$s ?</string>
     <string name="scout_taste_learn_sub">Notez un titre de temps en temps et vos suggestions s\'amélioreront plus vite.</string>
     <string name="scout_taste_not_seen">Pas vu</string>

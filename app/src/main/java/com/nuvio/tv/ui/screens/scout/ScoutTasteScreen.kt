@@ -101,7 +101,7 @@ import java.util.Locale
 private val TASTE_CHART_WIDTH = 290.dp
 private val TASTE_DECADES_WIDTH = 270.dp
 private val CHART_GAP = 40.dp
-private val CHARTS_DROP = 28.dp
+private val CHARTS_DROP = 16.dp
 private val CHART_BODY = 112.dp
 private val CHART_LINE = 26.dp
 private val LEARN_BUTTON = 150.dp
@@ -136,6 +136,14 @@ internal fun ScoutTasteHero(state: ScoutTasteState, focus: (String) -> Modifier,
     val summary = state.summary
     Column(Modifier.offset(y = NuvioTheme.spacing.md), verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)) {
         when {
+            // Once there is a summary to show, the progress keeps to one short line above it.
+            state.working && !summary.isEmpty -> Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
+            ) {
+                Text(stringResource(R.string.scout_taste_working, state.done, state.total), style = MaterialTheme.typography.bodySmall, color = NuvioTheme.colors.TextSecondary)
+                ScoutTrack(state.done.toFloat() / state.total.coerceAtLeast(1), Modifier.width(160.dp))
+            }
             state.working -> Column(verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.xs)) {
                 Text(stringResource(R.string.scout_taste_working, state.done, state.total), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, color = NuvioTheme.colors.TextPrimary)
                 Text(stringResource(R.string.scout_taste_working_sub), style = scoutReadingStyle(), color = NuvioTheme.colors.TextSecondary)
@@ -382,13 +390,15 @@ internal fun ScoutTasteDialogs(
 private fun ScoutTasteHead(state: ScoutTasteState) {
     val summary = state.summary
     val genres = summary.genres.mapNotNull { genreName(it.key) }.take(2)
-    val decades = summary.topDecades.map { decadeName(it) }
+    val decadeKeys = summary.topDecades
+    val decades = decadeKeys.map { decadeName(it) }
     val headline = buildString {
         if (genres.size >= 2) append(stringResource(R.string.scout_taste_headline_two, genres[0], genres[1]))
         else if (genres.size == 1) append(stringResource(R.string.scout_taste_headline_one, genres[0]))
         if (genres.isNotEmpty()) {
-            if (decades.size >= 2) append(stringResource(R.string.scout_taste_headline_decades, decades[0], decades[1]))
-            else if (decades.size == 1) append(stringResource(R.string.scout_taste_headline_decade, decades[0]))
+            // The bare years come last, for languages that say "the 2010s" around the number (French: "années 2010 et 2020").
+            if (decades.size >= 2) append(stringResource(R.string.scout_taste_headline_decades, decades[0], decades[1], decadeKeys[0], decadeKeys[1]))
+            else if (decades.size == 1) append(stringResource(R.string.scout_taste_headline_decade, decades[0], decadeKeys[0]))
         }
     }
     val latelyGenre = summary.latelyGenre?.let { genreName(it.toString()) }
@@ -404,7 +414,7 @@ private fun ScoutTasteHead(state: ScoutTasteState) {
         verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm)
     ) {
         if (headline.isNotBlank()) {
-            Text(headline, style = MaterialTheme.typography.headlineLarge, color = NuvioTheme.colors.TextPrimary, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(headline, style = MaterialTheme.typography.headlineMedium, color = NuvioTheme.colors.TextPrimary, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         if (lately != null) {
             Text(lately, style = MaterialTheme.typography.bodyMedium, color = NuvioTheme.colors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -483,7 +493,7 @@ private fun ScoutDecades(decades: List<ScoutTasteBar>) {
         Row(Modifier.fillMaxWidth().padding(top = NuvioTheme.spacing.xxs), horizontalArrangement = gap) {
             repeat(DECADE_SLOTS - shown.size) { Spacer(Modifier.weight(1f)) }
             shown.forEach { bar ->
-                Text(decadeName(bar.key), style = MaterialTheme.typography.labelSmall, color = NuvioTheme.colors.TextSecondary, maxLines = 1, overflow = TextOverflow.Clip, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.scout_taste_decade_bar, bar.key), style = MaterialTheme.typography.labelSmall, color = NuvioTheme.colors.TextSecondary, maxLines = 1, overflow = TextOverflow.Clip, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
             }
         }
     }

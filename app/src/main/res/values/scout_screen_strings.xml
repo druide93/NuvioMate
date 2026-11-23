@@ -146,6 +146,7 @@
     <string name="scout_taste_headline_two">Mostly %1$s and %2$s</string>
     <string name="scout_taste_headline_one">Mostly %1$s</string>
     <string name="scout_taste_headline_decades">, from the %1$s and %2$s</string>
+    <string name="scout_taste_decade_bar">%1$ss</string>
     <string name="scout_taste_headline_decade">, from the %1$s</string>
     <string name="scout_taste_lately_both">Lately: more %1$s, more from %2$s</string>
     <string name="scout_taste_lately_genre">Lately: more %1$s</string>
