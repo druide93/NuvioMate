@@ -303,9 +303,15 @@ fun ScoutScreen(
                 pictures = pictures,
                 activeId = activeId,
                 focus = ::focus,
-                onWatch = {
+                onWatch = { watch ->
                     mixesOpen = false
-                    viewModel.pressWatch(it)
+                    // From Your taste, a kind takes you back to the picks (the active one just goes back).
+                    if (onTaste) {
+                        viewModel.leaveTaste()
+                        if (state.answers.watch != watch) viewModel.pressWatch(watch)
+                    } else {
+                        viewModel.pressWatch(watch)
+                    }
                 },
                 onLength = { choosing = CHOOSING_LENGTH },
                 onWho = { choosing = CHOOSING_WHO },
@@ -553,7 +559,7 @@ private fun ScoutTopWords(
                 label = stringResource(watch.labelRes),
                 onClick = { onWatch(watch) },
                 modifier = Modifier.padding(start = if (watch == ScoutWatch.entries.first()) FOCUS_ROOM - NuvioTheme.spacing.md else 0.dp).then(focus("watch_${watch.code}")),
-                on = !mixesOn && answers.watch == watch
+                on = !mixesOn && !onTaste && answers.watch == watch
             )
         }
         if (com.nuvio.tv.domain.model.ScoutMixes.available) {
