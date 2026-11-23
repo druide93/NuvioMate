@@ -31,7 +31,7 @@
     <string name="scout_send_ratings_sub">Bukan untuk saya, Saya suka, dan Sangat suka dikirim ke Trakt, Simkl, MDBList, dan WeTrakr sebagai 3, 7, dan 10 dari 10. Nilai yang Anda berikan sendiri di pelacak tidak pernah diubah. Simkl hanya menerima judul yang sudah Anda tonton.</string>
     <string name="scout_send_ratings_none">Belum ada pelacak yang masuk di profil ini, jadi belum ada yang dikirim.</string>
     <string name="scout_use_ratings">Gunakan nilai dari pelacak saya</string>
-    <string name="scout_use_ratings_sub">Nilai yang Anda berikan di pelacak menjadi jempol di sini: 9 atau 10 berarti Sangat suka, 6 sampai 8 Saya suka, 1 sampai 4 Bukan untuk saya. Jempol yang Anda tekan di Arc selalu diutamakan.</string>
+    <string name="scout_use_ratings_sub">Nilai yang Anda berikan di pelacak menjadi jempol di sini: 9 atau 10 berarti Sangat suka, 6 sampai 8 Saya suka, 1 sampai 4 Bukan untuk saya. Jempol yang Anda tekan di NuvioMate selalu diutamakan.</string>
     <string name="scout_thumb_from">Dari %1$s</string>
     <string name="scout_your_thumbs">Jempol Anda</string>
     <plurals name="scout_your_thumbs_sub">

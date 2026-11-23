@@ -89,6 +89,19 @@ fun NuvioNavHost(
             ?: checkNotNull(LocalViewModelStoreOwner.current)
         CompositionLocalProvider(LocalViewModelStoreOwner provides navViewModelStoreOwner) {
             PlaybackNavHost(navController, startDestination, hideBuiltInHeaders, discoverIsRoot)
+            // Scout: "How was it?" after a film, over whichever page the player went back to.
+            if (com.nuvio.tv.domain.model.ScoutFeature.available) {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val activity = androidx.compose.runtime.remember(context) {
+                    generateSequence(context) { (it as? android.content.ContextWrapper)?.baseContext }
+                        .filterIsInstance<androidx.activity.ComponentActivity>().first()
+                }
+                val entry = navController.currentBackStackEntryAsState().value
+                com.nuvio.tv.ui.scout.ScoutAskHost(
+                    isPlayerShowing = entry?.destination?.route?.startsWith("player/") == true,
+                    viewModel = androidx.hilt.navigation.compose.hiltViewModel(activity)
+                )
+            }
         }
     }
     // Live TV fork: "Remind me" messages, shown on top of whatever screen you're on.
@@ -1398,6 +1411,7 @@ private fun PlaybackNavHost(
                 androidx.hilt.navigation.compose.hiltViewModel(backStackEntry)
             SearchScreen(
                 viewModel = searchViewModel,
+                onAskScout = { question -> navController.navigate(Screen.ScoutAskQuestion.createRoute(question)) },
                 // Live TV fork: the On Demand row (your provider's own titles).
                 onOpenOnDemand = { itemId, itemType, addonBaseUrl, onDemandUid ->
                     navController.navigate(Screen.Detail.createRoute(itemId, itemType, addonBaseUrl))
@@ -1787,7 +1801,28 @@ private fun PlaybackNavHost(
             )
         }
 
-        // Scout (from Nuvio Arc). Ask with your own AI key is not ported, so it is never offered.
+        // Scout (from Nuvio Arc).
+        composable(Screen.ScoutAsk.route) {
+            com.nuvio.tv.ui.screens.scout.ask.AskScreen(
+                onOpenTitle = { itemId, itemType -> navController.navigate(Screen.Detail.createRoute(itemId = itemId, itemType = itemType)) },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.ScoutAskQuestion.route,
+            arguments = listOf(navArgument("q") { type = NavType.StringType })
+        ) {
+            com.nuvio.tv.ui.screens.scout.ask.AskScreen(
+                onOpenTitle = { itemId, itemType -> navController.navigate(Screen.Detail.createRoute(itemId = itemId, itemType = itemType)) },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.ScoutWords.route) {
+            com.nuvio.tv.ui.screens.scout.ScoutWordsScreen()
+        }
+
         composable(Screen.ScoutQuickStart.route) {
             com.nuvio.tv.ui.screens.scout.ScoutQuickStartScreen(onDone = { navController.popBackStack() })
         }
@@ -2122,6 +2157,8 @@ private fun PlaybackNavHost(
 
 @Composable
 private fun ScoutPageRoute(navController: androidx.navigation.NavHostController, startOnTaste: Boolean, startOnMixes: Boolean = false) {
+    val askAccess: com.nuvio.tv.ui.screens.scout.ask.AskAccessViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    val askHasKey by askAccess.hasKey.collectAsStateWithLifecycle()
     com.nuvio.tv.ui.screens.scout.ScoutScreen(
         onOpenTitle = { id, type -> navController.navigate(Screen.Detail.createRoute(id, type, null)) },
         onPlayTitle = { id, type, backdrop, _ ->
@@ -2132,7 +2169,7 @@ private fun ScoutPageRoute(navController: androidx.navigation.NavHostController,
         onOpenSlice = { sliceId ->
             navController.navigate(Screen.FolderDetail.createRoute(com.nuvio.tv.core.scout.ScoutCatalogProvider.TILES_COLLECTION_ID, sliceId))
         },
-        onAsk = null,
+        onAsk = if (askHasKey) { { navController.navigate(Screen.ScoutAsk.route) } } else null,
         startOnTaste = startOnTaste,
         startOnMixes = startOnMixes,
         onPlayMix = { id -> navController.navigate(Screen.ScoutMix.createRoute(id, play = true)) },

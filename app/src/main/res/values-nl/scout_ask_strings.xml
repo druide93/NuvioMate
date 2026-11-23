@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Verwijderen van Home</string>
     <string name="scout_question_no_recent">Nog niets gevraagd</string>
     <string name="scout_question_voice_failed">Dat kon ik niet verstaan. Probeer het opnieuw of typ je vraag.</string>
-    <string name="scout_question_mic_permission">Arc heeft de microfoon nodig om te luisteren. Of typ je vraag.</string>
+    <string name="scout_question_mic_permission">NuvioMate heeft de microfoon nodig om te luisteren. Of typ je vraag.</string>
     <string name="scout_ai_title">Kies je AI</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">Snelle open modellen</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">De dienst heeft deze sleutel niet geaccepteerd. Hij is mogelijk verlopen. Plak een nieuwe op de telefoonpagina.</string>
     <string name="scout_question_error_no_credit">Deze sleutel heeft geen tegoed meer. Voeg tegoed toe op de website van de dienst.</string>
     <string name="scout_question_error_rate">Even te veel vragen. Gratis niveaus hebben limieten, wacht een tijdje en probeer het opnieuw.</string>
-    <string name="scout_question_error_model">Dit model is niet meer beschikbaar. Een Arc-update brengt een nieuw model, of gebruik een andere dienst.</string>
+    <string name="scout_question_error_model">Dit model is niet meer beschikbaar. Een NuvioMate-update brengt een nieuw model, of gebruik een andere dienst.</string>
     <string name="scout_question_error_region">Deze dienst biedt het gratis niveau niet aan in jouw land.</string>
     <string name="scout_question_error_declined">De AI wilde daar niet op antwoorden. Probeer het anders te vragen.</string>
     <string name="scout_question_error_cut">Het antwoord werd afgekapt. Probeer een eenvoudigere vraag.</string>

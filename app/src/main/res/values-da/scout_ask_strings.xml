@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Fjern fra Hjem</string>
     <string name="scout_question_no_recent">Intet spurgt endnu</string>
     <string name="scout_question_voice_failed">Kunne ikke høre det. Prøv igen, eller skriv dit spørgsmål.</string>
-    <string name="scout_question_mic_permission">Arc skal bruge mikrofonen for at lytte. Eller skriv dit spørgsmål.</string>
+    <string name="scout_question_mic_permission">NuvioMate skal bruge mikrofonen for at lytte. Eller skriv dit spørgsmål.</string>
     <string name="scout_ai_title">Vælg din AI</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">Hurtige åbne modeller</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">Tjenesten accepterede ikke denne nøgle. Den kan være udløbet. Indsæt en ny på telefonsiden.</string>
     <string name="scout_question_error_no_credit">Denne nøgle har ingen kredit tilbage. Tilføj noget på tjenestens hjemmeside.</string>
     <string name="scout_question_error_rate">For mange spørgsmål lige nu. Gratis niveauer har grænser, så vent lidt og prøv igen.</string>
-    <string name="scout_question_error_model">Denne model er ikke længere tilgængelig. En Arc-opdatering giver en ny, eller brug en anden tjeneste.</string>
+    <string name="scout_question_error_model">Denne model er ikke længere tilgængelig. En NuvioMate-opdatering giver en ny, eller brug en anden tjeneste.</string>
     <string name="scout_question_error_region">Denne tjeneste tilbyder ikke sit gratis niveau i dit land.</string>
     <string name="scout_question_error_declined">AI\'en ville ikke svare på det. Prøv at spørge på en anden måde.</string>
     <string name="scout_question_error_cut">Svaret blev afbrudt. Prøv et enklere spørgsmål.</string>

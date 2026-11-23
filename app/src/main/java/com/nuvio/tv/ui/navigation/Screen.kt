@@ -240,6 +240,11 @@ sealed class Screen(val route: String) {
     data object ScoutPicker : Screen("scout_picker")
     data object ScoutQuickStart : Screen("scout_quick_start")
     data object ScoutWords : Screen("scout_words")
+    data object ScoutAsk : Screen("scout_ask")
+    data object ScoutAskQuestion : Screen("scout_ask_question/{q}") {
+        fun createRoute(question: String): String =
+            "scout_ask_question/" + URLEncoder.encode(question, "UTF-8").replace("+", "%20")
+    }
     data object ScoutMix : Screen("scout_mix/{mixId}?play={play}") {
         fun createRoute(mixId: String, play: Boolean = false): String =
             "scout_mix/${URLEncoder.encode(mixId, "UTF-8")}" + if (play) "?play=1" else ""

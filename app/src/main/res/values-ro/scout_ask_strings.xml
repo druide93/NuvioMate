@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Elimină de pe Acasă</string>
     <string name="scout_question_no_recent">Încă nu ai întrebat nimic</string>
     <string name="scout_question_voice_failed">Nu am auzit. Încearcă din nou sau scrie întrebarea.</string>
-    <string name="scout_question_mic_permission">Arc are nevoie de microfon ca să asculte. Sau scrie întrebarea.</string>
+    <string name="scout_question_mic_permission">NuvioMate are nevoie de microfon ca să asculte. Sau scrie întrebarea.</string>
     <string name="scout_ai_title">Alege AI-ul tău</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">Modele deschise rapide</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">Serviciul nu a acceptat această cheie. Poate a expirat. Lipește una nouă pe pagina din telefon.</string>
     <string name="scout_question_error_no_credit">Această cheie nu mai are credit. Adaugă credit pe site-ul serviciului.</string>
     <string name="scout_question_error_rate">Prea multe întrebări deocamdată. Nivelurile gratuite au limite, așteaptă puțin și încearcă din nou.</string>
-    <string name="scout_question_error_model">Acest model nu mai este disponibil. O actualizare Arc va aduce unul nou, sau folosește alt serviciu.</string>
+    <string name="scout_question_error_model">Acest model nu mai este disponibil. O actualizare NuvioMate va aduce unul nou, sau folosește alt serviciu.</string>
     <string name="scout_question_error_region">Acest serviciu nu oferă nivelul gratuit în țara ta.</string>
     <string name="scout_question_error_declined">AI-ul nu a răspuns la asta. Încearcă să întrebi altfel.</string>
     <string name="scout_question_error_cut">Răspunsul a fost întrerupt. Încearcă o întrebare mai simplă.</string>

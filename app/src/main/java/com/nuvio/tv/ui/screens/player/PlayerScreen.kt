@@ -266,6 +266,9 @@ fun PlayerScreen(
         preferBingeGroupForNextEpisode = uiState.streamAutoPlayPreferBingeGroupForNextEpisode
     )
 
+    // Scout: "How was it?" once a film, or a show's season, has been watched to the end.
+    val scoutRatings: com.nuvio.tv.ui.scout.ScoutRatingViewModel? =
+        if (com.nuvio.tv.domain.model.ScoutFeature.available) hiltViewModel() else null
     val exitPlayer: () -> Unit = exitPlayer@{
         if (exitDispatched) return@exitPlayer
         exitDispatched = true
@@ -275,6 +278,17 @@ fun PlayerScreen(
             (!timeline.isLive &&
                 timeline.duration > 0L &&
                 (timeline.currentPosition.toFloat() / timeline.duration.toFloat()) >= WatchProgress.COMPLETED_THRESHOLD)
+        scoutRatings?.offerAsk(
+            com.nuvio.tv.domain.model.scoutAskTargetFor(
+                completed = completed && !timeline.isLive,
+                contentId = viewModel.scoutContentId,
+                contentType = uiState.contentType,
+                name = uiState.contentName ?: uiState.title,
+                poster = null,
+                season = uiState.currentSeason,
+                nextEpisodeSeason = uiState.nextEpisode?.season
+            )
+        )
         val (focusSeason, focusEpisode) = uiState.returnFocusSeasonEpisode(completed)
         onBackPress(
             uiState.currentVideoId,

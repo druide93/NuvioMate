@@ -60,6 +60,10 @@ import com.nuvio.tv.domain.model.ScoutRating
 import com.nuvio.tv.domain.model.ScoutTitle
 import com.nuvio.tv.domain.repository.WatchProgressRepository
 import com.nuvio.tv.ui.components.GridContentCard
+import com.nuvio.tv.ui.screens.scout.ask.AskButton
+import com.nuvio.tv.ui.screens.scout.ask.Panel
+import com.nuvio.tv.ui.screens.scout.ask.QuestionField
+import com.nuvio.tv.ui.screens.scout.ask.failureText
 import com.nuvio.tv.ui.theme.NuvioTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -210,8 +214,119 @@ fun ScoutQuickStartScreen(onDone: () -> Unit, viewModel: ScoutQuickStartViewMode
     }
 }
 
-/** Arc's Ask button, here a Scout chip (Ask itself is not ported). */
+data class ScoutWordsState(val ai: ScoutAiState = ScoutAiState(), val working: Boolean = false, val failure: String? = null, val hasKey: Boolean = false)
+
+@HiltViewModel
+class ScoutWordsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val aiStore: ScoutAiStore,
+    private val ai: ScoutPicksAi,
+    private val engine: ScoutEngine,
+    vault: AskKeyVault
+) : ViewModel() {
+    val state = MutableStateFlow(ScoutWordsState(aiStore.read()))
+
+    init {
+        viewModelScope.launch {
+            val hasKey = withContext(Dispatchers.IO) { runCatching { vault.current().activeConfig != null }.getOrDefault(false) }
+            state.update { it.copy(hasKey = hasKey) }
+        }
+    }
+
+    fun write() {
+        if (state.value.working) return
+        state.update { it.copy(working = true, failure = null) }
+        viewModelScope.launch {
+            val failure: AskFailure? = ai.writeSummary()
+            state.update { it.copy(working = false, ai = aiStore.read(), failure = failure?.let { f -> context.withAppLocale().getString(failureText(f)) }) }
+        }
+    }
+
+    fun save(text: String) {
+        val saved = aiStore.update { it.copy(summary = text.trim().ifBlank { null }) }
+        state.update { it.copy(ai = saved) }
+    }
+
+    fun remove() = save("")
+
+    fun setSort(on: Boolean) {
+        val saved = aiStore.update { if (on) it.copy(sortOn = true) else it.copy(sortOn = false, sortedAt = 0L, sorted = emptyList()) }
+        state.update { it.copy(ai = saved) }
+        viewModelScope.launch {
+            engine.reset()
+            engine.refreshIfDue()
+        }
+    }
+}
+
 @Composable
-private fun AskButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier, primary: Boolean = false, enabled: Boolean = true) {
-    ScoutChip(label, onClick, modifier, primary = primary, enabled = enabled)
+fun ScoutWordsScreen(viewModel: ScoutWordsViewModel = hiltViewModel()) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    var editing by remember { mutableStateOf<String?>(null) }
+    val firstButton = remember { FocusRequester() }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(NuvioTheme.colors.Background)
+            .padding(horizontal = NuvioTheme.spacing.screen.overscanHorizontal, vertical = NuvioTheme.spacing.screen.overscanVertical),
+        verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.lg)
+    ) {
+        ScoutPageTitle(stringResource(R.string.scout_picks_words_title), inset = 0.dp)
+        Panel(Modifier.fillMaxWidth()) {
+            val text = editing
+            if (text != null) {
+                QuestionField(value = text, onValueChange = { editing = it }, onSubmit = {
+                    viewModel.save(text)
+                    editing = null
+                })
+            } else {
+                Text(
+                    state.ai.summary ?: stringResource(R.string.scout_picks_words_empty),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = if (state.ai.summary == null) NuvioTheme.colors.TextSecondary else NuvioTheme.colors.TextPrimary
+                )
+            }
+            Text(
+                state.failure ?: stringResource(R.string.scout_picks_words_sub),
+                style = MaterialTheme.typography.bodyMedium,
+                color = NuvioTheme.colors.TextSecondary,
+                modifier = Modifier.padding(vertical = NuvioTheme.spacing.md)
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)) {
+                if (editing != null) {
+                    AskButton(stringResource(R.string.scout_picks_quick_done), {
+                        editing?.let(viewModel::save)
+                        editing = null
+                    }, primary = true)
+                } else {
+                    AskButton(
+                        stringResource(R.string.scout_picks_words_edit),
+                        { editing = state.ai.summary.orEmpty() },
+                        modifier = Modifier.focusRequester(firstButton)
+                    )
+                    AskButton(
+                        stringResource(if (state.working) R.string.scout_picks_words_writing else R.string.scout_picks_words_write),
+                        viewModel::write,
+                        enabled = state.hasKey && !state.working
+                    )
+                    if (state.ai.summary != null) AskButton(stringResource(R.string.scout_picks_words_remove), viewModel::remove)
+                }
+            }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.xxs)) {
+                Text(stringResource(R.string.scout_picks_sort_title), style = MaterialTheme.typography.titleMedium, color = NuvioTheme.colors.TextPrimary)
+                Text(stringResource(R.string.scout_picks_sort_sub), style = MaterialTheme.typography.bodyMedium, color = NuvioTheme.colors.TextSecondary)
+            }
+            AskButton(
+                stringResource(if (state.ai.sortOn) R.string.scout_picks_on else R.string.scout_picks_off),
+                { viewModel.setSort(!state.ai.sortOn) },
+                primary = state.ai.sortOn,
+                enabled = state.hasKey
+            )
+        }
+        Text(stringResource(R.string.scout_picks_sent), style = MaterialTheme.typography.bodyMedium, color = NuvioTheme.colors.TextSecondary)
+    }
+    LaunchedEffect(Unit) { runCatching { firstButton.requestFocus() } }
+    androidx.activity.compose.BackHandler(enabled = editing != null) { editing = null }
 }

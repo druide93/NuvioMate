@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Ukloni s početne</string>
     <string name="scout_question_no_recent">Još nema pitanja</string>
     <string name="scout_question_voice_failed">Nisam čuo. Pokušaj ponovo ili upiši pitanje.</string>
-    <string name="scout_question_mic_permission">Arc treba mikrofon da bi slušao. Ili upiši pitanje.</string>
+    <string name="scout_question_mic_permission">NuvioMate treba mikrofon da bi slušao. Ili upiši pitanje.</string>
     <string name="scout_ai_title">Odaberi svoj AI</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">Brzi otvoreni modeli</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">Usluga nije prihvatila ovaj ključ. Možda je istekao. Zalijepi novi na stranici na telefonu.</string>
     <string name="scout_question_error_no_credit">Ovaj ključ nema preostalog kredita. Dodaj ga na web stranici usluge.</string>
     <string name="scout_question_error_rate">Previše pitanja za sada. Besplatni nivoi imaju ograničenja, pričekaj malo i pokušaj ponovo.</string>
-    <string name="scout_question_error_model">Ovaj model više nije dostupan. Arc ažuriranje donosi novi, ili koristi drugu uslugu.</string>
+    <string name="scout_question_error_model">Ovaj model više nije dostupan. NuvioMate ažuriranje donosi novi, ili koristi drugu uslugu.</string>
     <string name="scout_question_error_region">Ova usluga ne nudi besplatni nivo u tvojoj zemlji.</string>
     <string name="scout_question_error_declined">AI nije htio odgovoriti na to. Pokušaj pitati drugačije.</string>
     <string name="scout_question_error_cut">Odgovor je prekinut. Pokušaj jednostavnije pitanje.</string>

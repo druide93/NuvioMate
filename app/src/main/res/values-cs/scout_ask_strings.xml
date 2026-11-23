@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Odebrat z domovské stránky</string>
     <string name="scout_question_no_recent">Zatím žádné dotazy</string>
     <string name="scout_question_voice_failed">Nerozuměl jsem. Zkuste to znovu, nebo dotaz napište.</string>
-    <string name="scout_question_mic_permission">Arc potřebuje mikrofon, aby mohl poslouchat. Nebo dotaz napište.</string>
+    <string name="scout_question_mic_permission">NuvioMate potřebuje mikrofon, aby mohl poslouchat. Nebo dotaz napište.</string>
     <string name="scout_ai_title">Vyberte svou AI</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">Rychlé otevřené modely</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">Služba tento klíč nepřijala. Možná vypršel. Vložte nový na stránce v telefonu.</string>
     <string name="scout_question_error_no_credit">Tomuto klíči došel kredit. Dobijte ho na webu služby.</string>
     <string name="scout_question_error_rate">Zatím příliš mnoho dotazů. Bezplatné tarify mají limity, chvíli počkejte a zkuste to znovu.</string>
-    <string name="scout_question_error_model">Tento model už není dostupný. Aktualizace Arc přinese nový, nebo použijte jinou službu.</string>
+    <string name="scout_question_error_model">Tento model už není dostupný. Aktualizace NuvioMate přinese nový, nebo použijte jinou službu.</string>
     <string name="scout_question_error_region">Tato služba ve vaší zemi bezplatný tarif nenabízí.</string>
     <string name="scout_question_error_declined">AI na to neodpověděla. Zkuste se zeptat jinak.</string>
     <string name="scout_question_error_cut">Odpověď byla useknuta. Zkuste jednodušší dotaz.</string>

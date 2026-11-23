@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Αφαίρεση από την Αρχική</string>
     <string name="scout_question_no_recent">Καμία ερώτηση ακόμα</string>
     <string name="scout_question_voice_failed">Δεν σας άκουσα. Δοκιμάστε ξανά ή πληκτρολογήστε την ερώτηση.</string>
-    <string name="scout_question_mic_permission">Το Arc χρειάζεται το μικρόφωνο για να ακούει. Ή πληκτρολογήστε την ερώτηση.</string>
+    <string name="scout_question_mic_permission">Το NuvioMate χρειάζεται το μικρόφωνο για να ακούει. Ή πληκτρολογήστε την ερώτηση.</string>
     <string name="scout_ai_title">Επιλέξτε το AI σας</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">Γρήγορα ανοιχτά μοντέλα</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">Η υπηρεσία δεν δέχτηκε αυτό το κλειδί. Μπορεί να έχει λήξει. Επικολλήστε νέο στη σελίδα του κινητού.</string>
     <string name="scout_question_error_no_credit">Αυτό το κλειδί δεν έχει άλλη πίστωση. Προσθέστε από τον ιστότοπο της υπηρεσίας.</string>
     <string name="scout_question_error_rate">Πάρα πολλές ερωτήσεις προς το παρόν. Τα δωρεάν επίπεδα έχουν όρια, περιμένετε λίγο και δοκιμάστε ξανά.</string>
-    <string name="scout_question_error_model">Αυτό το μοντέλο δεν είναι πλέον διαθέσιμο. Μια ενημέρωση του Arc θα φέρει νέο, ή χρησιμοποιήστε άλλη υπηρεσία.</string>
+    <string name="scout_question_error_model">Αυτό το μοντέλο δεν είναι πλέον διαθέσιμο. Μια ενημέρωση του NuvioMate θα φέρει νέο, ή χρησιμοποιήστε άλλη υπηρεσία.</string>
     <string name="scout_question_error_region">Αυτή η υπηρεσία δεν προσφέρει το δωρεάν επίπεδό της στη χώρα σας.</string>
     <string name="scout_question_error_declined">Το AI δεν απάντησε σε αυτό. Δοκιμάστε να ρωτήσετε αλλιώς.</string>
     <string name="scout_question_error_cut">Η απάντηση κόπηκε. Δοκιμάστε μια πιο απλή ερώτηση.</string>

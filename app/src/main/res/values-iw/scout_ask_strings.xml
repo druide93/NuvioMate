@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">הסרה מהבית</string>
     <string name="scout_question_no_recent">עדיין לא נשאל דבר</string>
     <string name="scout_question_voice_failed">לא שמעתי. נסו שוב, או הקלידו את השאלה.</string>
-    <string name="scout_question_mic_permission">Arc צריך את המיקרופון כדי להאזין. או הקלידו את השאלה.</string>
+    <string name="scout_question_mic_permission">NuvioMate צריך את המיקרופון כדי להאזין. או הקלידו את השאלה.</string>
     <string name="scout_ai_title">בחרו את ה-AI שלכם</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">מודלים פתוחים מהירים</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">השירות לא קיבל את המפתח. ייתכן שפג תוקפו. הדביקו חדש בדף בטלפון.</string>
     <string name="scout_question_error_no_credit">במפתח הזה אין יותר קרדיט. הוסיפו באתר השירות.</string>
     <string name="scout_question_error_rate">יותר מדי שאלות כרגע. לשכבות חינמיות יש מגבלות, המתינו קצת ונסו שוב.</string>
-    <string name="scout_question_error_model">המודל הזה כבר לא זמין. עדכון של Arc יביא חדש, או השתמשו בשירות אחר.</string>
+    <string name="scout_question_error_model">המודל הזה כבר לא זמין. עדכון של NuvioMate יביא חדש, או השתמשו בשירות אחר.</string>
     <string name="scout_question_error_region">השירות הזה לא מציע את השכבה החינמית שלו במדינה שלכם.</string>
     <string name="scout_question_error_declined">ה-AI לא ענה על זה. נסו לשאול בדרך אחרת.</string>
     <string name="scout_question_error_cut">התשובה נקטעה. נסו שאלה פשוטה יותר.</string>

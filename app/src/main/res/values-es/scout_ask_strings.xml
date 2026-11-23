@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Quitar de Inicio</string>
     <string name="scout_question_no_recent">Aún no has preguntado nada</string>
     <string name="scout_question_voice_failed">No te he oído. Inténtalo de nuevo o escribe tu pregunta.</string>
-    <string name="scout_question_mic_permission">Arc necesita el micrófono para escuchar. O escribe tu pregunta.</string>
+    <string name="scout_question_mic_permission">NuvioMate necesita el micrófono para escuchar. O escribe tu pregunta.</string>
     <string name="scout_ai_title">Elige tu IA</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">Modelos abiertos rápidos</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">El servicio no aceptó esta clave. Puede haber caducado. Pega una nueva en la página del móvil.</string>
     <string name="scout_question_error_no_credit">Esta clave se ha quedado sin crédito. Añade más en la web del servicio.</string>
     <string name="scout_question_error_rate">Demasiadas preguntas por ahora. Los niveles gratuitos tienen límites, espera un rato e inténtalo de nuevo.</string>
-    <string name="scout_question_error_model">Este modelo ya no está disponible. Una actualización de Arc traerá uno nuevo, o usa otro servicio.</string>
+    <string name="scout_question_error_model">Este modelo ya no está disponible. Una actualización de NuvioMate traerá uno nuevo, o usa otro servicio.</string>
     <string name="scout_question_error_region">Este servicio no ofrece su nivel gratuito en tu país.</string>
     <string name="scout_question_error_declined">La IA no quiso responder a eso. Prueba a preguntar de otra forma.</string>
     <string name="scout_question_error_cut">La respuesta se cortó. Prueba con una pregunta más sencilla.</string>

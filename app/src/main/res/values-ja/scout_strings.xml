@@ -31,7 +31,7 @@
     <string name="scout_send_ratings_sub">好みじゃない・好き・大好きは、Trakt、Simkl、MDBList、WeTrakrに10点中3・7・10点として送信されます。トラッカーで自分で付けた評価は変更されません。Simklには視聴済みの作品のみ送信されます。</string>
     <string name="scout_send_ratings_none">このプロフィールにはサインイン中のトラッカーがないため、まだ何も送信されません。</string>
     <string name="scout_use_ratings">トラッカーの評価を使う</string>
-    <string name="scout_use_ratings_sub">トラッカーで付けた評価がここでの評価になります：9か10は大好き、6〜8は好き、1〜4は好みじゃない。Arcで付けた評価が常に優先されます。</string>
+    <string name="scout_use_ratings_sub">トラッカーで付けた評価がここでの評価になります：9か10は大好き、6〜8は好き、1〜4は好みじゃない。NuvioMateで付けた評価が常に優先されます。</string>
     <string name="scout_thumb_from">%1$sから</string>
     <string name="scout_your_thumbs">あなたの評価</string>
     <plurals name="scout_your_thumbs_sub">

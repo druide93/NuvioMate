@@ -15,10 +15,9 @@ abstract class AskModule {
     @Multibinds
     abstract fun tasteSources(): Set<AskTasteSource>
 
-    // NuvioMate: saved Ask rows come with the Ask screen (not ported yet).
-    // @Binds
-    // @IntoSet
-    // abstract fun bindCatalogs(provider: AskCatalogProvider): BuiltInCatalogProvider
+    @Binds
+    @IntoSet
+    abstract fun bindCatalogs(provider: AskCatalogProvider): BuiltInCatalogProvider
 
     @Binds
     @IntoSet

@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Премахване от Начало</string>
     <string name="scout_question_no_recent">Още няма въпроси</string>
     <string name="scout_question_voice_failed">Не успях да чуя. Опитайте отново или напишете въпроса.</string>
-    <string name="scout_question_mic_permission">Arc има нужда от микрофона, за да слуша. Или напишете въпроса.</string>
+    <string name="scout_question_mic_permission">NuvioMate има нужда от микрофона, за да слуша. Или напишете въпроса.</string>
     <string name="scout_ai_title">Изберете своя AI</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">Бързи отворени модели</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">Услугата не прие този ключ. Може да е изтекъл. Поставете нов на страницата в телефона.</string>
     <string name="scout_question_error_no_credit">Този ключ няма останал кредит. Добавете от сайта на услугата.</string>
     <string name="scout_question_error_rate">Твърде много въпроси засега. Безплатните планове имат ограничения, изчакайте малко и опитайте пак.</string>
-    <string name="scout_question_error_model">Този модел вече не е наличен. Обновление на Arc ще донесе нов, или ползвайте друга услуга.</string>
+    <string name="scout_question_error_model">Този модел вече не е наличен. Обновление на NuvioMate ще донесе нов, или ползвайте друга услуга.</string>
     <string name="scout_question_error_region">Тази услуга не предлага безплатния си план във вашата държава.</string>
     <string name="scout_question_error_declined">AI не отговори на това. Опитайте да попитате по друг начин.</string>
     <string name="scout_question_error_cut">Отговорът беше прекъснат. Опитайте по-прост въпрос.</string>

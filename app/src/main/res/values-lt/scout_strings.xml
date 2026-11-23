@@ -31,7 +31,7 @@
     <string name="scout_send_ratings_sub">Ne man, Patinka ir Dievinu siunčiami į Trakt, Simkl, MDBList ir WeTrakr kaip 3, 7 ir 10 iš 10. Įvertinimas, kurį patys davėte sekimo paslaugoje, niekada nekeičiamas. Simkl gauna tik peržiūrėtus pavadinimus.</string>
     <string name="scout_send_ratings_none">Šiame profilyje neprisijungta prie jokios sekimo paslaugos, todėl kol kas nieko nesiunčiama.</string>
     <string name="scout_use_ratings">Naudoti mano įvertinimus iš sekimo paslaugų</string>
-    <string name="scout_use_ratings_sub">Sekimo paslaugose duoti įvertinimai čia tampa nykščiais: 9 arba 10 yra Dievinu, nuo 6 iki 8 Patinka, nuo 1 iki 4 Ne man. Arc programoje paspaustas nykštis visada turi pirmenybę.</string>
+    <string name="scout_use_ratings_sub">Sekimo paslaugose duoti įvertinimai čia tampa nykščiais: 9 arba 10 yra Dievinu, nuo 6 iki 8 Patinka, nuo 1 iki 4 Ne man. NuvioMate programoje paspaustas nykštis visada turi pirmenybę.</string>
     <string name="scout_thumb_from">Šaltinis: %1$s</string>
     <string name="scout_your_thumbs">Jūsų nykščiai</string>
     <plurals name="scout_your_thumbs_sub">

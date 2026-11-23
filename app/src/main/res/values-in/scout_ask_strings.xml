@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Hapus dari Beranda</string>
     <string name="scout_question_no_recent">Belum ada pertanyaan</string>
     <string name="scout_question_voice_failed">Tidak terdengar. Coba lagi, atau ketik pertanyaan Anda.</string>
-    <string name="scout_question_mic_permission">Arc butuh mikrofon untuk mendengarkan. Atau ketik pertanyaan Anda.</string>
+    <string name="scout_question_mic_permission">NuvioMate butuh mikrofon untuk mendengarkan. Atau ketik pertanyaan Anda.</string>
     <string name="scout_ai_title">Pilih AI Anda</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">Model terbuka yang cepat</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">Layanan tidak menerima kunci ini. Mungkin sudah kedaluwarsa. Tempel yang baru di halaman ponsel.</string>
     <string name="scout_question_error_no_credit">Kunci ini tidak punya kredit lagi. Tambahkan di situs web layanannya.</string>
     <string name="scout_question_error_rate">Terlalu banyak pertanyaan untuk saat ini. Paket gratis ada batasnya, tunggu sebentar lalu coba lagi.</string>
-    <string name="scout_question_error_model">Model ini tidak tersedia lagi. Pembaruan Arc akan membawa model baru, atau pakai layanan lain.</string>
+    <string name="scout_question_error_model">Model ini tidak tersedia lagi. Pembaruan NuvioMate akan membawa model baru, atau pakai layanan lain.</string>
     <string name="scout_question_error_region">Layanan ini tidak menawarkan paket gratisnya di negara Anda.</string>
     <string name="scout_question_error_declined">AI tidak mau menjawab itu. Coba bertanya dengan cara lain.</string>
     <string name="scout_question_error_cut">Jawabannya terpotong. Coba pertanyaan yang lebih sederhana.</string>

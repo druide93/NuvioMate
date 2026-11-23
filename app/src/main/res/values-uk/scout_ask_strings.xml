@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Видалити з головної</string>
     <string name="scout_question_no_recent">Запитань поки немає</string>
     <string name="scout_question_voice_failed">Не вдалося почути. Спробуйте ще раз або введіть запитання.</string>
-    <string name="scout_question_mic_permission">Arc потрібен мікрофон, щоб слухати. Або введіть запитання.</string>
+    <string name="scout_question_mic_permission">NuvioMate потрібен мікрофон, щоб слухати. Або введіть запитання.</string>
     <string name="scout_ai_title">Оберіть свій ШІ</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">Швидкі відкриті моделі</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">Сервіс не прийняв цей ключ. Можливо, термін його дії минув. Вставте новий на сторінці в телефоні.</string>
     <string name="scout_question_error_no_credit">На цьому ключі закінчилися кошти. Поповніть на сайті сервісу.</string>
     <string name="scout_question_error_rate">Наразі забагато запитань. Безкоштовні рівні мають ліміти, трохи зачекайте й повторіть.</string>
-    <string name="scout_question_error_model">Ця модель більше недоступна. Оновлення Arc принесе нову, або скористайтеся іншим сервісом.</string>
+    <string name="scout_question_error_model">Ця модель більше недоступна. Оновлення NuvioMate принесе нову, або скористайтеся іншим сервісом.</string>
     <string name="scout_question_error_region">Цей сервіс не пропонує безкоштовний рівень у вашій країні.</string>
     <string name="scout_question_error_declined">ШІ не став відповідати на це. Спробуйте запитати інакше.</string>
     <string name="scout_question_error_cut">Відповідь обірвалася. Спробуйте простіше запитання.</string>

@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">从首页移除</string>
     <string name="scout_question_no_recent">还没有提问</string>
     <string name="scout_question_voice_failed">没听清。请重试，或输入你的问题。</string>
-    <string name="scout_question_mic_permission">Arc 需要麦克风才能聆听。或者输入你的问题。</string>
+    <string name="scout_question_mic_permission">NuvioMate 需要麦克风才能聆听。或者输入你的问题。</string>
     <string name="scout_ai_title">选择你的 AI</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">快速开放模型</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">服务不接受这个密钥，可能已过期。请在手机页面粘贴新的密钥。</string>
     <string name="scout_question_error_no_credit">这个密钥已没有余额。请到该服务的网站充值。</string>
     <string name="scout_question_error_rate">目前提问过多。免费额度有限制，请稍等片刻再试。</string>
-    <string name="scout_question_error_model">这个模型已不可用。Arc 更新后会换成新的，或者使用其他服务。</string>
+    <string name="scout_question_error_model">这个模型已不可用。NuvioMate 更新后会换成新的，或者使用其他服务。</string>
     <string name="scout_question_error_region">该服务在你所在的国家或地区不提供免费额度。</string>
     <string name="scout_question_error_declined">AI 不愿回答这个问题。请换个方式提问。</string>
     <string name="scout_question_error_cut">回答被截断了。请尝试更简单的问题。</string>

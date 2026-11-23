@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">होम से हटाएँ</string>
     <string name="scout_question_no_recent">अभी तक कुछ नहीं पूछा</string>
     <string name="scout_question_voice_failed">सुन नहीं पाया। फिर कोशिश करें, या सवाल लिखें।</string>
-    <string name="scout_question_mic_permission">सुनने के लिए Arc को माइक चाहिए। या अपना सवाल लिखें।</string>
+    <string name="scout_question_mic_permission">सुनने के लिए NuvioMate को माइक चाहिए। या अपना सवाल लिखें।</string>
     <string name="scout_ai_title">अपना AI चुनें</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">तेज़ ओपन मॉडल</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">सेवा ने यह कुंजी स्वीकार नहीं की। हो सकता है यह एक्सपायर हो गई हो। फ़ोन पेज पर नई कुंजी पेस्ट करें।</string>
     <string name="scout_question_error_no_credit">इस कुंजी में क्रेडिट नहीं बचा है। सेवा की वेबसाइट पर जोड़ें।</string>
     <string name="scout_question_error_rate">फ़िलहाल बहुत ज़्यादा सवाल हो गए। मुफ़्त टियर की सीमाएँ होती हैं, थोड़ा रुककर फिर कोशिश करें।</string>
-    <string name="scout_question_error_model">यह मॉडल अब उपलब्ध नहीं है। Arc अपडेट नया मॉडल लाएगा, या दूसरी सेवा इस्तेमाल करें।</string>
+    <string name="scout_question_error_model">यह मॉडल अब उपलब्ध नहीं है। NuvioMate अपडेट नया मॉडल लाएगा, या दूसरी सेवा इस्तेमाल करें।</string>
     <string name="scout_question_error_region">यह सेवा आपके देश में अपना मुफ़्त टियर नहीं देती।</string>
     <string name="scout_question_error_declined">AI ने इसका जवाब नहीं दिया। दूसरे तरीके से पूछकर देखें।</string>
     <string name="scout_question_error_cut">जवाब अधूरा कट गया। कोई सरल सवाल पूछकर देखें।</string>

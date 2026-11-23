@@ -60,11 +60,11 @@ internal fun ScoutSettingsContent(
     initialFocusRequester: FocusRequester?,
     onOpenTaste: () -> Unit = {},
     onOpenRoute: (String) -> Unit = {},
-    viewModel: ScoutRatingViewModel = hiltViewModel()
+    viewModel: ScoutRatingViewModel = hiltViewModel(),
+    askAccess: com.nuvio.tv.ui.screens.scout.ask.AskAccessViewModel = hiltViewModel()
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    // NuvioMate: Ask (your own AI key) is not ported yet.
-    val askHasKey = false
+    val askHasKey by askAccess.hasKey.collectAsStateWithLifecycle()
     val profile by viewModel.profile.collectAsStateWithLifecycle()
     val trackerSignedIn by viewModel.trackerSignedIn.collectAsStateWithLifecycle()
     val settings = profile.settings
@@ -195,6 +195,14 @@ internal fun ScoutSettingsContent(
                 value = languageNames.filter { it.first in settings.leaveOutLanguages }.joinToString(", ") { it.second }
                     .ifBlank { stringResource(R.string.scout_leave_out_none) },
                 onClick = { showLeaveOutLanguages = true }
+            )
+        }
+        SettingsGroupCard(title = stringResource(R.string.scout_question_title)) {
+            SettingsActionRow(
+                title = stringResource(if (askHasKey) R.string.scout_question_settings_change else R.string.scout_question_settings_add),
+                subtitle = stringResource(R.string.scout_question_settings_sub),
+                value = stringResource(if (askHasKey) R.string.scout_question_settings_on else R.string.scout_question_settings_none),
+                onClick = { onOpenRoute(com.nuvio.tv.ui.navigation.Screen.ScoutAsk.route) }
             )
         }
         SettingsGroupCard(title = stringResource(R.string.scout_settings_ratings)) {

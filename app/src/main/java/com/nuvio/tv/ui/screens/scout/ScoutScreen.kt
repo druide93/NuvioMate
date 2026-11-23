@@ -23,6 +23,8 @@ import com.nuvio.tv.ui.scout.ScoutRateRow
 import com.nuvio.tv.ui.scout.ScoutRatingIcon
 import com.nuvio.tv.ui.scout.ScoutRatingViewModel
 import com.nuvio.tv.core.scout.ask.AskFailure
+import com.nuvio.tv.ui.screens.scout.ask.AskInputBar
+import com.nuvio.tv.ui.screens.scout.ask.failureText
 import com.nuvio.tv.ui.screens.detail.requestFocusAfterFrames
 import com.nuvio.tv.ui.screens.settings.ScoutThumbsPage
 import kotlinx.coroutines.launch
@@ -347,7 +349,7 @@ fun ScoutScreen(
                 when {
                     onTaste && taste != null -> ScoutTasteHero(taste, ::focus) { chosenGenre = it }
                     state.askBusy -> Text(stringResource(R.string.scout_question_thinking, stringResource(R.string.scout_title)), style = MaterialTheme.typography.titleLarge, color = NuvioTheme.colors.TextPrimary)
-                    state.askFailure != null -> Text(stringResource(R.string.scout_nothing_fits), style = MaterialTheme.typography.titleLarge, color = NuvioTheme.colors.TextPrimary)
+                    state.askFailure != null -> Text(stringResource(failureText(state.askFailure!!)), style = MaterialTheme.typography.titleLarge, color = NuvioTheme.colors.TextPrimary)
                     state.nothing -> Column(verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.xxs)) {
                         Text(stringResource(R.string.scout_nothing_fits), style = MaterialTheme.typography.titleLarge, color = NuvioTheme.colors.TextPrimary)
                         Text(stringResource(R.string.scout_nothing_fits_sub), style = MaterialTheme.typography.bodyMedium, color = NuvioTheme.colors.TextSecondary)
@@ -368,8 +370,15 @@ fun ScoutScreen(
                     }
                 }
             }
-            // NuvioMate: Ask (your own AI key) is not ported, so the question bar never shows.
-            if (!state.asking && !onTaste) {
+            if (state.asking) {
+                Box(Modifier.fillMaxWidth().padding(horizontal = FOCUS_ROOM)) {
+                    AskInputBar(
+                        onAsk = viewModel::ask,
+                        focusIn = requesters.getOrPut(ASK_INPUT) { FocusRequester() },
+                        down = requesters.getOrPut(SCOUT_FOCUS_FOR_YOU) { FocusRequester() }
+                    )
+                }
+            } else if (!onTaste) {
                 ScoutMoodLine(state, onTaste, onAsk?.let { { viewModel.openAsk() } }, ::focus)
             }
             val tabs = scoutTabItems(state)

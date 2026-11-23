@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">إزالة من الرئيسية</string>
     <string name="scout_question_no_recent">لا أسئلة بعد</string>
     <string name="scout_question_voice_failed">لم أسمع ذلك. حاول مجددًا أو اكتب سؤالك.</string>
-    <string name="scout_question_mic_permission">يحتاج Arc إلى الميكروفون للاستماع. أو اكتب سؤالك.</string>
+    <string name="scout_question_mic_permission">يحتاج NuvioMate إلى الميكروفون للاستماع. أو اكتب سؤالك.</string>
     <string name="scout_ai_title">اختر الذكاء الاصطناعي</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">نماذج مفتوحة سريعة</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">لم تقبل الخدمة هذا المفتاح. ربما انتهت صلاحيته. الصق مفتاحًا جديدًا في صفحة الهاتف.</string>
     <string name="scout_question_error_no_credit">لا يوجد رصيد متبقٍ في هذا المفتاح. أضف رصيدًا من موقع الخدمة.</string>
     <string name="scout_question_error_rate">أسئلة كثيرة حاليًا. للطبقات المجانية حدود، فانتظر قليلًا ثم حاول مجددًا.</string>
-    <string name="scout_question_error_model">هذا النموذج لم يعد متاحًا. سيأتي تحديث لـ Arc بنموذج جديد، أو استخدم خدمة أخرى.</string>
+    <string name="scout_question_error_model">هذا النموذج لم يعد متاحًا. سيأتي تحديث لـ NuvioMate بنموذج جديد، أو استخدم خدمة أخرى.</string>
     <string name="scout_question_error_region">لا تقدّم هذه الخدمة طبقتها المجانية في بلدك.</string>
     <string name="scout_question_error_declined">لم يجب الذكاء الاصطناعي عن ذلك. جرّب صياغة أخرى.</string>
     <string name="scout_question_error_cut">تم اقتطاع الإجابة. جرّب سؤالًا أبسط.</string>

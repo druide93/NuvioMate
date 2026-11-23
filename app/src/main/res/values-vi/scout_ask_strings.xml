@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Xóa khỏi Trang chủ</string>
     <string name="scout_question_no_recent">Chưa có câu hỏi nào</string>
     <string name="scout_question_voice_failed">Không nghe rõ. Hãy thử lại hoặc nhập câu hỏi.</string>
-    <string name="scout_question_mic_permission">Arc cần micro để nghe. Hoặc hãy nhập câu hỏi.</string>
+    <string name="scout_question_mic_permission">NuvioMate cần micro để nghe. Hoặc hãy nhập câu hỏi.</string>
     <string name="scout_ai_title">Chọn AI của bạn</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">Mô hình mở nhanh</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">Dịch vụ không chấp nhận khóa này. Có thể khóa đã hết hạn. Hãy dán khóa mới trên trang điện thoại.</string>
     <string name="scout_question_error_no_credit">Khóa này đã hết tín dụng. Hãy nạp thêm trên trang web của dịch vụ.</string>
     <string name="scout_question_error_rate">Hiện có quá nhiều câu hỏi. Gói miễn phí có giới hạn, hãy chờ một lúc rồi thử lại.</string>
-    <string name="scout_question_error_model">Mô hình này không còn khả dụng. Bản cập nhật Arc sẽ có mô hình mới, hoặc hãy dùng dịch vụ khác.</string>
+    <string name="scout_question_error_model">Mô hình này không còn khả dụng. Bản cập nhật NuvioMate sẽ có mô hình mới, hoặc hãy dùng dịch vụ khác.</string>
     <string name="scout_question_error_region">Dịch vụ này không cung cấp gói miễn phí ở quốc gia của bạn.</string>
     <string name="scout_question_error_declined">AI không trả lời câu này. Hãy thử hỏi theo cách khác.</string>
     <string name="scout_question_error_cut">Câu trả lời bị cắt ngắn. Hãy thử câu hỏi đơn giản hơn.</string>

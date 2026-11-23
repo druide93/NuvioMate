@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">A szolgáltatás nem fogadta el ezt a kulcsot. Lehet, hogy lejárt. Illessz be újat a telefonos oldalon.</string>
     <string name="scout_question_error_no_credit">Ennek a kulcsnak elfogyott a kreditje. Tölts fel a szolgáltatás weboldalán.</string>
     <string name="scout_question_error_rate">Egyelőre túl sok a kérdés. Az ingyenes szinteknek van korlátja, várj egy kicsit, és próbáld újra.</string>
-    <string name="scout_question_error_model">Ez a modell már nem érhető el. Egy Arc-frissítés újat hoz, vagy használj másik szolgáltatást.</string>
+    <string name="scout_question_error_model">Ez a modell már nem érhető el. Egy NuvioMate-frissítés újat hoz, vagy használj másik szolgáltatást.</string>
     <string name="scout_question_error_region">Ez a szolgáltatás nem kínálja az ingyenes szintet az országodban.</string>
     <string name="scout_question_error_declined">Az AI nem válaszolt erre. Próbáld meg másképp megfogalmazni.</string>
     <string name="scout_question_error_cut">A válasz megszakadt. Próbálj egyszerűbb kérdést.</string>

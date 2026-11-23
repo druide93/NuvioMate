@@ -142,8 +142,14 @@ fun SearchScreen(
     onOpenLiveTv: () -> Unit = {},
     // Live TV fork: your provider's On Demand titles (the On Demand row).
     onOpenOnDemand: (itemId: String, itemType: String, addonBaseUrl: String?, onDemandUid: String) -> Unit = { _, _, _, _ -> },
-    onPlayOnDemand: (url: String, title: String, type: String, poster: String?, contentId: String, contentName: String, season: Int?, episode: Int?, episodeName: String?) -> Unit = { _, _, _, _, _, _, _, _, _ -> }
+    onPlayOnDemand: (url: String, title: String, type: String, poster: String?, contentId: String, contentName: String, season: Int?, episode: Int?, episodeName: String?) -> Unit = { _, _, _, _, _, _, _, _, _ -> },
+    // Scout: ask your own AI ("films like Inception, but without the dreaming").
+    onAskScout: (String) -> Unit = {},
+    askAccess: com.nuvio.tv.ui.screens.scout.ask.AskAccessViewModel = hiltViewModel()
 ) {
+    val askHasKey by askAccess.hasKey.collectAsState()
+    var askLineFocusCount by remember { mutableStateOf(0) }
+    val askLineFocus = remember { FocusRequester() }
     val uiState by viewModel.uiState.collectAsState()
     val watchedMovieIds by viewModel.watchedMovieIds.collectAsState()
     val watchedSeriesIds by viewModel.watchedSeriesIds.collectAsState()
@@ -186,7 +192,13 @@ fun SearchScreen(
             viewModel.onEvent(SearchEvent.QueryChanged(recognized))
             viewModel.onEvent(SearchEvent.SubmitSearch)
             focusResults = false
-            pendingFocusMoveToResultsQuery = recognized
+            // Scout: a spoken sentence lands on "Ask Scout" rather than the results.
+            if (askHasKey && com.nuvio.tv.ui.screens.scout.ask.askLineSentence(recognized)) {
+                pendingFocusMoveToResultsQuery = null
+                askLineFocusCount++
+            } else {
+                pendingFocusMoveToResultsQuery = recognized
+            }
             pendingFocusMoveSawSearching = false
             pendingFocusMoveHadExistingSearchRows =
                 uiState.submittedQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH &&
@@ -442,6 +454,16 @@ fun SearchScreen(
         !isDiscoverMode &&
             trimmedQuery.length >= MIN_SEARCH_QUERY_LENGTH &&
             trimmedQuery != trimmedSubmittedQuery
+    }
+    val showAskLine = askHasKey && !isDiscoverMode && com.nuvio.tv.ui.screens.scout.ask.askLineWanted(
+        query = trimmedQuery,
+        noResults = trimmedSubmittedQuery.length >= MIN_SEARCH_QUERY_LENGTH &&
+            !uiState.isSearching &&
+            !hasPendingUnsubmittedQuery &&
+            uiState.catalogRows.none { it.items.isNotEmpty() }
+    )
+    LaunchedEffect(askLineFocusCount, showAskLine) {
+        if (askLineFocusCount > 0 && showAskLine) runCatching { askLineFocus.requestFocus() }
     }
     val showRecentSearches = remember(
         trimmedQuery,
@@ -748,6 +770,16 @@ fun SearchScreen(
                     clearHistoryFocusRequester = if (showRecentSearches) recentClearHistoryFocusRequester else null,
                     isScreenActive = isScreenActive
                 )
+            }
+
+            if (showAskLine) {
+                item(key = "ask_scout") {
+                    com.nuvio.tv.ui.screens.scout.ask.AskSearchLine(
+                        query = trimmedQuery,
+                        onClick = { onAskScout(trimmedQuery) },
+                        modifier = Modifier.focusRequester(askLineFocus)
+                    )
+                }
             }
 
             if (isDiscoverMode) {

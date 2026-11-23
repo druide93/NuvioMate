@@ -31,7 +31,7 @@
     <string name="scout_send_ratings_sub">Nie dla mnie, Podoba mi się i Uwielbiam trafiają do Trakt, Simkl, MDBList i WeTrakr jako 3, 7 i 10 na 10. Ocena wystawiona przez ciebie bezpośrednio w trackerze nigdy nie jest zmieniana. Simkl dostaje tylko obejrzane tytuły.</string>
     <string name="scout_send_ratings_none">Na tym profilu nie zalogowano żadnego trackera, więc nic nie jest jeszcze wysyłane.</string>
     <string name="scout_use_ratings">Używaj moich ocen z trackerów</string>
-    <string name="scout_use_ratings_sub">Oceny z twoich trackerów stają się tu kciukami: 9 lub 10 to Uwielbiam, od 6 do 8 Podoba mi się, od 1 do 4 Nie dla mnie. Kciuk naciśnięty w Arc zawsze wygrywa.</string>
+    <string name="scout_use_ratings_sub">Oceny z twoich trackerów stają się tu kciukami: 9 lub 10 to Uwielbiam, od 6 do 8 Podoba mi się, od 1 do 4 Nie dla mnie. Kciuk naciśnięty w NuvioMate zawsze wygrywa.</string>
     <string name="scout_thumb_from">Z %1$s</string>
     <string name="scout_your_thumbs">Twoje kciuki</string>
     <plurals name="scout_your_thumbs_sub">

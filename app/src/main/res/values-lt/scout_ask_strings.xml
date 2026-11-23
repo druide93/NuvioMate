@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Pašalinti iš pagrindinio</string>
     <string name="scout_question_no_recent">Dar nieko neklausta</string>
     <string name="scout_question_voice_failed">Neišgirdau. Bandykite dar kartą arba įveskite klausimą.</string>
-    <string name="scout_question_mic_permission">Arc reikia mikrofono, kad klausytų. Arba įveskite klausimą.</string>
+    <string name="scout_question_mic_permission">NuvioMate reikia mikrofono, kad klausytų. Arba įveskite klausimą.</string>
     <string name="scout_ai_title">Pasirinkite savo DI</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">Spartūs atviri modeliai</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">Paslauga nepriėmė šio rakto. Galbūt jo galiojimas baigėsi. Įklijuokite naują telefono puslapyje.</string>
     <string name="scout_question_error_no_credit">Šiame rakte nebeliko kredito. Papildykite paslaugos svetainėje.</string>
     <string name="scout_question_error_rate">Kol kas per daug klausimų. Nemokami planai turi apribojimų, šiek tiek palaukite ir bandykite dar kartą.</string>
-    <string name="scout_question_error_model">Šis modelis nebepasiekiamas. Arc naujinys atneš naują, arba naudokite kitą paslaugą.</string>
+    <string name="scout_question_error_model">Šis modelis nebepasiekiamas. NuvioMate naujinys atneš naują, arba naudokite kitą paslaugą.</string>
     <string name="scout_question_error_region">Ši paslauga jūsų šalyje nemokamo plano nesiūlo.</string>
     <string name="scout_question_error_declined">DI į tai neatsakė. Pabandykite paklausti kitaip.</string>
     <string name="scout_question_error_cut">Atsakymas nutrūko. Pabandykite paprastesnį klausimą.</string>

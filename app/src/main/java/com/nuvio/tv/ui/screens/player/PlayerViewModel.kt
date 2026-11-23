@@ -113,6 +113,9 @@ class PlayerViewModel @Inject constructor(
         trailerPlayerPool.yield()
     }
 
+    /** Scout: the title the "How was it?" question is about. */
+    val scoutContentId: String? get() = controller.contentId
+
     internal val controller = PlayerRuntimeController(
         context = context,
         watchProgressRepository = watchProgressRepository,

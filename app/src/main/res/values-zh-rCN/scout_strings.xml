@@ -31,7 +31,7 @@
     <string name="scout_send_ratings_sub">不适合我、喜欢和超爱会以 10 分制的 3、7、10 分发送到 Trakt、Simkl、MDBList 和 WeTrakr。你在追踪服务上亲自打的分永远不会被更改。Simkl 只会收到你看过的作品。</string>
     <string name="scout_send_ratings_none">此个人资料没有登录任何追踪服务，因此暂不发送任何内容。</string>
     <string name="scout_use_ratings">使用我在追踪服务上的评分</string>
-    <string name="scout_use_ratings_sub">你在追踪服务上的评分会在这里变成拇指：9 或 10 分为超爱，6 到 8 分为喜欢，1 到 4 分为不适合我。你在 Arc 中按下的拇指始终优先。</string>
+    <string name="scout_use_ratings_sub">你在追踪服务上的评分会在这里变成拇指：9 或 10 分为超爱，6 到 8 分为喜欢，1 到 4 分为不适合我。你在 NuvioMate 中按下的拇指始终优先。</string>
     <string name="scout_thumb_from">来自 %1$s</string>
     <string name="scout_your_thumbs">你的拇指</string>
     <plurals name="scout_your_thumbs_sub">

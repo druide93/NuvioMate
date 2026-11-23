@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Ana Sayfa\'dan kaldır</string>
     <string name="scout_question_no_recent">Henüz soru sorulmadı</string>
     <string name="scout_question_voice_failed">Duyamadım. Tekrar deneyin ya da sorunuzu yazın.</string>
-    <string name="scout_question_mic_permission">Arc\'ın dinlemesi için mikrofon gerekir. Ya da sorunuzu yazın.</string>
+    <string name="scout_question_mic_permission">NuvioMate\'ın dinlemesi için mikrofon gerekir. Ya da sorunuzu yazın.</string>
     <string name="scout_ai_title">YZ\'nizi seçin</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">Hızlı açık modeller</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">Hizmet bu anahtarı kabul etmedi. Süresi dolmuş olabilir. Telefon sayfasına yenisini yapıştırın.</string>
     <string name="scout_question_error_no_credit">Bu anahtarda kredi kalmadı. Hizmetin web sitesinden ekleyin.</string>
     <string name="scout_question_error_rate">Şimdilik çok fazla soru var. Ücretsiz katmanların sınırları vardır, biraz bekleyip tekrar deneyin.</string>
-    <string name="scout_question_error_model">Bu model artık kullanılamıyor. Bir Arc güncellemesi yenisini getirecek ya da başka bir hizmet kullanın.</string>
+    <string name="scout_question_error_model">Bu model artık kullanılamıyor. Bir NuvioMate güncellemesi yenisini getirecek ya da başka bir hizmet kullanın.</string>
     <string name="scout_question_error_region">Bu hizmet ücretsiz katmanını ülkenizde sunmuyor.</string>
     <string name="scout_question_error_declined">YZ buna yanıt vermedi. Başka şekilde sormayı deneyin.</string>
     <string name="scout_question_error_cut">Yanıt yarıda kesildi. Daha basit bir soru deneyin.</string>

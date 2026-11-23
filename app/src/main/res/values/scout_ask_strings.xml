@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Remove from Home</string>
     <string name="scout_question_no_recent">Nothing asked yet</string>
     <string name="scout_question_voice_failed">Could not hear that. Try again, or type your question.</string>
-    <string name="scout_question_mic_permission">Arc needs the microphone to listen. Or type your question.</string>
+    <string name="scout_question_mic_permission">NuvioMate needs the microphone to listen. Or type your question.</string>
 
     <string name="scout_question_say_or_type">Say it, or type it here</string>
     <string name="scout_question_sent_to">Goes to %1$s with your key: your question and short lists of titles you rated. Nothing else.</string>
@@ -83,7 +83,7 @@
     <string name="scout_question_error_bad_key">The service did not accept this key. It may have expired. Paste a new one on the phone page.</string>
     <string name="scout_question_error_no_credit">This key has no credit left. Add some on the service\'s website.</string>
     <string name="scout_question_error_rate">Too many questions for now. Free tiers have limits, so wait a while and try again.</string>
-    <string name="scout_question_error_model">This model is not available any more. An Arc update will bring a new one, or use another service.</string>
+    <string name="scout_question_error_model">This model is not available any more. An NuvioMate update will bring a new one, or use another service.</string>
     <string name="scout_question_error_region">This service does not offer its free tier in your country.</string>
     <string name="scout_question_error_declined">The AI would not answer that. Try asking another way.</string>
     <string name="scout_question_error_cut">The answer was cut short. Try a simpler question.</string>

@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">Удалить с главной</string>
     <string name="scout_question_no_recent">Вопросов пока нет</string>
     <string name="scout_question_voice_failed">Не удалось расслышать. Повторите или введите вопрос.</string>
-    <string name="scout_question_mic_permission">Для прослушивания Arc нужен микрофон. Или введите вопрос.</string>
+    <string name="scout_question_mic_permission">Для прослушивания NuvioMate нужен микрофон. Или введите вопрос.</string>
     <string name="scout_ai_title">Выберите ИИ</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">Быстрые открытые модели</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">Сервис не принял этот ключ. Возможно, срок его действия истёк. Вставьте новый на странице в телефоне.</string>
     <string name="scout_question_error_no_credit">На этом ключе закончились средства. Пополните на сайте сервиса.</string>
     <string name="scout_question_error_rate">Пока слишком много вопросов. У бесплатных уровней есть лимиты, подождите немного и повторите.</string>
-    <string name="scout_question_error_model">Эта модель больше недоступна. Обновление Arc принесёт новую, или используйте другой сервис.</string>
+    <string name="scout_question_error_model">Эта модель больше недоступна. Обновление NuvioMate принесёт новую, или используйте другой сервис.</string>
     <string name="scout_question_error_region">Этот сервис не предлагает бесплатный уровень в вашей стране.</string>
     <string name="scout_question_error_declined">ИИ не стал отвечать на это. Попробуйте спросить иначе.</string>
     <string name="scout_question_error_cut">Ответ оборвался. Попробуйте вопрос попроще.</string>

@@ -31,7 +31,7 @@
     <string name="scout_send_ratings_sub">Nije za mene, Sviđa mi se i Obožavam šalju se na Trakt, Simkl, MDBList i WeTrakr kao 3, 7 i 10 od 10. Tvoja ocjena data direktno na servisu za praćenje nikad se ne mijenja. Simkl dobija samo pogledane naslove.</string>
     <string name="scout_send_ratings_none">Na ovom profilu nije prijavljen nijedan servis za praćenje, pa se još ništa ne šalje.</string>
     <string name="scout_use_ratings">Koristi moje ocjene sa servisa za praćenje</string>
-    <string name="scout_use_ratings_sub">Ocjene sa tvojih servisa za praćenje ovdje postaju palčevi: 9 ili 10 je Obožavam, 6 do 8 Sviđa mi se, 1 do 4 Nije za mene. Palac koji pritisneš u aplikaciji Arc uvijek ima prednost.</string>
+    <string name="scout_use_ratings_sub">Ocjene sa tvojih servisa za praćenje ovdje postaju palčevi: 9 ili 10 je Obožavam, 6 do 8 Sviđa mi se, 1 do 4 Nije za mene. Palac koji pritisneš u aplikaciji NuvioMate uvijek ima prednost.</string>
     <string name="scout_thumb_from">Izvor: %1$s</string>
     <string name="scout_your_thumbs">Tvoji palčevi</string>
     <plurals name="scout_your_thumbs_sub">

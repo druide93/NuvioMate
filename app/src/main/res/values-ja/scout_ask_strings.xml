@@ -32,7 +32,7 @@
     <string name="scout_question_remove_row">ホームから削除</string>
     <string name="scout_question_no_recent">まだ質問がありません</string>
     <string name="scout_question_voice_failed">聞き取れませんでした。もう一度試すか、質問を入力してください。</string>
-    <string name="scout_question_mic_permission">Arcが聞き取るにはマイクが必要です。または質問を入力してください。</string>
+    <string name="scout_question_mic_permission">NuvioMateが聞き取るにはマイクが必要です。または質問を入力してください。</string>
     <string name="scout_ai_title">AIを選択</string>
     <string name="scout_ai_gemini_sub">Google</string>
     <string name="scout_ai_groq_sub">高速なオープンモデル</string>
@@ -56,7 +56,7 @@
     <string name="scout_question_error_bad_key">サービスがこのキーを受け付けませんでした。期限切れの可能性があります。スマホのページで新しいキーを貼り付けてください。</string>
     <string name="scout_question_error_no_credit">このキーのクレジットが残っていません。サービスのウェブサイトで追加してください。</string>
     <string name="scout_question_error_rate">ただいま質問が多すぎます。無料枠には制限があります。しばらくしてからもう一度お試しください。</string>
-    <string name="scout_question_error_model">このモデルはもう利用できません。Arcのアップデートで新しいモデルに変わるか、別のサービスをお使いください。</string>
+    <string name="scout_question_error_model">このモデルはもう利用できません。NuvioMateのアップデートで新しいモデルに変わるか、別のサービスをお使いください。</string>
     <string name="scout_question_error_region">このサービスはお住まいの国では無料枠を提供していません。</string>
     <string name="scout_question_error_declined">AIがこの質問に答えませんでした。別の聞き方をお試しください。</string>
     <string name="scout_question_error_cut">回答が途中で切れました。もっと簡単な質問をお試しください。</string>
