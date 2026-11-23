@@ -136,7 +136,7 @@ private fun movieRecommendationTriggerPositionMs(
  * arrive as outro types; those only count in the second half, so an opening "Credits"
  * chapter is not taken for the end credits.
  */
-private fun SkipInterval.isMovieEndCredits(durationMs: Long): Boolean = when (type) {
+internal fun SkipInterval.isMovieEndCredits(durationMs: Long): Boolean = when (type) {
     "movie-credits" -> true
     in PlayerNextEpisodeRules.OUTRO_SEGMENT_TYPES -> startTime * 1_000.0 >= durationMs / 2.0
     else -> false

@@ -116,6 +116,10 @@ class PlayerViewModel @Inject constructor(
     /** Scout: the title the "How was it?" question is about. */
     val scoutContentId: String? get() = controller.contentId
 
+    /** Scout: the end credits have started, when the skip data knows where they are. */
+    fun scoutReachedCredits(positionMs: Long, durationMs: Long): Boolean =
+        controller.skipIntervals.any { it.isMovieEndCredits(durationMs) && positionMs >= (it.startTime * 1_000.0).toLong() }
+
     internal val controller = PlayerRuntimeController(
         context = context,
         watchProgressRepository = watchProgressRepository,

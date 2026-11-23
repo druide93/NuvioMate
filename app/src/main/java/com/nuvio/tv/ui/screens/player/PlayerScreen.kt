@@ -86,6 +86,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -271,18 +272,10 @@ fun PlayerScreen(
     // Scout: "How was it?" once a film, or a show's season, has been watched to the end.
     val scoutRatings: com.nuvio.tv.ui.scout.ScoutRatingViewModel? =
         if (com.nuvio.tv.domain.model.ScoutFeature.available) hiltViewModel() else null
-    val exitPlayer: () -> Unit = exitPlayer@{
-        if (exitDispatched) return@exitPlayer
-        exitDispatched = true
-        val timeline = viewModel.playbackTimeline.value
-        viewModel.stopAndRelease()
-        val completed = postPlayRecommendationState.isVisible || uiState.playbackEnded ||
-            (!timeline.isLive &&
-                timeline.duration > 0L &&
-                (timeline.currentPosition.toFloat() / timeline.duration.toFloat()) >= WatchProgress.COMPLETED_THRESHOLD)
+    val offerScoutAsk: (Boolean) -> Unit = { completed ->
         scoutRatings?.offerAsk(
             com.nuvio.tv.domain.model.scoutAskTargetFor(
-                completed = completed && !timeline.isLive,
+                completed = completed,
                 contentId = viewModel.scoutContentId,
                 contentType = uiState.contentType,
                 name = uiState.contentName ?: uiState.title,
@@ -291,6 +284,40 @@ fun PlayerScreen(
                 nextEpisodeSeason = uiState.nextEpisode?.takeIf { it.mixName == null }?.season
             )
         )
+    }
+    // Scout: the same question as thumbs on the end-of-film screen, while the credits still roll.
+    val scoutEndRateFocusRequester = remember { FocusRequester() }
+    val scoutEndTarget = if (scoutRatings != null && postPlayRecommendationState.isVisible && !exitDispatched) {
+        com.nuvio.tv.domain.model.scoutAskTargetFor(
+            completed = true,
+            contentId = viewModel.scoutContentId,
+            contentType = uiState.contentType,
+            name = uiState.contentName ?: uiState.title,
+            poster = null,
+            season = uiState.currentSeason,
+            nextEpisodeSeason = uiState.nextEpisode?.takeIf { it.mixName == null }?.season
+        )
+    } else {
+        null
+    }
+    var scoutEndAskKey by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(scoutEndTarget?.askKey) {
+        val target = scoutEndTarget
+        scoutEndAskKey = if (target != null && scoutRatings?.shouldAskAtEnd(target) == true) target.askKey else null
+    }
+    val scoutEndShown = scoutEndTarget != null && scoutEndAskKey == scoutEndTarget.askKey &&
+        !postPlayRecommendationState.isTrailerPlaying
+    val exitPlayer: () -> Unit = exitPlayer@{
+        if (exitDispatched) return@exitPlayer
+        exitDispatched = true
+        val timeline = viewModel.playbackTimeline.value
+        viewModel.stopAndRelease()
+        val completed = postPlayRecommendationState.isVisible || uiState.playbackEnded ||
+            (!timeline.isLive &&
+                timeline.duration > 0L &&
+                ((timeline.currentPosition.toFloat() / timeline.duration.toFloat()) >= WatchProgress.COMPLETED_THRESHOLD ||
+                    viewModel.scoutReachedCredits(timeline.currentPosition, timeline.duration)))
+        offerScoutAsk(completed && !timeline.isLive)
         val (focusSeason, focusEpisode) = uiState.returnFocusSeasonEpisode(completed)
         onBackPress(
             uiState.currentVideoId,
@@ -329,6 +356,7 @@ fun PlayerScreen(
             nextEpisodeForEndPrompt != null
     val returnToDetailsFromEndPrompt = {
         viewModel.stopAndRelease()
+        offerScoutAsk(true)
         val (focusSeason, focusEpisode) = uiState.returnFocusSeasonEpisode(completed = true)
         currentOnBackPress(
             uiState.currentVideoId,
@@ -492,6 +520,7 @@ fun PlayerScreen(
             }
             shouldDispatchNatural -> {
                 viewModel.stopAndRelease()
+                offerScoutAsk(true)
                 val next = uiState.nextEpisode?.takeIf {
                     it.mixName == null && it.hasAired && !(it.released.isNullOrBlank() && it.available == false)
                 }
@@ -1324,7 +1353,7 @@ fun PlayerScreen(
                 if (postPlayRecommendationState.canReturnToPlayer) {
                     PostPlayRecommendationPlayerWindow(
                         focusRequester = postPlayRecommendationPlayerWindowFocusRequester,
-                        downFocusRequester = postPlayRecommendationFocusRequester,
+                        downFocusRequester = if (scoutEndShown) scoutEndRateFocusRequester else postPlayRecommendationFocusRequester,
                         onBack = handleBackPress,
                         onClick = {
                             returnToPlayerFromPostPlay()
@@ -1344,7 +1373,7 @@ fun PlayerScreen(
                 currentTitle = uiState.contentName ?: uiState.title,
                 showManualPlayOption = effectiveAutoplayEnabled,
                 playFocusRequester = postPlayRecommendationFocusRequester,
-                playerWindowFocusRequester = postPlayRecommendationPlayerWindowFocusRequester,
+                playerWindowFocusRequester = if (scoutEndShown) scoutEndRateFocusRequester else postPlayRecommendationPlayerWindowFocusRequester,
                 onBack = handleBackPress,
                 onForceExit = { exitPlayer() },
                 onStopTrailer = viewModel::onPostPlayTrailerEnded,
@@ -1366,6 +1395,7 @@ fun PlayerScreen(
                     if (!exitDispatched) {
                         exitDispatched = true
                         viewModel.stopAndRelease()
+                        offerScoutAsk(true)
                         currentOnOpenRecommendationDetails(recommendation)
                     }
                 },
@@ -1377,6 +1407,24 @@ fun PlayerScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .zIndex(1f)
+            )
+        }
+
+        if (scoutEndShown && scoutEndTarget != null && scoutRatings != null) {
+            val windowHeight = LocalConfiguration.current.screenWidthDp.dp * 0.32f * (9f / 16f)
+            com.nuvio.tv.ui.scout.ScoutEndRatePanel(
+                target = scoutEndTarget,
+                viewModel = scoutRatings,
+                firstFocus = scoutEndRateFocusRequester,
+                upFocus = postPlayRecommendationPlayerWindowFocusRequester.takeIf { postPlayRecommendationState.canReturnToPlayer },
+                downFocus = postPlayRecommendationFocusRequester,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(
+                        top = NuvioTheme.spacing.xxl + windowHeight + NuvioTheme.spacing.md,
+                        end = NuvioTheme.spacing.xxl
+                    )
+                    .zIndex(2.3f)
             )
         }
 

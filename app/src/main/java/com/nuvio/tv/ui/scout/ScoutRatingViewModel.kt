@@ -84,6 +84,18 @@ class ScoutRatingViewModel @Inject constructor(
 
     suspend fun shouldAsk(target: ScoutAskTarget): Boolean = scoutShouldAsk(store.current(), target)
 
+    /** The thumbs on the end-of-film screen: same rules as the question, never in a Mix. */
+    suspend fun shouldAskAtEnd(target: ScoutAskTarget): Boolean = !mixSession.active && shouldAsk(target)
+
+    /** A thumb pressed on the end-of-film screen answers the question; pressing it again takes it back. */
+    fun rateAtEnd(target: ScoutAskTarget, rating: ScoutRating?) {
+        store.clearAsk()
+        viewModelScope.launch {
+            store.markAsked(target.askKey)
+            store.setRating(target.title, rating)
+        }
+    }
+
     fun dropAsk() = store.clearAsk()
 
     suspend fun genres(): Map<Int, String> = runCatching {
