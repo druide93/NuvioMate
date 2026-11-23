@@ -749,13 +749,16 @@ fun GridHomeContent(
                             "series" -> strTypeSeries
                             else -> gridItem.type.replaceFirstChar { it.uppercase() }
                         }
-                        val displayName = if (uiState.catalogTypeSuffixEnabled && typeLabel.isNotBlank()) {
+                        val displayName = if (uiState.catalogTypeSuffixEnabled && typeLabel.isNotBlank() &&
+                            !com.nuvio.tv.ui.scout.skipsCatalogTypeSuffix(gridItem.addonId)
+                        ) {
                             "${gridItem.catalogName.replaceFirstChar { it.uppercase() }} - $typeLabel"
                         } else {
                             gridItem.catalogName.replaceFirstChar { it.uppercase() }
                         }
                         SectionDivider(
-                            catalogName = displayName
+                            catalogName = displayName,
+                            scout = com.nuvio.tv.ui.scout.isScoutCatalog(gridItem.addonId)
                         )
                     }
 
@@ -843,7 +846,7 @@ fun GridHomeContent(
                     }
 
                     is GridItem.CollectionHeader -> {
-                        SectionDivider(catalogName = gridItem.title)
+                        SectionDivider(catalogName = gridItem.title, scout = com.nuvio.tv.ui.scout.isScoutCollection(gridItem.collectionId))
                     }
 
                     is GridItem.CollectionFolder -> {
@@ -906,13 +909,16 @@ private fun GridStickyHeader(
 @Composable
 private fun SectionDivider(
     catalogName: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    scout: Boolean = false
 ) {
-    Box(
+    androidx.compose.foundation.layout.Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = NuvioTheme.spacing.xl, bottom = NuvioTheme.spacing.md)
+            .padding(top = NuvioTheme.spacing.xl, bottom = NuvioTheme.spacing.md),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        if (scout) com.nuvio.tv.ui.scout.ScoutRowMark()
         Text(
             text = catalogName,
             style = MaterialTheme.typography.headlineMedium.copy(

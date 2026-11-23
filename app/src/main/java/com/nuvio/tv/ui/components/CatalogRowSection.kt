@@ -275,7 +275,8 @@ fun CatalogRowSection(
     val catalogTitle = remember(catalogRow.catalogName, typeLabel, showCatalogTypeSuffix) {
         val formattedName = catalogRow.catalogName.replaceFirstChar { it.uppercase() }
         if (formattedName.isBlank()) ""
-        else if (showCatalogTypeSuffix && typeLabel.isNotEmpty()) "$formattedName - $typeLabel" else formattedName
+        else if (showCatalogTypeSuffix && typeLabel.isNotEmpty() && !com.nuvio.tv.ui.scout.skipsCatalogTypeSuffix(catalogRow.addonId)) "$formattedName - $typeLabel"
+        else formattedName
     }
 
     Column(modifier = modifier.fillMaxWidth().then(
@@ -295,6 +296,9 @@ fun CatalogRowSection(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.xs)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (catalogTitle.isNotBlank() && com.nuvio.tv.ui.scout.isScoutCatalog(catalogRow.addonId)) {
+                        com.nuvio.tv.ui.scout.ScoutRowMark()
+                    }
                     Text(
                         text = catalogTitle.ifBlank { " " },
                         style = MaterialTheme.typography.headlineMedium.copy(

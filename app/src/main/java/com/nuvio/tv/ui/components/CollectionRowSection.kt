@@ -134,6 +134,8 @@ fun CollectionRowSection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f, fill = false)) {
+            if (com.nuvio.tv.ui.scout.isScoutCollection(collection.id)) com.nuvio.tv.ui.scout.ScoutRowMark()
             Text(
                 text = collection.title,
                 style = MaterialTheme.typography.headlineMedium.copy(
@@ -143,6 +145,7 @@ fun CollectionRowSection(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+            }
         }
 
         val density = LocalDensity.current
