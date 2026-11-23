@@ -548,6 +548,16 @@ internal fun ModernRowSection(
             Modifier.padding(start = 52.dp, bottom = rowTitleBottom)
         }
         Row(modifier = textModifier, verticalAlignment = Alignment.CenterVertically) {
+            // Scout's mark before the rows it makes, so they stand apart from add-on rows.
+            if (row.isScoutRow()) {
+                androidx.tv.material3.Icon(
+                    painter = com.nuvio.tv.ui.util.rememberRawSvgPainter(R.raw.sidebar_scout, 22.dp),
+                    contentDescription = "Scout",
+                    tint = NuvioTheme.colors.Secondary,
+                    modifier = Modifier.size(22.dp)
+                )
+                Spacer(Modifier.width(10.dp))
+            }
             Text(
                 text = rowTitle,
                 style = rowTitleStyle.copy(textDirection = rowTitle.contentTextDirection()),

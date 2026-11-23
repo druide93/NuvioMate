@@ -608,7 +608,9 @@ internal fun catalogRowTitle(
 ): String {
     val catalogName = row.catalogName.replaceFirstChar { it.uppercase() }
     // The app's own rows (Scout) mix films and shows, so their title carries no type.
-    if (!showCatalogTypeSuffix || row.addonId.startsWith(com.nuvio.tv.core.catalog.BuiltInCatalogs.ADDON_ID_PREFIX)) return catalogName
+    if (!showCatalogTypeSuffix || row.addonId.startsWith(com.nuvio.tv.core.catalog.BuiltInCatalogs.ADDON_ID_PREFIX) ||
+        row.addonId == com.nuvio.tv.core.scout.ask.AskCatalogProvider.ADDON_ID
+    ) return catalogName
     val typeLabel = when (row.apiType.lowercase()) {
         "movie" -> strTypeMovie.ifBlank { row.apiType.replaceFirstChar { it.uppercase() } }
         "series" -> strTypeSeries.ifBlank { row.apiType.replaceFirstChar { it.uppercase() } }
@@ -616,6 +618,13 @@ internal fun catalogRowTitle(
     }
     return "$catalogName - $typeLabel"
 }
+
+/** Rows Scout makes: its picks, saved Ask answers, Mixes and its tiles. */
+internal fun HeroCarouselRow.isScoutRow(): Boolean =
+    addonId == com.nuvio.tv.core.scout.ScoutCatalogProvider.ADDON_ID ||
+        addonId == com.nuvio.tv.core.scout.ask.AskCatalogProvider.ADDON_ID ||
+        key.endsWith(com.nuvio.tv.core.scout.ScoutMixCatalogProvider.COLLECTION_ID) ||
+        key.endsWith(com.nuvio.tv.core.scout.ScoutCatalogProvider.TILES_COLLECTION_ID)
 
 internal fun CatalogRow.key(): String {
     return stableKey()
