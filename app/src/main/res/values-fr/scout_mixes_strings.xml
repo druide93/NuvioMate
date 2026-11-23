@@ -63,4 +63,7 @@
     <string name="scout_mixes_menu_open">Ouvrir le mix</string>
     <string name="scout_mixes_menu_remove">Retirer de mes mix</string>
     <string name="scout_mixes_menu_hide">Masquer jusqu\'à l\'an prochain</string>
+    <string name="scout_mixes_on_demand_only">Mix limités à l\'On Demand</string>
+    <string name="scout_mixes_on_demand_only_on">Seulement les séries et épisodes que vos fournisseurs IPTV ont en On Demand</string>
+    <string name="scout_mixes_on_demand_only_off">Toutes les séries : les épisodes peuvent aussi venir de vos autres sources (add-ons)</string>
 </resources>

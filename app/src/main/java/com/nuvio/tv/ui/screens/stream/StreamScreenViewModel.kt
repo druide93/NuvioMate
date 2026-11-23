@@ -109,6 +109,7 @@ class StreamScreenViewModel @Inject constructor(
     private val serverPlayback: ServerPlayback,
     party: com.nuvio.tv.core.party.PartyRepository,
     profileManager: com.nuvio.tv.core.profile.ProfileManager,
+    private val scoutMixSession: com.nuvio.tv.core.player.ScoutMixSession,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private var autoPlayHandledForSession = false
@@ -183,6 +184,10 @@ class StreamScreenViewModel @Inject constructor(
     }
         .distinctUntilChanged()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** Scout Mix: no source had this episode, so the Mix page should try another one. */
+    private val _mixHasNoSources = MutableStateFlow(false)
+    val mixHasNoSources: StateFlow<Boolean> = _mixHasNoSources.asStateFlow()
 
     private val _uiState = MutableStateFlow(
         StreamScreenUiState(
@@ -923,6 +928,9 @@ class StreamScreenViewModel @Inject constructor(
                     lastSuccessData?.let { applySuccess(it, isAllLoaded = true) }
                 }
                 markRemainingSourceChipsAsError()
+                if (_uiState.value.allStreams.isEmpty() && scoutMixSession.noSources(contentId, videoId)) {
+                    _mixHasNoSources.value = true
+                }
                 if (directAutoPlayFlowEnabledForSession && !resolvedAutoPlayTarget) {
                     directAutoPlayFlowEnabledForSession = false
                     // All addons finished with no instant stream to auto-play: drop the loader and

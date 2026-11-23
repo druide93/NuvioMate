@@ -36,7 +36,9 @@ class ScoutMixLibrary @Inject constructor(
     private val watchProgress: WatchProgressRepository,
     private val tmdbService: TmdbService,
     private val finder: ScoutPicksFinder,
-    private val addonRepository: AddonRepository
+    private val addonRepository: AddonRepository,
+    private val scoutStore: com.nuvio.tv.data.local.ScoutStore,
+    private val onDemand: com.nuvio.tv.livetv.ondemand.OnDemandRepository
 ) {
     private val words = ScoutMixNameWords(
         oneShow = { local().getString(R.string.scout_mixes_name_default, it) },
@@ -113,6 +115,31 @@ class ScoutMixLibrary @Inject constructor(
         return taken + others
     }
 
+    /**
+     * NuvioMate: with "Mixes from On Demand only" on, the show keeps only the episodes your IPTV
+     * providers have On Demand, and is left out (null) when they have none of it. With no On Demand
+     * at all, or the setting off, the show is kept as it is.
+     */
+    private suspend fun onDemandOnly(meta: com.nuvio.tv.domain.model.Meta): com.nuvio.tv.domain.model.Meta? {
+        val only = runCatching { scoutStore.current().settings.mixesOnDemandOnly }.getOrDefault(true)
+        if (!only) return meta
+        val tmdb = meta.id.takeIf { it.startsWith("tmdb:") }?.substringAfter(':')?.substringBefore(':')
+            ?: withTimeoutOrNull(ID_TIMEOUT_MS) { runCatching { tmdbService.ensureTmdbId(meta.id, "tv") }.getOrNull() }
+        val year = meta.releaseInfo?.take(4)?.toIntOrNull()
+        val have = runCatching { onDemand.seriesEpisodes(tmdb, meta.name, year) }.getOrNull() ?: return meta
+        if (have.isEmpty()) return null
+        // A provider that lists the show as one season (common for daily shows) is matched on the
+        // episode number alone, as the sources page does.
+        val oneSeason = have.map { it.first }.distinct().size == 1
+        val numbers = have.map { it.second }.toSet()
+        val kept = meta.videos.filter { video ->
+            val s = video.season ?: return@filter false
+            val e = video.episode ?: return@filter false
+            (s to e) in have || (oneSeason && s > 0 && e in numbers)
+        }
+        return if (kept.isEmpty()) null else meta.copy(videos = kept)
+    }
+
     private fun Addon.takesMetaId(id: String): Boolean {
         val prefixes = resources.firstOrNull { it.name == "meta" }?.idPrefixes?.takeIf { it.isNotEmpty() } ?: idPrefixes
         return prefixes.isEmpty() || prefixes.any { id.startsWith(it, ignoreCase = true) }
@@ -135,11 +162,12 @@ class ScoutMixLibrary @Inject constructor(
 
     suspend fun episodes(profileId: Int, show: ScoutMixShow): ScoutMixEpisodes? = withTimeoutOrNull(LOOKUP_TIMEOUT_MS) {
         // NuvioMate: asked with the id the meta add-ons take, the others as fallbacks (see lookupIds).
-        val meta = lookupIds(show).firstNotNullOfOrNull { id ->
+        val found = lookupIds(show).firstNotNullOfOrNull { id ->
             val result = metaRepository.getMetaFromAllAddons(show.type, id)
                 .first { it !is NetworkResult.Loading }
             (result as? NetworkResult.Success)?.data?.takeIf { it.videos.isNotEmpty() }
         } ?: return@withTimeoutOrNull null
+        val meta = onDemandOnly(found) ?: return@withTimeoutOrNull null
         val state = shufflePlayback.observe(profileId, meta.id, meta.apiType).first()
         val elsewhere = meta.videos.filter { video ->
             video.episode?.let { watchProgress.isWatchedByVideoId(video.id, it) } == true

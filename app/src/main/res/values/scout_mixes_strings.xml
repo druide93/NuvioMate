@@ -60,4 +60,7 @@
     <string name="scout_mixes_menu_open">Open mix</string>
     <string name="scout_mixes_menu_remove">Remove from my mixes</string>
     <string name="scout_mixes_menu_hide">Hide until next year</string>
+    <string name="scout_mixes_on_demand_only">Mixes from On Demand only</string>
+    <string name="scout_mixes_on_demand_only_on">Only shows and episodes your IPTV providers have On Demand</string>
+    <string name="scout_mixes_on_demand_only_off">Any show: episodes your other sources (add-ons) may play too</string>
 </resources>

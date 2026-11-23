@@ -31,6 +31,8 @@ class ScoutNavigation(private val session: ScoutMixSession, private val engine: 
     fun backPressed(contentId: String?, watched: Boolean): Boolean =
         session.returnFromPlayer(contentId, if (watched) ScoutMixReturn.WATCHED else ScoutMixReturn.LEFT)
 
+    fun streamBack(contentId: String?): Boolean = session.leaveSources(contentId)
+
     fun surprisePick(): com.nuvio.tv.domain.model.ScoutPick? = engine.pool.value?.picked?.take(60)?.randomOrNull()
 
     companion object {

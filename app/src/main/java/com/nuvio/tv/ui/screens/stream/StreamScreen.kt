@@ -133,6 +133,9 @@ fun StreamScreen(
     onAutoPlayResolved: (StreamPlaybackInfo) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // Scout Mix: nothing to play for this pick, back to the Mix page, which tries another episode.
+    val mixHasNoSources by viewModel.mixHasNoSources.collectAsStateWithLifecycle()
+    LaunchedEffect(mixHasNoSources) { if (mixHasNoSources) onBackPress() }
     val watchProgress by viewModel.watchProgress.collectAsStateWithLifecycle()
     val resumeProgress = streamResumeProgress(watchProgress, startFromBeginning)
     val resumePositionMs = resumeProgress?.position?.takeIf { it > 0L }

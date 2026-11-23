@@ -775,7 +775,7 @@ private fun PlaybackNavHost(
                     val season = streamArgs?.getString("season")?.toIntOrNull()
                     val episode = streamArgs?.getString("episode")?.toIntOrNull()
                     // Scout Mix: back to the Mix page, not the show's page.
-                    if (scoutMixNav.backPressed(streamContentId, watched = false) &&
+                    if (scoutMixNav.streamBack(streamContentId) &&
                         navController.popBackStack(Screen.ScoutMix.route, inclusive = false)
                     ) {
                         // Back on the Mix page.

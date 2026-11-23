@@ -50,6 +50,7 @@ class ScoutStore @Inject constructor(
     private val gemsRow = booleanPreferencesKey("gems_row")
     private val tilesRow = booleanPreferencesKey("tiles_row_chosen")
     private val mixesRow = booleanPreferencesKey("mixes_row")
+    private val mixesOnDemandOnly = booleanPreferencesKey("mixes_on_demand_only")
     private val leaveOutGenres = stringSetPreferencesKey("leave_out_genres")
     private val leaveOutLanguages = stringSetPreferencesKey("leave_out_languages")
     private val asked = stringSetPreferencesKey("asked")
@@ -220,6 +221,7 @@ class ScoutStore @Inject constructor(
             it[gemsRow] = next.gemsRow
             it[tilesRow] = next.tilesRow
             it[mixesRow] = next.mixesRow
+            it[mixesOnDemandOnly] = next.mixesOnDemandOnly
             it[leaveOutGenres] = next.leaveOutGenres.map(Int::toString).toSet()
             it[leaveOutLanguages] = next.leaveOutLanguages
             it[savedSlices] = next.savedSlices.joinToString(",")
@@ -243,6 +245,7 @@ class ScoutStore @Inject constructor(
         gemsRow = p[gemsRow] ?: true,
         tilesRow = p[tilesRow] ?: false,
         mixesRow = p[mixesRow] ?: true,
+        mixesOnDemandOnly = p[mixesOnDemandOnly] ?: true,
         leaveOutGenres = p[leaveOutGenres].orEmpty().mapNotNull(String::toIntOrNull).toSet(),
         leaveOutLanguages = p[leaveOutLanguages].orEmpty(),
         savedSlices = p[savedSlices].orEmpty().split(",").filter(String::isNotBlank),

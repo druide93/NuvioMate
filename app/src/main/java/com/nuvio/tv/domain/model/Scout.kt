@@ -46,6 +46,8 @@ data class ScoutSettings(
     val gemsRow: Boolean = true,
     val tilesRow: Boolean = false,
     val mixesRow: Boolean = true,
+    /** NuvioMate: Mixes only take shows (and episodes) your IPTV providers have On Demand. */
+    val mixesOnDemandOnly: Boolean = true,
     val leaveOutGenres: Set<Int> = emptySet(),
     val leaveOutLanguages: Set<String> = emptySet(),
     val savedSlices: List<String> = emptyList(),

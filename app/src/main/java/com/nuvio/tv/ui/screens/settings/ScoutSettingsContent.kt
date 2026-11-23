@@ -179,6 +179,14 @@ internal fun ScoutSettingsContent(
                 checked = settings.mixesRow,
                 onToggle = { viewModel.updateSettings { it.copy(mixesRow = !it.mixesRow) } }
             )
+            SettingsToggleRow(
+                title = stringResource(R.string.scout_mixes_on_demand_only),
+                subtitle = stringResource(
+                    if (settings.mixesOnDemandOnly) R.string.scout_mixes_on_demand_only_on else R.string.scout_mixes_on_demand_only_off
+                ),
+                checked = settings.mixesOnDemandOnly,
+                onToggle = { viewModel.updateSettings { it.copy(mixesOnDemandOnly = !it.mixesOnDemandOnly) } }
+            )
         }
         SettingsGroupCard(title = stringResource(R.string.scout_settings_tune)) {
             SettingsActionRow(

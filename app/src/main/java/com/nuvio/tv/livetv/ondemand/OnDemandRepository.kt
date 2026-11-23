@@ -970,6 +970,29 @@ class OnDemandRepository @Inject constructor(
             else -> return@withContext emptyList()
         }
         if (!contentReady()) return@withContext emptyList()
+        val allowed = allowedItems(kind, tmdbId, title, year)
+        // Best copies first: by the quality in the name here (so a 4K copy isn't cut by the limit),
+        // then by what the provider reports about each file below.
+        val picked = allowed.sortedByDescending { qualityRank(qualityOf(it.name).orEmpty()) }.take(6)
+        // All copies are asked about at the same time (they used to go one after another, so six
+        // slow answers added up to minutes). A Stalker portal's copies still go one at a time:
+        // a portal works through one session, and parallel requests can upset it.
+        val playlists = picked.map { it.playlistId }.distinct().associateWith { playlist(it) }
+        val out: List<OnDemandSource> = kotlinx.coroutines.coroutineScope {
+            picked.groupBy { it.playlistId }.map { (plId, items) ->
+                async {
+                    val pl = playlists[plId] ?: return@async emptyList<OnDemandSource>()
+                    if (pl.isStalker) items.mapNotNull { sourceOf(it, pl, kind, season, episode) }
+                    else items.map { item -> async { sourceOf(item, pl, kind, season, episode) } }.awaitAll().filterNotNull()
+                }
+            }.awaitAll().flatten()
+        }
+        // Highest quality first (4K, 1080p, 720p, SD); copies with no hint keep their order, last.
+        out.sortedByDescending { sourceRank(it) }
+    }
+
+    /** Your provider's copies of a title, by TMDB id or name, leaving out hidden or locked categories. */
+    private suspend fun allowedItems(kind: VodKind, tmdbId: String?, title: String, year: Int?): List<VodItem> {
         val candidates = LinkedHashMap<String, VodItem>()
         tmdbId?.let { id -> runCatching { db.byTmdb(kind, id) }.getOrDefault(emptyList()).forEach { candidates[it.uid] = it } }
         if (title.isNotBlank()) {
@@ -998,30 +1021,25 @@ class OnDemandRepository @Inject constructor(
         // Titles in categories you hid (or that are locked) never show up in Nuvio.
         val user = prefs.userState.first()
         val settings = prefs.settings.first()
-        val allowed = candidates.values.filter { item ->
+        return candidates.values.filter { item ->
             val uid = "${item.kind.key}:${item.playlistId}:${item.categoryId}"
             if (uid in user.vodHiddenCategories) return@filter false
             val name = runCatching { db.categoryName(item.playlistId, item.kind, item.categoryId) }.getOrNull().orEmpty()
             !com.nuvio.tv.livetv.parental.ParentalControls.isLocked("vod:$uid", name, settings, user.lockedGroups)
         }
-        // Best copies first: by the quality in the name here (so a 4K copy isn't cut by the limit),
-        // then by what the provider reports about each file below.
-        val picked = allowed.sortedByDescending { qualityRank(qualityOf(it.name).orEmpty()) }.take(6)
-        // All copies are asked about at the same time (they used to go one after another, so six
-        // slow answers added up to minutes). A Stalker portal's copies still go one at a time:
-        // a portal works through one session, and parallel requests can upset it.
-        val playlists = picked.map { it.playlistId }.distinct().associateWith { playlist(it) }
-        val out: List<OnDemandSource> = kotlinx.coroutines.coroutineScope {
-            picked.groupBy { it.playlistId }.map { (plId, items) ->
-                async {
-                    val pl = playlists[plId] ?: return@async emptyList<OnDemandSource>()
-                    if (pl.isStalker) items.mapNotNull { sourceOf(it, pl, kind, season, episode) }
-                    else items.map { item -> async { sourceOf(item, pl, kind, season, episode) } }.awaitAll().filterNotNull()
-                }
-            }.awaitAll().flatten()
-        }
-        // Highest quality first (4K, 1080p, 720p, SD); copies with no hint keep their order, last.
-        out.sortedByDescending { sourceRank(it) }
+    }
+
+    /**
+     * Scout Mixes: the (season, episode) pairs your providers have for a show, an empty set when they
+     * don't have it, or null when there is no On Demand at all (then nothing is held back).
+     */
+    suspend fun seriesEpisodes(tmdbId: String?, title: String, year: Int?): Set<Pair<Int, Int>>? = withContext(Dispatchers.IO) {
+        start()
+        if (!contentReady()) return@withContext null
+        val items = allowedItems(VodKind.SERIES, tmdbId, title, year).take(6)
+        items.flatMap { item -> runCatching { info(item)?.episodes }.getOrNull().orEmpty() }
+            .map { it.season to it.episode }
+            .toSet()
     }
 
     /** One provider copy for the stream list, or null when it doesn't have that movie or episode. */

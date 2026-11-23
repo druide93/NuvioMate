@@ -73,6 +73,13 @@ class ScoutMixSession @Inject constructor() {
         return true
     }
 
+    /** Back from the sources page: left, unless no source had the pick. False when no mix is playing this show. */
+    fun leaveSources(contentId: String?): Boolean {
+        if (contentId == null || playing?.contentId != contentId) return false
+        if (outcome != ScoutMixReturn.NO_SOURCES) outcome = ScoutMixReturn.LEFT
+        return true
+    }
+
     /** Tells the mix page how the player closed. False when no mix is playing this show. */
     fun returnFromPlayer(contentId: String?, outcome: ScoutMixReturn): Boolean {
         if (contentId == null || playing?.contentId != contentId) return false
