@@ -181,6 +181,7 @@ private fun settingsSectionSpec(category: SettingsCategory): SettingsSectionSpec
     SettingsCategory.SPORTS -> SettingsSectionSpec(category, "Sports", Icons.Default.EmojiEvents, destination = SettingsSectionDestination.Inline)
     SettingsCategory.SIDE_MENU -> SettingsSectionSpec(category, "Menu & Features", Icons.Default.Menu, destination = SettingsSectionDestination.Inline)
     SettingsCategory.CALENDAR -> SettingsSectionSpec(category, "Calendar", Icons.Default.DateRange, destination = SettingsSectionDestination.Inline)
+    SettingsCategory.SCOUT -> SettingsSectionSpec(category, stringResource(R.string.scout_title), rawIconRes = R.raw.sidebar_scout, destination = SettingsSectionDestination.Inline)
     SettingsCategory.EXPERIENCE -> SettingsSectionSpec(category, stringResource(R.string.settings_experience), Icons.Default.Tune, destination = SettingsSectionDestination.Inline)
 }
 
@@ -196,6 +197,8 @@ fun SettingsScreen(
     onNavigateToSupportersContributors: () -> Unit = {},
     onNavigateToLicensesAttributions: () -> Unit = {},
     onNavigateToWatchParty: () -> Unit = {},
+    onNavigateToScoutTaste: () -> Unit = {},
+    onNavigateToScoutRoute: (String) -> Unit = {},
     profileViewModel: ProfileSettingsViewModel = hiltViewModel(),
     experienceModeViewModel: ExperienceModeSettingsViewModel = hiltViewModel(),
     partyViewModel: PartyViewModel = hiltViewModel()
@@ -257,6 +260,7 @@ fun SettingsScreen(
             SettingsCategory.VPN to FocusRequester(),
             SettingsCategory.SIDE_MENU to FocusRequester(),
             SettingsCategory.CALENDAR to FocusRequester(),
+            SettingsCategory.SCOUT to FocusRequester(),
             SettingsCategory.PLAYBACK to FocusRequester(),
             SettingsCategory.ADVANCED to FocusRequester(),
             SettingsCategory.ABOUT to FocusRequester(),
@@ -686,6 +690,8 @@ fun SettingsScreen(
                                 onNavigateToSupportersContributors = onNavigateToSupportersContributors,
                                 onNavigateToLicensesAttributions = onNavigateToLicensesAttributions,
                                 onNavigateToWatchParty = onNavigateToWatchParty,
+                                onNavigateToScoutTaste = onNavigateToScoutTaste,
+                                onNavigateToScoutRoute = onNavigateToScoutRoute,
                                 onNavigateToSportsTeams = onNavigateToSportsTeams
                             )
                         }
@@ -847,6 +853,8 @@ fun SettingsScreen(
                         onNavigateToSupportersContributors = onNavigateToSupportersContributors,
                         onNavigateToLicensesAttributions = onNavigateToLicensesAttributions,
                         onNavigateToWatchParty = onNavigateToWatchParty,
+                        onNavigateToScoutTaste = onNavigateToScoutTaste,
+                        onNavigateToScoutRoute = onNavigateToScoutRoute,
                         onNavigateToSportsTeams = onNavigateToSportsTeams
                     )
                 }
@@ -878,6 +886,8 @@ private fun SettingsDetailPane(
     onNavigateToSupportersContributors: () -> Unit,
     onNavigateToLicensesAttributions: () -> Unit,
     onNavigateToWatchParty: () -> Unit,
+    onNavigateToScoutTaste: () -> Unit = {},
+    onNavigateToScoutRoute: (String) -> Unit = {},
     onNavigateToSportsTeams: () -> Unit = {}
 ) {
     when (selectedCategory) {
@@ -1043,6 +1053,15 @@ private fun SettingsDetailPane(
             } else {
                 null
             }
+        )
+        SettingsCategory.SCOUT -> ScoutSettingsContent(
+            initialFocusRequester = if (allowDetailAutofocus) {
+                contentFocusRequesters[SettingsCategory.SCOUT]
+            } else {
+                null
+            },
+            onOpenTaste = onNavigateToScoutTaste,
+            onOpenRoute = onNavigateToScoutRoute
         )
         SettingsCategory.SPORTS -> SportsSettingsContent(
             onOpenTeams = onNavigateToSportsTeams,

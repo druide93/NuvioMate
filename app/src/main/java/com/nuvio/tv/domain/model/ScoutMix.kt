@@ -6,7 +6,8 @@ import kotlin.random.Random
 
 /** Shuffling across several shows follows the TV Mix idea from Nuvio-ReSeq (GPL-3.0). */
 object ScoutMixes {
-    val available: Boolean get() = BuildConfig.SCOUT_ENABLED
+    // NuvioMate: off until the Mix screens and player hook are ported.
+    val available: Boolean get() = false
     const val NAME_LIMIT = 60
     const val READY_PREFIX = "ready_"
 

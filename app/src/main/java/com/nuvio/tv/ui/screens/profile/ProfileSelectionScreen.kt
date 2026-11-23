@@ -184,7 +184,7 @@ enum class ProfileSelectionMode {
     Management
 }
 
-private sealed interface ProfilePinOverlayState {
+internal sealed interface ProfilePinOverlayState {
     val profile: UserProfile
 
     data class Unlock(override val profile: UserProfile) : ProfilePinOverlayState
@@ -2150,7 +2150,7 @@ internal fun EditProfileOverlay(
 }
 
 @Composable
-private fun ProfilePinOverlay(
+internal fun ProfilePinOverlay(
     state: ProfilePinOverlayState,
     isWorking: Boolean,
     errorMessage: String?,

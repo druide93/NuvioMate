@@ -467,6 +467,8 @@ fun HomeScreen(
             showManageLists = uiState.librarySourceMode != LibrarySourceMode.LOCAL,
             isWatched = movieWatchedStatus[statusKey] == true,
             isWatchedPending = statusKey in uiState.movieWatchedPending,
+            scoutTitle = com.nuvio.tv.domain.model.ScoutTitle(item.id, item.apiType, item.name, item.poster),
+            scoutAddonBaseUrl = selectedPoster.addonBaseUrl,
             onDismiss = { posterOptionsTarget = null },
             onDetails = {
                 onNavigateToDetail(item.id, item.apiType, selectedPoster.addonBaseUrl)
@@ -736,7 +738,9 @@ private fun HomePosterOptionsDialog(
     onDismiss: () -> Unit,
     onDetails: () -> Unit,
     onToggleLibrary: () -> Unit,
-    onToggleWatched: () -> Unit
+    onToggleWatched: () -> Unit,
+    scoutTitle: com.nuvio.tv.domain.model.ScoutTitle? = null,
+    scoutAddonBaseUrl: String? = null
 ) {
     val primaryFocusRequester = remember { FocusRequester() }
 
@@ -801,6 +805,8 @@ private fun HomePosterOptionsDialog(
                 }
             )
         }
+
+        scoutTitle?.let { com.nuvio.tv.ui.scout.ScoutPosterRateLine(it, addonBaseUrl = scoutAddonBaseUrl, onDone = onDismiss) }
     }
 }
 

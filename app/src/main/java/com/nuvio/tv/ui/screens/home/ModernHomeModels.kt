@@ -491,6 +491,8 @@ internal fun buildCatalogItem(
         isSeries = isSeriesType(item.apiType),
         yearText = extractYearText(item.type, item.releaseInfo, item.released, showFullReleaseDate),
         runtimeText = formatHeroRuntime(item.runtime),
+        // Scout: why this title was picked ("Because you love slow sci-fi").
+        secondaryHighlightText = item.scoutReason,
         imdbText = item.imdbRating
             ?.let { String.format("%.1f", it) },
         ageRatingText = item.ageRating,

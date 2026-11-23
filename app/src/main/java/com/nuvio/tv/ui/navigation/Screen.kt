@@ -233,4 +233,11 @@ sealed class Screen(val route: String) {
             return "tmdb_entity_browse/${encode(entityKind)}/$entityId/${encode(entityName)}?sourceType=${encode(sourceType)}"
         }
     }
+
+    // Scout (from Nuvio Arc)
+    data object Scout : Screen("scout")
+    data object ScoutTaste : Screen("scout_taste")
+    data object ScoutPicker : Screen("scout_picker")
+    data object ScoutQuickStart : Screen("scout_quick_start")
+    data object ScoutWords : Screen("scout_words")
 }

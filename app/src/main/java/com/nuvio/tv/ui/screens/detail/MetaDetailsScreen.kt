@@ -847,6 +847,7 @@ fun MetaDetailsScreen(
                     },
                     heroBackdropUrl = heroBackdropUrl,
                     meta = meta,
+                    openedWithId = viewModel.navigationItemId,
                     detailReturnEpisodeFocusRequest = DetailReturnEpisodeFocusRequest(
                         season = returnFocusSeason,
                         episode = returnFocusEpisode
@@ -1193,6 +1194,7 @@ private fun MetaDetailsContent(
     modifier: Modifier = Modifier,
     heroBackdropUrl: String? = null,
     meta: Meta,
+    openedWithId: String? = null,
     detailReturnEpisodeFocusRequest: DetailReturnEpisodeFocusRequest? = null,
     onDetailReturnEpisodeFocusConsumed: () -> Unit,
     lastFocusedEpisodeIdBySeason: MutableMap<Int, String>,
@@ -2533,7 +2535,11 @@ private fun MetaDetailsContent(
                             clearPendingRestore()
                         },
                         onShowFullDescription = { showSynopsisOverlay = true },
-                        onTruncationChanged = { synopsisTruncated = it }
+                        onTruncationChanged = { synopsisTruncated = it },
+                        scoutTitle = if (com.nuvio.tv.domain.model.ScoutFeature.available) {
+                            com.nuvio.tv.domain.model.ScoutTitle(meta.id, meta.apiType, meta.name, meta.poster)
+                        } else null,
+                        scoutAliasId = openedWithId
                     )
                 }
             }

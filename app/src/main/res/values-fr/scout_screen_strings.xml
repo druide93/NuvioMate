@@ -145,8 +145,8 @@
     <string name="scout_pick_more_like">Plus comme ça</string>
     <string name="scout_taste_headline_two">Surtout %1$s et %2$s</string>
     <string name="scout_taste_headline_one">Surtout %1$s</string>
-    <string name="scout_taste_headline_decades">, des années %1$s et %2$s</string>
-    <string name="scout_taste_headline_decade">, des années %1$s</string>
+    <string name="scout_taste_headline_decades">, %1$s et %2$s</string>
+    <string name="scout_taste_headline_decade">, %1$s</string>
     <string name="scout_taste_lately_both">Dernièrement : plus de %1$s, plus de titres de %2$s</string>
     <string name="scout_taste_lately_genre">Dernièrement : plus de %1$s</string>
     <string name="scout_taste_lately_country">Dernièrement : plus de titres de %1$s</string>

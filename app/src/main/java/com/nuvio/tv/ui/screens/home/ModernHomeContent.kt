@@ -742,6 +742,7 @@ fun ModernHomeContent(
                                 ?: activeCarouselItem?.heroPreview?.yearText,
                             runtimeText = formatHeroRuntime(enrichedItem.runtime)
                                 ?: activeCarouselItem?.heroPreview?.runtimeText,
+                            secondaryHighlightText = activeCarouselItem?.metaPreview?.scoutReason ?: enrichedItem.scoutReason,
                             imdbText = enrichedItem.imdbRating
                                 ?.let { String.format(java.util.Locale.US, "%.1f", it) },
                             ageRatingText = enrichedItem.ageRating,

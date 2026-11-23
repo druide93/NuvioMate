@@ -168,6 +168,20 @@ class PosterOptionsController @Inject constructor(
         }
     }
 
+    /** For a page with its own library button (Scout). */
+    suspend fun isInLibrary(item: MetaPreview): Boolean {
+        val saved = canonicalize(item)
+        return runCatching { libraryRepository.isInLibrary(saved.id, saved.apiType).first() }.getOrDefault(false)
+    }
+
+    /** For a page with its own library button (Scout). Returns whether the title is in the library afterwards. */
+    suspend fun toggleLibraryOf(item: MetaPreview): Boolean {
+        val saved = canonicalize(item)
+        runCatching { libraryRepository.toggleDefault(saved.toLibraryEntryInput(null)) }
+            .onFailure { Log.w(TAG, "Failed to toggle library for ${saved.id}: ${it.message}") }
+        return runCatching { libraryRepository.isInLibrary(saved.id, saved.apiType).first() }.getOrDefault(false)
+    }
+
     private suspend fun canonicalize(item: MetaPreview): MetaPreview {
         if (item.id.startsWith("tt", ignoreCase = false)) return item
         val tmdbNumber = parseContentIds(item.id).tmdb ?: item.id.toIntOrNull() ?: return item

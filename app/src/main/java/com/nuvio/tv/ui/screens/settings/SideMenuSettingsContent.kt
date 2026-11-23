@@ -103,6 +103,7 @@ fun SideMenuSettingsContent(initialFocusRequester: FocusRequester? = null) {
         }
         SideMenuPages.SEARCH -> PageRow("Search", "Search movies, shows, channels and On Demand", id !in hidden) { setHidden(id, id !in hidden) }
         SideMenuPages.LIBRARY -> PageRow("Library", "Your saved movies and shows", id !in hidden) { setHidden(id, id !in hidden) }
+        SideMenuPages.SCOUT -> PageRow("Scout", "Picks made from what you watch, moods and Your taste", id !in hidden) { setHidden(id, id !in hidden) }
         SideMenuPages.DISCOVER -> PageRow(
             "Discover", "Browse by genre, network and more", discover != DiscoverLocation.OFF,
             value = when (discover) { DiscoverLocation.IN_SIDEBAR -> "In the menu"; DiscoverLocation.IN_SEARCH -> "Inside Search"; DiscoverLocation.OFF -> "Off" }

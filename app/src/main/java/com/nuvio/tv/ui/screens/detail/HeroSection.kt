@@ -132,7 +132,10 @@ fun HeroContentSection(
     onHeroActionFocused: () -> Unit = {},
     onPlayFocusRestored: () -> Unit = {},
     onShowFullDescription: () -> Unit = {},
-    onTruncationChanged: (Boolean) -> Unit = {}
+    onTruncationChanged: (Boolean) -> Unit = {},
+    /** Scout: the title to rate, or null to leave the Rate button out. */
+    scoutTitle: com.nuvio.tv.domain.model.ScoutTitle? = null,
+    scoutAliasId: String? = null
 ) {
     val context = LocalContext.current
     val isSeriesApi = remember(meta.apiType) {
@@ -342,6 +345,10 @@ fun HeroContentSection(
                                 focusRequester = randomEpisodeFocusRequester,
                                 onFocused = onHeroActionFocused
                             )
+                        }
+
+                        if (scoutTitle != null) {
+                            HeroScoutRate(scoutTitle, scoutAliasId, onHeroActionFocused)
                         }
                     }
 

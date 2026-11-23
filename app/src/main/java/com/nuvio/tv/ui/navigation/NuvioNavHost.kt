@@ -1749,7 +1749,34 @@ private fun PlaybackNavHost(
                 onNavigateToLicensesAttributions = {
                     navController.navigate(Screen.LicensesAttributions.route)
                 },
-                onNavigateToWatchParty = { navController.navigate(Screen.WatchParty.createRoute()) }
+                onNavigateToWatchParty = { navController.navigate(Screen.WatchParty.createRoute()) },
+                onNavigateToScoutTaste = { navController.navigate(Screen.ScoutTaste.route) },
+                onNavigateToScoutRoute = { route -> navController.navigate(route) }
+            )
+        }
+
+        // Scout (from Nuvio Arc). Ask with your own AI key is not ported, so it is never offered.
+        composable(Screen.ScoutQuickStart.route) {
+            com.nuvio.tv.ui.screens.scout.ScoutQuickStartScreen(onDone = { navController.popBackStack() })
+        }
+
+        rootComposable(Screen.Scout.route) {
+            com.nuvio.tv.ui.screens.scout.ScoutQuickStartGate(onOffer = { navController.navigate(Screen.ScoutQuickStart.route) })
+            ScoutPageRoute(navController, startOnTaste = false)
+        }
+
+        composable(Screen.ScoutTaste.route) {
+            ScoutPageRoute(navController, startOnTaste = true)
+        }
+
+        composable(Screen.ScoutPicker.route) {
+            com.nuvio.tv.ui.screens.scout.ScoutPickerScreen(
+                onOpenSlice = { sliceId ->
+                    navController.navigate(
+                        Screen.FolderDetail.createRoute(com.nuvio.tv.core.scout.ScoutCatalogProvider.TILES_COLLECTION_ID, sliceId)
+                    )
+                },
+                onBack = { navController.popBackStack() }
             )
         }
 
@@ -2008,4 +2035,21 @@ private fun PlaybackNavHost(
             )
         }
     }
+}
+
+@Composable
+private fun ScoutPageRoute(navController: androidx.navigation.NavHostController, startOnTaste: Boolean) {
+    com.nuvio.tv.ui.screens.scout.ScoutScreen(
+        onOpenTitle = { id, type -> navController.navigate(Screen.Detail.createRoute(id, type, null)) },
+        onPlayTitle = { id, type, backdrop, _ ->
+            navController.navigate(Screen.Detail.createRoute(id, type, null, heroBackdropUrl = backdrop, playOnLoad = true))
+        },
+        onOpenPicker = { navController.navigate(Screen.ScoutPicker.route) },
+        onOpenPerson = { id, name, crew -> navController.navigate(Screen.CastDetail.createRoute(id, name, crew)) },
+        onOpenSlice = { sliceId ->
+            navController.navigate(Screen.FolderDetail.createRoute(com.nuvio.tv.core.scout.ScoutCatalogProvider.TILES_COLLECTION_ID, sliceId))
+        },
+        onAsk = null,
+        startOnTaste = startOnTaste
+    )
 }

@@ -18,6 +18,7 @@ internal enum class SettingsCategory(val group: SettingsRailGroup) {
     SIDE_MENU(SettingsRailGroup.LOOK), // Live TV fork
     CONTENT_DISCOVERY(SettingsRailGroup.WATCH),
     PLAYBACK(SettingsRailGroup.WATCH),
+    SCOUT(SettingsRailGroup.WATCH), // Scout, from Nuvio Arc
     LIVE_TV(SettingsRailGroup.EXTRAS), // Live TV fork
     ON_DEMAND(SettingsRailGroup.EXTRAS), // Live TV fork
     SPORTS(SettingsRailGroup.EXTRAS), // Live TV fork
@@ -43,6 +44,7 @@ internal fun visibleSettingsCategories(
         SettingsCategory.WATCH_PARTY -> isWatchPartyAvailable
         SettingsCategory.DEBUG -> isDebugBuild && !isEssentialMode
         SettingsCategory.EXPERIENCE -> false
+        SettingsCategory.SCOUT -> com.nuvio.tv.domain.model.ScoutFeature.available
         else -> true
     }
 }

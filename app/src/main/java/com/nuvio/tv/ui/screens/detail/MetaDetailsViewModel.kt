@@ -122,6 +122,8 @@ class MetaDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val itemId: String = savedStateHandle["itemId"] ?: ""
+    /** The id the page was opened with; Scout may have saved a rating under it. */
+    val navigationItemId: String get() = itemId
     private val isServerItem = ServerItemRef.isServerId(itemId)
     private val itemType: String = savedStateHandle["itemType"] ?: ""
     private val preferredAddonBaseUrl: String? = savedStateHandle.get<String>("addonBaseUrl")
@@ -177,6 +179,8 @@ class MetaDetailsViewModel @Inject constructor(
     private val _optimisticUnmarks = mutableSetOf<Pair<Int, Int>>()
 
     init {
+        // Scout rests titles you have just opened, so the same picks don't keep coming back.
+        if (com.nuvio.tv.domain.model.ScoutFeature.available) com.nuvio.tv.core.scout.ScoutOpenedLog.mark(context, itemId, itemType)
         posterOptions.bind(viewModelScope)
         observeMetaViewSettings()
         observeTrailerAutoplaySettings()

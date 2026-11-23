@@ -62,7 +62,12 @@ fun PosterOptionsDialog(
     onToggleWatched: () -> Unit,
     /** Live TV fork: the Calendar's bell for a show ("Ring the bell…"), when offered. */
     bellLabel: String? = null,
-    onBell: () -> Unit = {}
+    onBell: () -> Unit = {},
+    /** Scout: rate the title from here (Love it, Like it, Not for me). */
+    scoutTitle: com.nuvio.tv.domain.model.ScoutTitle? = null,
+    scoutAddonBaseUrl: String? = null,
+    scoutAliasId: String? = null,
+    onMoreLike: (() -> Unit)? = null
 ) {
     val primaryFocusRequester = remember { FocusRequester() }
 
@@ -139,6 +144,23 @@ fun PosterOptionsDialog(
                     stringResource(R.string.hero_mark_watched)
                 }
             )
+        }
+
+        if (onMoreLike != null) {
+            Button(
+                onClick = onMoreLike,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.colors(
+                    containerColor = NuvioTheme.colors.BackgroundCard,
+                    contentColor = NuvioTheme.colors.TextPrimary
+                )
+            ) {
+                Text(stringResource(R.string.scout_pick_more_like))
+            }
+        }
+
+        scoutTitle?.let {
+            com.nuvio.tv.ui.scout.ScoutPosterRateLine(it, addonBaseUrl = scoutAddonBaseUrl, aliasId = scoutAliasId, onDone = onDismiss)
         }
     }
 }
@@ -244,7 +266,9 @@ fun PosterOptionsHost(
     controller: PosterOptionsController,
     onNavigateToDetail: (id: String, type: String, addonBaseUrl: String) -> Unit,
     /** Live TV fork: offer the Calendar's bell for shows (Search). */
-    calendarBell: Boolean = false
+    calendarBell: Boolean = false,
+    /** Scout: "More like this" for a pick. */
+    onMoreLike: ((com.nuvio.tv.domain.model.MetaPreview) -> Unit)? = null
 ) {
     val target = state.target
     if (target != null) {
@@ -259,6 +283,10 @@ fun PosterOptionsHost(
             showManageLists = state.librarySourceMode != LibrarySourceMode.LOCAL,
             isWatched = state.isWatched,
             isWatchedPending = state.isWatchedPending,
+            scoutTitle = com.nuvio.tv.domain.model.ScoutTitle(target.id, target.apiType, target.name, target.poster),
+            scoutAddonBaseUrl = state.addonBaseUrl.takeIf { it.isNotBlank() },
+            scoutAliasId = state.originalItemId,
+            onMoreLike = onMoreLike?.let { more -> { more(target); controller.dismiss() } },
             onDismiss = { controller.dismiss() },
             onDetails = {
                 onNavigateToDetail(target.id, target.apiType, state.addonBaseUrl)
