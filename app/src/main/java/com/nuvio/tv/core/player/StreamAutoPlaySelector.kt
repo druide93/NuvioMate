@@ -110,7 +110,9 @@ object StreamAutoPlaySelector {
         selectedPlugins: Set<String>,
         preferredBingeGroup: String? = null,
         preferBingeGroupInSelection: Boolean = false,
-        bingeGroupOnly: Boolean = false
+        bingeGroupOnly: Boolean = false,
+        /** A Scout Mix episode with Pick sources for me on may start a provider copy too. */
+        allowOnDemand: Boolean = false
     ): Stream? {
         if (streams.isEmpty()) return null
 
@@ -128,7 +130,8 @@ object StreamAutoPlaySelector {
             // Live TV fork: provider copies (📡 On Demand) aren't picked automatically, except to
             // carry on a show you're already watching from your provider (same binge group), or
             // when set to be allowed in Live TV settings (with On Demand as the first tab).
-            it.addonName == com.nuvio.tv.livetv.ondemand.OnDemandStreams.GROUP_NAME &&
+            !allowOnDemand &&
+                it.addonName == com.nuvio.tv.livetv.ondemand.OnDemandStreams.GROUP_NAME &&
                 !com.nuvio.tv.livetv.ondemand.OnDemandStreams.autoPlayAllowed &&
                 preferredBingeGroup?.trim() != com.nuvio.tv.livetv.ondemand.OnDemandStreams.BINGE_GROUP
         }

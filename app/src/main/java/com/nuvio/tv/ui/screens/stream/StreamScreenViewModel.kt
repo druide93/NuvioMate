@@ -668,7 +668,8 @@ class StreamScreenViewModel @Inject constructor(
                         selectedAddons = playerSettings.streamAutoPlaySelectedAddons,
                         selectedPlugins = playerSettings.streamAutoPlaySelectedPlugins,
                         preferredBingeGroup = persistedBingeGroup,
-                        preferBingeGroupInSelection = persistedBingeGroup != null
+                        preferBingeGroupInSelection = persistedBingeGroup != null,
+                        allowOnDemand = pickForMe
                     )
                 }
                 if (selectedAutoPlayStream != null) {
