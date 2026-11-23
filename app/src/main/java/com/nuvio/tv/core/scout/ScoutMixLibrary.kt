@@ -68,11 +68,17 @@ class ScoutMixLibrary @Inject constructor(
         )
     }
 
-    private suspend fun addonFriendlyId(item: MetaPreview): String {
-        if (!item.id.startsWith("tmdb:")) return item.id
-        if (!item.imdbId.isNullOrBlank()) return item.imdbId
-        val number = item.id.substringAfter(':').substringBefore(':').toIntOrNull() ?: return item.id
-        return withTimeoutOrNull(ID_TIMEOUT_MS) { tmdbService.tmdbToImdb(number, "tv") }?.takeIf(String::isNotBlank) ?: item.id
+    /** NuvioMate: a TMDB id is what the sources understand, so it is kept (Arc turned it into an IMDb id). */
+    private fun addonFriendlyId(item: MetaPreview): String = item.id
+
+    /** "tmdb:N" for a show saved under its IMDb id (Arc's ready-made mixes are), or null. */
+    private suspend fun tmdbLookupId(show: ScoutMixShow): String? {
+        if (show.id.startsWith("tmdb:")) return show.id
+        val imdb = show.imdbId ?: show.id.takeIf { it.startsWith("tt") } ?: return null
+        val number = withTimeoutOrNull(ID_TIMEOUT_MS) {
+            runCatching { tmdbService.ensureTmdbId(imdb, "tv") }.getOrNull()
+        }?.toIntOrNull() ?: return null
+        return "tmdb:$number"
     }
 
     /** The same artwork source as the show's own page, where an add-on's logo can be a dark one. */
@@ -91,9 +97,14 @@ class ScoutMixLibrary @Inject constructor(
     }
 
     suspend fun episodes(profileId: Int, show: ScoutMixShow): ScoutMixEpisodes? = withTimeoutOrNull(LOOKUP_TIMEOUT_MS) {
-        val result = metaRepository.getMetaFromAllAddons(show.type, show.id)
-            .first { it !is NetworkResult.Loading }
-        val meta = (result as? NetworkResult.Success)?.data ?: return@withTimeoutOrNull null
+        // NuvioMate: episodes are looked up by TMDB id first, like a show's own page, so their ids
+        // (tmdb:N:season:episode) are the ones the sources understand. The saved id is the fallback.
+        val tmdbId = tmdbLookupId(show)
+        val meta = listOfNotNull(tmdbId, show.id).distinct().firstNotNullOfOrNull { id ->
+            val result = metaRepository.getMetaFromAllAddons(show.type, id)
+                .first { it !is NetworkResult.Loading }
+            (result as? NetworkResult.Success)?.data?.takeIf { it.videos.isNotEmpty() }
+        } ?: return@withTimeoutOrNull null
         val state = shufflePlayback.observe(profileId, meta.id, meta.apiType).first()
         val elsewhere = meta.videos.filter { video ->
             video.episode?.let { watchProgress.isWatchedByVideoId(video.id, it) } == true
