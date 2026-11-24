@@ -146,8 +146,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1080
-        versionName = "1.2.0-beta.3"
+        versionCode = 1083
+        versionName = "1.2.0-beta.4"
 
         buildConfigField("String", "PARENTAL_GUIDE_API_URL", "\"${localProperties.getProperty("PARENTAL_GUIDE_API_URL", "")}\"")
         buildConfigField("String", "INTRODB_API_URL", "\"${localProperties.getProperty("INTRODB_API_URL", "")}\"")
@@ -365,12 +365,15 @@ android {
     sourceSets {
         getByName("main") {
             jniLibs.srcDirs("src/main/jniLibs")
+            jniLibs.srcDir(layout.buildDirectory.dir("generated/usenet/jniLibs"))
+            assets.srcDir(rootProject.file("native/usenet/licenses"))
         }
     }
 
     packaging {
         jniLibs {
             useLegacyPackaging = true
+            keepDebugSymbols += "**/libnuvio_usenet.so"
             // Audio Sync uses the JNI API; these unused native APIs duplicate runtime code.
             excludes += listOf("lib/*/libsherpa-onnx-c-api.so", "lib/*/libsherpa-onnx-cxx-api.so")
             // Keep one consistent native set across dependencies.
@@ -506,6 +509,12 @@ configurations.all {
     exclude(group = "androidx.media3", module = "media3-extractor")
 }
 
+// Host tests need Robolectric's OpenJDK Conscrypt provider. The full app's Android
+// provider has the same class names but requires an Android-only JNI library.
+configurations.matching { it.name.contains("UnitTest") }.configureEach {
+    exclude(group = "org.conscrypt", module = "conscrypt-android")
+}
+
 baselineProfile {
     automaticGenerationDuringBuild = false
     saveInSrc = true
@@ -607,6 +616,8 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.moshi)
     implementation(libs.okhttp)
+    // Bounded-time matching for native stream profile rules.
+    implementation(libs.re2j)
     implementation(libs.okhttp.logging)
     // Live TV: recording to a network folder (NAS / shared folder on a computer)
     implementation(libs.smbj)
@@ -744,8 +755,12 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.espresso.core)
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.17")
+    // Robolectric's newer BOM conflicts with the app's strict crypto pin. Keep test
+    // providers aligned with the runtime we ship, including bcutil/bcpkix.
+    testImplementation(enforcedPlatform("org.bouncycastle:bc-jdk18on-bom:${libs.versions.bouncycastle.get()}"))
     testImplementation(kotlin("test-junit"))
     testImplementation("org.json:json:20240303")
     testImplementation(kotlin("test"))
@@ -755,3 +770,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
+
+extra["usenetSdkDirectory"] = android.sdkDirectory.absolutePath
+extra["usenetNdkVersion"] = android.ndkVersion
+apply(from = rootProject.file("native/usenet/android.gradle.kts"))

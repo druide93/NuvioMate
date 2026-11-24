@@ -277,7 +277,7 @@ class LiveTvRecordingScheduler @Inject constructor(
             watchNetwork()
             scope.launch { forgetDeletedPlaylists() }
             // New guide listings: look for new airings of series.
-            repository.programs.debounce(10_000).collect { if (_series.value.isNotEmpty()) expandSeries() }
+            repository.guideContentChanges.debounce(10_000).collect { if (_series.value.isNotEmpty()) expandSeries() }
         }
     }
 
@@ -372,9 +372,13 @@ class LiveTvRecordingScheduler @Inject constructor(
         if (!useCatchup && now >= program.startMs && now < program.stopMs) {
             // On now, no catch-up: record from now.
             if (recorder.activeFor(channel.key) == null) {
-                recorder.start(channel, channel.url, title, program.episode, program.description,
-                    program.startMs, program.stopMs, program.stopMs + padPostMs,
-                    onFinished = { seriesId?.let { keepOnlyNewest(it) } }, seriesId = seriesId)
+                scope.launch {
+                    runCatching {
+                        recorder.start(channel, channel.url, title, program.episode, program.description,
+                            program.startMs, program.stopMs, program.stopMs + padPostMs,
+                            onFinished = { seriesId?.let { keepOnlyNewest(it) } }, seriesId = seriesId)
+                    }.onFailure { LiveTvNotice.show("Couldn't start recording \"$title\": ${it.message ?: "storage unavailable"}") }
+                }
             }
             return null to LiveTvTexts.trf("Recording \"{0}\" now", title)
         }

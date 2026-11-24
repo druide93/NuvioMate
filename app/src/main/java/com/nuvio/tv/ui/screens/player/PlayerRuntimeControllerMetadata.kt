@@ -464,6 +464,8 @@ internal fun PlayerRuntimeController.evaluatePostPlayOverlayVisibility(positionM
         endDetectionArmed = true
     }
     if (!_uiState.value.error.isNullOrBlank()) return
+    // The end of a disc extra is not the episode's.
+    if (isPlayingDiscExtra()) return
     if (episodeShufflePlayback.inMix(profileId, contentId, currentVideoId)) {
         evaluateMixNextCard(positionMs, effectiveDurationEarly)
         return

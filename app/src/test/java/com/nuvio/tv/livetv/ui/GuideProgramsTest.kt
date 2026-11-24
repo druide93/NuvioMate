@@ -34,10 +34,11 @@ class GuideProgramsTest {
     }
 
     @Test fun `provider history is capped at fourteen days`() {
+        val seven = prepared(channel(7), emptyList(), past = 1_000)
+        assertEquals(169, seven.size)
         val fourteen = prepared(channel(14), emptyList(), past = 1_000)
         assertEquals(337, fourteen.size)
         assertEquals(fourteen, prepared(channel(30), emptyList(), past = 1_000))
-        assertEquals(169, prepared(channel(7), emptyList(), past = 1_000).size)
         assertEquals(25, prepared(channel(1), emptyList(), past = 1_000).size)
     }
 

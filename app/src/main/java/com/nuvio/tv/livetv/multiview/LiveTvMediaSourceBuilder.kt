@@ -12,6 +12,7 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.nuvio.tv.livetv.data.LiveTvRepository
 import com.nuvio.tv.livetv.model.DrmInfo
 import com.nuvio.tv.livetv.player.LiveCaptions
+import com.nuvio.tv.livetv.player.LenientHlsPlaylistParserFactory
 import com.nuvio.tv.livetv.stalker.StalkerMediaPolicy
 
 /**
@@ -54,6 +55,7 @@ internal class LiveTvMediaSourceBuilder(
         if (item.localConfiguration?.mimeType == MimeTypes.APPLICATION_M3U8) {
             return androidx.media3.exoplayer.hls.HlsMediaSource.Factory(http)
                 .setLoadErrorHandlingPolicy(errorPolicy(isLive))
+                .setPlaylistParserFactory(LenientHlsPlaylistParserFactory())
                 .setExtractorFactory(
                     captionExtractor(
                         androidx.media3.exoplayer.hls.DefaultHlsExtractorFactory(

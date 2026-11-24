@@ -12,6 +12,7 @@ import com.nuvio.tv.LocalRootContentInset
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import com.nuvio.tv.core.player.LocalBackgroundTrailerController
+import com.nuvio.tv.ui.screens.home.HOME_HERO_TRAILER_OWNER
 import com.nuvio.tv.ui.components.BackgroundTrailerLayer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
@@ -173,6 +174,14 @@ private fun PlaybackNavHost(
     // Scout: Home's Scout tiles and Mixes, and whether the player is playing for a Mix.
     val scoutNav = androidx.compose.runtime.remember { com.nuvio.tv.ui.screens.scout.ScoutNavigation.from(context) }
     val scoutMixNav = scoutNav
+    val backgroundTrailerController = LocalBackgroundTrailerController.current
+    fun isLeavingFramedHeroTrailer(): Boolean {
+        val controller = backgroundTrailerController ?: return false
+        return controller.activeRequest?.bounds != null &&
+            controller.isRenderingFor(HOME_HERO_TRAILER_OWNER) &&
+            !controller.isPinned(HOME_HERO_TRAILER_OWNER)
+    }
+
     fun isStreamToPlayer(from: String, to: String): Boolean {
         return from.startsWith("stream/") && to.startsWith("player/")
     }
@@ -224,6 +233,8 @@ private fun PlaybackNavHost(
                 ?.toBooleanStrictOrNull() == true
             if (isStreamToPlayer(from, to) && isAutoPlayNav) {
                 ExitTransition.None
+            } else if (isLeavingFramedHeroTrailer()) {
+                fadeOut(animationSpec = tween(NuvioMotion.tokens.durations.medium), targetAlpha = 1f)
             } else {
                 fadeOut(animationSpec = tween(NuvioMotion.tokens.durations.medium))
             }
@@ -1596,6 +1607,18 @@ private fun PlaybackNavHost(
                     // Back from search returns to the guide.
                     navController.navigate(Screen.Search.route) { launchSingleTop = true }
                 },
+                onOpenNuvioTitle = { t ->
+                    // The show's page in Nuvio (on its episode when the guide gives it); Back returns to the guide.
+                    navController.navigate(
+                        Screen.Detail.createRoute(
+                            itemId = t.id,
+                            itemType = t.type,
+                            addonBaseUrl = t.addonBaseUrl,
+                            returnFocusSeason = t.season,
+                            returnFocusEpisode = t.episode
+                        )
+                    ) { launchSingleTop = true }
+                },
                 onReturnToSports = {
                     navController.navigate(Screen.Sports.route) {
                         popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -1628,8 +1651,8 @@ private fun PlaybackNavHost(
             // Live TV fork: recorded shows, played full screen in Live TV's own player (its seek
             // bar, 30 s skips); Back comes back here.
             com.nuvio.tv.livetv.record.RecordingsScreen(
-                onPlay = { _, _, _, recordingId, fromStart ->
-                    com.nuvio.tv.livetv.record.RecordingLaunch.open(recordingId, fromStart, Screen.Recordings.route)
+                onPlay = { _, _, poster, recordingId, fromStart ->
+                    com.nuvio.tv.livetv.record.RecordingLaunch.open(recordingId, fromStart, Screen.Recordings.route, poster)
                     navController.navigate(Screen.LiveTvPlayer.route) { launchSingleTop = true }
                 },
                 onOpenSettings = { navController.navigate(Screen.RecordingSettings.route) { launchSingleTop = true } }
