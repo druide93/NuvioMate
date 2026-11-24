@@ -126,6 +126,8 @@ import dev.chrisbanes.haze.hazeEffect
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -553,7 +555,7 @@ private fun LiveTvGuideScreenBody(
     // covers rows beyond the group's first 400 without keeping every channel's future days.
     // In steps of 8 rows (a window of 40 that always covers 8 above and 24 below): asked again
     // every 8 rows instead of at every press, without copying the whole group each time.
-    val rangeStep = row / 8
+    val rangeStep by remember { derivedStateOf { row / 8 } }
     val rangeKeys = remember(channels, rangeStep) {
         val from = (rangeStep * 8 - 8).coerceIn(0, channels.size)
         channels.subList(from, minOf(from + 40, channels.size)).map { it.key }
@@ -691,7 +693,9 @@ private fun LiveTvGuideScreenBody(
     // row at a time (the group list does it in `stepGroup`, like the channel list's `moveRow`).
     // Nothing slides the group list into line afterwards any more: that slide was the jump.
 
-    LaunchedEffect(windowStart < System.currentTimeMillis() - 6 * 3_600_000L, row / 6, channels.size) {
+    // Every 6 rows (read through a derived state, so the screen doesn't run again at every press).
+    val rowBand by remember { derivedStateOf { row / 6 } }
+    LaunchedEffect(windowStart < System.currentTimeMillis() - 6 * 3_600_000L, rowBand, channels.size) {
         if (windowStart >= System.currentTimeMillis() - 6 * 3_600_000L || channels.isEmpty()) return@LaunchedEffect
         delay(300)
         val from = (row - 6).coerceAtLeast(0)
@@ -699,7 +703,7 @@ private fun LiveTvGuideScreenBody(
         viewModel.loadCatchupArchive(channels.subList(from, to))
     }
     // Channels on screen with nothing from the guide file: ask the provider's API for them.
-    LaunchedEffect(row / 6, channels.size) {
+    LaunchedEffect(rowBand, channels.size) {
         if (channels.isEmpty()) return@LaunchedEffect
         delay(600)
         val from = (row - 6).coerceAtLeast(0)
@@ -893,8 +897,22 @@ private fun LiveTvGuideScreenBody(
         }
     }
 
-    val focusedChannel = channels.getOrNull(row)
-    val focusedPrograms = rememberGuidePrograms(focusedChannel, programs[focusedChannel?.key].orEmpty(), now, settings.epgPastHours)
+    // The highlighted channel, its shows and the block under the cursor are worked out when
+    // they're read (by the keys, the menus, the header and the highlighted row), not by the whole
+    // screen: reading them here made all of the guide run again at every press (see [ColumnPart]).
+    val channelsNow = androidx.compose.runtime.rememberUpdatedState(channels)
+    val programsNow = androidx.compose.runtime.rememberUpdatedState(programs)
+    val nowState = androidx.compose.runtime.rememberUpdatedState(now)
+    val pastHoursNow = androidx.compose.runtime.rememberUpdatedState(settings.epgPastHours)
+    val focusedChannelState = remember { derivedStateOf { channelsNow.value.getOrNull(row) } }
+    val focusedChannel by focusedChannelState
+    val focusedPrograms by remember {
+        derivedStateOf {
+            val ch = focusedChannelState.value
+            if (ch == null) emptyList()
+            else prepareGuidePrograms(ch, withoutOverlaps(programsNow.value[ch.key].orEmpty()), nowState.value, pastHoursNow.value)
+        }
+    }
 
     fun blockAt(list: List<EpgProgram>, at: Long): GuideBlock {
         list.firstOrNull { at >= it.startMs && at < it.stopMs }?.let { return GuideBlock(it.startMs, it.stopMs, it) }
@@ -912,55 +930,33 @@ private fun LiveTvGuideScreenBody(
         return GuideBlock(s, e, null)
     }
 
-    val focusedBlock: GuideBlock? = focusedChannel?.let {
-        if (column == GuideColumn.PROGRAM) blockAt(focusedPrograms, cursorMs) else blockAt(focusedPrograms, now)
+    val focusedBlock: GuideBlock? by remember {
+        derivedStateOf<GuideBlock?> {
+            if (focusedChannelState.value == null) null
+            else if (column == GuideColumn.PROGRAM) blockAt(focusedPrograms, cursorMs) else blockAt(focusedPrograms, nowState.value)
+        }
     }
 
     // A future portal listing may gain its archive id only after it airs. Refresh the
     // selected past schedule when browsing it; opening the guide does not fan out requests.
-    LaunchedEffect(focusedChannel?.key, focusedBlock?.program?.startMs,
-        focusedBlock?.program?.providerSourceIdentity, focusedBlock?.program?.providerProgramId, column) {
-        val channel = focusedChannel ?: return@LaunchedEffect
-        val program = focusedBlock?.program ?: return@LaunchedEffect
-        if (column != GuideColumn.PROGRAM || channel.stalkerRef == null ||
-            program.stopMs > System.currentTimeMillis() || (!program.providerProgramId.isNullOrBlank() &&
-                program.providerSourceIdentity == channel.stalkerRef.sourceIdentity)
-        ) return@LaunchedEffect
-        delay(300)
-        viewModel.ensureChannelSchedule(channel.key)
+    LaunchedEffect(Unit) {
+        androidx.compose.runtime.snapshotFlow { Triple(focusedChannel, focusedBlock?.program, column) }
+            .distinctUntilChanged { a, b ->
+                a.first?.key == b.first?.key && a.third == b.third && a.second?.startMs == b.second?.startMs &&
+                    a.second?.providerSourceIdentity == b.second?.providerSourceIdentity &&
+                    a.second?.providerProgramId == b.second?.providerProgramId
+            }
+            .collectLatest { (channel, program, col) ->
+                if (channel == null || program == null) return@collectLatest
+                if (col != GuideColumn.PROGRAM || channel.stalkerRef == null ||
+                    program.stopMs > System.currentTimeMillis() || (!program.providerProgramId.isNullOrBlank() &&
+                        program.providerSourceIdentity == channel.stalkerRef.sourceIdentity)
+                ) return@collectLatest
+                delay(300)
+                viewModel.ensureChannelSchedule(channel.key)
+            }
     }
 
-    // Poster for the highlighted show in the info panel (what Nuvio's catalogs would show).
-    // While browsing the group list, the info panel stays on what's playing in the preview;
-    // it only follows the highlight when you're moving through the channels themselves.
-    val browsingGroups = groupsOpen && !gridFocused
-    val playingChannel = viewModel.shownChannel(playback.channelKey)
-    val headerChannel = if (browsingGroups && playingChannel != null) playingChannel else focusedChannel
-    val headerBlock = if (browsingGroups && playingChannel != null) {
-        val headerPrograms = if (playingChannel.key == focusedChannel?.key) focusedPrograms
-        else rememberGuidePrograms(playingChannel, programs[playingChannel.key].orEmpty(), now, settings.epgPastHours)
-        blockAt(headerPrograms, now)
-    } else focusedBlock
-    val headerProgramKey = headerChannel?.key to headerBlock?.program?.startMs
-    val headerPoster by androidx.compose.runtime.produceState<String?>(initialValue = null, headerProgramKey) {
-        value = null
-        if (!settings.showProgramDetails) return@produceState
-        // 24/7 channels with no real listings (no guide, or one long block named after the
-        // channel): the show's poster, by the channel's name.
-        val ch = headerChannel
-        if (ch != null && com.nuvio.tv.livetv.data.LiveTvPosterResolver.isChannelFiller(ch, headerBlock?.program)) {
-            delay(250)
-            value = viewModel.channelPoster(ch, headerBlock?.program)
-            return@produceState
-        }
-        val p = headerBlock?.program ?: return@produceState
-        // The guide's own image for the show (if it has one) straight away; your addon's
-        // poster replaces it when found.
-        if (LiveTvRepository.isPlaceholderTitle(p.title)) return@produceState // channel logo
-        value = p.icon
-        delay(250) // don't look up every show while scrolling quickly
-        viewModel.posterFor(p.title, p, headerChannel)?.let { value = it }
-    }
 
     fun ensureRowVisible(target: Int) {
         scope.launch {
@@ -1117,10 +1113,17 @@ private fun LiveTvGuideScreenBody(
     LaunchedEffect(windowFocused, fullscreen) { lastKeyAt = System.currentTimeMillis() }
     // The ⚙ panel open counts as in use, and never stays up over full screen.
     LaunchedEffect(fullscreen) { if (fullscreen) guideGearOpen = false }
-    LaunchedEffect(idleMinutes, lastKeyAt, fullscreen, guideHasFocus, windowFocused, playback.channelKey, guideGearOpen) {
+    // The last key is read when the wait is up, not followed (that started the wait again, and ran
+    // all of the guide again, at every press and release of a key).
+    LaunchedEffect(idleMinutes, fullscreen, guideHasFocus, windowFocused, playback.channelKey, guideGearOpen) {
         if (idleMinutes <= 0 || fullscreen || guideGearOpen || !guideHasFocus || !windowFocused || playback.channelKey == null) return@LaunchedEffect
-        val wait = idleMinutes * 60_000L - (System.currentTimeMillis() - lastKeyAt)
-        delay(wait.coerceAtLeast(5_000L))
+        var wait = (idleMinutes * 60_000L - (System.currentTimeMillis() - lastKeyAt)).coerceAtLeast(5_000L)
+        while (true) {
+            delay(wait)
+            val left = idleMinutes * 60_000L - (System.currentTimeMillis() - lastKeyAt)
+            if (left <= 0L) break
+            wait = left
+        }
         if (viewModel.playbackState.value.channelKey == null || viewModel.playbackState.value.error != null) return@LaunchedEffect
         com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Guide left alone for $idleMinutes min: full screen")
         // Same as going full screen yourself: remember where you were, and use the playing
@@ -1136,6 +1139,8 @@ private fun LiveTvGuideScreenBody(
         LocalShowDetails provides { key, p -> viewModel.details(key, p) },
         LocalChannelAbout provides { ch, title -> viewModel.channelAbout(ch, title) }
     ) {
+    // No screen reader on: the guide isn't described to accessibility services at every frame.
+    val screenReaderOn = rememberScreenReaderOn()
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -1144,6 +1149,7 @@ private fun LiveTvGuideScreenBody(
                 if (settings.guideTiviMateStyle) Modifier.background(TiviMateColors.Background)
                 else Modifier.guideBackdrop(settings.guideBackdrop)
             )
+            .quietForAccessibility(screenReaderOn)
             .onGloballyPositioned { rootBounds = it.boundsInRoot() }
             .onFocusChanged {
                 if (it.hasFocus && !guideHasFocus) lastKeyAt = System.currentTimeMillis()
@@ -1225,6 +1231,37 @@ private fun LiveTvGuideScreenBody(
             // TiviMate: with the group list open it runs the whole height at the left, and the
             // info and preview move over beside it.
             ColumnPart { // Its own part of the guide (see [ColumnPart]).
+    // Poster for the highlighted show in the info panel (what Nuvio's catalogs would show).
+    // While browsing the group list, the info panel stays on what's playing in the preview;
+    // it only follows the highlight when you're moving through the channels themselves.
+    val browsingGroups = groupsOpen && !gridFocused
+    val playingChannel = viewModel.shownChannel(playback.channelKey)
+    val headerChannel = if (browsingGroups && playingChannel != null) playingChannel else focusedChannel
+    val headerBlock = if (browsingGroups && playingChannel != null) {
+        val headerPrograms = if (playingChannel.key == focusedChannel?.key) focusedPrograms
+        else rememberGuidePrograms(playingChannel, programs[playingChannel.key].orEmpty(), now, settings.epgPastHours)
+        blockAt(headerPrograms, now)
+    } else focusedBlock
+    val headerProgramKey = headerChannel?.key to headerBlock?.program?.startMs
+    val headerPoster by androidx.compose.runtime.produceState<String?>(initialValue = null, headerProgramKey) {
+        value = null
+        if (!settings.showProgramDetails) return@produceState
+        // 24/7 channels with no real listings (no guide, or one long block named after the
+        // channel): the show's poster, by the channel's name.
+        val ch = headerChannel
+        if (ch != null && com.nuvio.tv.livetv.data.LiveTvPosterResolver.isChannelFiller(ch, headerBlock?.program)) {
+            delay(250)
+            value = viewModel.channelPoster(ch, headerBlock?.program)
+            return@produceState
+        }
+        val p = headerBlock?.program ?: return@produceState
+        // The guide's own image for the show (if it has one) straight away; your addon's
+        // poster replaces it when found.
+        if (LiveTvRepository.isPlaceholderTitle(p.title)) return@produceState // channel logo
+        value = p.icon
+        delay(250) // don't look up every show while scrolling quickly
+        viewModel.posterFor(p.title, p, headerChannel)?.let { value = it }
+    }
             Box(
                 Modifier
                     .fillMaxWidth()
