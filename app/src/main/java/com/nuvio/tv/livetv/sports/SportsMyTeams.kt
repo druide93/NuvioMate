@@ -329,14 +329,18 @@ internal fun MyTeamsRows(
                                     state = state,
                                     // Coming back to a row: the exact game you left it on; the first
                                     // time: the game on now or next (not whichever is under the row above).
+                                    // Worked out here, while composing: what's on screen is still the last
+                                    // layout, which can be the old, longer row, so it goes by game id.
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .focusRestorer {
-                                            val visible = state.layoutInfo.visibleItemsInfo.map { it.index }
-                                            val back = lastOnRow[0]?.let { id -> row.events.indexOfFirst { it.id == id } }?.takeIf { it >= 0 && it in visible }
-                                            val idx = back ?: row.startIndex.takeIf { it in visible } ?: visible.firstOrNull()
-                                            idx?.let { requesterFor(keyAt(it)) } ?: FocusRequester.Default
-                                        }
+                                        .focusRestorer(
+                                            SportsRows.restoreTarget(
+                                                row.events.map { it.id },
+                                                state.layoutInfo.visibleItemsInfo.map { it.key },
+                                                lastOnRow[0],
+                                                row.startIndex
+                                            )?.let { requesterFor("${row.key}|$it") } ?: FocusRequester.Default
+                                        )
                                         .focusGroup(),
                                     horizontalArrangement = Arrangement.spacedBy(SportsSpace.Card),
                                     contentPadding = PaddingValues(start = 6.dp, end = 640.dp, top = 3.dp, bottom = 6.dp)

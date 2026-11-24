@@ -154,6 +154,22 @@ internal object SportsRows {
         return MyTeamsPage(heroes, sorted)
     }
 
+    /**
+     * The game a row's highlight lands on when you come back to it: the one you left it on, else
+     * the one on now or next ([startIndex]), else the first on screen. Only a game that's both
+     * still in the row ([ids]) and on screen ([visibleKeys], the row's item keys = game ids).
+     * By id, not by position: right after the schedule refreshes, what's on screen can still be
+     * the old, longer row, and a position there can be past the end of the new one.
+     */
+    fun restoreTarget(ids: List<String>, visibleKeys: List<Any>, lastId: String?, startIndex: Int): String? {
+        if (ids.isEmpty() || visibleKeys.isEmpty()) return null
+        val inRow = ids.toHashSet()
+        val shown = visibleKeys.mapNotNull { k -> (k as? String)?.takeIf { it in inRow } }
+        lastId?.takeIf { it in shown }?.let { return it }
+        ids.getOrNull(startIndex)?.takeIf { it in shown }?.let { return it }
+        return shown.firstOrNull()
+    }
+
     /** Games in date order: the last few results, then what's on and what's next. */
     private fun timeline(
         key: String, title: String, kind: SportsRow.Kind, games: List<SportsEvent>, now: Long,
