@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The plugin's preview in ATV Launcher's list (16:9, opaque): a backdrop with the info column. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="960dp"
+    android:height="540dp"
+    android:viewportWidth="960"
+    android:viewportHeight="540">
+    <path android:fillColor="#FF2A3A52" android:pathData="M0,0h960v540h-960z" />
+    <path android:fillColor="#FF3E5A7A" android:pathData="M420,0h540v540h-540z" />
+    <path android:fillColor="#FFC98A4B" android:pathData="M760,120a90,90 0,1 1,0.1 0z" />
+    <path android:fillColor="#B30C0D0F" android:pathData="M0,0h560v540h-560z" />
+    <path android:fillColor="#660C0D0F" android:pathData="M0,320h960v220h-960z" />
+    <path android:fillColor="#FFF2EEE6" android:pathData="M56,70h300v56h-300z" />
+    <path android:fillColor="#D1FFFFFF" android:pathData="M56,146h60v10h-60zM132,146h120v10h-120zM268,146h70v10h-70z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M56,172h44v18h-44z" />
+    <path android:fillColor="#9EFFFFFF" android:pathData="M108,178h36v8h-36z" />
+    <path android:fillColor="#E0FFFFFF" android:pathData="M56,206h380v8h-380zM56,226h372v8h-372zM56,246h250v8h-250z" />
+    <path android:fillColor="#94FFFFFF" android:pathData="M56,276h44v8h-44z" />
+    <path android:fillColor="#E6FFFFFF" android:pathData="M110,274h200v11h-200z" />
+</vector>

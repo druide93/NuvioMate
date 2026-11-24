@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="atvwall_description">Vos suggestions Scout en fond d\'écran, avec logo, note et résumé</string>
+    <string name="atvwall_widget_label">Scout : voir la fiche</string>
+    <string name="atvwall_widget_description">Ouvre la fiche du titre affiché en fond Scout</string>
+    <string name="atvwall_widget_kicker">EN FOND D\'ÉCRAN</string>
+    <string name="atvwall_widget_open">Voir la fiche</string>
+    <string name="atvwall_widget_open_short">Fiche</string>
+    <string name="atvwall_widget_empty">Les fonds Scout arrivent</string>
+    <string name="atvwall_series">Série</string>
+    <string name="atvwall_runtime_minutes">%1$d min</string>
+    <string name="atvwall_runtime_hours">%1$d h</string>
+    <string name="atvwall_runtime_hours_minutes">%1$d h %2$02d</string>
+    <plurals name="atvwall_seasons">
+        <item quantity="one">%d saison</item>
+        <item quantity="other">%d saisons</item>
+    </plurals>
+    <string name="atvwall_licence_title">API Wallpaper d\'ATV Launcher et Marquee</string>
+    <string name="atvwall_licence_body">ATV Launcher Wallpaper API, Copyright 2026 DStudio (github.com/dstio/wallpaper-api). La mise en page des fonds Scout est adaptée de Marquee, Copyright 2026 DStudio (github.com/dstio/marquee-wallpaper-plugin). Tous deux sous licence Apache, version 2.0.</string>
+</resources>

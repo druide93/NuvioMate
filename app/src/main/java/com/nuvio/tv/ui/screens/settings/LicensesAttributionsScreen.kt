@@ -208,6 +208,14 @@ private fun LicensesAttributionsDetailsPanel(
                             url = HazeLicenseUrl
                         )
                     )
+                    // Required credit (Apache 2.0, NOTICE): the plugin API and Marquee's layout.
+                    AttributionDetailRow(
+                        item = LicenseAttributionItem(
+                            title = stringResource(R.string.atvwall_licence_title),
+                            body = stringResource(R.string.atvwall_licence_body),
+                            url = ApacheLicenseUrl
+                        )
+                    )
                 }
             }
             SettingsVerticalScrollIndicators(state = scrollState)

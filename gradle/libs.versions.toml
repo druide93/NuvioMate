@@ -28,6 +28,8 @@ lifecycleViewModelCompose = "2.8.7"
 ksp = "2.3.0"
 media3 = "1.8.0"
 quickjsKt = "1.0.5"
+# ATV Launcher wallpaper plugin API (DStudio, Apache 2.0, from JitPack)
+atvWallpaperApi = "2.1.0"
 jsoup = "1.17.2"
 gson = "2.10.1"
 markdownRenderer = "0.33.0"
@@ -50,6 +52,7 @@ profileinstaller = "1.4.1"
 baselineProfilePlugin = "1.4.1"
 
 [libraries]
+atv-wallpaper-api = { group = "com.github.dstio", name = "wallpaper-api", version.ref = "atvWallpaperApi" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }

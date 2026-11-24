@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Scout wallpaper plugin, as ATV Launcher lists it (github.com/dstio/wallpaper-api).
+     A new set tells the launcher itself; the timer is only a safety net. -->
+<wallpaper-provider
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:wallpaperLabel="@string/atvwall_label"
+    app:wallpaperDescription="@string/atvwall_description"
+    app:wallpaperPreview="@drawable/atvwall_preview"
+    app:wallpaperKind="items"
+    app:wallpaperTypes="image"
+    app:refreshIntervalMs="21600000"
+    app:apiVersion="2" />

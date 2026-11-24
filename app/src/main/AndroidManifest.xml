@@ -102,6 +102,57 @@
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
+        <!-- ATV Launcher: Scout suggestions as wallpapers (its wallpaper plugin API,
+             github.com/dstio/wallpaper-api). The plugin, its pictures and its "See details"
+             widget live in a small process of their own (:atvwall), which starts none of the
+             app; the app makes the pictures (ScoutWallpaperMaker, or ScoutWallpaperJob when the
+             plugin asks). Only a launcher holding BIND_WALLPAPER can bind it or read the pictures. -->
+        <service
+            android:name=".launcher.atv.ScoutWallpaperService"
+            android:exported="true"
+            android:permission="ca.dstudio.atvlauncher.permission.BIND_WALLPAPER"
+            android:process=":atvwall">
+            <intent-filter>
+                <action android:name="ca.dstudio.atvlauncher.wallpaper.SERVICE" />
+            </intent-filter>
+            <meta-data
+                android:name="ca.dstudio.atvlauncher.wallpaper.INFO"
+                android:resource="@xml/atvwall_info" />
+        </service>
+
+        <provider
+            android:name=".launcher.atv.ScoutWallpaperFiles"
+            android:authorities="${applicationId}.atvwall"
+            android:exported="true"
+            android:process=":atvwall"
+            android:readPermission="ca.dstudio.atvlauncher.permission.BIND_WALLPAPER" />
+
+        <receiver
+            android:name=".launcher.atv.ScoutWallpaperWidget"
+            android:exported="false"
+            android:label="@string/atvwall_widget_label"
+            android:process=":atvwall">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/atvwall_widget_info" />
+        </receiver>
+
+        <activity
+            android:name=".launcher.atv.ScoutWallpaperOpenActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.NoDisplay" />
+
+        <service
+            android:name=".launcher.atv.ScoutWallpaperJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
         <!-- Live TV fork: wakes the app for scheduled recordings, and sets them again after a restart. -->
         <receiver
             android:name=".livetv.record.RecordingAlarmReceiver"

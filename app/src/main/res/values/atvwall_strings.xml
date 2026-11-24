@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ATV Launcher: Scout suggestions as wallpapers, and the widget that opens the one on screen. -->
+<resources>
+    <string name="atvwall_label" translatable="false">NuvioMate Scout</string>
+    <string name="atvwall_description">Your Scout suggestions as wallpapers, with logo, rating and synopsis</string>
+    <string name="atvwall_widget_label">Scout: see details</string>
+    <string name="atvwall_widget_description">Opens the title on the Scout wallpaper</string>
+    <string name="atvwall_widget_kicker">ON THE WALLPAPER</string>
+    <string name="atvwall_widget_open">See details</string>
+    <string name="atvwall_widget_open_short">Details</string>
+    <string name="atvwall_widget_empty">Scout wallpapers on the way</string>
+    <string name="atvwall_series">Series</string>
+    <string name="atvwall_runtime_minutes">%1$d min</string>
+    <string name="atvwall_runtime_hours">%1$d h</string>
+    <string name="atvwall_runtime_hours_minutes">%1$d h %2$02d</string>
+    <plurals name="atvwall_seasons">
+        <item quantity="one">%d season</item>
+        <item quantity="other">%d seasons</item>
+    </plurals>
+    <string name="atvwall_licence_title">ATV Launcher Wallpaper API and Marquee</string>
+    <string name="atvwall_licence_body">ATV Launcher Wallpaper API, Copyright 2026 DStudio (github.com/dstio/wallpaper-api). The Scout wallpaper layout is adapted from Marquee, Copyright 2026 DStudio (github.com/dstio/marquee-wallpaper-plugin). Both licensed under the Apache License, Version 2.0.</string>
+</resources>

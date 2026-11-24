@@ -630,6 +630,9 @@ dependencies {
     implementation(libs.coil.network.okhttp)
     implementation(libs.coil.network.cache.control)
 
+    // ATV Launcher: Scout suggestions as wallpapers (wallpaper plugin API)
+    implementation(libs.atv.wallpaper.api)
+
     // Navigation
     implementation(libs.navigation.compose)
 

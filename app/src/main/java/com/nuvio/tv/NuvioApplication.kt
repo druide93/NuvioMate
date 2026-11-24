@@ -58,6 +58,7 @@ class NuvioApplication : Application(), SingletonImageLoader.Factory {
     @Inject lateinit var serverUserStateProjection: ServerUserStateProjection
     @Inject lateinit var homeAssistantBridge: com.nuvio.tv.core.homeassistant.HaMqttBridge
     @Inject lateinit var homeAssistantAmbiance: com.nuvio.tv.core.homeassistant.AmbianceEngine
+    @Inject lateinit var scoutWallpaperMaker: com.nuvio.tv.launcher.atv.ScoutWallpaperMaker
     @Inject lateinit var onDemandAdultGuard: com.nuvio.tv.livetv.ondemand.OnDemandAdultGuard
     @Inject lateinit var plexArtworkSigner: PlexArtworkSigner
     @Inject lateinit var siloArtworkRefresher: SiloArtworkRefresher
@@ -94,6 +95,9 @@ class NuvioApplication : Application(), SingletonImageLoader.Factory {
 
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     override fun onCreate() {
+        // The ATV Launcher wallpaper plugin's own small process: it only hands out pictures that
+        // the app made, so none of the app starts there (no Hilt, no sync, no Home Assistant).
+        if (com.nuvio.tv.launcher.atv.AtvWall.isWallProcess(this)) return
         // Before super.onCreate(): Hilt creates injected services there, and the budget is read once.
         MemoryBudget.init(this)
         com.nuvio.tv.core.player.PlaybackDeviceSupport.init(this)
@@ -113,6 +117,8 @@ class NuvioApplication : Application(), SingletonImageLoader.Factory {
         homeAssistantAmbiance.start()
         // Live TV fork: adult On Demand titles never stay in Continue watching.
         onDemandAdultGuard.start()
+        // Scout suggestions as ATV Launcher wallpapers, made only once its plugin has been used.
+        scoutWallpaperMaker.start()
         // Load locale synchronously so it's available before Activity.attachBaseContext.
         // SharedPreferences reads are fast (cached in memory after first access).
         val tag = getSharedPreferences("app_locale", Context.MODE_PRIVATE)
