@@ -56,7 +56,8 @@ class LiveTvChannelStore @Inject constructor(
     /**
      * Each playlist's logo choice: "Prefer logos from playlist" keeps the playlist's own (the
      * guide's when it has none); "Prefer logos from EPG" uses the guide's (the playlist's when
-     * the guide has none).
+     * the guide has none). The one not chosen is kept as the backup, shown when the chosen one
+     * can't be loaded (a dead link, or a site that refuses it).
      */
     private fun withLogos(
         channels: List<LiveChannel>,
@@ -66,9 +67,10 @@ class LiveTvChannelStore @Inject constructor(
         if (epgLogos.isEmpty()) return channels
         return channels.map { c ->
             val fromGuide = epgLogos[c.key]
-            val logo = if (c.sourceId in preferEpg) fromGuide ?: c.logo
-            else c.logo?.takeIf { it.isNotBlank() } ?: fromGuide
-            if (logo == c.logo) c else c.copy(logo = logo)
+            val own = c.logo?.takeIf { it.isNotBlank() }
+            val logo = if (c.sourceId in preferEpg) fromGuide ?: c.logo else own ?: fromGuide
+            val backup = (if (logo == fromGuide) own else fromGuide)?.takeIf { it != logo }
+            if (logo == c.logo && backup == c.logoBackup) c else c.copy(logo = logo, logoBackup = backup)
         }
     }
 
@@ -206,7 +208,8 @@ class LiveTvChannelStore @Inject constructor(
         val byId = stableIndex(picked.filterKeys { it !in current })
         return channels.map { c ->
             val logo = picked[c.key] ?: stableId(c.key)?.let { byId[it] }
-            if (logo == null || logo == c.logo) c else c.copy(logo = logo)
+            // The picked logo first, the one it would have had otherwise behind it.
+            if (logo == null || logo == c.logo) c else c.copy(logo = logo, logoBackup = c.logo?.takeIf { it.isNotBlank() } ?: c.logoBackup)
         }
     }
 

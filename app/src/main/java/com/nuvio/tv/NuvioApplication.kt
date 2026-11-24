@@ -128,6 +128,8 @@ class NuvioApplication : Application(), SingletonImageLoader.Factory {
 
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     override fun newImageLoader(context: android.content.Context): ImageLoader {
+        // Same name the app's other requests use (see NetworkModule).
+        val imageUserAgent = "Nuvio/" + BuildConfig.NUVIO_BASE_VERSION.ifBlank { BuildConfig.VERSION_NAME }.ifBlank { "dev" }
         val imageOkHttpClient by lazy {
             val imageDispatcher = okhttp3.Dispatcher().apply {
                 maxRequests = 32
@@ -143,6 +145,14 @@ class NuvioApplication : Application(), SingletonImageLoader.Factory {
                 .addInterceptor(PlexArtworkInterceptor { if (::plexArtworkSigner.isInitialized) plexArtworkSigner else null })
                 .addNetworkInterceptor(PlexArtworkInterceptor.Token { if (::plexArtworkSigner.isInitialized) plexArtworkSigner else null })
                 .addInterceptor(SiloArtworkInterceptor({ if (::siloArtworkRefresher.isInitialized) siloArtworkRefresher else null }))
+                // Pictures are asked for in the app's name, like its other requests. OkHttp's own
+                // "okhttp/4.12.0" is turned away by some sites: Wikipedia's (where many playlists
+                // and guides take channel logos) answers 403 to it and asks for an app's name.
+                .addInterceptor { chain ->
+                    val request = chain.request()
+                    if (request.header("User-Agent") != null) chain.proceed(request)
+                    else chain.proceed(request.newBuilder().header("User-Agent", imageUserAgent).build())
+                }
                 .addInterceptor { chain ->
                     try {
                         chain.proceed(chain.request())

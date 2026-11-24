@@ -768,7 +768,7 @@ private fun ChannelsPanel(
                         Spacer(Modifier.width(8.dp))
                     }
                     if (showLogos) {
-                        ChannelLogo(ch.logo, 32.dp)
+                        ChannelLogo(ch, 32.dp)
                         Spacer(Modifier.width(8.dp))
                     }
                     Column(modifier = Modifier.weight(1f)) {
@@ -914,7 +914,7 @@ private fun SchedulePreview(channel: LiveChannel, list: List<EpgProgram>, now: L
     Column(modifier = Modifier.width(320.dp).fillMaxHeight().background(PanelMid)) {
         PanelHeader {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                ChannelLogo(channel.logo, 26.dp)
+                ChannelLogo(channel, 26.dp)
                 Spacer(Modifier.width(10.dp))
                 Column {
                     LiveText(channel.name, size = osp(15f), weight = FontWeight.SemiBold)
@@ -972,7 +972,7 @@ private fun SchedulePanel(
     Column(modifier = Modifier.width(460.dp).fillMaxHeight().background(PanelDark)) {
         PanelHeader {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                ChannelLogo(channel.logo, 28.dp)
+                ChannelLogo(channel, 28.dp)
                 Spacer(Modifier.width(10.dp))
                 Column {
                     LiveText(channel.name, size = osp(16f), weight = FontWeight.SemiBold)
@@ -1307,7 +1307,7 @@ private fun FlyoutRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (showLogos) {
-            ChannelLogo(ch.logo, 32.dp)
+            ChannelLogo(ch, 32.dp)
             Spacer(Modifier.width(8.dp))
         }
         Column(modifier = Modifier.weight(1f)) {

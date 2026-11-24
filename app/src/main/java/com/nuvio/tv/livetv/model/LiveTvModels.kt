@@ -322,7 +322,12 @@ data class LiveChannel(
     /** Numbered by the app (the playlist gave no number): changes with the playlists before it. */
     val autoNumber: Boolean = false,
     /** Resolve only when playback starts; never cache the temporary playback URL here. */
-    val stalkerRef: StalkerStreamRef? = null
+    val stalkerRef: StalkerStreamRef? = null,
+    /**
+     * The other logo the channel has (the guide's when [logo] is the playlist's, or the other
+     * way round), shown when [logo] can't be loaded. Only on the channels as displayed; never saved.
+     */
+    val logoBackup: String? = null
 )
 
 /**

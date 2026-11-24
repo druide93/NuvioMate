@@ -869,7 +869,7 @@ private fun PickerStreamRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        ChannelLogo(match.channel.logo, 30.dp)
+        ChannelLogo(match.channel, 30.dp)
         Column(Modifier.weight(1f)) {
             LiveText(match.channel.name, color = colors.text, size = 14.sp, weight = FontWeight.SemiBold, marquee = selected && active)
             LiveText(

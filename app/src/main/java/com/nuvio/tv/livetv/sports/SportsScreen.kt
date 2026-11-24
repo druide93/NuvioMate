@@ -2325,7 +2325,7 @@ internal fun ChannelLine(
         }
         // Highlights and replays have no logo: the team colours stand in, so no empty space for one.
         if (teams == null || !channel.logo.isNullOrBlank()) {
-            ChannelLogo(channel.logo, 22.dp)
+            ChannelLogo(channel, 22.dp)
             Spacer(Modifier.width(10.dp))
         }
         // Long names scroll on the highlighted line so the whole thing can be read.

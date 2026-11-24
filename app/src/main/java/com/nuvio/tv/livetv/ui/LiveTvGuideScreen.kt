@@ -2759,7 +2759,7 @@ private fun GuideHeader(
                 modifier = Modifier.width(if (small) 96.dp else 130.dp).fillMaxHeight(),
                 contentAlignment = Alignment.Center
             ) {
-                ChannelLogo(channel.logo, if (small) 46.dp else 64.dp)
+                ChannelLogo(channel, if (small) 46.dp else 64.dp)
             }
         }
         // Poster of the highlighted show (channel logo when there isn't one).
@@ -2781,10 +2781,10 @@ private fun GuideHeader(
                     com.nuvio.tv.livetv.sports.SportsPosterCard(game, Modifier.fillMaxSize())
                 } else if (!poster.isNullOrBlank()) {
                     LivePosterImage(poster, Modifier.fillMaxSize()) {
-                        ChannelLogo(channel.logo, if (small) 24.dp else 34.dp)
+                        ChannelLogo(channel, if (small) 24.dp else 34.dp)
                     }
                 } else {
-                    ChannelLogo(channel.logo, if (small) 24.dp else 34.dp)
+                    ChannelLogo(channel, if (small) 24.dp else 34.dp)
                 }
             }
         }
@@ -2796,7 +2796,7 @@ private fun GuideHeader(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (GuideInfoPart.CHANNEL !in hid) {
                         if (settings.showChannelLogos) {
-                            ChannelLogo(channel.logo, 28.dp)
+                            ChannelLogo(channel, 28.dp)
                             Spacer(Modifier.width(10.dp))
                         }
                         val label = buildString {
@@ -3082,7 +3082,7 @@ private fun GuideRow(
             }
             if (settings.showChannelLogos) {
                 // TiviMate: the logos fill the row (about 45 × 30 dp at the standard size).
-                ChannelLogo(channel.logo, (rowHeight - if (settings.guideTiviMateStyle) 7.dp else 12.dp).coerceAtLeast(18.dp))
+                ChannelLogo(channel, (rowHeight - if (settings.guideTiviMateStyle) 7.dp else 12.dp).coerceAtLeast(18.dp))
                 Spacer(Modifier.width(8.dp))
             }
             if (settings.showChannelNames) {
@@ -5296,7 +5296,7 @@ private fun LogoSidePanel(
             Box(
                 Modifier.clip(RoundedCornerShape(10.dp)).background(guideSurface()).padding(horizontal = 8.dp, vertical = 6.dp),
                 contentAlignment = Alignment.Center
-            ) { ChannelLogo(channel.logo, 34.dp) }
+            ) { ChannelLogo(channel, 34.dp) }
         }
         Spacer(Modifier.height(14.dp))
         val buttons = listOf<Triple<androidx.compose.ui.graphics.vector.ImageVector, String, () -> Unit>>(

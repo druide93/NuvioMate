@@ -391,7 +391,7 @@ internal fun ShowChannelPicker(
                     onClick = { onPick(ch) }
                 ) { focused ->
                     Box(Modifier.size(width = 52.dp, height = 30.dp), contentAlignment = Alignment.Center) {
-                        com.nuvio.tv.livetv.ui.ChannelLogo(ch.logo, 26.dp)
+                        com.nuvio.tv.livetv.ui.ChannelLogo(ch, 26.dp)
                     }
                     Column(Modifier.weight(1f)) {
                         LiveText(ch.name, size = 15.sp, weight = FontWeight.SemiBold, color = focusedTextColor(focused))

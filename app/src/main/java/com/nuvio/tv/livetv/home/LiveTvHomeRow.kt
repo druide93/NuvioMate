@@ -430,7 +430,7 @@ private fun HomeCard(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier.width(if (compact) 40.dp else 48.dp), contentAlignment = Alignment.Center) {
-            ChannelLogo(entry.channel.logo, if (compact) 34.dp else 42.dp)
+            ChannelLogo(entry.channel, if (compact) 34.dp else 42.dp)
         }
         Spacer(Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {

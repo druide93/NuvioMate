@@ -465,16 +465,16 @@ internal fun LiveTvPlayerPanel(
                         contentAlignment = Alignment.Center
                     ) {
                         if (!poster.isNullOrBlank()) LivePosterImage(poster, Modifier.fillMaxSize()) {
-                            ChannelLogo(channel.logo, maxOf(30.dp, posterHeight * 0.4f))
+                            ChannelLogo(channel, maxOf(30.dp, posterHeight * 0.4f))
                         }
-                        else ChannelLogo(channel.logo, maxOf(30.dp, posterHeight * 0.4f))
+                        else ChannelLogo(channel, maxOf(30.dp, posterHeight * 0.4f))
                     }
                     Spacer(Modifier.width(14.dp))
                 } else if (showChannel && !channel.logo.isNullOrBlank()) {
                     Box(
                         Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)).background(if (tivimate) Color.Transparent else Color.White.copy(alpha = 0.10f)),
                         contentAlignment = Alignment.Center
-                    ) { ChannelLogo(channel.logo, 34.dp) }
+                    ) { ChannelLogo(channel, 34.dp) }
                     Spacer(Modifier.width(14.dp))
                 }
 
@@ -488,7 +488,7 @@ internal fun LiveTvPlayerPanel(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 if (showChannel) {
                                     if (showPoster && !poster.isNullOrBlank() && !channel.logo.isNullOrBlank()) {
-                                        ChannelLogo(channel.logo, 22.dp)
+                                        ChannelLogo(channel, 22.dp)
                                         Spacer(Modifier.width(8.dp))
                                     }
                                     if (showNumber) {
@@ -618,7 +618,7 @@ private fun ControlsBar(
             // ---- the show: the channel's logo, its name, the show's times and title
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (!channel.logo.isNullOrBlank()) {
-                    ChannelLogo(channel.logo, 34.dp)
+                    ChannelLogo(channel, 34.dp)
                     Spacer(Modifier.width(14.dp))
                 }
                 Column(Modifier.weight(1f)) {
@@ -1096,7 +1096,7 @@ private fun RecentRow(recent: List<PanelRecent>, focus: Int?, showClear: Boolean
                         }
                     } else null
                 ) {
-                    if (!r.channel.logo.isNullOrBlank()) ChannelLogo(r.channel.logo, 20.dp)
+                    if (!r.channel.logo.isNullOrBlank()) ChannelLogo(r.channel, 20.dp)
                     // No logo: the name (cut short; highlighted, it scrolls).
                     else LiveText(r.channel.name, size = 12.sp, weight = FontWeight.Bold, color = fg, marquee = f)
                     Spacer(Modifier.height(3.dp))

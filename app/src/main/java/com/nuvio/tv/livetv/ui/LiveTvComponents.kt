@@ -514,23 +514,36 @@ internal fun focusedSecondaryTextColor(focused: Boolean): Color =
     if (focused && LocalLiveSolidHighlight.current) NuvioTheme.colors.OnSecondary.copy(alpha = 0.8f)
     else NuvioTheme.colors.TextSecondary
 
+/** A channel's logo, with the other one it has (playlist's or guide's) behind it. */
+@Composable
+internal fun ChannelLogo(channel: com.nuvio.tv.livetv.model.LiveChannel, size: Dp, modifier: Modifier = Modifier) =
+    ChannelLogo(channel.logo, size, modifier, backup = channel.logoBackup)
+
 /**
  * A channel logo, fitted (not cropped) into a wide box: logos are usually see-through pictures
- * of any shape. Shown as they are, with nothing behind them.
+ * of any shape. Shown as they are, with nothing behind them. When [url] can't be loaded (a dead
+ * link, or a site that turns the app away), [backup] is shown instead.
  */
 @Composable
-internal fun ChannelLogo(url: String?, size: Dp, modifier: Modifier = Modifier) {
+internal fun ChannelLogo(url: String?, size: Dp, modifier: Modifier = Modifier, backup: String? = null) {
+    val first = url?.takeIf { it.isNotBlank() && !DeadLogos.isDead(it) }
+    val second = backup?.takeIf { it.isNotBlank() && it != url && !DeadLogos.isDead(it) }
+    var firstFailed by remember(url, backup) { mutableStateOf(false) }
+    val shown = if (first != null && !firstFailed) first else second
     Box(
         modifier = modifier.size(width = size * 1.6f, height = size),
         contentAlignment = Alignment.Center
     ) {
-        if (!url.isNullOrBlank() && !DeadLogos.isDead(url)) {
+        if (shown != null) {
             AsyncImage(
-                model = url,
+                model = shown,
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize().padding(2.dp),
-                onError = { DeadLogos.failed(url, it.result.throwable) }
+                onError = {
+                    DeadLogos.failed(shown, it.result.throwable)
+                    if (shown == first) firstFailed = true
+                }
             )
         }
     }

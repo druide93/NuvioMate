@@ -916,7 +916,7 @@ internal fun SportsChannelRow(
                 Modifier.size(width = 46.dp, height = 30.dp).clip(RoundedCornerShape(6.dp))
                     .background(Color.White.copy(alpha = 0.08f)),
                 contentAlignment = Alignment.Center
-            ) { ChannelLogo(m.channel.logo, 24.dp) }
+            ) { ChannelLogo(m.channel, 24.dp) }
             Spacer(Modifier.width(11.dp))
             Column(Modifier.weight(1f)) {
                 // The channel, and which of your playlists (providers) it comes from.

@@ -606,7 +606,7 @@ private fun StripStreamCard(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            ChannelLogo(match.channel.logo, 24.dp)
+            ChannelLogo(match.channel, 24.dp)
             LiveText(game.event.title, Modifier.weight(1f), size = 10.sp,
                 color = NuvioTheme.colors.TextSecondary)
             if (playing) PlayingBadge(accent, "PLAYING")
