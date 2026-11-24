@@ -1109,16 +1109,69 @@ class LiveTvViewModel @Inject constructor(
     /**
      * A skip in the replay playing, to [offsetMs] into the show that started at [programStartMs]:
      * the show the skip was made in. The replay may have run on into the next show since (skips
-     * wait a moment for more presses): the point is then worked out in the show playing now, or,
-     * when it's before that show, asked as a replay of the show at that time. Before, the old
-     * show's point was applied to the new one (10 s back at the very end of a show went to its
-     * last seconds' place in the next: an hour ahead).
+     * wait a moment for more presses): the point is then worked out in the show playing now.
+     * Before, the old show's point was applied to the new one (10 s back at the very end of a show
+     * went to its last seconds' place in the next: an hour ahead). Outside the show playing (a
+     * skip back past its start, or on past its end): the replay moves to the show on then (see
+     * [seekCatchupAcross]).
      */
     fun seekCatchupTo(programStartMs: Long, offsetMs: Long) {
         val s = _catchup.value ?: return
         val inShow = offsetMs + (programStartMs - s.program.startMs)
-        if (s.recordingId != null || inShow >= 0) { seekCatchupTo(inShow.coerceAtLeast(0L)); return }
-        if (replayFrom(s.channel, programStartMs + offsetMs) == null) seekCatchupTo(0L)
+        if (s.recordingId != null || inShow in 0 until s.program.stopMs - s.program.startMs) {
+            seekCatchupTo(inShow.coerceAtLeast(0L)); return
+        }
+        seekCatchupAcross(s, s.program.startMs + inShow)
+    }
+
+    /**
+     * A skip in the replay of [s] to [atMs] (wall clock), outside its show: back into the shows
+     * before it, or on into the ones after. The replay moves to the show on then (its title, info
+     * and seek bar) and goes there: inside what the stream already holds (the copy saved on this
+     * box, or a replay that ran on from an earlier show) without asking the provider, else that
+     * show is asked for from that point, over the picture kept, like any skip. A show the
+     * provider no longer keeps (or one before the guide's first): to the edge of the show playing,
+     * as before.
+     */
+    private fun seekCatchupAcross(s: CatchupSession, atMs: Long) {
+        if (catchupPickPending()) return
+        val back = atMs < s.program.startMs
+        val p = showAt(s.program, programs.value[s.channel.key].orEmpty(), atMs, s.channel.name)
+        if (p == null || !CatchupUrlBuilder.isAvailable(s.channel, p, System.currentTimeMillis())) {
+            seekCatchupTo(if (back) 0L else s.program.stopMs - s.program.startMs)
+            return
+        }
+        com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
+            "Catch-up: skipped ${if (back) "back" else "on"} out of \"${s.program.title}\" into \"${p.title}\" " +
+                "(${(atMs - p.startMs) / 60_000} min in) on ${s.channel.name}"
+        )
+        // The same stream, now counted in that show (see moveCatchupOn).
+        _catchup.value = CatchupSession(
+            s.channel, p, s.program.startMs + s.baseOffsetMs - p.startMs,
+            startAtMs = s.startAtMs?.let { s.program.startMs + it - p.startMs }
+        )
+        playback.setCatchupTitle(p.title)
+        seekCatchupTo(atMs - p.startMs)
+    }
+
+    /**
+     * How far back (wall clock) the replay playing can be skipped: the start of the oldest show in
+     * the guide the provider still keeps. Null for a recording, or with nothing older to go to.
+     */
+    fun catchupEarliestMs(): Long? {
+        val s = _catchup.value ?: return null
+        if (s.recordingId != null) return null
+        val now = System.currentTimeMillis()
+        return programs.value[s.channel.key].orEmpty()
+            .filter { it.startMs < s.program.startMs && CatchupUrlBuilder.isAvailable(s.channel, it, now) }
+            .minOfOrNull { it.startMs }
+    }
+
+    /** The show a skip to [atMs] (wall clock) lands in, in the replay playing (see [showAt]). */
+    fun catchupShowAt(atMs: Long): EpgProgram? {
+        val s = _catchup.value ?: return null
+        if (s.recordingId != null) return s.program
+        return showAt(s.program, programs.value[s.channel.key].orEmpty(), atMs, s.channel.name)
     }
 
     fun replayFrom(channel: LiveChannel, atMs: Long): Long? {
@@ -2290,6 +2343,22 @@ internal fun showAfter(cur: EpgProgram, list: List<EpgProgram>, absolute: Long):
     val start = from + (absolute - from) / len * len
     val until = list.filter { it.startMs > absolute }.minOfOrNull { it.startMs } ?: Long.MAX_VALUE
     return EpgProgram(startMs = start, stopMs = minOf(start + len, until), title = cur.title, category = cur.category, icon = cur.icon)
+}
+
+/**
+ * The show on at [absolute] for a replay of [cur] skipped outside it. After it: see [showAfter].
+ * Before it: the guide's show then (one that runs on into [cur] ends where [cur] starts), or, in
+ * a hole in the guide, one made of the hole, named [holeTitle]. Null before the guide's first show.
+ */
+internal fun showAt(cur: EpgProgram, list: List<EpgProgram>, absolute: Long, holeTitle: String): EpgProgram? {
+    if (absolute >= cur.startMs && absolute < cur.stopMs) return cur
+    if (absolute >= cur.stopMs) return showAfter(cur, list, absolute)
+    list.firstOrNull { absolute >= it.startMs && absolute < it.stopMs }?.let {
+        return if (it.stopMs > cur.startMs) it.copy(stopMs = cur.startMs) else it
+    }
+    val from = list.filter { it.stopMs <= absolute }.maxOfOrNull { it.stopMs } ?: return null
+    val until = list.filter { it.startMs > absolute }.minOfOrNull { it.startMs }?.coerceAtMost(cur.startMs) ?: cur.startMs
+    return EpgProgram(startMs = from, stopMs = until, title = holeTitle)
 }
 
 internal fun <T> pickLighter(quality: String?, candidates: List<Pair<T, String?>>): Pair<T, String>? {

@@ -451,11 +451,16 @@ fun LiveTvPlayerScreen(
             return@LaunchedEffect
         }
         if (s != null) viewModel.seekCatchupTo(s.program.startMs, target) else viewModel.seekCatchupTo(target)
-        positionMs = target.coerceAtLeast(0L)
+        // Out of its show, the replay moved to another one: the place is counted in that one.
+        val across = s != null && s.recordingId == null && target !in 0 until s.program.stopMs - s.program.startMs
+        positionMs = (if (across) viewModel.catchupPositionMs() else null) ?: target.coerceAtLeast(0L)
         scrubTargetMs = null
     }
     // Each press 10 seconds (as in the Nuvio player and Rewind Anytime); held, faster.
     // The on-screen ⟲30 / ⟳30 buttons pass their own 30 seconds.
+    // A replay goes on past its show's edges: back past its start into the shows before it, as far
+    // as the provider keeps them, and on past its end into the next ones, up to live (which goes
+    // back to live). Before, the skip stopped at the show's start and end. Recordings stay inside.
     fun scrub(forward: Boolean, repeat: Int, stepMs: Long? = null) {
         val s = catchupSession ?: return
         val step = stepMs ?: holdStepMs(repeat)
@@ -463,7 +468,11 @@ fun LiveTvPlayerScreen(
         // A skip still waiting, made in the show before this one: its point in this show.
         val waiting = scrubTargetMs?.let { it + ((scrubProgramStartMs ?: s.program.startMs) - s.program.startMs) }
         val from = waiting ?: positionMs
-        scrubTargetMs = (from + if (forward) step else -step).coerceIn(0L, length)
+        val to = from + if (forward) step else -step
+        scrubTargetMs = if (s.recordingId != null) to.coerceIn(0L, length) else {
+            val earliest = (viewModel.catchupEarliestMs() ?: s.program.startMs) - s.program.startMs
+            to.coerceIn(minOf(earliest, 0L), maxOf(length, System.currentTimeMillis() - s.program.startMs))
+        }
         scrubProgramStartMs = s.program.startMs
         scrubToken++
         showBanner()
@@ -1367,7 +1376,13 @@ fun LiveTvPlayerScreen(
                 }
                 // 24/7 channels with no episode info: what the channel plays, from your addons.
                 val about = if (!archive) rememberChannelAbout(ch, nowProgram) else null
-                val showProgram = if (archive) cs?.program else nowProgram
+                // A replay's skip waiting to happen outside its show (back into the shows before
+                // it, or on into the next): the bar shows the show it lands in, its title and times.
+                val scrubAt = if (archive && cs != null) scrubTargetMs?.let { (scrubProgramStartMs ?: cs.program.startMs) + it } else null
+                val scrubShow = if (cs != null && scrubAt != null && (scrubAt < cs.program.startMs || scrubAt >= cs.program.stopMs)) {
+                    viewModel.catchupShowAt(scrubAt)?.takeIf { it.startMs != cs.program.startMs }
+                } else null
+                val showProgram = if (archive) scrubShow ?: cs?.program else nowProgram
                 // Ticks while visible, so the timeline moves.
                 var tick by remember { mutableStateOf(System.currentTimeMillis()) }
                 // Seconds show in catch-up and paused live ("12:04 / 58:00"); live only needs minutes,
@@ -1382,33 +1397,38 @@ fun LiveTvPlayerScreen(
                 }
                 val timeline: PanelTimeline? = when (mode) {
                     PanelMode.CATCHUP -> cs?.let { session ->
-                        val pos = scrubTargetMs ?: positionMs
-                        val len = session.program.stopMs - session.program.startMs
-                        val watchingAt = session.program.startMs + pos
+                        // The show on the bar: the one playing, or the one a skip waiting lands in.
+                        val shown = scrubShow ?: session.program
+                        val watchingAt = scrubAt ?: (session.program.startMs + positionMs)
+                        val pos = (watchingAt - shown.startMs).coerceAtLeast(0L)
+                        val len = shown.stopMs - shown.startMs
                         // How far behind live you are: skip ahead (adverts) and watch it shrink.
                         val behind = (tick - watchingAt).coerceAtLeast(0L)
                         // A show still on air (watch from the beginning): the part that has aired
                         // so far in its own colour, with the live point marked.
-                        val stillOn = tick < session.program.stopMs
-                        val aired = if (stillOn) tick else session.program.stopMs
+                        val stillOn = tick < shown.stopMs
+                        val aired = if (stillOn) tick else shown.stopMs
+                        // What's saved or loaded, by the clock (counted in the show playing).
+                        val readyUntil = readyUntilMs?.let { session.program.startMs + it }
                         PanelTimeline(
-                            startMs = session.program.startMs,
-                            endMs = session.program.stopMs,
+                            startMs = shown.startMs,
+                            endMs = shown.stopMs,
                             positionMs = watchingAt,
                             liveMs = if (stillOn) tick else null,
                             // The lighter part: how far you can seek without waiting (what's saved
                             // with Faster Catch-Up Skipping, or loaded ahead); else what has aired.
-                            recordedUntilMs = readyUntilMs?.let { (session.program.startMs + it).coerceAtMost(aired) } ?: aired,
-                            leftLabel = formatClock(session.program.startMs, use24h),
-                            rightLabel = formatClock(session.program.stopMs, use24h),
+                            // (Another show than the one playing, past what's saved: what has aired.)
+                            recordedUntilMs = readyUntil?.takeIf { it >= shown.startMs }?.coerceAtMost(aired) ?: aired,
+                            leftLabel = formatClock(shown.startMs, use24h),
+                            rightLabel = formatClock(shown.stopMs, use24h),
                             status = formatDuration(pos) + " / " + formatDuration(len) +
                                 (if (behind < 12 * 3_600_000L) "  ·  " + LiveTvTexts.trf("{0} behind live", formatDuration(behind)) else ""),
                             statusLive = stillOn,
                             // In its own colour, behind where you are: the part already saved (Faster Catch-Up
                             // Skipping) that a skip back plays at once.
-                            cached = readyUntilMs?.let { until ->
-                                val from = session.program.startMs + (readyFromMs ?: 0L)
-                                val to = (session.program.startMs + until).coerceAtMost(aired)
+                            cached = readyUntil?.let { until ->
+                                val from = maxOf(session.program.startMs + (readyFromMs ?: 0L), shown.startMs)
+                                val to = until.coerceAtMost(aired)
                                 if (to > from) from..to else null
                             }
                         )
@@ -1502,7 +1522,7 @@ fun LiveTvPlayerScreen(
                         channel = ch,
                         mode = mode,
                         full = barFull,
-                        title = watchingTitle ?: ch.name,
+                        title = scrubShow?.title ?: watchingTitle ?: ch.name,
                         // The year goes next to the category, off the end of the description.
                         meta = metaWithYear(
                             listOf(
