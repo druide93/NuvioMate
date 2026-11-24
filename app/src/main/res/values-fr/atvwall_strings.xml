@@ -17,4 +17,42 @@
     </plurals>
     <string name="atvwall_licence_title">API Wallpaper d\'ATV Launcher et Marquee</string>
     <string name="atvwall_licence_body">ATV Launcher Wallpaper API, Copyright 2026 DStudio (github.com/dstio/wallpaper-api). La mise en page des fonds Scout est adaptée de Marquee, Copyright 2026 DStudio (github.com/dstio/marquee-wallpaper-plugin). Tous deux sous licence Apache, version 2.0.</string>
+    <!-- The widget's settings -->
+    <string name="atvwall_style_title">Bouton Scout</string>
+    <string name="atvwall_style_hint">La taille de l\'emplacement est décidée par ATV Launcher : dans une rangée d\'icônes rondes, il reste petit. Pour un bouton plus grand, utilisez « Mettre à l\'échelle » dans le menu du widget (MENU), ou placez-le dans une section de widgets.</string>
+    <string name="atvwall_style_content">Contenu</string>
+    <string name="atvwall_style_shape">Forme</string>
+    <string name="atvwall_style_fill">Fond</string>
+    <string name="atvwall_style_scale">Taille</string>
+    <string name="atvwall_style_auto">Auto</string>
+    <string name="atvwall_style_content_icon">Icône</string>
+    <string name="atvwall_style_content_icon_label">Icône + Fiche</string>
+    <string name="atvwall_style_content_title">Titre + bouton</string>
+    <string name="atvwall_style_shape_round">Rond</string>
+    <string name="atvwall_style_shape_rounded">Arrondi</string>
+    <string name="atvwall_style_shape_pill">Pilule</string>
+    <string name="atvwall_style_shape_square">Carré</string>
+    <string name="atvwall_style_fill_dark">Sombre</string>
+    <string name="atvwall_style_fill_glass">Verre</string>
+    <string name="atvwall_style_fill_light">Clair</string>
+    <string name="atvwall_style_fill_brand">NuvioMate</string>
+    <string name="atvwall_style_fill_none">Aucun</string>
+    <string name="atvwall_style_scale_small">Petite</string>
+    <string name="atvwall_style_scale_medium">Moyenne</string>
+    <string name="atvwall_style_scale_large">Grande</string>
+    <string name="atvwall_style_preview_small">Dans une tuile ronde</string>
+    <string name="atvwall_style_preview_large">Dans une section de widgets</string>
+    <string name="atvwall_style_done">Terminé</string>
+    <string name="atvwall_wall_title">Fonds Scout</string>
+    <string name="atvwall_wall_hint">Le plugin montre une suggestion Scout à la fois et passe à la suivante à ce rythme, pour que le bouton « Voir la fiche » sache toujours laquelle est à l\'écran. Laissez « Changer d\'image » d\'ATV Launcher sur « Chaque minute » : la nouvelle image arrive à son changement suivant.</string>
+    <string name="atvwall_wall_change_every">Fond : changer d\'image toutes les</string>
+    <string name="atvwall_wall_minutes">%1$d min</string>
+    <string name="atvwall_wall_hours">%1$d h</string>
+    <string name="atvwall_widget_kicker_showing">À L\'AFFICHE</string>
+    <string name="atvwall_style_kicker">Surtitre</string>
+    <string name="atvwall_style_kicker_none">Aucun</string>
+    <string name="atvwall_style_kicker_wallpaper">En fond d\'écran</string>
+    <string name="atvwall_style_kicker_scout">Scout</string>
+    <string name="atvwall_style_kicker_showing">À l\'affiche</string>
+    <string name="atvwall_style_content_button">Bouton seul</string>
 </resources>

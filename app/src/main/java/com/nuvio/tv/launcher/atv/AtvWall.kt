@@ -178,15 +178,58 @@ object AtvWall {
 
     // ---- On screen ---------------------------------------------------------------------------
 
-    fun writeShown(context: Context, itemId: String) =
-        writeAtomically(file(context, SHOWN_FILE), JSONObject().put("id", itemId).put("at", System.currentTimeMillis()).toString())
+    /**
+     * What is on screen ([id], since [since]) and what the plugin last handed the launcher
+     * ([pending], at [pushedAt]). The launcher puts a handed picture on screen at its own next
+     * change, so the two differ for up to a minute.
+     */
+    data class OnScreen(val id: String?, val since: Long, val pending: String?, val pushedAt: Long)
 
-    /** The entry on screen now, or the set's first one when the launcher has not said yet. */
+    fun onScreen(context: Context): OnScreen {
+        val o = readJson(file(context, SHOWN_FILE))
+        return OnScreen(
+            id = o?.optString("id")?.ifBlank { null },
+            since = o?.optLong("at", 0L) ?: 0L,
+            pending = o?.optString("pending")?.ifBlank { null },
+            pushedAt = o?.optLong("pushedAt", 0L) ?: 0L,
+        )
+    }
+
+    private fun writeOnScreen(context: Context, s: OnScreen) = writeAtomically(
+        file(context, SHOWN_FILE),
+        JSONObject().put("id", s.id ?: "").put("at", s.since).put("pending", s.pending ?: "").put("pushedAt", s.pushedAt).toString(),
+    )
+
+    /** The launcher put [itemId] on screen. */
+    fun writeShown(context: Context, itemId: String, now: Long = System.currentTimeMillis()) {
+        val s = onScreen(context)
+        if (s.id != itemId) writeOnScreen(context, s.copy(id = itemId, since = now))
+    }
+
+    /** The plugin handed the launcher [itemId] (unchanged when it is the same one again). */
+    fun writePending(context: Context, itemId: String, now: Long = System.currentTimeMillis()) {
+        val s = onScreen(context)
+        if (s.pending != itemId) writeOnScreen(context, s.copy(pending = itemId, pushedAt = now))
+    }
+
+    /** The entry on screen now; else the one handed out; else the set's first. */
     fun currentEntry(context: Context): WallEntry? {
         val set = readSet(context) ?: return null
-        val shown = readJson(file(context, SHOWN_FILE))?.optString("id")
-        return set.entries.firstOrNull { it.id == shown } ?: set.entries.firstOrNull()
+        val s = onScreen(context)
+        return set.entries.firstOrNull { it.id == s.id } ?: set.entries.firstOrNull { it.id == s.pending } ?: set.entries.firstOrNull()
     }
+
+    // ---- How often the picture changes (plugin process only) ---------------------------------
+
+    private const val SETTINGS = "atvwall_settings"
+    const val DEFAULT_CHANGE_MINUTES = 5
+    val CHANGE_MINUTES = listOf(1, 5, 15, 30, 60)
+
+    fun changeEveryMinutes(context: Context): Int =
+        context.getSharedPreferences(SETTINGS, Context.MODE_PRIVATE).getInt("change_every_min", DEFAULT_CHANGE_MINUTES)
+
+    fun setChangeEveryMinutes(context: Context, minutes: Int) =
+        context.getSharedPreferences(SETTINGS, Context.MODE_PRIVATE).edit().putInt("change_every_min", minutes).apply()
 
     // ---- Files -------------------------------------------------------------------------------
 

@@ -33,6 +33,7 @@ class ScoutWallpaperService : WallpaperProviderService() {
     }
 
     override fun onShown(itemId: String) {
+        Log.i(TAG, "shown $itemId")
         io.execute {
             runCatching { AtvWall.writeShown(this, itemId) }
             ScoutWallpaperWidget.refreshAll(this)
@@ -55,7 +56,14 @@ class ScoutWallpaperService : WallpaperProviderService() {
         super.onDestroy()
     }
 
-    /** On the io thread: push the set there is, and ask the app for one when it is missing or old. */
+    /**
+     * On the io thread. The launcher is handed one picture at a time, so the plugin always knows
+     * which one is on screen: ATV Launcher changes pictures on its return to Home before it binds
+     * the plugin again, and never says so, which left the "See details" widget on another title.
+     * The plugin moves to the next title itself once the time set in its settings has passed
+     * (asked again then), or when the user asks for the next picture; otherwise it hands back the
+     * same one, which the launcher keeps on screen.
+     */
     private fun answer(reason: Int) {
         val set = AtvWall.readSet(this)
         if (set == null || set.entries.isEmpty()) {
@@ -64,26 +72,47 @@ class ScoutWallpaperService : WallpaperProviderService() {
             ScoutWallpaperJob.ask(this)
             return
         }
-        Log.i(TAG, "request $reason: ${set.entries.size} pictures")
+        val entries = set.entries
+        val now = System.currentTimeMillis()
+        val every = AtvWall.changeEveryMinutes(this) * 60_000L
+        var state = AtvWall.onScreen(this)
+        // Back on Home after a minute or more away, the launcher has already put the picture it
+        // was handed on screen, before binding the plugin, and does not say so.
+        if (reason == WallpaperContract.REASON_START && state.pending != null && state.pending != state.id &&
+            now - state.pushedAt >= WallpaperContract.MIN_REQUEST_INTERVAL_MS
+        ) {
+            runCatching { AtvWall.writeShown(this, state.pending!!, now) }
+            state = AtvWall.onScreen(this)
+        }
+        val handed = state.pending ?: state.id
+        val at = entries.indexOfFirst { it.id == handed }
+        val due = now - state.pushedAt >= every - EARLY_SLACK_MS
+        val next = when {
+            at < 0 -> entries.first()
+            reason == WallpaperContract.REASON_MANUAL || due -> entries[(at + 1) % entries.size]
+            else -> entries[at]
+        }
+        runCatching { AtvWall.writePending(this, next.id, now) }
+        val pushedAt = AtvWall.onScreen(this).pushedAt
+        val untilNext = (pushedAt + every - now).coerceAtLeast(WallpaperContract.MIN_REQUEST_INTERVAL_MS)
+        Log.i(TAG, "request $reason: ${next.title} (${entries.indexOf(next) + 1}/${entries.size}), next in ${untilNext / 1000} s")
         push(
             WallpaperBatch(
-                items = set.entries.take(WallpaperContract.MAX_ITEMS).map { e ->
+                items = listOf(
                     WallpaperItem(
-                        id = e.id,
-                        uri = "content://$packageName.atvwall/${e.file}",
+                        id = next.id,
+                        uri = "content://$packageName.atvwall/${next.file}",
                         type = WallpaperContract.TYPE_IMAGE,
                         mode = WallpaperContract.MODE_FILL,
-                        title = e.title,
+                        title = next.title,
                         author = AUTHOR,
                     )
-                },
-                // A new set says so itself (the set file changes and the launcher is told), so
-                // the timer is only a safety net.
-                nextRequestMs = ASK_AGAIN_MS,
+                ),
+                nextRequestMs = untilNext,
             )
         )
         ScoutWallpaperWidget.refreshAll(this)
-        if (System.currentTimeMillis() - set.createdAt > OLD_SET_MS) ScoutWallpaperJob.ask(this)
+        if (now - set.createdAt > OLD_SET_MS) ScoutWallpaperJob.ask(this)
     }
 
     /** A set the app writes while the launcher is bound reaches the screen without waiting for the timer. */
@@ -102,7 +131,8 @@ class ScoutWallpaperService : WallpaperProviderService() {
         const val TAG = "AtvWall"
         const val AUTHOR = "NuvioMate · Scout"
         const val NOTHING_YET_RETRY_MS = 5 * 60_000L
-        const val ASK_AGAIN_MS = 6 * 60 * 60_000L
+        /** A request a little before the change is due still moves on (the launcher's timer is not exact). */
+        const val EARLY_SLACK_MS = 5_000L
         const val OLD_SET_MS = 26 * 60 * 60_000L
     }
 }

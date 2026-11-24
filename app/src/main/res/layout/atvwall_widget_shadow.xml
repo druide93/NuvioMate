@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- atvwall_widget.xml for "Background: None": the same views, with a shadow under the text so it
+     reads over any wallpaper (a RemoteViews cannot set a shadow, so it is a layout of its own). -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/atvwall_widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Round: a circle kept whole in the slot. -->
+    <ImageView
+        android:id="@+id/atvwall_widget_bg_fit"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="fitCenter"
+        android:src="@drawable/atvwall_shape_round"
+        android:visibility="gone" />
+
+    <!-- Other shapes: the whole slot. -->
+    <ImageView
+        android:id="@+id/atvwall_widget_bg_fill"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="fitXY"
+        android:src="@drawable/atvwall_shape_rounded"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/atvwall_widget_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/atvwall_widget_icon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:contentDescription="@null"
+            android:src="@drawable/atvwall_info_glyph" />
+
+        <TextView
+            android:id="@+id/atvwall_widget_label"
+            android:shadowColor="#FF000000"
+            android:shadowDx="0"
+            android:shadowDy="2"
+            android:shadowRadius="12"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="1"
+            android:text="@string/atvwall_widget_open_short"
+            android:textColor="#FFF2EEE6"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/atvwall_widget_kicker"
+            android:shadowColor="#FF000000"
+            android:shadowDx="0"
+            android:shadowDy="2"
+            android:shadowRadius="12"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:letterSpacing="0.14"
+            android:maxLines="1"
+            android:text="@string/atvwall_widget_kicker"
+            android:textColor="#FFF2EEE6"
+            android:textSize="11sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/atvwall_widget_title"
+            android:shadowColor="#FF000000"
+            android:shadowDx="0"
+            android:shadowDy="2"
+            android:shadowRadius="12"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="2"
+            android:text="@string/atvwall_widget_empty"
+            android:textColor="#FFF2EEE6"
+            android:textSize="18sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/atvwall_widget_reason"
+            android:shadowColor="#FF000000"
+            android:shadowDx="0"
+            android:shadowDy="2"
+            android:shadowRadius="12"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:alpha="0.95"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="#FFF2EEE6"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/atvwall_widget_action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/atvwall_pill_light"
+            android:fontFamily="sans-serif-medium"
+            android:paddingStart="14dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="6dp"
+            android:text="@string/atvwall_widget_open"
+            android:textColor="#FF0C0D0F"
+            android:textSize="14sp"
+            android:visibility="gone" />
+    </LinearLayout>
+</FrameLayout>

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- "See details" for the title on the Scout wallpaper, redrawn by the plugin as pictures change. -->
+<!-- "See details" for the title on the Scout wallpaper, redrawn by the plugin as pictures change;
+     its look is set in ScoutWidgetSettingsActivity. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.nuvio.tv.launcher.atv.ScoutWidgetSettingsActivity"
     android:description="@string/atvwall_widget_description"
     android:initialLayout="@layout/atvwall_widget"
     android:previewLayout="@layout/atvwall_widget"
@@ -12,4 +14,5 @@
     android:targetCellHeight="2"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="0"
-    android:widgetCategory="home_screen" />
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable|configuration_optional" />

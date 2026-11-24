@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The Scout wallpaper plugin, as ATV Launcher lists it (github.com/dstio/wallpaper-api).
-     A new set tells the launcher itself; the timer is only a safety net. -->
+<!-- The Scout wallpaper plugin, as ATV Launcher lists it (github.com/dstio/wallpaper-api). It hands
+     the launcher one picture at a time and asks to be asked again when the next is due. -->
 <wallpaper-provider
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:wallpaperLabel="@string/atvwall_label"
     app:wallpaperDescription="@string/atvwall_description"
     app:wallpaperPreview="@drawable/atvwall_preview"
+    app:wallpaperSettings="com.nuvio.tv.launcher.atv.ScoutWidgetSettingsActivity"
     app:wallpaperKind="items"
     app:wallpaperTypes="image"
     app:refreshIntervalMs="21600000"

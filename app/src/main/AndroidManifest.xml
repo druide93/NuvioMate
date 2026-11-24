@@ -140,6 +140,20 @@
                 android:resource="@xml/atvwall_widget_info" />
         </receiver>
 
+        <!-- The widget's settings (shape, background, size, content): the launcher opens them when
+             the widget is added and from its "Widget settings", so they are exported. -->
+        <activity
+            android:name=".launcher.atv.ScoutWidgetSettingsActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:process=":atvwall"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".launcher.atv.ScoutWallpaperOpenActivity"
             android:excludeFromRecents="true"
