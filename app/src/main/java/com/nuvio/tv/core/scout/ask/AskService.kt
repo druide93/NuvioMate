@@ -71,7 +71,13 @@ class OkHttpAskTransport @Inject constructor() : AskTransport {
         client.newCall(builder.build()).execute().use { response ->
             val source = response.body.source()
             source.request(MAX_RESPONSE_BYTES)
-            AskHttpResponse(response.code, source.buffer.clone().readUtf8())
+            val body = source.buffer.clone().readUtf8()
+            // Debug builds only: which service error is behind a failure. The key travels in a
+            // header and the URL has no query, so neither ends up here.
+            if (BuildConfig.DEBUG && !response.isSuccessful) {
+                android.util.Log.w("ScoutAsk", "HTTP ${response.code} ${request.url.substringBefore('?')} ${body.take(600)}")
+            }
+            AskHttpResponse(response.code, body)
         }
     }
 }
