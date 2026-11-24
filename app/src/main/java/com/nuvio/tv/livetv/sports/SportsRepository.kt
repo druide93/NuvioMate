@@ -836,6 +836,7 @@ class SportsRepository @Inject constructor(
             // Multiview panes, score rounds at full priority every 10 s made every pane skip frames.
             val ctx = if (watching()) com.nuvio.tv.livetv.data.BackgroundWork.quiet else Dispatchers.IO
             if (active) withContext(ctx) { sportsCatching { updateOnce(System.currentTimeMillis()) } }.onFailure { Log.w(TAG, "Sports update failed", it) }
+            if (active) withContext(ctx) { sportsCatching { updateWatched(System.currentTimeMillis()) } }.onFailure { Log.w(TAG, "Watched scores update failed", it) }
             if (active) withContext(ctx) { sportsCatching { updateRugbyLive(System.currentTimeMillis()) } }.onFailure { Log.w(TAG, "Live rugby update failed", it) }
             // Requested scoreboards and notifications keep their feeds. The catalogue that
             // only helps future browsing waits until the movie or episode closes.
@@ -876,9 +877,11 @@ class SportsRepository @Inject constructor(
                 }
             }
             // Every 10 s with Sports on screen; every 20 s while video plays over it (Multiview,
-            // full screen), which still keeps the scores on screen current.
+            // full screen), which still keeps the scores on screen current. Every 10 s too while
+            // a live game's score is on the info bar or pinned (see WatchedScores).
             val wait = when {
                 viewers.value > 0 && !watching() -> 10_000L
+                active && watchedGames().isNotEmpty() -> WatchedScores.EVERY_MS
                 viewers.value > 0 -> 20_000L
                 else -> 30_000L
             }
@@ -905,6 +908,9 @@ class SportsRepository @Inject constructor(
         // through the shared cache in nuvio-data instead, so "every league, not just your
         // region's" costs nothing extra against ESPN itself (see fetchViaSharedCache below).
         fun fastLeague(l: League) = isMine(l, f) || l.id in playingLeagues || SportsCatalog.shown(l, s)
+        // Games whose score is on the info bar or pinned: their leagues straight from ESPN, whole
+        // days every minute (updateWatched keeps the games themselves current in between).
+        val watchedLeagues = watchedGames().mapTo(HashSet()) { it.leagueId }
         val due = allEspnLeagues().filter { l ->
             if (com.nuvio.tv.livetv.data.BackgroundWork.onDemandPlaying.value && l.id !in required) return@filter false
             val d = data[l.id]
@@ -917,6 +923,7 @@ class SportsRepository @Inject constructor(
                 force -> age > 15_000
                 viewing && (live || nearNow) -> age > (if (live) 30_000 else 5 * MINUTE)
                 viewing && fastLeague(l) -> age > (if (live) 30_000 else 5 * MINUTE)
+                l.id in watchedLeagues -> age > 60_000
                 l.id in playingLeagues && s.scoreOnInfoBar -> age > 60_000
                 mine && live -> age > (if (s.scoringAlerts || l.id in alertLeagueIds(f)) 45_000 else 90_000)
                 mine -> age > 30 * MINUTE
@@ -928,7 +935,7 @@ class SportsRepository @Inject constructor(
         }.sortedWith(compareByDescending<League> { l ->
             val evs = data[l.id]?.events.orEmpty()
             when {
-                l.id in playingLeagues || isMine(l, f) -> 4
+                l.id in playingLeagues || l.id in watchedLeagues || isMine(l, f) -> 4
                 evs.any { it.state == GameState.LIVE } -> 3
                 evs.any { it.startMs in (now - HOUR)..(now + HOUR) } -> 2
                 SportsCatalog.shown(l, s) -> 1
@@ -952,7 +959,9 @@ class SportsRepository @Inject constructor(
                     // Playback may have started after the list of due leagues was made.
                     if (com.nuvio.tv.livetv.data.BackgroundWork.onDemandPlaying.value && l.id !in required) return@withPermit
                     val nearNow = data[l.id]?.events?.any { it.startMs in (now - 6 * HOUR)..(now + 6 * HOUR) } == true
-                    val useDirect = isMine(l, f) || l.id in playingLeagues ||
+                    // A watched league never from the shared file: it's minutes behind, and would
+                    // put the quick reads' newer scores back.
+                    val useDirect = isMine(l, f) || l.id in playingLeagues || l.id in watchedLeagues ||
                         (com.nuvio.tv.livetv.data.BackgroundWork.onDemandPlaying.value && l.id in required) ||
                         (viewing && (SportsCatalog.shown(l, s) || nearNow))
                     // Leagues nobody is looking at wait while the guide is being built or channels
@@ -1037,6 +1046,79 @@ class SportsRepository @Inject constructor(
     }
 
     private var lastFailLine: String? = null
+
+    /** The live games whose score is on the info bar or pinned right now (see [WatchedScores]). */
+    private fun watchedGames(): List<SportsEvent> {
+        val key = playback.state.value.channelKey
+        return WatchedScores.games(
+            settings.value,
+            events.value,
+            playingCardId = key?.let { SportsLive.cardByChannel.value[it]?.id },
+            pins = SportsLive.pins.value,
+            playing = key != null || com.nuvio.tv.livetv.data.BackgroundWork.nuvioPlaying.value
+        )
+    }
+
+    /** When each watched league was last read by [updateWatched]. */
+    private val watchedReadAt = java.util.concurrent.ConcurrentHashMap<String, Long>()
+
+    /**
+     * The games whose score is on the info bar or pinned: their league's scoreboard for just
+     * those games' days, straight from ESPN, every [WatchedScores.EVERY_MS] (the full round, every
+     * minute for these leagues, still brings everything else). Only games already known are
+     * replaced, and nothing is saved: the full round saves.
+     */
+    private suspend fun updateWatched(now: Long) {
+        val games = watchedGames()
+        if (games.isEmpty()) return
+        for ((leagueId, list) in games.groupBy { it.leagueId }) {
+            val l = SportsCatalog.league(leagueId) ?: continue
+            if (l.espnPath == null || OtherFeeds.handles(l.espnPath) || fromTsdb(l.id)) continue
+            // Just read (by the full round or here): not again yet. A second's slack for the loop.
+            val last = maxOf(watchedReadAt[l.id] ?: 0L, lastChecked(l.id, leagueData.value[l.id]))
+            if (now - last < WatchedScores.EVERY_MS - 1_000L) continue
+            watchedReadAt[l.id] = now
+            val days = list.map { espnDay(it.startMs) }.distinct()
+            sportsCatching {
+                scoreCheckpoint(l.id)
+                val t0 = System.currentTimeMillis()
+                val raws = days.map { d -> feeds.scoreboardDayRaw(l, d) }
+                val took = System.currentTimeMillis() - t0
+                if (sameAsLast("w|" + l.id, raws)) {
+                    Log.d(TAG, "Watched scores: ${l.name} read in $took ms, unchanged")
+                    return@sportsCatching
+                }
+                val fresh = withContext(com.nuvio.tv.livetv.data.BackgroundWork.quiet) {
+                    raws.flatMap { raw -> sportsCatching { SportsFeeds.parseScoreboard(l, raw) }.getOrElse { emptyList() } }
+                }
+                var before: List<SportsEvent>? = null
+                var after: List<SportsEvent>? = null
+                leagueData.update { m ->
+                    val cur = m[l.id] ?: return@update m
+                    val merged = WatchedScores.freshen(cur.events, fresh)
+                    if (merged === cur.events) m
+                    else {
+                        before = cur.events
+                        after = merged
+                        m + (l.id to LeagueData(merged, cur.fetchedAt, cur.error))
+                    }
+                }
+                // With Score Delay on, alerts come from the delayed scores instead (see watchDelayedScores).
+                val b = before
+                val a = after
+                val changed = if (b == null || a == null) 0 else a.indices.count { a[it] !== b[it] }
+                Log.d(TAG, "Watched scores: ${l.name} read in $took ms, $changed game(s) changed")
+                if (b != null && a != null && scoreDelayMs.value <= 0) noticeScoring(l, b, a)
+            }.onFailure { e ->
+                if (e !is ScoreRefreshDeferred) Log.w(TAG, "Watched scores: couldn't read ${l.name}", e)
+            }
+        }
+    }
+
+    /** The ESPN (US Eastern) date of [ms]: the scoreboard day a game starting then is listed on. */
+    private fun espnDay(ms: Long): String =
+        SimpleDateFormat("yyyyMMdd", Locale.US).apply { timeZone = TimeZone.getTimeZone("America/New_York") }
+            .format(java.util.Date(ms))
 
     /**
      * While a rugby game is on: TheSportsDB's live rugby file (its match minute), read every minute
@@ -2362,8 +2444,11 @@ class SportsRepository @Inject constructor(
             var before: Map<String, SportsEvent> = emptyMap()
             events.collect { list ->
                 val now = list.associateBy { it.id }
+                // The info bar's and corner card's scores follow every change, Score Delay or not:
+                // rebuilt only at the end of a round, they could miss the last league's new
+                // scores (still settling) and stay a whole round behind.
+                if (before.isNotEmpty()) runCatching { rebuildLiveScores() }
                 if (scoreDelayMs.value > 0 && before.isNotEmpty()) {
-                    runCatching { rebuildLiveScores() }
                     list.filter { ev -> before[ev.id].let { it != null && it !== ev && (it.sides != ev.sides || it.state != ev.state) } }
                         .groupBy { it.leagueId }
                         .forEach { (leagueId, changed) ->
