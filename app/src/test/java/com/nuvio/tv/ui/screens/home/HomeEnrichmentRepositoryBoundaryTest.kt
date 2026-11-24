@@ -203,7 +203,8 @@ class HomeEnrichmentRepositoryBoundaryTest {
             tvRecommendationManager = mockk(relaxed = true),
             serverCatalog = mockk(relaxed = true),
             trailerPlayerPool = mockk(relaxed = true),
-            backgroundTrailerController = mockk(relaxed = true)
+            backgroundTrailerController = mockk(relaxed = true),
+            homeLiveRows = mockk(relaxed = true)
         )
         viewModel.startupGracePeriodActive = false
         viewModel.externalMetaPrefetchEnabled = true

@@ -79,7 +79,9 @@ class AddonManagerViewModelReorderTest {
             tmdbCollectionSourceResolver = mockk<TmdbCollectionSourceResolver>(relaxed = true),
             traktPublicListSourceResolver = mockk<TraktPublicListSourceResolver>(relaxed = true),
             trackingAddonConsentController = mockk<TrackingAddonConsentController>(relaxed = true),
-            context = mockk<Context>(relaxed = true)
+            context = mockk<Context>(relaxed = true),
+            homeLiveRows = mockk(relaxed = true),
+            homeRowChoices = mockk(relaxed = true)
         )
         return vm to addonRepository
     }
