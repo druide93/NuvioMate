@@ -221,6 +221,7 @@ import com.nuvio.tv.ui.util.rememberDrawerItemFocusRequesters
 import com.nuvio.tv.ui.util.rememberRawSvgPainter
 import com.nuvio.tv.updater.UpdateViewModel
 import com.nuvio.tv.updater.ui.UpdateBannerHost
+import com.nuvio.tv.livetv.ui.quietForAccessibility
 import dagger.hilt.android.AndroidEntryPoint
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeInputScale
@@ -711,6 +712,11 @@ open class MainActivity : ComponentActivity() {
             }
             val discoverLocation = mainUiPrefs.discoverLocation
 
+            // NuvioMate: with no screen reader on, the app has no description for accessibility
+            // services (any service at all, like ATV Launcher's Home button redirect, made Compose
+            // describe the whole screen again at every frame). See ScreenReader.kt.
+            val screenReaderOn = com.nuvio.tv.livetv.ui.rememberScreenReaderOn()
+            Box(Modifier.fillMaxSize().quietForAccessibility(screenReaderOn), propagateMinConstraints = true) {
             NuvioTheme(
                 appTheme = mainUiPrefs.theme,
                 customThemeColors = mainUiPrefs.customThemeColors,
@@ -1560,6 +1566,7 @@ open class MainActivity : ComponentActivity() {
                     }
                 }
                 }
+            }
             }
         }
 
