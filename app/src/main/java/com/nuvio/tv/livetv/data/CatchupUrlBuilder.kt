@@ -178,18 +178,30 @@ object CatchupUrlBuilder {
      * has aired since [url] was asked for (it could only hold what had aired by then), with the
      * wall-clock time that link starts at. [linkStartMs]: when [url] starts. Null when it isn't
      * this kind of link, or less than a minute more has aired by [nowMs].
+     *
+     * [savedUpToMs]: where the save got to (wall clock). A link asked to a show's end while the
+     * show was still on air holds only what had aired: the provider sends that and ends there,
+     * well before the link's own end (seen on M6, 2026-11-24: the save then sat idle until the
+     * show ended, and playback froze at the end of it every 7 minutes or so). Carried on from the
+     * whole minute the save got to instead, the part sent again dropped by the stream's clock.
      */
-    fun nextLink(url: String, linkStartMs: Long, nowMs: Long): Pair<String, Long>? {
+    fun nextLink(url: String, linkStartMs: Long, nowMs: Long, savedUpToMs: Long? = null): Pair<String, Long>? {
         val path = url.substringBefore('?')
         val m = Regex("""^(.*/timeshift/[^/]+/[^/]+/)(\d+)/(\d{4}-\d{2}-\d{2}:\d{2}-\d{2})/(.+)$""", RegexOption.IGNORE_CASE).find(path) ?: return null
         val minutes = m.groupValues[2].toLongOrNull() ?: return null
         val endMs = linkStartMs + minutes * 60_000
-        val more = ((nowMs - 30_000 - endMs) / 60_000).coerceAtMost(180)
+        // Short of the link's end by more than a minute: on from the save's own whole minute,
+        // as long as that's past the start of this link (else nothing would move on).
+        val fromMs = savedUpToMs?.takeIf { it < endMs - 60_000 }
+            ?.let { linkStartMs + (it - linkStartMs) / 60_000 * 60_000 }
+            ?.takeIf { it > linkStartMs }
+            ?: endMs
+        val more = ((nowMs - 30_000 - fromMs) / 60_000).coerceAtMost(180)
         if (more < 1) return null
         // Minutes added to the time as written, whatever clock it's in.
         val utc = stampFormat(TimeZone.getTimeZone("UTC"))
         val stamp = runCatching { utc.parse(m.groupValues[3])?.time }.getOrNull() ?: return null
-        return "${m.groupValues[1]}$more/${utc.format(java.util.Date(stamp + minutes * 60_000))}/${m.groupValues[4]}${url.substring(path.length)}" to endMs
+        return "${m.groupValues[1]}$more/${utc.format(java.util.Date(stamp + (fromMs - linkStartMs)))}/${m.groupValues[4]}${url.substring(path.length)}" to fromMs
     }
 
     /** The start time written in a catch-up link (Xtream timeshift or timeshift.php), or null for other kinds. */

@@ -26,6 +26,23 @@ class ReplaySaveSlowdownTest {
     }
 
     @Test
+    fun `a save that caught up with what has aired is near aired`() {
+        // M6, 2026-11-24: link from 01:17:00, 410 s saved at 01:25:03 (73 s behind the clock).
+        val linkStart = 1_795_475_820_000L
+        val now = linkStart + 8 * 60_000 + 3_000
+        assertTrue(replaySaveNearAired(linkStart, 410_000, now))
+    }
+
+    @Test
+    fun `a save well behind what has aired is not near aired`() {
+        val linkStart = 1_795_475_820_000L
+        // Ten minutes saved of a show that started an hour ago: a slow save, worth a new connection.
+        assertFalse(replaySaveNearAired(linkStart, 600_000, linkStart + 60 * 60_000))
+        // The link's time isn't known (a time shift is set): as before.
+        assertFalse(replaySaveNearAired(null, 600_000, linkStart + 11 * 60_000))
+    }
+
+    @Test
     fun `a provider that sent other bytes is remembered by its host`() {
         assertFalse(providerResends("https://resends.example/timeshift/a/b/41/2026-11-20:12-04/382.ts"))
         markProviderResends("https://resends.example/timeshift/a/b/41/2026-11-20:12-04/382.ts")

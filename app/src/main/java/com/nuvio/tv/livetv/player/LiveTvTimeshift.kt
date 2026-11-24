@@ -83,6 +83,20 @@ internal fun replaySaveThrottled(peakRate: Double, rate: Double): Boolean =
     peakRate >= 4.0 && rate < 2.0 && rate < peakRate * 0.4
 
 /**
+ * Whether a replay's save has caught up with what has aired (a show still on air): the copy,
+ * from [linkStartMs] (wall clock; null: not known), holds [savedMs], which reaches within
+ * [NEAR_AIRED_MS] of [nowMs]. From there it can only come in as it airs, so a slower save isn't
+ * the provider holding it back, and a new connection can't make it faster. Seen on M6 on
+ * 2026-11-24: one was asked for all the same (6.4x, then 0.3x), and the provider carried on 17 s
+ * further: a jump in the picture.
+ */
+internal fun replaySaveNearAired(linkStartMs: Long?, savedMs: Long, nowMs: Long): Boolean =
+    linkStartMs != null && linkStartMs + savedMs >= nowMs - NEAR_AIRED_MS
+
+/** See [replaySaveNearAired]: the provider's own archive runs a minute or so behind the channel. */
+internal const val NEAR_AIRED_MS = 3L * 60_000
+
+/**
  * Providers (by host) that sent other bytes when a replay was carried on from the middle (see
  * [SPLICE_CHECK_BYTES]): carried on by the stream's clock there, and a new connection for full
  * speed only when the save falls behind playback, a few minutes apart at most (see
@@ -366,6 +380,8 @@ class LiveTvTimeshift(private val context: Context) {
         // known yet), and when the last new connection for full speed was asked for.
         var rangeWorks: Boolean? = null
         var lastBoostAt = 0L
+        // Said once in the report: the save caught up with what has aired (see [replaySaveNearAired]).
+        var airedNoted = false
         // The end of what's saved (to check a new connection carries on with the very same bytes).
         val tail = SavedTail(SPLICE_CHECK_BYTES)
         try {
@@ -532,7 +548,14 @@ class LiveTvTimeshift(private val context: Context) {
                                             // minutes apart, never close together. Not while still catching up.
                                             val resends = providerResends(url)
                                             val gap = if (resends) RESENDING_BOOST_GAP_MS else 60_000L
-                                            if (throttled && rangeWorks != false && (!resends || rate < 1.0) && !segmenter.isRejoining &&
+                                            // Caught up with what has aired (a show still on air): it comes
+                                            // in as it airs, and a new connection can't make that faster.
+                                            val nearAired = replaySaveNearAired(firstLinkStartMs, (segmenter.totalSec * 1000).toLong(), nowMs)
+                                            if (throttled && nearAired && !airedNoted) {
+                                                airedNoted = true
+                                                report.add("$label: caught up with what has aired (${oneDecimal(rate)}x real time lately); it carries on as it airs")
+                                            }
+                                            if (throttled && !nearAired && rangeWorks != false && (!resends || rate < 1.0) && !segmenter.isRejoining &&
                                                 nowMs - lastBoostAt >= gap
                                             ) {
                                                 lastBoostAt = nowMs
@@ -569,18 +592,28 @@ class LiveTvTimeshift(private val context: Context) {
                         // those few minutes): the save carries on with the link after it, put back
                         // in place by the stream's clock. Before, playback ran to the end of the
                         // link every couple of minutes and waited some 10 s on a new one. With
-                        // under a minute more aired, it waits for that minute.
+                        // under a minute more aired, it waits for that minute. A link asked to the
+                        // end of a show still on air ends where the show had got to: on from where
+                        // the save got to (see CatchupUrlBuilder.nextLink), not after the show.
                         var next: Pair<String, Long>? = null
                         val start = linkStartMs
+                        val savedUpTo = firstLinkStartMs?.let { it + (segmenter.totalSec * 1000).toLong() }
                         while (start != null && carryLeftMs > 0 && alive(dir)) {
-                            val more = com.nuvio.tv.livetv.data.CatchupUrlBuilder.nextLink(url, start, System.currentTimeMillis())
+                            val more = com.nuvio.tv.livetv.data.CatchupUrlBuilder.nextLink(url, start, System.currentTimeMillis(), savedUpTo)
                             if (more != null) { next = more; break }
                             // Not this kind of link, or far from live no more: nothing to wait for.
                             if (com.nuvio.tv.livetv.data.CatchupUrlBuilder.nextLink(url, start, Long.MAX_VALUE / 2) == null) break
                             delay(5_000)
                         }
                         if (next != null && alive(dir)) {
-                            report.add("$label: ${totalBytes / 1024 / 1024} MB saved, all of that link; carrying on with what has aired since (${com.nuvio.tv.livetv.data.CatchupUrlBuilder.askedStamp(next.first)})")
+                            val linkEnd = start?.let { com.nuvio.tv.livetv.data.CatchupUrlBuilder.nextLink(url, it, Long.MAX_VALUE / 2)?.second }
+                            val shortOfEnd = linkEnd != null && next.second < linkEnd
+                            report.add(
+                                "$label: ${totalBytes / 1024 / 1024} MB saved, " +
+                                    (if (shortOfEnd) "all the provider had of that link (the show was still on air); carrying on from where the save got to"
+                                    else "all of that link; carrying on with what has aired since") +
+                                    " (${com.nuvio.tv.livetv.data.CatchupUrlBuilder.askedStamp(next.first)})"
+                            )
                             url = next.first
                             linkStartMs = next.second
                             carryLeftMs -= (Regex("""/timeshift/[^/]+/[^/]+/(\d+)/""").find(url)?.groupValues?.get(1)?.toLongOrNull() ?: 180L) * 60_000
