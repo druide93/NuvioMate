@@ -551,8 +551,12 @@ private fun LiveTvGuideScreenBody(
     val guideGeneration by viewModel.guideGeneration.collectAsStateWithLifecycle()
     // Read extra hours only for the displayed rows and a small scroll margin. This also
     // covers rows beyond the group's first 400 without keeping every channel's future days.
-    val rangeKeys = remember(channels, row) {
-        channels.drop((row - 8).coerceAtLeast(0)).take(32).map { it.key }
+    // In steps of 8 rows (a window of 40 that always covers 8 above and 24 below): asked again
+    // every 8 rows instead of at every press, without copying the whole group each time.
+    val rangeStep = row / 8
+    val rangeKeys = remember(channels, rangeStep) {
+        val from = (rangeStep * 8 - 8).coerceIn(0, channels.size)
+        channels.subList(from, minOf(from + 40, channels.size)).map { it.key }
     }
     LaunchedEffect(windowStart, rangeKeys, guideGeneration, settings.epgOffsetMinutes) {
         viewModel.ensureGuideRange(windowStart - 2 * 3_600_000L,
@@ -1220,6 +1224,7 @@ private fun LiveTvGuideScreenBody(
             var tmGroupsShift by remember { mutableStateOf(0.dp) }
             // TiviMate: with the group list open it runs the whole height at the left, and the
             // info and preview move over beside it.
+            ColumnPart { // Its own part of the guide (see [ColumnPart]).
             Box(
                 Modifier
                     .fillMaxWidth()
@@ -1256,8 +1261,10 @@ private fun LiveTvGuideScreenBody(
                 status = status.message.takeIf { settings.showImportProgress && status.loading && !status.silent }
             )
             }
+            }
 
             // ---------------------------------------------------------------- groups + guide
+            ColumnPart { // Its own part of the guide (see [ColumnPart]).
             Row(
                 modifier = Modifier
                     .weight(1f)
@@ -1404,6 +1411,7 @@ private fun LiveTvGuideScreenBody(
                         runCatching { gridFocus.requestFocus() }
                     }
                 ) } }
+                RowPart { // Its own part of the guide (see [ColumnPart]).
                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
                     // ---------------------------------------------------------------- time ruler
                     val channelColWidth = channelColumnWidth(settings)
@@ -1897,9 +1905,12 @@ private fun LiveTvGuideScreenBody(
                         }
                     }
                 }
+                }
+            }
             }
         }
 
+        BoxPart { // Its own part of the guide (see [ColumnPart]).
         // Loading status in the top corner (the clock now sits above the channel list).
         // ---------------------------------------------------------------- the video
         // One video view for the preview window and full screen: it just changes size. Drawn
@@ -2015,6 +2026,8 @@ private fun LiveTvGuideScreenBody(
                 }
             }
         }
+        }
+        BoxPart { // Its own part of the guide (see [ColumnPart]).
         if (settings.showImportProgress && !fullscreen && (settings.showProgramDetails || settings.showPreview) && status.loading && !status.silent) {
             status.message?.let {
                 LiveText(
@@ -2239,6 +2252,8 @@ private fun LiveTvGuideScreenBody(
                 }
             )
         }
+        }
+        BoxPart { // Its own part of the guide (see [ColumnPart]).
         menuTarget?.let { target ->
             ChannelContextMenu(
                 target = target,
@@ -2419,6 +2434,8 @@ private fun LiveTvGuideScreenBody(
                 onInfo = { showMenu = null; infoFromMenu = false; infoTarget = target }
             )
         }
+        }
+        BoxPart { // Its own part of the guide (see [ColumnPart]).
         textPrompt?.let { prompt ->
             TextInputDialog(
                 title = prompt.title,
@@ -2625,6 +2642,7 @@ private fun LiveTvGuideScreenBody(
             ) {
                 LiveText(numberBuffer, size = 34.sp, weight = FontWeight.Bold)
             }
+        }
         }
     
         // ---------------------------------------------------------------- full screen
@@ -5593,3 +5611,27 @@ private fun TiviMateFullHeight(on: Boolean, extraPx: Int, content: @Composable (
         )
     ) { content() }
 }
+
+/**
+ * A part of the guide screen in a function of its own. The guide screen was one block of code
+ * too big for Android to compile (over its size limit, so it always ran in the slow, interpreted
+ * mode), and all of it ran again at every press of a key. In parts, each part is compiled, and a
+ * part can run again on its own. Inside a Column (its content can still use Column's weight and
+ * alignment); [RowPart] and [BoxPart] are the same inside a Row and a Box.
+ */
+@Composable
+private fun androidx.compose.foundation.layout.ColumnScope.ColumnPart(
+    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit
+) = content()
+
+/** [ColumnPart] inside a Row. */
+@Composable
+private fun androidx.compose.foundation.layout.RowScope.RowPart(
+    content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit
+) = content()
+
+/** [ColumnPart] inside a Box. */
+@Composable
+private fun androidx.compose.foundation.layout.BoxScope.BoxPart(
+    content: @Composable androidx.compose.foundation.layout.BoxScope.() -> Unit
+) = content()

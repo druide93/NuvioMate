@@ -1191,6 +1191,18 @@ class LiveTvRepository @Inject constructor(
     private val guideNowNext = GuideNowNext()
     @Volatile private var mappedGuideCache: Pair<Long, Set<String>>? = null
 
+    /** The channels' keys that have a guide; kept until the channels or the guide change (asked at every guide scroll). */
+    @Volatile private var liveGuideKeysCache: Triple<List<LiveChannel>, Set<String>, Set<String>>? = null
+
+    private fun liveGuideKeys(): Set<String> {
+        val chans = _channels.value
+        val mapped = mappedGuideKeys()
+        liveGuideKeysCache?.let { (c, m, live) -> if (c === chans && m === mapped) return live }
+        val live = mapped.intersect(chans.mapTo(HashSet(chans.size * 2)) { it.key })
+        liveGuideKeysCache = Triple(chans, mapped, live)
+        return live
+    }
+
     private fun mappedGuideKeys(): Set<String> {
         val revision = guideDb.changes
         mappedGuideCache?.takeIf { it.first == revision }?.let { return it.second }
@@ -1502,7 +1514,7 @@ class LiveTvRepository @Inject constructor(
         scope.launch(BackgroundWork.reads) {
           try {
             val at = guideClock()
-            val live = mappedGuideKeys().intersect(_channels.value.mapTo(HashSet()) { it.key })
+            val live = liveGuideKeys()
             val keys = rangeMutex.withLock {
                 guideNowNext.retainKeys(live)
                 guideNowNext.due(live, at)
