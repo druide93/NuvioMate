@@ -53,15 +53,13 @@ object XmltvParser {
          * shows are split up arrives in more than one part. With it, the result has no programs.
          */
         onPrograms: ((String, List<EpgProgram>) -> Unit)? = null,
+        /**
+         * Shows that would only be skipped are taken out before the XML reader (see
+         * [XmltvSkipAhead]). False: every show goes through the reader (to compare both ways).
+         */
+        skipAhead: Boolean = true,
         selectChannels: (Map<String, XmltvChannel>) -> Set<String>?
     ): XmltvResult {
-        val parser = Xml.newPullParser()
-        parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
-        // Forgiving mode, like other IPTV apps: a stray "&" in a title, an HTML entity such as
-        // &nbsp; or an unclosed tag no longer stops the whole guide from being read.
-        runCatching { parser.setFeature("http://xmlpull.org/v1/doc/features.html#relaxed", true) }
-        parser.setInput(input, null)
-
         val channels = LinkedHashMap<String, XmltvChannel>()
         val programs = HashMap<String, MutableList<EpgProgram>>()
         val providerIdentities = ProgrammeIdentityPool()
@@ -69,6 +67,32 @@ object XmltvParser {
         var wantedResolved = false
         val seenIds = HashSet<String>()
         val unlistedAnswers = HashMap<String, Boolean>()
+        fun keeps(channelId: String): Boolean = when {
+            wanted != null -> channelId in wanted!!
+            keepUnlisted != null -> unlistedAnswers.getOrPut(channelId) { keepUnlisted(channelId) }
+            else -> true
+        }
+
+        val parser = Xml.newPullParser()
+        parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
+        // Forgiving mode, like other IPTV apps: a stray "&" in a title, an HTML entity such as
+        // &nbsp; or an unclosed tag no longer stops the whole guide from being read.
+        runCatching { parser.setFeature("http://xmlpull.org/v1/doc/features.html#relaxed", true) }
+        // The same test the reading below makes, once the channels wanted are known (until then
+        // every show goes to the reader): a show for a channel not kept, or outside the hours kept.
+        parser.setInput(if (!skipAhead) input else XmltvSkipAhead(input, { channelId, start, stop ->
+            when {
+                !wantedResolved -> false
+                channelId == null -> true
+                else -> {
+                    val from = parseTime(start)
+                    val to = parseTime(stop)
+                    val out = !keeps(channelId) || from == null || to == null || to <= windowStartMs || from >= windowEndMs
+                    if (out) seenIds += channelId
+                    out
+                }
+            }
+        }), null)
         var bufId: String? = null
         var buf = ArrayList<EpgProgram>()
         fun flush() {
@@ -96,11 +120,7 @@ object XmltvParser {
                         }
                         val channelId = parser.getAttributeValue(null, "channel")
                         if (channelId != null) seenIds += channelId
-                        val keep = channelId != null && when {
-                            wanted != null -> channelId in wanted!!
-                            keepUnlisted != null -> unlistedAnswers.getOrPut(channelId) { keepUnlisted(channelId) }
-                            else -> true
-                        }
+                        val keep = channelId != null && keeps(channelId)
                         if (keep) {
                             val program = readProgramme(parser, windowStartMs, windowEndMs, providerIdentities)
                             if (program != null) {
@@ -108,7 +128,7 @@ object XmltvParser {
                                     if (bufId != channelId) { flush(); bufId = channelId }
                                     buf.add(program)
                                 } else {
-                                    programs.getOrPut(channelId!!) { ArrayList() }.add(program)
+                                    programs.getOrPut(channelId) { ArrayList() }.add(program)
                                 }
                             }
                         } else {

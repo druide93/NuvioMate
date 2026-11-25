@@ -571,6 +571,15 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
         var tidyMs = 0L; private set
         /** After [finish]: past shows brought along from the copy of this guide stored before (see [carryPastShows]). */
         var keptPast = 0; private set
+        /**
+         * Where the time went, for the report: writing the shows as they're read ([add]),
+         * bringing past shows along, the rest of [finish], and clearing away the copy before.
+         * The rest of a read's time is reading the file itself.
+         */
+        var storeMs = 0L; private set
+        var carryMs = 0L; private set
+        var saveMs = 0L; private set
+        var clearMs = 0L; private set
         private var open = true
         /** [finish] went all the way through: nothing left for [abort] to clear. */
         private var stored = false
@@ -630,6 +639,7 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
             if (!keepRows) countedOnly += xid
             else if (!storedIds.add(xid)) repeated += xid
             placeholderTest = isPlaceholder
+            val t0 = System.nanoTime()
             var first = 0
             while (first < programs.size) {
                 val count = minOf(SOURCE_INSERT_ROWS, programs.size - first)
@@ -656,6 +666,7 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
                 rows = 0
                 db.setTransactionSuccessful(); db.endTransaction(); db.beginTransaction()
             }
+            storeMs += (System.nanoTime() - t0) / 1_000_000L
         }
 
         /**
@@ -682,6 +693,7 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
                 repeated.forEach { xid -> if (xid !in countedOnly) tidyRepeated(xid, tidy) }
                 tidyMs = System.currentTimeMillis() - t0
             }
+            val saveStart = System.nanoTime()
             kept.forEach { gidFor(it) }
             val upd = db.compileStatement("UPDATE guide_ch SET cnt = ?, last_stop = ?, placeholders = ? WHERE gid = ?")
             meta.forEach { (xid, m) ->
@@ -702,8 +714,10 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
                 // Shows that already aired and the new file no longer has (many guides start at
                 // "now", or put "No information" over yesterday): kept, so the guide and catch-up
                 // still show them for as long as Past Shows Kept says.
+                val carryStart = System.nanoTime()
                 if (keepFrom > 0L) runCatching { carryPastShows(old, keepFrom, System.currentTimeMillis(), isPlaceholder) }
                     .onFailure { if (it is android.database.sqlite.SQLiteFullException) throw it }
+                carryMs = (System.nanoTime() - carryStart) / 1_000_000L
                 val move = db.compileStatement("UPDATE chan SET gid = ? WHERE gid = ?")
                 val drop = db.compileStatement("DELETE FROM chan WHERE gid = ?")
                 old.forEach { (oldGid, xid) ->
@@ -745,8 +759,11 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
             // Only once the save really went through (it can still fail here when storage is full).
             stored = ok
             closeStatements()
+            saveMs = (System.nanoTime() - saveStart) / 1_000_000L - carryMs
             // The listings this file had before, a batch at a time.
+            val clearStart = System.nanoTime()
             runCatching { purgeDead() }
+            clearMs = (System.nanoTime() - clearStart) / 1_000_000L
             return gids.keys.associateWith { xid ->
                 val m = meta[xid]
                 StagedMeta(m?.get(0)?.toInt() ?: 0, m?.get(1) ?: 0L, m?.get(2)?.toInt() ?: 0, hasRows = xid !in countedOnly)
@@ -815,10 +832,6 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
                 if (now == null || xid in countedOnly) null else oldGid to now
             }
             if (pairs.isEmpty()) return
-            val copy = db.compileStatement(
-                "INSERT INTO listings (gid, start, stop, title, descr, cat, ep, icon, year, people, provider_id, provider_source) " +
-                    "SELECT ?, start, stop, title, descr, cat, ep, icon, year, people, provider_id, provider_source FROM listings WHERE rowid = ?"
-            )
             val drop = db.compileStatement("DELETE FROM listings WHERE rowid = ?")
             try {
                 for (part in pairs.chunked(200)) {
@@ -835,6 +848,11 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
                                 longArrayOf(c.getLong(1), c.getLong(2), c.getLong(3), if (isPlaceholder(c.getString(4))) 1L else 0L)
                         }
                     }
+                    // Past shows brought along so far, per new guide channel: when the last of them
+                    // ends (they come in time order, so a show starting before that is on top of one).
+                    val carriedUntil = HashMap<Long, Long>()
+                    // Rows to move, per new guide channel: moved once the reading below is done.
+                    val moves = HashMap<Long, LongArrayList>()
                     db.rawQuery(
                         "SELECT gid, rowid, start, stop, title FROM listings WHERE gid IN (${part.joinToString(",") { it.first.toString() }}) AND stop > ? AND stop <= ? ORDER BY gid, start",
                         arrayOf(from.toString(), until.toString())
@@ -843,23 +861,38 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
                             if (isPlaceholder(c.getString(4))) continue
                             val newGid = newOf[c.getLong(0)] ?: continue
                             val start = c.getLong(2); val stop = c.getLong(3)
-                            val rows = fresh.getOrPut(newGid) { ArrayList() }
+                            if (start < (carriedUntil[newGid] ?: Long.MIN_VALUE)) continue
+                            val rows = fresh[newGid]
                             // A real show then, or a placeholder still running after now: the new file wins.
-                            if (rows.any { it[1] < stop && it[2] > start && (it[3] == 0L || it[2] > until) }) continue
-                            rows.removeAll { r ->
-                                val gone = r[3] == 1L && r[1] < stop && r[2] > start
-                                if (gone && r[0] > 0L) { drop.clearBindings(); drop.bindLong(1, r[0]); drop.executeUpdateDelete() }
-                                gone
+                            if (rows != null) {
+                                if (rows.any { it[1] < stop && it[2] > start && (it[3] == 0L || it[2] > until) }) continue
+                                rows.removeAll { r ->
+                                    val gone = r[3] == 1L && r[1] < stop && r[2] > start
+                                    if (gone) { drop.clearBindings(); drop.bindLong(1, r[0]); drop.executeUpdateDelete() }
+                                    gone
+                                }
                             }
-                            copy.clearBindings(); copy.bindLong(1, newGid); copy.bindLong(2, c.getLong(1))
-                            copy.executeInsert()
+                            moves.getOrPut(newGid) { LongArrayList() }.add(c.getLong(1))
                             keptPast++
-                            rows += longArrayOf(0L, start, stop, 0L)
+                            carriedUntil[newGid] = maxOf(carriedUntil[newGid] ?: Long.MIN_VALUE, stop)
+                        }
+                    }
+                    // Moved to the new guide channel rather than copied there: the copy before is
+                    // deleted right after, so copying wrote each past show and then deleted it again
+                    // (most of a big guide's update time, with a week of past shows kept).
+                    moves.forEach { (newGid, rowids) ->
+                        var i = 0
+                        while (i < rowids.size) {
+                            val end = minOf(rowids.size, i + MOVE_BATCH)
+                            val list = StringBuilder()
+                            for (k in i until end) { if (k > i) list.append(','); list.append(rowids[k]) }
+                            db.execSQL("UPDATE listings SET gid = $newGid WHERE rowid IN ($list)")
+                            i = end
                         }
                     }
                 }
             } finally {
-                runCatching { copy.close() }; runCatching { drop.close() }
+                runCatching { drop.close() }
             }
         }
 
@@ -1049,6 +1082,44 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
             changes++
         }
         runCatching { purgeDead(); emptyOut() }
+    }
+
+    /**
+     * Guide channels of guide file [src] whose listings weren't kept (only counted: no playlist
+     * channel used them), now that one does: [listings] are stored for them, as the rest of the
+     * file's are. Ones already stored are left as they are. Returns what's now known about each.
+     */
+    fun fillGuideChannels(
+        src: String,
+        listings: Map<String, List<EpgProgram>>,
+        isPlaceholder: (String) -> Boolean
+    ): Map<String, StagedMeta> {
+        val out = HashMap<String, StagedMeta>()
+        changes++
+        try {
+            val db = writableDatabase
+            db.beginTransaction()
+            try {
+                listings.forEach { (xid, programs) ->
+                    val stored = db.rawQuery("SELECT 1 FROM guide_ch WHERE src = ? AND xid = ? AND state = $LIVE LIMIT 1", arrayOf(src, xid))
+                        .use { it.moveToFirst() }
+                    if (stored) return@forEach
+                    ensureGuideChannel(db, src, xid, programs, isPlaceholder) ?: return@forEach
+                    out[xid] = StagedMeta(
+                        programs.size,
+                        programs.maxOfOrNull { it.stopMs } ?: 0L,
+                        programs.count { isPlaceholder(it.title) }
+                    )
+                }
+                putRevision(db)
+                db.setTransactionSuccessful()
+            } finally {
+                db.endTransaction()
+            }
+        } finally {
+            changes++
+        }
+        return out
     }
 
     /**
@@ -1520,3 +1591,14 @@ private const val GID_CHUNK = 400
 
 /** Guide channels whose listings are deleted in one step. */
 private const val PURGE_BATCH = 200
+
+/** Past shows moved to a new guide channel in one step (row ids in one statement). */
+private const val MOVE_BATCH = 500
+
+/** A growing list of longs (row ids), without boxing each one. */
+private class LongArrayList {
+    private var items = LongArray(64)
+    var size = 0; private set
+    fun add(v: Long) { if (size == items.size) items = items.copyOf(size * 2); items[size++] = v }
+    operator fun get(i: Int) = items[i]
+}

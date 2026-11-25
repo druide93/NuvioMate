@@ -2922,6 +2922,15 @@ class LiveTvRepository @Inject constructor(
             if (writer.tidied > 0) LIVE_REPORT.add(
                 "Guide \"${target.name}\": ${writer.tidied} channels were listed several times over (${writer.tidiedAway} listings on top of others left out, ${writer.tidyMs} ms)"
             )
+            // Where the time went: what's left over is reading the file itself.
+            run {
+                val total = System.currentTimeMillis() - readStart
+                val db = writer.storeMs + writer.tidyMs + writer.carryMs + writer.saveMs + writer.clearMs
+                LIVE_REPORT.add(
+                    "Guide \"${target.name}\": ${total} ms = reading the file ${(total - db).coerceAtLeast(0)} ms, writing shows ${writer.storeMs} ms, " +
+                        "tidying ${writer.tidyMs} ms, past shows ${writer.carryMs} ms, saving ${writer.saveMs} ms, clearing the copy before ${writer.clearMs} ms"
+                )
+            }
             return done(entries, meta, reused = false)
         }
 
@@ -3001,7 +3010,7 @@ class LiveTvRepository @Inject constructor(
                     if (m.count <= 0) return
                     val real = m.placeholders * 10 < m.count * 8
                     // Higher is better; then more days ahead, then the guide's position.
-                    val score = guideRank(real, idMatch, m.lastStop, read.order)
+                    val score = guideRank(real, idMatch, m.lastStop, read.order, futureMs)
                     chans.forEach { c ->
                         if (!guideFor(read.target.fileId, c.sourceId)) return@forEach // switched off for its playlist
                         val cur = best[c.key]
@@ -3013,21 +3022,57 @@ class LiveTvRepository @Inject constructor(
             }
             return best
         }
+        /**
+         * The listings of [ids], guide channels of [read]'s file that were only counted (no channel
+         * used them last time), read from the file and stored next to the rest of its listings.
+         * Only those channels are read and stored: before, the whole file was read and stored
+         * again for them, which on a big guide took a minute and a half. Null: it didn't work out.
+         */
+        fun readJust(read: GuideRead, ids: Set<String>): GuideRead? {
+            val target = read.target
+            val file = epgFile(target.fileId)
+            if (!file.exists()) return null
+            val t0 = System.currentTimeMillis()
+            setStatus(loading = true, message = readingGuideMessage(target.name, read.order + 1, targets.size))
+            val parsed = runCatching {
+                openMaybeGzip(file).use { input ->
+                    // The same window as the read of the whole file; a guide with no channel list
+                    // is asked about each channel id instead.
+                    XmltvParser.parse(input, windowStart, windowEnd, keepUnlisted = { it in ids }) { xmlChannels ->
+                        if (xmlChannels.isEmpty()) null else ids
+                    }
+                }
+            }.onFailure { Log.w(TAG, "EPG read for ${ids.size} channels of ${target.name} failed", it) }.getOrNull() ?: return null
+            // Tidied and moved like the whole file's listings (see readGuide).
+            val listings = ids.associateWith { id -> cleanListings(parsed.programs[id].orEmpty()).shiftedBy(target.shiftMs) }
+            val filled = runCatching { guideDb.fillGuideChannels(target.fileId, listings) { isPlaceholder(it) } }
+                .onFailure { Log.w(TAG, "Couldn't store ${ids.size} channels of ${target.name}", it) }.getOrNull() ?: return null
+            LIVE_REPORT.add(
+                "Guide \"${target.name}\": read for just the ${ids.size} channel(s) that use listings from it that weren't kept, " +
+                    "in ${(System.currentTimeMillis() - t0) / 1000} s (${filled.values.sumOf { it.count }} listings)"
+            )
+            return GuideRead(target, read.order, read.entries, read.meta + filled, read.idHits, read.nameHits, read.reused)
+        }
+
         var best = choose()
         // A guide channel that's now the pick (or picked by hand) but whose listings weren't kept,
-        // because no channel used it last time: its guide file is read once more to get them.
+        // because no channel used it last time: its listings are read from its guide file.
         run {
             val picks = best.values.map { it.sourceId to it.xmltvId } + overrides.values.filter { !it.isNone }.map { it.sourceId to it.xmltvId }
-            val again = LinkedHashMap<String, Int>()
+            val again = LinkedHashMap<String, MutableSet<String>>()
             picks.forEach { (src, xid) ->
                 val m = reads[src]?.meta?.get(xid) ?: return@forEach
-                if (!m.hasRows && m.count > 0) again[src] = (again[src] ?: 0) + 1
+                if (!m.hasRows && m.count > 0) again.getOrPut(src) { LinkedHashSet() } += xid
             }
             if (again.isNotEmpty()) {
-                again.forEach { (src, n) ->
+                again.forEach { (src, ids) ->
                     val old = reads[src] ?: return@forEach
-                    LIVE_REPORT.add("Guide \"${old.target.name}\": read again, $n channel(s) use listings from it that weren't kept")
-                    readGuide(old.order, old.target, force = true)?.let { reads[src] = it }
+                    val just = readJust(old, ids)
+                    if (just != null) reads[src] = just
+                    else {
+                        LIVE_REPORT.add("Guide \"${old.target.name}\": read again in full, ${ids.size} channel(s) use listings from it that weren't kept")
+                        readGuide(old.order, old.target, force = true)?.let { reads[src] = it }
+                    }
                 }
                 best = choose()
             }
@@ -3117,11 +3162,21 @@ class LiveTvRepository @Inject constructor(
      * another guide's week, so the same provider showed "until Saturday" on one TV and "until
      * Monday" on another depending on the order of their guides.
      */
-    private fun guideRank(real: Boolean, idMatch: Boolean, listings: List<EpgProgram>, order: Int): Long =
-        guideRank(real, idMatch, listings.maxOfOrNull { it.stopMs } ?: 0L, order)
+    private fun guideRank(real: Boolean, idMatch: Boolean, listings: List<EpgProgram>, order: Int, futureMs: Long): Long =
+        guideRank(real, idMatch, listings.maxOfOrNull { it.stopMs } ?: 0L, order, futureMs)
 
-    private fun guideRank(real: Boolean, idMatch: Boolean, lastStop: Long, order: Int): Long {
-        val halfDaysAhead = ((lastStop - System.currentTimeMillis()).coerceAtLeast(0L) / (12 * HOUR)).coerceAtMost(999L)
+    /**
+     * How far ahead counts only up to the days kept ([futureMs]): listings are cut there when a
+     * guide is stored, so past it the only difference was how long each guide's last show ran on
+     * (a 12-hour "No information" won). And it's rounded up, so a guide stored a few hours before
+     * another (whose listings therefore end a few hours sooner) still counts as the same. Before,
+     * the pick swung from one guide to another from one update to the next for no real reason,
+     * and each swing to a guide channel whose listings weren't kept had its whole file read again.
+     */
+    private fun guideRank(real: Boolean, idMatch: Boolean, lastStop: Long, order: Int, futureMs: Long): Long {
+        val now = System.currentTimeMillis()
+        val ahead = (minOf(lastStop, now + futureMs) - now).coerceAtLeast(0L)
+        val halfDaysAhead = ((ahead + 12 * HOUR - 1) / (12 * HOUR)).coerceAtMost(999L)
         return (if (real) 4_000_000L else 0L) + (if (idMatch) 2_000_000L else 0L) + halfDaysAhead * 1_000L - order
     }
 
@@ -3291,7 +3346,7 @@ class LiveTvRepository @Inject constructor(
             list.forEach { c ->
                 val listings = cleanListings(programsBySource[c.sourceId]?.get(c.xmltvId).orEmpty())
                 if (listings.isEmpty()) return@forEach
-                val score = guideRank(!isPlaceholderListing(listings), c.idMatch, listings, c.order)
+                val score = guideRank(!isPlaceholderListing(listings), c.idMatch, listings, c.order, windowEnd - now)
                 if (score > bestScore) { bestScore = score; best = c to listings }
             }
             best?.let { (c, listings) ->
