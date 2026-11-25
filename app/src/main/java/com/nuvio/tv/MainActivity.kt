@@ -1746,6 +1746,8 @@ private fun LegacySidebarScaffold(
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val drawerItemFocusRequesters = rememberDrawerItemFocusRequesters(drawerItems)
+    // Live TV fork: the profile entry, so Up from the first page lands on it.
+    val profileFocusRequester = remember { FocusRequester() }
     val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
     // Live TV fork: full screen now happens inside the Live TV screen (one video view that just
     // grows), which is one of the menu's pages, so the menu has to step aside for it.
@@ -1906,6 +1908,14 @@ private fun LegacySidebarScaffold(
                                             .height(sidebarTokens.itemHeight)
                                             .background(color = profileBgColor, shape = profileItemShape)
                                             .onFocusChanged { isProfileFocused = it.isFocused }
+                                            // Live TV fork: the top of the menu: Up stays here
+                                            // (it used to land on the page behind and close the
+                                            // menu); Down goes to the first page.
+                                            .focusRequester(profileFocusRequester)
+                                            .focusProperties {
+                                                up = FocusRequester.Cancel
+                                                drawerItems.firstOrNull()?.let { f -> drawerItemFocusRequesters[f.route]?.let { down = it } }
+                                            }
                                             .clickable {
                                                 onSwitchProfile()
                                                 drawerState.setValue(DrawerValue.Closed)
@@ -1985,10 +1995,15 @@ private fun LegacySidebarScaffold(
                                         // Live TV fork: Up / Down go to the item above / below,
                                         // across the gap above Settings too (with fewer pages in
                                         // the menu, Down from the last one landed on the page).
+                                        // At the ends they stay in the menu: Up from the first
+                                        // page goes to the profile (or stays), Down from the last
+                                        // stays (both used to land on the page and close the menu).
                                         .focusProperties {
                                             val i = drawerItems.indexOfFirst { it.route == item.route }
                                             drawerItems.getOrNull(i + 1)?.let { n -> drawerItemFocusRequesters[n.route]?.let { down = it } }
                                             if (i > 0) drawerItems.getOrNull(i - 1)?.let { p -> drawerItemFocusRequesters[p.route]?.let { up = it } }
+                                            if (i == 0) up = if (isExpanded && showProfileSelector && activeProfileName.isNotEmpty()) profileFocusRequester else FocusRequester.Cancel
+                                            if (i == drawerItems.lastIndex) down = FocusRequester.Cancel
                                         }
                                         .width(itemWidth)
                                         .offset(x = NuvioTheme.spacing.md)
@@ -2304,6 +2319,8 @@ private fun ModernSidebarScaffold(
     val isRtl = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
     val contentFocusRequester = remember { FocusRequester() }
     val drawerItemFocusRequesters = rememberDrawerItemFocusRequesters(drawerItems)
+    // Live TV fork: the profile entry, so Up from the first page lands on it.
+    val profileFocusRequester = remember { FocusRequester() }
     val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
 
     var isSidebarExpanded by remember { mutableStateOf(false) }
@@ -2632,6 +2649,13 @@ private fun ModernSidebarScaffold(
                             Key.DirectionUp -> {
                                 if (focusedDrawerIndex == sidebarTopBoundaryIndex) {
                                     true
+                                } else if (focusedDrawerIndex == 0) {
+                                    // Live TV fork: the first page, under the profile: straight
+                                    // up to the profile, never out of the menu (moving focus
+                                    // "up" across the gap could land on the page behind and
+                                    // close the menu). If the profile can't take it, stay.
+                                    runCatching { profileFocusRequester.requestFocus() }
+                                    true
                                 } else if (focusedDrawerIndex in 1..drawerItems.lastIndex) {
                                     // Live TV fork: straight to the item above (across the gap
                                     // above Settings, too).
@@ -2707,6 +2731,7 @@ private fun ModernSidebarScaffold(
                         sidebarHazeState = sidebarHazeState,
                         panelShape = panelShape,
                         drawerItemFocusRequesters = drawerItemFocusRequesters,
+                        profileFocusRequester = profileFocusRequester,
                         onDrawerItemFocused = { focusedDrawerIndex = it },
                         onDrawerItemClick = click@{ targetRoute ->
                             // Live TV fork: Live TV opens its list; its "‹ Live TV" row goes back.

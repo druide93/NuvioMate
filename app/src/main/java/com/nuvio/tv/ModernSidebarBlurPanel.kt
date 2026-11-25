@@ -99,7 +99,9 @@ internal fun ModernSidebarBlurPanel(
     activeProfileColorHex: String,
     activeProfileAvatarImageUrl: String?,
     showProfileSelector: Boolean,
-    onSwitchProfile: () -> Unit
+    onSwitchProfile: () -> Unit,
+    /** Live TV fork: lets Up from the first page land on the profile (it used to leave the menu). */
+    profileFocusRequester: FocusRequester? = null
 ) {
     val delayedBlurProgress =
         ((sidebarExpandProgress - 0.34f) / 0.66f).coerceIn(0f, 1f)
@@ -178,6 +180,7 @@ internal fun ModernSidebarBlurPanel(
                     },
                     onClick = onSwitchProfile,
                     modifier = Modifier.fillMaxWidth(0.92f)
+                        .then(if (profileFocusRequester != null) Modifier.focusRequester(profileFocusRequester) else Modifier)
                 )
             }
         } else {
