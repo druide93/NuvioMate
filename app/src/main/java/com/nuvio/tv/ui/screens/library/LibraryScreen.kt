@@ -115,6 +115,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.TextStyle
 import com.nuvio.tv.R
+import com.nuvio.tv.livetv.ui.tr
 
 private const val KEY_REPEAT_THROTTLE_MS = 80L
 
@@ -1070,7 +1071,7 @@ private fun cloudLibraryMetadata(item: CloudLibraryItem): String {
     val parts = listOfNotNull(
         item.providerName.takeIf { it.isNotBlank() },
         item.type.localizedLabel(),
-        item.status?.takeIf { it.isNotBlank() } ?: stringResource(R.string.cloud_library_status_ready),
+        item.status?.takeIf { it.isNotBlank() }?.tr() ?: stringResource(R.string.cloud_library_status_ready),
         formatCloudSize(item.sizeBytes)
     )
     return parts.joinToString(" • ")
@@ -1081,10 +1082,10 @@ private fun formatCloudSize(sizeBytes: Long?): String? {
     if (bytes <= 0L) return null
     val gb = bytes / 1_000_000_000.0
     return if (gb >= 1.0) {
-        String.format(java.util.Locale.US, "%.1f GB", gb)
+        com.nuvio.tv.livetv.ui.LiveTvTexts.trf("{0} GB", String.format(java.util.Locale.US, "%.1f", gb))
     } else {
         val mb = bytes / 1_000_000.0
-        String.format(java.util.Locale.US, "%.0f MB", mb)
+        com.nuvio.tv.livetv.ui.LiveTvTexts.trf("{0} MB", String.format(java.util.Locale.US, "%.0f", mb))
     }
 }
 

@@ -118,6 +118,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import androidx.compose.ui.res.stringResource
 import com.nuvio.tv.R
+import com.nuvio.tv.livetv.ui.tr
 
 /** Skeleton rows shown while a search is pending, matching the two mobile renders. */
 private const val SEARCH_SKELETON_ROW_COUNT = 2
@@ -939,8 +940,8 @@ fun SearchScreen(
                         liveTvResults.hits.isEmpty() && onDemandResults.items.isEmpty() && onDemandResults.searching -> {
                         item {
                             EmptyScreenState(
-                                title = "Still searching…",
-                                subtitle = "Looking through your On Demand movies and series",
+                                title = "Still searching…".tr(),
+                                subtitle = "Looking through your On Demand movies and series".tr(),
                                 icon = Icons.Default.Search
                             )
                         }

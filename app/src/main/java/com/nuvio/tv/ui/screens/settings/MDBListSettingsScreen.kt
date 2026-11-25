@@ -570,7 +570,7 @@ private fun ratingProviderLabel(provider: String): String = when (provider) {
     "imdb" -> "IMDb"
     "tmdb" -> "TMDB"
     "tomatoes" -> "Rotten Tomatoes"
-    "audience" -> "Audience Score"
+    "audience" -> com.nuvio.tv.livetv.ui.LiveTvTexts.tr("Audience Score")
     "letterboxd" -> "Letterboxd"
     "metacritic" -> "Metacritic"
     "mal" -> "MyAnimeList"

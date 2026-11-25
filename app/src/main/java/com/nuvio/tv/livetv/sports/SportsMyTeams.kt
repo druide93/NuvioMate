@@ -53,7 +53,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
 import com.nuvio.tv.livetv.ui.formatClock
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.theme.NuvioTheme
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
@@ -68,16 +70,20 @@ import java.util.Locale
  * through a row's games. OK opens the game info; hold OK plays it.
  */
 
-/** "Today", "Tomorrow", "Yesterday", or "Sat 24 Oct". */
-internal fun dayWord(ms: Long, now: Long): String {
+/** How many days [ms] is from today: 0 today, 1 tomorrow, -1 yesterday. */
+internal fun dayOffset(ms: Long, now: Long): Int {
     fun day(t: Long) = Calendar.getInstance().apply {
         timeInMillis = t; set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
     }.timeInMillis
-    val diff = Math.round((day(ms) - day(now)) / 86_400_000.0).toInt()
-    return when (diff) {
-        0 -> "Today"
-        1 -> "Tomorrow"
-        -1 -> "Yesterday"
+    return Math.round((day(ms) - day(now)) / 86_400_000.0).toInt()
+}
+
+/** "Today", "Tomorrow", "Yesterday", or "Sat 24 Oct", in the device's language. */
+internal fun dayWord(ms: Long, now: Long): String {
+    return when (dayOffset(ms, now)) {
+        0 -> "Today".tr()
+        1 -> "Tomorrow".tr()
+        -1 -> "Yesterday".tr()
         else -> SimpleDateFormat("EEE d MMM", Locale.getDefault()).format(Date(ms))
     }
 }
@@ -85,17 +91,17 @@ internal fun dayWord(ms: Long, now: Long): String {
 /** When a game is, for a card's footer: the clock when it's on, "Today 8:00 PM", "FT · Sat 17 Oct". */
 internal fun whenLabel(ev: SportsEvent, now: Long, use24h: Boolean, hideScores: Boolean): String = when (ev.state) {
     GameState.LIVE -> cornerStatus(ev, use24h, hideScores)
-    GameState.POST -> (ev.status?.takeIf { it.length <= 6 } ?: "Final") + " · " + dayWord(ev.startMs, now)
-    GameState.OFF -> (ev.status ?: "Postponed") + " · " + dayWord(ev.startMs, now)
+    GameState.POST -> (ev.status?.takeIf { it.length <= 6 } ?: "Final").tr() + " · " + dayWord(ev.startMs, now)
+    GameState.OFF -> (ev.status ?: "Postponed").tr() + " · " + dayWord(ev.startMs, now)
     GameState.PRE -> dayWord(ev.startMs, now) + if (ev.hasTime) " " + formatClock(ev.startMs, use24h) else ""
 }
 
-/** The round or week from a game's subtitle ("Round 12", "Week 8"), and the rest (the ground). */
+/** The round or week from a game's subtitle ("Round 12", "Week 8"; in the device's language), and the rest (the ground). */
 private fun splitSubtitle(ev: SportsEvent): Pair<String?, String?> {
     val parts = ev.subtitle?.split(" · ").orEmpty()
     val round = parts.firstOrNull { it.startsWith("Round ") || it.startsWith("Week ") || it.startsWith("Matchday ") }
     val rest = parts.filter { it != round }.lastOrNull()
-    return round to rest
+    return round?.let { roundWords(it) } to rest
 }
 
 // ------------------------------------------------------------------ the page
@@ -290,7 +296,7 @@ internal fun MyTeamsRows(
                     LiveText(
                         when {
                             follows.isEmpty -> "Follow teams and leagues to see their games here."
-                            sport != null -> "Nothing coming up in ${sport.label} yet."
+                            sport != null -> LiveTvTexts.trf("Nothing coming up in {0} yet.", sport.label.tr())
                             else -> "Nothing coming up yet."
                         },
                         size = 18.sp, weight = FontWeight.Bold
@@ -316,7 +322,7 @@ internal fun MyTeamsRows(
                         RowHeader(row, follows, row.team?.let { places[it.key] })
                         if (row.events.isEmpty()) {
                             LiveText(
-                                "No games found for ${row.title} yet. They show here as soon as the schedule has them.",
+                                LiveTvTexts.trf("No games found for {0} yet. They show here as soon as the schedule has them.", row.title.tr()),
                                 color = SportsLook.Dim, size = 12.sp, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
                             )
                         } else {
@@ -394,8 +400,8 @@ private fun RowHeader(row: SportsRow, follows: SportsFollows, place: String? = n
         LiveText(
             when (row.kind) {
                 SportsRow.Kind.UPCOMING -> "Everything you follow, soonest first"
-                SportsRow.Kind.LEAGUE -> if (ahead == 1) "1 game ahead" else "$ahead games ahead"
-                else -> if (ahead == 1) "1 game ahead" else "$ahead games ahead"
+                SportsRow.Kind.LEAGUE -> if (ahead == 1) "1 game ahead" else LiveTvTexts.trf("{0} games ahead", ahead)
+                else -> if (ahead == 1) "1 game ahead" else LiveTvTexts.trf("{0} games ahead", ahead)
             },
             color = SportsLook.Dim, size = 11.sp, weight = FontWeight.Bold
         )
@@ -446,7 +452,7 @@ internal fun RowCard(
         Row(Modifier.fillMaxWidth().height(24.dp).padding(start = 8.dp, end = 7.dp), verticalAlignment = Alignment.CenterVertically) {
             EventMark(ev, league, 14.dp)
             Spacer(Modifier.width(6.dp))
-            OneLine(listOfNotNull(league?.name, round).joinToString(" · "), Color(0xFFB4B9C6), 9.sp, FontWeight.SemiBold, Modifier.weight(1f))
+            OneLine(listOfNotNull(league?.name?.tr(), round).joinToString(" · "), Color(0xFFB4B9C6), 9.sp, FontWeight.SemiBold, Modifier.weight(1f))
             CornerBadge(ev, now, playing)
         }
         if (sides.size == 2) {
@@ -502,9 +508,9 @@ private fun CornerBadge(ev: SportsEvent, now: Long, playing: Boolean) {
         playing -> PlayingBadge()
         rec -> RecBadge()
         ev.state == GameState.LIVE -> SportsBadge("● LIVE", SportsLook.Live, Color.White)
-        ev.state == GameState.PRE -> when (dayWord(ev.startMs, now)) {
-            "Today" -> OutlineBadge("TODAY", colors.Secondary)
-            "Tomorrow" -> OutlineBadge("TOMORROW", colors.Secondary)
+        ev.state == GameState.PRE -> when (dayOffset(ev.startMs, now)) {
+            0 -> OutlineBadge("TODAY", colors.Secondary)
+            1 -> OutlineBadge("TOMORROW", colors.Secondary)
             else -> Unit
         }
         else -> Unit
@@ -553,9 +559,9 @@ private fun HeroCard(
     val look = if (sides.size != 2) eventLook(ev, league) else null
     val label = when {
         ev.state == GameState.LIVE -> "● LIVE NOW"
-        ev.state == GameState.POST -> "FINAL · ${dayWord(ev.startMs, now).uppercase()}"
-        mine != null -> "NEXT FOR ${mine.team.name.uppercase()} · ${dayWord(ev.startMs, now).uppercase()}"
-        else -> "COMING UP · ${dayWord(ev.startMs, now).uppercase()}"
+        ev.state == GameState.POST -> LiveTvTexts.trf("FINAL · {0}", dayWord(ev.startMs, now).uppercase())
+        mine != null -> LiveTvTexts.trf("NEXT FOR {0} · {1}", mine.team.name.uppercase(), dayWord(ev.startMs, now).uppercase())
+        else -> LiveTvTexts.trf("COMING UP · {0}", dayWord(ev.startMs, now).uppercase())
     }
     val (round, place) = remember(ev.subtitle) { splitSubtitle(ev) }
     Box(
@@ -635,7 +641,7 @@ private fun HeroCard(
             Spacer(Modifier.weight(1f))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 OneLine(
-                    listOfNotNull(league?.name, round, whenLabel(ev, now, use24h, hideScores), place, channel).joinToString("  ·  "),
+                    listOfNotNull(league?.name?.tr(), round, whenLabel(ev, now, use24h, hideScores), place, channel).joinToString("  ·  "),
                     Color.White, 12.sp, FontWeight.SemiBold, Modifier.weight(1f)
                 )
                 if (count > 1) {

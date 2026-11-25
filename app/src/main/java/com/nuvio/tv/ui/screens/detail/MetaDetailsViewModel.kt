@@ -1011,7 +1011,7 @@ class MetaDetailsViewModel @Inject constructor(
     }
 
     private fun buildMetaLoadErrorMessage(originalMessage: String?, lookupId: String): String {
-        val base = originalMessage ?: "Failed to load metadata"
+        val base = originalMessage ?: com.nuvio.tv.livetv.ui.LiveTvTexts.tr("Failed to load metadata")
         return "$base\n\nID: $lookupId"
     }
 

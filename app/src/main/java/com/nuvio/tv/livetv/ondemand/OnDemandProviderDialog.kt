@@ -68,6 +68,8 @@ import coil3.compose.AsyncImage
 import com.nuvio.tv.livetv.parental.ParentalControls
 import com.nuvio.tv.livetv.ui.LiveDialog
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.livetv.ui.MenuItem
 import com.nuvio.tv.livetv.ui.TextInputDialog
 import com.nuvio.tv.livetv.ui.focusedSecondaryTextColor
@@ -130,7 +132,7 @@ internal fun ProviderDetailDialog(
                         LazyColumn(modifier = Modifier.heightIn(max = 220.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             items(versions, key = { it.item.uid }) { v ->
                                 MenuItem(
-                                    "Play · ${v.label}" + if (v.detail.isNotBlank()) "  —  ${v.detail}" else "",
+                                    "Play".tr() + " · " + v.label + if (v.detail.isNotBlank()) "  —  ${v.detail}" else "",
                                     if (v == versions.first()) Modifier.focusRequester(first) else Modifier
                                 ) {
                                     scope.launch { val adult = viewModel.isAdult(item); viewModel.movieUrl(v.item)?.let { onPlay(it, item.name, poster, null, null, null, adult) } }
@@ -147,7 +149,7 @@ internal fun ProviderDetailDialog(
                     if (seasons.isNotEmpty()) {
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             items(seasons) { s ->
-                                DialogPill("Season $s", s == current) { season = s }
+                                DialogPill(LiveTvTexts.trf("Season {0}", s), s == current) { season = s }
                             }
                         }
                         Spacer(Modifier.height(8.dp))

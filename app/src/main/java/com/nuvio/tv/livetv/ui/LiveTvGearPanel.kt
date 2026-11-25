@@ -183,7 +183,7 @@ internal fun GearPanel(
                     "record" -> "Hold Record to skip this"; "recordTime" -> "◀ ▶ change the time"; else -> null
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)) {
-                    LiveText("‹  $title", size = 14.sp, weight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                    LiveText("‹  " + title.tr(), size = 14.sp, weight = FontWeight.Bold, modifier = Modifier.weight(1f))
                     hint?.let { LiveText(it, size = 11.sp, color = Color.White.copy(alpha = 0.55f)) }
                 }
                 Spacer(Modifier.height(6.dp))
@@ -214,7 +214,7 @@ internal fun GearPanel(
                             subtitleOptions.forEach { o -> choice(o.label, o.selected, o.selected) { onPickSubtitle(o) } }
                             if (moreSubtitleOptions.isNotEmpty()) {
                                 GearRow(Modifier.fillMaxWidth(), onClick = { showMore = !showMore }) { focused ->
-                                    LiveText((if (showMore) "▾  " else "▸  ") + "More caption tracks", size = 13.sp, weight = FontWeight.Medium, color = gearText(focused), modifier = Modifier.weight(1f))
+                                    LiveText((if (showMore) "▾  " else "▸  ") + "More caption tracks".tr(), size = 13.sp, weight = FontWeight.Medium, color = gearText(focused), modifier = Modifier.weight(1f))
                                 }
                                 if (showMore) moreSubtitleOptions.forEach { o -> choice(o.label, o.selected, false, indent = true) { onPickSubtitle(o) } }
                             }
@@ -222,7 +222,7 @@ internal fun GearPanel(
                         "sleep" -> {
                             choice("Off", false, true) { onPickSleep(null) }
                             listOf(15, 30, 45, 60, 90, 120).forEach { m ->
-                                choice(if (m < 60) "$m minutes" else if (m == 60) "1 hour" else "${m / 60.0} hours".replace(".0 ", " "), false, false) { onPickSleep(m) }
+                                choice(sleepChoiceLabel(m), false, false) { onPickSleep(m) }
                             }
                         }
                         "record" -> {
@@ -504,7 +504,14 @@ internal fun Switch(on: Boolean, focused: Boolean) {
 internal fun quickChannelsLabel(s: com.nuvio.tv.livetv.model.LiveTvSettings): String {
     if (!PanelRowLists.shown(s)) return "Off"
     val n = PanelRowLists.parse(s).count { it.on }
-    return if (n == 1) "1 list" else "$n lists"
+    return if (n == 1) "1 list" else LiveTvTexts.trf("{0} lists", n)
+}
+
+/** "15 minutes", "1 hour", "1.5 hours": a sleep timer choice, in the device's language. */
+internal fun sleepChoiceLabel(m: Int): String = when {
+    m < 60 -> LiveTvTexts.trf("{0} minutes", m)
+    m == 60 -> "1 hour".tr()
+    else -> LiveTvTexts.trf("{0} hours", java.text.NumberFormat.getInstance().format(m / 60.0))
 }
 
 /** How long the info bar stays up; OK on the gear panel's row steps through these. */
@@ -566,7 +573,7 @@ private fun QuickChannelsPages(
                 ) { focused ->
                     Column(Modifier.weight(1f)) {
                         LiveText(g.name, size = 13.sp, weight = if (focused) FontWeight.Bold else FontWeight.Medium, color = gearText(focused), maxLines = 1)
-                        LiveText(if (g.count == 1) "1 channel" else "${g.count} channels", size = 10.sp, color = gearText(focused, dim = true))
+                        LiveText(if (g.count == 1) "1 channel" else LiveTvTexts.trf("{0} channels", g.count), size = 10.sp, color = gearText(focused, dim = true))
                     }
                     Switch(on, focused)
                 }
@@ -609,7 +616,7 @@ private fun QuickChannelsPages(
             val (title, subtitle) = when (l.id) {
                 PanelRowLists.RECENT -> "Recently Watched" to "Built in"
                 PanelRowLists.FAVORITES -> "Favorites" to "Built in"
-                else -> names[l.id]?.let { g -> g.name to (g.playlist?.let { "$it · playlist group" } ?: "Your group") }
+                else -> names[l.id]?.let { g -> g.name to (g.playlist?.let { LiveTvTexts.trf("{0} · playlist group", it) } ?: "Your group") }
                     ?: ("Group not found" to "Not in your playlists right now")
             }
             fun move(by: Int) {
@@ -651,7 +658,7 @@ private fun QuickChannelsPages(
                 LiveText("Info bar stays for", size = 13.sp, weight = if (focused) FontWeight.Bold else FontWeight.Medium, color = gearText(focused))
                 LiveText("After changing channel or pressing OK", size = 10.sp, color = gearText(focused, dim = true))
             }
-            LiveText("${settings.infoBannerSeconds} seconds", size = 13.sp, weight = FontWeight.Medium, color = gearText(focused))
+            LiveText(LiveTvTexts.trf("{0} seconds", settings.infoBannerSeconds), size = 13.sp, weight = FontWeight.Medium, color = gearText(focused))
         }
     }
 }
@@ -672,7 +679,7 @@ private fun GearArrow(icon: ImageVector, desc: String, enabled: Boolean, onClick
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = desc,
+            contentDescription = desc.tr(),
             tint = (if (focused) Color(0xFF111111) else Color.White).copy(alpha = if (enabled) 1f else 0.3f),
             modifier = Modifier.size(20.dp)
         )

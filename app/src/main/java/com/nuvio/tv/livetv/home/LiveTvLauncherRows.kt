@@ -10,6 +10,7 @@ import androidx.tvprovider.media.tv.PreviewChannel
 import androidx.tvprovider.media.tv.PreviewChannelHelper
 import androidx.tvprovider.media.tv.PreviewProgram
 import androidx.tvprovider.media.tv.TvContractCompat
+import com.nuvio.tv.core.util.withAppLocale
 import com.nuvio.tv.livetv.model.LiveChannel
 import com.nuvio.tv.livetv.model.LiveTvLoadReport
 import com.nuvio.tv.livetv.sports.GameState
@@ -19,6 +20,7 @@ import com.nuvio.tv.livetv.sports.SportsEntryPoint
 import com.nuvio.tv.livetv.sports.SportsLaunch
 import com.nuvio.tv.livetv.sports.openLiveTvFullscreen
 import com.nuvio.tv.livetv.startup.LiveTvStartupEntryPoint
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.navigation.Screen
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.CoroutineScope
@@ -90,6 +92,8 @@ object LiveTvLauncherRows {
     )
 
     private suspend fun doRefresh(context: Context) {
+        // The cards' words in the app's language, also when the app isn't open.
+        com.nuvio.tv.livetv.ui.LiveTvTexts.init(context.withAppLocale())
         // Phones and tablets (and some boxes) have no home-screen channel service: nothing to do
         // there, said once instead of an error per row every time.
         val hasTvProvider = runCatching {
@@ -164,7 +168,7 @@ object LiveTvLauncherRows {
         // No score, clock or lap: launchers refresh too rarely for those to stay right. Only what
         // stays true for the whole game: the league and when it started.
         fun started(ev: SportsEvent): String? =
-            if (ev.hasTime && ev.startMs <= now) "Started " + timeFmt.format(java.util.Date(ev.startMs)) else null
+            if (ev.hasTime && ev.startMs <= now) "Started ".tr() + timeFmt.format(java.util.Date(ev.startMs)) else null
         fun statusLine(ev: SportsEvent): String? =
             listOfNotNull(SportsCatalog.league(ev.leagueId)?.name, started(ev)).joinToString("  ·  ").ifBlank { null }
         fun gameSpec(ev: SportsEvent, channelLogo: String?, channelName: String?): CardSpec {
@@ -197,7 +201,7 @@ object LiveTvLauncherRows {
                 if (rec) add(Tags.REC)
             }
             // "Until 10:05 PM": right for the whole show (unlike "minutes left").
-            val time = "Until " + timeFmt.format(java.util.Date(p.stopMs))
+            val time = "Until ".tr() + timeFmt.format(java.util.Date(p.stopMs))
             return Item(
                 title = text.title,
                 text = listOf(src.name, time).joinToString("  ·  "),

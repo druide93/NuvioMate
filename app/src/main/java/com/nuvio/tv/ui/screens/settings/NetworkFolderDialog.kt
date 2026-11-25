@@ -144,7 +144,7 @@ internal fun NetworkFolderDialog(
                 save(config)
             }.onFailure { e ->
                 failed = true
-                status = SmbFolder.describe(e, config) + (vpnTip?.let { "\n$it" } ?: "")
+                status = SmbFolder.describe(e, config) + (vpnTip?.let { "\n" + com.nuvio.tv.livetv.ui.LiveTvTexts.tr(it) } ?: "")
             }
         }
     }

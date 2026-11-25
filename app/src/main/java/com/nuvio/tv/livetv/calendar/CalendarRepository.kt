@@ -1,5 +1,7 @@
 package com.nuvio.tv.livetv.calendar
 
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import android.content.Context
 import com.nuvio.tv.domain.model.LibraryEntry
 import com.nuvio.tv.domain.model.WatchProgress
@@ -589,7 +591,7 @@ class CalendarRepository @Inject constructor(
                     background = null,
                     airMs = ev.startMs.takeIf { ev.hasTime },
                     day = d,
-                    note = if (multi) "Day ${days.indexOf(d) + 1} of ${days.size}" else null,
+                    note = if (multi) LiveTvTexts.trf("Day {0} of {1}", days.indexOf(d) + 1, days.size) else null,
                     network = ev.broadcasts.firstOrNull() ?: league?.short,
                     reasons = setOf(CalendarReason.TEAM),
                     runtimeMin = ((end - ev.startMs) / 60_000L).toInt().takeIf { it > 0 },
@@ -722,7 +724,7 @@ class CalendarRepository @Inject constructor(
         val out = ArrayList<CalendarEntry>()
         val contentId = m.imdb ?: m.id
         val watched = seen?.watched?.contains(0 to 0) == true
-        fun fmt(d: LocalDate) = d.format(java.time.format.DateTimeFormatter.ofPattern("MMM d"))
+        fun fmt(d: LocalDate) = d.format(java.time.format.DateTimeFormatter.ofPattern(com.nuvio.tv.livetv.ui.localDatePattern("MMMd")))
         fun entry(day: LocalDate, tag: CalendarTag, note: String?) = CalendarEntry(
             key = "mv|$contentId|$tag", kind = CalendarKind.MOVIE, contentId = contentId, type = "movie",
             title = m.name.ifBlank { dates.title ?: "" }, poster = m.poster ?: dates.poster, background = m.background ?: dates.backdrop,
@@ -732,13 +734,13 @@ class CalendarRepository @Inject constructor(
         )
         val home = dates.digital
         dates.theater?.takeIf { !it.isBefore(from) && !it.isAfter(to) }?.let { t ->
-            out += entry(t, CalendarTag.IN_THEATERS, home?.let { "At home ${fmt(it)}" } ?: "Not out to watch at home yet")
+            out += entry(t, CalendarTag.IN_THEATERS, home?.let { LiveTvTexts.trf("At home {0}", fmt(it)) } ?: "Not out to watch at home yet")
         }
         home?.takeIf { !it.isBefore(from) && !it.isAfter(to) }?.let { h ->
-            out += entry(h, CalendarTag.AT_HOME, dates.theater?.let { "In theaters ${fmt(it)}" })
+            out += entry(h, CalendarTag.AT_HOME, dates.theater?.let { LiveTvTexts.trf("In theaters {0}", fmt(it)) })
         }
         if (home == null) dates.disc?.takeIf { !it.isBefore(from) && !it.isAfter(to) }?.let { b ->
-            out += entry(b, CalendarTag.ON_DISC, dates.theater?.let { "In theaters ${fmt(it)}" })
+            out += entry(b, CalendarTag.ON_DISC, dates.theater?.let { LiveTvTexts.trf("In theaters {0}", fmt(it)) })
         }
         return out
     }
@@ -924,11 +926,11 @@ class CalendarRepository @Inject constructor(
     fun savedChoice(e: CalendarEntry): Pair<String, String>? {
         val chans = liveRepo.channels.value
         fun name(key: String) = chans.firstOrNull { it.key == key }?.let { c -> c.name + (c.group.takeIf { g -> g.isNotBlank() }?.let { g -> " · $g" } ?: "") }
-            ?: "a channel no longer in your playlist"
-        showChannel(e.contentId)?.let { return "Using ${name(it)} for ${e.title} (you set it)" to showPickKey(e.contentId) }
+            ?: "a channel no longer in your playlist".tr()
+        showChannel(e.contentId)?.let { return LiveTvTexts.trf("Using {0} for {1} (you set it)", name(it), e.title) to showPickKey(e.contentId) }
         val k = pickKey(e.network) ?: return null
         val v = channelPicks.value[k] ?: return null
-        return "Always using ${name(v)} for ${e.network}" to k
+        return LiveTvTexts.trf("Always using {0} for {1}", name(v), e.network) to k
     }
 
     /** A channel you told the Calendar to use: for a network ("Comedy Central"), or for one show. */
@@ -941,7 +943,7 @@ class CalendarRepository @Inject constructor(
             follows.value.associate { (it.imdbId ?: it.id) to it.name }
         return channelPicks.value.map { (k, v) ->
             val ch = chans[v]
-            val chText = ch?.let { c -> c.name + (c.group.takeIf { g -> g.isNotBlank() }?.let { g -> " ($g)" } ?: "") } ?: "a channel no longer in your playlist"
+            val chText = ch?.let { c -> c.name + (c.group.takeIf { g -> g.isNotBlank() }?.let { g -> " ($g)" } ?: "") } ?: "a channel no longer in your playlist".tr()
             if (k.startsWith("show|")) {
                 val id = k.removePrefix("show|")
                 SavedChannel(k, names[id] ?: id, true, chText)
@@ -1280,7 +1282,7 @@ class CalendarRepository @Inject constructor(
             "Reminder cancelled"
         } else {
             prefs.addReminder(com.nuvio.tv.livetv.model.Reminder(hit.channelKey, hit.channelName, hit.title.ifBlank { e.title }, hit.startMs))
-            "You'll be reminded when ${e.title} starts on ${hit.channelName}"
+            LiveTvTexts.trf("You'll be reminded when {0} starts on {1}", e.title, hit.channelName)
         }
     }
 
@@ -1298,8 +1300,9 @@ class CalendarRepository @Inject constructor(
             )
         }
         if (on) ensureOnCalendar(e)
-        val what = if (kind == CalendarPlan.RECORD) "record it" else "remind you"
-        return if (on) "${e.title}: set to $what as soon as it's in your guide" else "Cancelled"
+        return if (!on) "Cancelled"
+        else if (kind == CalendarPlan.RECORD) LiveTvTexts.trf("{0}: set to record it as soon as it's in your guide", e.title)
+        else LiveTvTexts.trf("{0}: set to remind you as soon as it's in your guide", e.title)
     }
 
     /**
@@ -1324,11 +1327,11 @@ class CalendarRepository @Inject constructor(
                 val start = tag.substringAfterLast('|').toLongOrNull() ?: return@forEach
                 if (start > now) scheduler.cancel(ch, start)
             }
-            return "Stopped recording new episodes of ${e.title}"
+            return LiveTvTexts.trf("Stopped recording new episodes of {0}", e.title)
         }
         ensureOnCalendar(e)
         applyPlans()
-        return "Recording every new episode of ${e.title} as it shows up in your guide"
+        return LiveTvTexts.trf("Recording every new episode of {0} as it shows up in your guide", e.title)
     }
 
     /** A plan needs the show on the Calendar (to know its episodes): its bell is rung if it isn't. */
@@ -1450,10 +1453,10 @@ class CalendarRepository @Inject constructor(
     /** Rings or un-rings the bell from Live TV. Returns a message to show. */
     suspend fun toggleLiveBell(t: LiveTitle, p: EpgProgram, ch: com.nuvio.tv.livetv.model.LiveChannel?): String {
         if (t.kind == "series") {
-            val id = t.followId ?: return "Couldn't find \"${t.name}\" to follow"
+            val id = t.followId ?: return LiveTvTexts.trf("Couldn't find \"{0}\" to follow", t.name)
             val existing = follows.value.firstOrNull { it.id == id || (t.imdb != null && (it.id == t.imdb || it.imdbId == t.imdb)) }
             val on = toggleFollow(existing ?: CalendarFollow(id = id, type = "series", name = t.name, poster = t.poster, imdbId = t.imdb))
-            return if (on) "Bell on: new episodes of ${t.name} will show on Home and in your Calendar" else "Bell turned off for ${t.name}"
+            return if (on) LiveTvTexts.trf("Bell on: new episodes of {0} will show on Home and in your Calendar", t.name) else LiveTvTexts.trf("Bell turned off for {0}", t.name)
         }
         if (ch == null) return "Couldn't tell which channel this is on"
         if (p.stopMs <= System.currentTimeMillis()) return "This movie has already aired"
@@ -1463,7 +1466,7 @@ class CalendarRepository @Inject constructor(
             id = id, type = CalendarFollow.TYPE_AIRING, name = t.name, poster = t.poster, imdbId = t.imdb,
             channelKey = ch.key, channelName = ch.name, startMs = p.startMs, stopMs = p.stopMs
         ))
-        return if (on) "${t.name} is on your Calendar (${ch.name})" else "${t.name} taken off your Calendar"
+        return if (on) LiveTvTexts.trf("{0} is on your Calendar ({1})", t.name, ch.name) else LiveTvTexts.trf("{0} taken off your Calendar", t.name)
     }
 
     // ------------------------------------------------------------------ show pages

@@ -1,5 +1,6 @@
 package com.nuvio.tv.livetv.record
 
+import com.nuvio.tv.livetv.ui.tr
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -46,7 +47,7 @@ class LiveTvRecordingService : Service() {
     override fun onCreate() {
         super.onCreate()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(CHANNEL_ID, "Recordings", NotificationManager.IMPORTANCE_LOW).apply {
+            val channel = NotificationChannel(CHANNEL_ID, "Recordings".tr(), NotificationManager.IMPORTANCE_LOW).apply {
                 description = "Shown while Live TV is recording"
                 setShowBadge(false)
                 setSound(null, null)
@@ -58,7 +59,7 @@ class LiveTvRecordingService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.app_name))
-            .setContentText("Recording Live TV")
+            .setContentText("Recording Live TV".tr())
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)

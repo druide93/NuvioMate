@@ -146,7 +146,7 @@ class SportsAddonSource @Inject constructor(
                 out += ChannelMatch(
                     channel = channelFor(g, s, i, s.label),
                     score = ADDON_SCORE,
-                    how = "From ${a.displayName}",
+                    how = com.nuvio.tv.livetv.ui.LiveTvTexts.trf("From {0}", a.displayName),
                     program = null,
                     quality = SportsMatcher.nameQuality(s.info),
                     catchup = false

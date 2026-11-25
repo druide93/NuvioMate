@@ -443,11 +443,11 @@ internal fun MultiviewChannelPicker(
         else -> "Channels"
     }
     val hint = when {
-        searching -> "OK: play in P${paneId + 1} · Back: close search"
+        searching -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("OK: play in P{0} · Back: close search", paneId + 1)
         sportsMode && optionsGame != null -> "OK: choose · Back: games"
-        sportsMode && streamsGame != null -> "OK: play this stream in P${paneId + 1} · Back: games"
-        sportsMode -> "OK: play in P${paneId + 1} · Hold OK: more options · Back: close"
-        else -> "OK: open or play in P${paneId + 1} · Left: fold · Back: close"
+        sportsMode && streamsGame != null -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("OK: play this stream in P{0} · Back: games", paneId + 1)
+        sportsMode -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("OK: play in P{0} · Hold OK: more options · Back: close", paneId + 1)
+        else -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("OK: open or play in P{0} · Left: fold · Back: close", paneId + 1)
     }
 
     Dialog(
@@ -460,7 +460,7 @@ internal fun MultiviewChannelPicker(
                     .fillMaxHeight().padding(10.dp).width(PickerWidth).multiviewPanel(panelBackground)
             ) {
                 Column(Modifier.fillMaxWidth().padding(start = 18.dp, end = 18.dp, top = 12.dp, bottom = 4.dp)) {
-                    LiveText("Pane ${paneId + 1}", size = 10.sp, color = NuvioTheme.colors.TextSecondary)
+                    LiveText(com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Pane {0}", paneId + 1), size = 10.sp, color = NuvioTheme.colors.TextSecondary)
                     LiveText(title, size = 17.sp, weight = FontWeight.SemiBold)
                 }
                 Column(
@@ -827,7 +827,7 @@ private fun PickerHeadRow(name: String, count: Int, collapsed: Boolean, selected
     ) {
         Icon(
             if (collapsed) Icons.AutoMirrored.Filled.KeyboardArrowRight else Icons.Default.KeyboardArrowDown,
-            contentDescription = if (collapsed) "Folded" else "Open",
+            contentDescription = (if (collapsed) "Folded" else "Open").tr(),
             tint = NuvioTheme.colors.TextSecondary, modifier = Modifier.size(18.dp)
         )
         LiveText(name, Modifier.weight(1f), color = NuvioTheme.colors.TextSecondary, size = 12.sp,
@@ -922,7 +922,7 @@ private fun PickerChannelRow(
             if (show != null) MultiviewProgress(show.progress(now), Modifier.padding(top = 3.dp))
         }
         when {
-            playingHere -> Icon(Icons.Default.PlayArrow, contentDescription = "Playing here", tint = accent, modifier = Modifier.size(20.dp))
+            playingHere -> Icon(Icons.Default.PlayArrow, contentDescription = "Playing here".tr(), tint = accent, modifier = Modifier.size(20.dp))
             otherPane != null -> SportsBadge("P${otherPane + 1}", MultiviewNeutralTag, NuvioTheme.colors.TextPrimary)
         }
     }

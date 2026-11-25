@@ -105,6 +105,9 @@ class NuvioApplication : Application(), SingletonImageLoader.Factory {
         MemoryBudget.init(this)
         com.nuvio.tv.core.player.PlaybackDeviceSupport.init(this)
         super.onCreate()
+        // Live TV's own words in the device's language already for what runs before the app is opened
+        // (recordings, reminders, launcher rows); MainActivity reads them again in the app's language.
+        com.nuvio.tv.livetv.ui.LiveTvTexts.init(this)
         registerActivityLifecycleCallbacks(com.nuvio.tv.core.usenet.UsenetAppLifecycle())
         SentryInitializer.start(this, sentrySettingsDataStore)
         PluginRuntimeHooks.onApplicationCreate(this)

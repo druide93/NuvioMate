@@ -28,9 +28,9 @@ object MultiviewQueue {
         val before = synchronized(this) { key in keys }
         val count = add(key)
         LiveTvNotice.show(when {
-            count < 0 -> "Multiview already has $MAX channels. Open Multiview to change them."
-            before -> "Already in Multiview ($count of $MAX)."
-            else -> "Added to Multiview ($count of $MAX). Open Multiview from the guide's top row."
+            count < 0 -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Multiview already has {0} channels. Open Multiview to change them.", MAX)
+            before -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Already in Multiview ({0} of {1}).", count, MAX)
+            else -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Added to Multiview ({0} of {1}). Open Multiview from the guide's top row.", count, MAX)
         })
     }
 }

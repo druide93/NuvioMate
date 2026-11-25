@@ -1395,6 +1395,845 @@
         <item>"The connection to the Stalker portal failed. Try again."</item>
         <item>"The Stalker portal couldn't be updated ({0}). Try again."</item>
         <item>"NEW"</item>
+        <item>"in {0} min"</item>
+        <item>"in {0} h {1}"</item>
+        <item>"{0}Home"</item>
+        <item>"Win"</item>
+        <item>"Draw"</item>
+        <item>"Loss"</item>
+        <item>"Played"</item>
+        <item>"Won"</item>
+        <item>"Drawn"</item>
+        <item>"Lost"</item>
+        <item>"Tied"</item>
+        <item>"Round {0}"</item>
+        <item>"Week {0}"</item>
+        <item>"Matchday {0}"</item>
+        <item>"Practice {0}"</item>
+        <item>"Half-time"</item>
+        <item>"1st half"</item>
+        <item>"2nd half"</item>
+        <item>"Halftime"</item>
+        <item>"HT"</item>
+        <item>"FT"</item>
+        <item>"Final/OT"</item>
+        <item>"AET"</item>
+        <item>"Delayed"</item>
+        <item>"Suspended"</item>
+        <item>"Canceled"</item>
+        <item>"Abandoned"</item>
+        <item>"OT"</item>
+        <item>"H{0}"</item>
+        <item>"Basketball"</item>
+        <item>"Mentions {0}"</item>
+        <item>"1 game"</item>
+        <item>"{0} games"</item>
+        <item>"Guess: {0}"</item>
+        <item>"Airs {0} · {1}"</item>
+        <item>"MAYBE"</item>
+        <item>"Scores updated {0} ago"</item>
+        <item>"{0} days"</item>
+        <item>"No channel found for {0}. Open it and use Fix Channel to pick one."</item>
+        <item>"{0} has finished, and {1} can't replay it"</item>
+        <item>"{0} can't replay this from the start"</item>
+        <item>"Showing {0} leagues"</item>
+        <item>"  ·  {0} hidden"</item>
+        <item>"All Events · {0} live"</item>
+        <item>"No {0} games today"</item>
+        <item>"No {0} games tomorrow"</item>
+        <item>"No {0} games yesterday"</item>
+        <item>"No {0} games on {1}"</item>
+        <item>"Showing the next match day: {0}"</item>
+        <item>"No {0} games this day or in the week ahead."</item>
+        <item>"{0} found"</item>
+        <item>"{0} of {1} on"</item>
+        <item>"Also on {0}"</item>
+        <item>" Tip: {0} ({1}) has replays of most games: add it in Add-ons."</item>
+        <item>"No replay of this game in {0} yet. "</item>
+        <item>"None of your {0} channels list this game, so here are all of them."</item>
+        <item>"Only {0} channels"</item>
+        <item>"+ {0} from other regions"</item>
+        <item>"📣  Score alerts on"</item>
+        <item>"📣  Score alerts"</item>
+        <item>"Score alerts off for this game"</item>
+        <item>"You'll see this game's scores and the final result wherever you are"</item>
+        <item>"MATCHES"</item>
+        <item>"RESULTS"</item>
+        <item>"LEADERBOARD"</item>
+        <item>"FINISHED"</item>
+        <item>"SCHEDULE"</item>
+        <item>"Overview"</item>
+        <item>"Saved: {0} on {1}"</item>
+        <item>"Use {0} for more games?"</item>
+        <item>"{0} is on {1}. "</item>
+        <item>"Pick a network or a team, and their games from now on use {0} too (a team's own channel, say)."</item>
+        <item>"Yes, every {0} game"</item>
+        <item>"Saved: {0} games use {1}"</item>
+        <item>"Yes, every {0} event"</item>
+        <item>"Saved: {0} events use {1}"</item>
+        <item>"Pick the channel for {0}"</item>
+        <item>"{0} won't be used for this game"</item>
+        <item>"Edit League List  ›"</item>
+        <item>"Edit League List"</item>
+        <item>"Remove leagues you never want to see. They stay gone until you add them back. Leagues you follow always show. OK turns a league on or off, and opens or closes a sport."</item>
+        <item>"Showing it now"</item>
+        <item>"Something else on now"</item>
+        <item>"On now: {0} · the game is listed at {1}"</item>
+        <item>"Shows it at {0}"</item>
+        <item>"On now: {0}"</item>
+        <item>"Its listing has ended"</item>
+        <item>"Not in this channel's guide"</item>
+        <item>"choose a channel"</item>
+        <item>"None of your channels or add-ons show this game right now."</item>
+        <item>"Add-on stream · {0}"</item>
+        <item>"Add-on stream"</item>
+        <item>"Might be showing it"</item>
+        <item>"▶  Watch"</item>
+        <item>"Head to Head"</item>
+        <item>"Form"</item>
+        <item>"Match Info"</item>
+        <item>"Table"</item>
+        <item>"Line-ups"</item>
+        <item>"Top Players"</item>
+        <item>"Win Chance"</item>
+        <item>"Referee: {0}"</item>
+        <item>"attendance %,d"</item>
+        <item>"START"</item>
+        <item>"NOW"</item>
+        <item>"END"</item>
+        <item>"No matched streams remain for {0}."</item>
+        <item>"this view"</item>
+        <item>" · Hold OK: {0} other streams"</item>
+        <item>"OK: play this stream in {0} · Back: back to games"</item>
+        <item>"OK: play in {0}{1} · Up / Down: Sports rows · Back: close"</item>
+        <item>"+1 stream"</item>
+        <item>"+{0} streams"</item>
+        <item>"NEXT"</item>
+        <item>"SOON"</item>
+        <item>"Starting in {0} minutes"</item>
+        <item>"Switches to {0} by itself at {1}."</item>
+        <item>"Watch on {0}"</item>
+        <item>"Watch on {0} now"</item>
+        <item>"SWITCHING IN {0}"</item>
+        <item>"FULL TIME"</item>
+        <item>"{0} SCORE!"</item>
+        <item>"Pick a game to see it here"</item>
+        <item>"Hold OK on a game to watch it here while you browse."</item>
+        <item>"Add a playlist in Live TV settings to watch games here"</item>
+        <item>"Finished  ·  OK: results, highlights and replays"</item>
+        <item>"Not found on your channels yet  ·  OK: game page"</item>
+        <item>"Not found on your channels yet"</item>
+        <item>"On {0}  ·  Hold OK to watch it here"</item>
+        <item>"On {0} of your channels  ·  Hold OK to watch it here"</item>
+        <item>"Getting the {0} table…"</item>
+        <item>"ON YOUR CHANNELS"</item>
+        <item>"{0} table"</item>
+        <item>"{0} standings"</item>
+        <item>"DRIVER"</item>
+        <item>"TEAM"</item>
+        <item>"Saved: {0} uses {1}"</item>
+        <item>"{0}FOOTBALL"</item>
+        <item>"SOCCER"</item>
+        <item>"+{0} more"</item>
+        <item>"Other copies of {0}"</item>
+        <item>"{0} is automatic again"</item>
+        <item>"Nothing coming up in {0} yet."</item>
+        <item>"No games found for {0} yet. They show here as soon as the schedule has them."</item>
+        <item>"1 game ahead"</item>
+        <item>"{0} games ahead"</item>
+        <item>"FINAL · {0}"</item>
+        <item>"NEXT FOR {0} · {1}"</item>
+        <item>"COMING UP · {0}"</item>
+        <item>"AT"</item>
+        <item>"{0} in {1}"</item>
+        <item>"1st"</item>
+        <item>"{0}st"</item>
+        <item>"{0}nd"</item>
+        <item>"{0}rd"</item>
+        <item>"{0}th"</item>
+        <item>"Group {0}"</item>
+        <item>"Season {0}"</item>
+        <item>"from {0}"</item>
+        <item>"{0} won"</item>
+        <item>"{0} drawn"</item>
+        <item>"{0} lost"</item>
+        <item>"goal difference {0}"</item>
+        <item>"{0} behind the leader"</item>
+        <item>"{0} games behind"</item>
+        <item>"{0} wins in a row"</item>
+        <item>"{0} losses in a row"</item>
+        <item>"{0} after {1}"</item>
+        <item>"LAST {0}"</item>
+        <item>"PLACE"</item>
+        <item>"BEHIND"</item>
+        <item>"RECORD"</item>
+        <item>"STREAK"</item>
+        <item>"HOME"</item>
+        <item>"OTL"</item>
+        <item>"STRK"</item>
+        <item>"PCT"</item>
+        <item>"GB"</item>
+        <item>"Age {0}"</item>
+        <item>"Height {0}"</item>
+        <item>"Weight {0}"</item>
+        <item>"LEADERS"</item>
+        <item>"tied"</item>
+        <item>"ALSO STOOD OUT"</item>
+        <item>"THIS GAME"</item>
+        <item>"TOP PLAYER SO FAR"</item>
+        <item>"PLAYER OF THE GAME"</item>
+        <item>"AST"</item>
+        <item>"STL"</item>
+        <item>"BLK"</item>
+        <item>"SV"</item>
+        <item>"HR"</item>
+        <item>"1ST STAR"</item>
+        <item>"2ND STAR"</item>
+        <item>"3RD STAR"</item>
+        <item>"BATTING"</item>
+        <item>"PITCHING"</item>
+        <item>"{0}% win"</item>
+        <item>"in {0} day"</item>
+        <item>"in {0} days"</item>
+        <item>"● REC"</item>
+        <item>"{0} league match \"{1}\""</item>
+        <item>"{0} leagues match \"{1}\""</item>
+        <item>"{0} teams match \"{1}\""</item>
+        <item>"\"{0}\" isn't in the leagues we list yet. You can still follow it as a name: any show in your TV guide with \"{0}\" in the title will show on My Sports."</item>
+        <item>"✓ Following \"{0}\""</item>
+        <item>"★ Follow \"{0}\" as a name"</item>
+        <item>"★  Following {0}"</item>
+        <item>"☆  Follow {0}"</item>
+        <item>"{0}'s schedule ({1}, with times and venues) comes from TheSportsDB, updated every day. "</item>
+        <item>"fight cards"</item>
+        <item>"weekly shows and big events"</item>
+        <item>"{0} comes from your own TV guide: live shows with \"{1}\" in the title. "</item>
+        <item>"{0} is listed by event (each race, card or tournament). Follow it to see every one on My Sports, or follow a name to catch shows that mention a driver or fighter."</item>
+        <item>"FOLLOWING · {0}"</item>
+        <item>"{0} followed"</item>
+        <item>"1 channel"</item>
+        <item>"{0} channels"</item>
+        <item>"Guide: {0}"</item>
+        <item>"Your channel for {0}"</item>
+        <item>"{0} listed by ESPN"</item>
+        <item>"this competition"</item>
+        <item>"From {0}"</item>
+        <item>"Couldn't reach the scores service ({0}). Showing what was saved."</item>
+        <item>"no internet or the address can't be found"</item>
+        <item>"timed out"</item>
+        <item>"A team (id {0})"</item>
+        <item>" (assist: {0})"</item>
+        <item>" (unassisted)"</item>
+        <item>"Until {0}"</item>
+        <item>"{0} · Live"</item>
+        <item>"Next: {0} · Race {1}"</item>
+        <item>"{0} seconds"</item>
+        <item>"{0}Schedule"</item>
+        <item>"Six Nations"</item>
+        <item>"The Rugby Championship"</item>
+        <item>"Scottish Premiership"</item>
+        <item>"Scottish Championship"</item>
+        <item>"Scottish Challenge Cup"</item>
+        <item>"Women's Super League"</item>
+        <item>"Russian Premier League"</item>
+        <item>"Indian Super League"</item>
+        <item>"Copa del Rey"</item>
+        <item>"DFB-Pokal"</item>
+        <item>"Coppa Italia"</item>
+        <item>"Taça de Portugal"</item>
+        <item>"Copa de la Reina"</item>
+        <item>"Copa do Brasil"</item>
+        <item>"Copa Argentina"</item>
+        <item>"Copa Colombia"</item>
+        <item>"Copa Chile"</item>
+        <item>"Supercopa Paraguay"</item>
+        <item>"World Baseball Classic"</item>
+        <item>"Little League World Series"</item>
+        <item>"QMJHL"</item>
+        <item>"Scores and schedules, and which of your channels show each game"</item>
+        <item>"Sports Is Turned Off"</item>
+        <item>"The Sports page, game reminders and scores on the info bar are off. It's switched on and off in Settings → Menu &amp; Features."</item>
+        <item>"Turn On"</item>
+        <item>"Your Teams"</item>
+        <item>"Teams and Leagues I Follow"</item>
+        <item>"Nothing yet. Follow teams and leagues to see them on My Sports."</item>
+        <item>" and {0} more"</item>
+        <item>"The order of your teams' and leagues' rows on My Sports"</item>
+        <item>"Your Region"</item>
+        <item>"All Events shows your region's leagues, plus anything you follow"</item>
+        <item>" (this TV)"</item>
+        <item>"{0}Watching"</item>
+        <item>"Hide Scores"</item>
+        <item>"For when you're watching on catch-up or later. Games show who's playing and when, but not the score"</item>
+        <item>"Score Delay"</item>
+        <item>"IPTV runs behind the live game. Scores, game clocks, results and scoring alerts wait this long so they don't show before you see it"</item>
+        <item>"Score on the Info Bar"</item>
+        <item>"Shows the live score on Live TV's info bar while you watch a game"</item>
+        <item>"Pinned Scoreboards"</item>
+        <item>"Pin up to 3 live games (from the info bar or a game's page) and their scores stay in the top-left corner while you watch. Off: the pin button is hidden"</item>
+        <item>"Video Window in Sports"</item>
+        <item>"Games play in a window on the Sports page while you browse. Off: games open full screen, and the page uses the whole width"</item>
+        <item>"Only Games on My Channels"</item>
+        <item>"Leaves out games none of your channels show. Games of teams you follow always show"</item>
+        <item>"Best Channel First"</item>
+        <item>"Puts 4K and FHD channels at the top of each game's list, then the rest"</item>
+        <item>"Reminders"</item>
+        <item>"Remind Me About My Teams"</item>
+        <item>"A message before your teams play, with a button to watch. Games you set a reminder on are always reminded"</item>
+        <item>"How Early"</item>
+        <item>"When the reminder comes up"</item>
+        <item>"When it starts"</item>
+        <item>"{0} minutes before"</item>
+        <item>"Switch to the Game Automatically"</item>
+        <item>"When a reminder goes off, Nuvio switches to the game a minute before it starts (with 10 seconds to cancel). Only while Nuvio is open. Each game's own choice on its page comes first"</item>
+        <item>"Scoring Alerts for My Teams"</item>
+        <item>"A small card in the corner when one of your teams scores, and the final score when the game ends, wherever you are in the app"</item>
+        <item>"Find Channels Again"</item>
+        <item>"Looks through your channels and guide for today's games now"</item>
+        <item>"Updating Sports…"</item>
+        <item>"Channels From"</item>
+        <item>"Each game lists only this region's (or language's) channels, with the others one click away. "</item>
+        <item>"Also on each game's page"</item>
+        <item>"Preferred Channel Groups"</item>
+        <item>"Channels in these groups go to the top of every game's list (your UK sports channels, say). "</item>
+        <item>"Without any, channels from your region come first"</item>
+        <item>"Your Channel Links"</item>
+        <item>"Channels you picked with Fix Channel for a network, a team, a league or one game. See them, or remove one"</item>
+        <item>"Forget My Channel Fixes"</item>
+        <item>"All channels you picked (or took off) with Fix Channel, including the ones used for whole networks"</item>
+        <item>"Replays &amp; Highlights"</item>
+        <item>"Show Highlights"</item>
+        <item>"A finished game's page lists highlights, recaps and big plays. Off: only replays of the whole game (and condensed games, if they're on)"</item>
+        <item>"Show Condensed Games"</item>
+        <item>"A finished game's page lists condensed games: the whole game cut down to the action"</item>
+        <item>"Scores, schedules, team logos and colors come from ESPN's free public feed. "</item>
+        <item>"Some event dates come from sporting-events.org, and the wrestling schedule and logos from TheSportsDB. "</item>
+        <item>"Darts, snooker, rugby and other sports they don't cover are found in your own TV guide."</item>
+        <item>"Your region"</item>
+        <item>"Same as this TV ({0})"</item>
+        <item>"Forget your channel fixes?"</item>
+        <item>"Sports goes back to finding channels by itself. Your teams and settings stay."</item>
+        <item>"Forget Them"</item>
+        <item>"Leagues on the Sports page"</item>
+        <item>"OK turns one on or off. Leagues you follow a team in always show."</item>
+        <item>"Preferred channel groups"</item>
+        <item>"OK ticks a group. Its channels go to the top of each game's list, above channels from elsewhere. Channels you picked with Fix Channel still come first."</item>
+        <item>"No channel groups yet. Add a playlist in Live TV first."</item>
+        <item>"Your channel links"</item>
+        <item>"OK removes a link. Its games go back to finding their channel by themselves."</item>
+        <item>"No links yet. On a game, hold OK → Fix Channel, pick the right channel, then choose a network or a team to keep using it."</item>
+        <item>"Removed: {0}"</item>
+        <item>"Channel no longer in your playlists"</item>
+        <item>"Forget All Channel Fixes"</item>
+        <item>"Fix match"</item>
+        <item>"Name, IMDb ID (tt…) or TMDB link"</item>
+        <item>"Year"</item>
+        <item>"Searching…"</item>
+        <item>"Nothing found. Try a shorter name, change All / Shows / Movies, clear the year, or paste the IMDb ID."</item>
+        <item>"Back to Automatic"</item>
+        <item>"Current"</item>
+        <item>"Picked"</item>
+        <item>"24-hour clock"</item>
+        <item>"Record until"</item>
+        <item>"Hold Record to skip this"</item>
+        <item>"◀ ▶ change the time"</item>
+        <item>"1 hour"</item>
+        <item>"{0} hours"</item>
+        <item>"Until I stop it"</item>
+        <item>"Until the show ends"</item>
+        <item>"Until a set time"</item>
+        <item>"Stop at"</item>
+        <item>"Start recording"</item>
+        <item>"1 list"</item>
+        <item>"{0} lists"</item>
+        <item>"Ticked = in the row"</item>
+        <item>"{0} · playlist group"</item>
+        <item>"No channel {0}"</item>
+        <item>"None of your channels show {0} right now"</item>
+        <item>"Reconnecting… (attempt {0})"</item>
+        <item>"Up next in {0}"</item>
+        <item>"{0} can't be played right now"</item>
+        <item>"Screen size: {0}"</item>
+        <item>"Now: {0}"</item>
+        <item>"(stream's shape ignored: it says {0})"</item>
+        <item>"(stream's shape)"</item>
+        <item>"stereo"</item>
+        <item>"Sleep timer: {0} min"</item>
+        <item>"Couldn't play this recording · press OK to try again"</item>
+        <item>"switch list"</item>
+        <item>"games"</item>
+        <item>"channels"</item>
+        <item>"Back"</item>
+        <item>"close row"</item>
+        <item>"pick a list"</item>
+        <item>"next list"</item>
+        <item>"game info or pick a channel"</item>
+        <item>"watch"</item>
+        <item>"{0} favorite in this group"</item>
+        <item>"{0} favorites in this group"</item>
+        <item>"Added {0} to Favorites"</item>
+        <item>"Removed {0} from Favorites"</item>
+        <item>"No channels match \"{0}\""</item>
+        <item>"{0} selected"</item>
+        <item>"Left / Right: move them to the top / bottom"</item>
+        <item>"Up / Down: move the group"</item>
+        <item>"Left / Right: straight to the top / bottom"</item>
+        <item>"Up / Down: choose a group"</item>
+        <item>"Left / Right: send it to the top / bottom"</item>
+        <item>"Up / Down: move the channel"</item>
+        <item>"CH+ / CH−: move 8 places"</item>
+        <item>"Up / Down: choose a channel"</item>
+        <item>"{0} of {1} picked"</item>
+        <item>"\"{0}\" is locked. Enter your PIN"</item>
+        <item>"Add \"{0}\" to…"</item>
+        <item>"Copy \"{0}\" to…"</item>
+        <item>"No logos match \"{0}\"."</item>
+        <item>"tv-logos library"</item>
+        <item>"iptv-org library"</item>
+        <item>"That isn't a web address (it should start with http:// or https://). Try again from your phone."</item>
+        <item>"1. Put your phone on the same Wi-Fi as this TV.\n2. Scan the code with your phone's camera.\n3. Paste the logo's web address and tap Send to TV."</item>
+        <item>"{0} hidden. It still shows in Backups."</item>
+        <item>"{0} isn't working right now. Switched to {1} from {2}."</item>
+        <item>"Recording \"{0}\" is using a connection to this provider. If this channel doesn't play, your account may allow only one at a time."</item>
+        <item>"\"{0}\" didn't say its time zone, so replays may start at the wrong time. Pick it under Catch-up time zone in the playlist's menu in Settings"</item>
+        <item>"Finding \"{0}\" in Nuvio…"</item>
+        <item>"Live TV closed while {0} was starting last time, so it wasn't started again. Pick it to try again."</item>
+        <item>"the last channel"</item>
+        <item>"This recording is starting"</item>
+        <item>"The recording could not start"</item>
+        <item>"storage unavailable"</item>
+        <item>"▼  Down to read more"</item>
+        <item>"▲  Up to go back"</item>
+        <item>"▲ ▼  Up / Down to read"</item>
+        <item>"No channel found for {0}. Open it on the Sports page and use Fix Channel to pick one."</item>
+        <item>"Next: {0} {1}"</item>
+        <item>"Soon"</item>
+        <item>"Lost the connection to this stream. Retry or choose another channel."</item>
+        <item>"Back: all panes"</item>
+        <item>"Hold OK: full screen"</item>
+        <item>"All panes"</item>
+        <item>"SOUND"</item>
+        <item>"1 screen"</item>
+        <item>"2 screens"</item>
+        <item>"3 screens"</item>
+        <item>"4 screens"</item>
+        <item>"2 on top, 1 wide below"</item>
+        <item>"1 wide on top, 2 below"</item>
+        <item>"1 big on the left, 2 right"</item>
+        <item>"1 wide on top, 3 below"</item>
+        <item>"Multiview already has {0} channels. Open Multiview to change them."</item>
+        <item>"Already in Multiview ({0} of {1})."</item>
+        <item>"Added to Multiview ({0} of {1}). Open Multiview from the guide's top row."</item>
+        <item>"OK: play in P{0} · Back: close search"</item>
+        <item>"OK: play this stream in P{0} · Back: games"</item>
+        <item>"OK: play in P{0} · Hold OK: more options · Back: close"</item>
+        <item>"OK: open or play in P{0} · Left: fold · Back: close"</item>
+        <item>"Pane {0}"</item>
+        <item>"Sound: P{0}"</item>
+        <item>"OK: try another stream · Next: {0}"</item>
+        <item>"OK: try another stream · Next: {0} · {1} more"</item>
+        <item>"4K thumbnails off in settings"</item>
+        <item>"another TV"</item>
+        <item>"This recording stopped playing"</item>
+        <item>"Provider's server error (HTTP {0})"</item>
+        <item>"Provider answered HTTP {0}"</item>
+        <item>"none seen yet"</item>
+        <item>"{0} isn't working right now. Switched to {1}, showing the same game."</item>
+        <item>"{0} (built-in)"</item>
+        <item>"Check the Stalker portal address and provider-issued identity."</item>
+        <item>"Couldn't connect to the Stalker portal. Check the address and port; the portal may be down or blocked on this network."</item>
+        <item>"The Stalker portal address wasn't found. Check the address is typed correctly."</item>
+        <item>"The Stalker portal answered with an error."</item>
+        <item>"The Stalker portal kept redirecting and never answered."</item>
+        <item>"The Stalker portal rejected the account credentials."</item>
+        <item>"The Stalker portal returned an invalid response."</item>
+        <item>"The Stalker portal's secure (https) connection failed. Try the address with http:// instead."</item>
+        <item>"The Stalker source changed while the request was running."</item>
+        <item>"The guide needs a supported provider time zone."</item>
+        <item>"The portal did not return a complete, consistent catalogue."</item>
+        <item>"The portal response exceeds the safe import limit."</item>
+        <item>"The provider did not return a playable stream link."</item>
+        <item>"The provider has blocked or disabled this Stalker account."</item>
+        <item>"This Stalker portal does not support the requested operation."</item>
+        <item>"This movie contains multiple provider files. Selecting or combining these files is not supported yet."</item>
+        <item>"This portal requires a provider-issued username and password."</item>
+        <item>"This portal requires additional provider-issued device credentials."</item>
+        <item>"HTTP 401: the provider refused the request (wrong login, or it blocks this app; try setting a user agent)"</item>
+        <item>"HTTP 403: the provider refused the request (wrong login, or it blocks this app; try setting a user agent)"</item>
+        <item>"HTTP 456: the provider refused this login for now (too many connections, expired, or blocked). Close other apps using it and try again later."</item>
+        <item>"HTTP 458: the provider refused this login for now (too many connections, expired, or blocked). Close other apps using it and try again later."</item>
+        <item>"HTTP 461: the provider refused this login for now (too many connections, expired, or blocked). Close other apps using it and try again later."</item>
+        <item>"HTTP 502: the provider's server didn't respond, try again later"</item>
+        <item>"HTTP 503: the provider's server didn't respond, try again later"</item>
+        <item>"HTTP 504: the provider's server didn't respond, try again later"</item>
+        <item>"HTTP 520: the provider's server didn't respond, try again later"</item>
+        <item>"HTTP 521: the provider's server didn't respond, try again later"</item>
+        <item>"HTTP 522: the provider's server didn't respond, try again later"</item>
+        <item>"HTTP 523: the provider's server didn't respond, try again later"</item>
+        <item>"HTTP 524: the provider's server didn't respond, try again later"</item>
+        <item>"Films directed by {0}. Known for {1}."</item>
+        <item>"Films with {0}. Known for {1}."</item>
+        <item>"Starting recording \"{0}\""</item>
+        <item>"Couldn't start recording \"{0}\": {1}"</item>
+        <item>"Nothing recorded yet. What you record shows here."</item>
+        <item>"Nothing scheduled. In the guide, hold OK on a show and choose Record."</item>
+        <item>"No series set to record. In the guide, hold OK on a show and choose Record Series."</item>
+        <item>"All episodes"</item>
+        <item>"Stopping ({0} of {1})"</item>
+        <item>"Stopping"</item>
+        <item>"Stops when this recording is done"</item>
+        <item>"To stop, choose Move To again"</item>
+        <item>"Fix Match"</item>
+        <item>"Keep Forever"</item>
+        <item>"Used for every recording of this show, now and later"</item>
+        <item>"({0} of {1})"</item>
+        <item>"Recordings already moved stay moved; the rest stay where they are."</item>
+        <item>"To or from the network folder, it stops once the recording being moved now is done."</item>
+        <item>"Stop Moving"</item>
+        <item>"Keep Going"</item>
+        <item>"Recording settings"</item>
+        <item>"Recording now, on another TV"</item>
+        <item>"Live, as it aired, on another TV"</item>
+        <item>"Kept"</item>
+        <item>"Forever (never deleted by age)"</item>
+        <item>"The recording folder could not be created"</item>
+        <item>"\"{0}\" is already set to record"</item>
+        <item>"\"{0}\" was missed (the box was off or asleep)"</item>
+        <item>"\"{0}\" was missed"</item>
+        <item>"\"{0}\" couldn't be saved: its portal identity changed"</item>
+        <item>"\"{0}\" couldn't be saved: its portal archive identifier is unavailable"</item>
+        <item>"\"{0}\" couldn't be saved: this channel's catch-up isn't available"</item>
+        <item>"The network folder isn't set up, so \"{0}\" is saved to this device"</item>
+        <item>"The app no longer has access to the folder for recordings, so \"{0}\" is saved to this device"</item>
+        <item>"The drive for recordings isn't plugged in, so \"{0}\" is saved to this device"</item>
+        <item>"Not enough storage space to record \"{0}\""</item>
+        <item>"The network folder is nearly full ({0} free), so \"{1}\" may stop early"</item>
+        <item>"Can't reach the network folder right now ({0}). \"{1}\" records on this device and is copied across once it's back"</item>
+        <item>"That's being recorded on another TV: stop it there"</item>
+        <item>"That's still being recorded on another TV: delete it once it's finished"</item>
+        <item>"\"{0}\" was deleted here, but the network folder couldn't be reached to delete it there. Delete its folder ({1}) on the network folder yourself"</item>
+        <item>"Deleted \"{0}\": it was older than {1} days"</item>
+        <item>"Deleted {0} recordings older than {1} days"</item>
+        <item>"Nothing to move: already on {0}"</item>
+        <item>"Not enough room on {0}: needs {1}, has {2} free"</item>
+        <item>"No network folder is set up"</item>
+        <item>"Couldn't reach the network folder ({0}). Nothing was moved"</item>
+        <item>"Not enough room on the network folder: needs {0}, has {1} free"</item>
+        <item>"something went wrong"</item>
+        <item>"\"{0}\" couldn't be moved"</item>
+        <item>"Stopped moving. Nothing was moved."</item>
+        <item>"Stopped moving. Moved {0} of {1} to {2}; the rest are where they were."</item>
+        <item>"Couldn't move: {0}. Nothing was lost."</item>
+        <item>"Moved {0} of {1} to {2}. Stopped: {3}"</item>
+        <item>"Moved \"{0}\" to {1}"</item>
+        <item>"Moved {0} recordings to {1}"</item>
+        <item>"\"{0}\" is still being saved. Try again in a minute"</item>
+        <item>"\"{0}\" is still being copied to the network folder. Try again in a minute"</item>
+        <item>"\"{0}\" is already on {1}"</item>
+        <item>"the copy of \"{0}\" came out the wrong size"</item>
+        <item>"couldn't finish copying to {0}"</item>
+        <item>"\"{0}\": {1}"</item>
+        <item>"Storage is low: deleted the oldest recording, \"{0}\""</item>
+        <item>"{0}; it carried on from where it got to"</item>
+        <item>"{0}; it reconnected where it could"</item>
+        <item>"{0} while this box was playing another channel from the same provider (many accounts allow only one connection at a time)"</item>
+        <item>"The provider answered HTTP {0}"</item>
+        <item>"The connection dropped ({0})"</item>
+        <item>"Stopped early: the network folder couldn't take it ({0}). What was recorded is kept"</item>
+        <item>"copying to it couldn't keep up"</item>
+        <item>"The other TV stopped sending this before it finished, so it may stop early"</item>
+        <item>"Wrong username or password for {0}"</item>
+        <item>"That account is turned off on {0}"</item>
+        <item>"That account's password has expired on {0}"</item>
+        <item>"There's no shared folder called \"{0}\" on {1}"</item>
+        <item>"That folder can't be saved to. Share it with Read/Write for this user"</item>
+        <item>"That folder isn't there and couldn't be made"</item>
+        <item>"The network folder is full"</item>
+        <item>"{0} doesn't allow this. Make sure SMB 2 or 3 file sharing is turned on"</item>
+        <item>"{0} said no ({1})"</item>
+        <item>"Couldn't find \"{0}\". Try the computer's IP address instead (like 192.168.1.20)"</item>
+        <item>"Couldn't reach {0}. Check it's turned on, on the same network, and that file sharing is on"</item>
+        <item>"{0} didn't answer in time. Check it's awake and on the same network"</item>
+        <item>"{0} only offers old file sharing (SMB 1). Turn on SMB 2 or 3 on it"</item>
+        <item>"The network folder didn't work ({0})"</item>
+        <item>"\"{0}\" on {1} isn't a shared folder"</item>
+        <item>"{0} didn't offer its list of shared folders"</item>
+        <item>"The computer wouldn't give its list of shared folders"</item>
+        <item>"This user isn't allowed to see the list of shared folders"</item>
+        <item>"A test file couldn't be saved there in full"</item>
+        <item>"it's already on the network folder"</item>
+        <item>"its details couldn't be read"</item>
+        <item>"couldn't finish setting it up"</item>
+        <item>"The network folder isn't set up any more"</item>
+        <item>"it's already there"</item>
+        <item>"its file is missing from the network folder ({0})"</item>
+        <item>"part of it is missing from the network folder ({0})"</item>
+        <item>"the copy came out the wrong size"</item>
+        <item>"couldn't finish copying"</item>
+        <item>"%.1f GB"</item>
+        <item>"%.0f MB"</item>
+        <item>"%d KB"</item>
+        <item>"◀ ▶ change the highlighted setting"</item>
+        <item>"Sort {0}"</item>
+        <item>"this group"</item>
+        <item>"Default ({0})"</item>
+        <item>"Sort: {0}"</item>
+        <item>"Its poster, artwork and details, and what it opens"</item>
+        <item>"On Demand - {0}"</item>
+        <item>"Episode {0}"</item>
+        <item>"On {0} · {1} {2}"</item>
+        <item>"Next: {0}"</item>
+        <item>"{0} with the bell on"</item>
+        <item>"Looking up your shows… {0} of {1}"</item>
+        <item>"Hide this movie from the Calendar"</item>
+        <item>"Hide this show from the Calendar"</item>
+        <item>"title hidden: you're not there yet"</item>
+        <item>"streaming"</item>
+        <item>"Games · {0}"</item>
+        <item>"{0} episodes (whole season)"</item>
+        <item>"{0} on this day"</item>
+        <item>"{0} days ago"</item>
+        <item>"In {0} min"</item>
+        <item>"In {0} h"</item>
+        <item>"In {0} days"</item>
+        <item>"Watch live on {0}"</item>
+        <item>"Through {0}'s catch-up"</item>
+        <item>"Record this movie"</item>
+        <item>"Record this game"</item>
+        <item>"Record this episode"</item>
+        <item>"On {0} · {1}"</item>
+        <item>"Found on {0} of your channels · or search all of them"</item>
+        <item>"Now: {0} (pick \"Use the guide's channels\" to undo)"</item>
+        <item>"now"</item>
+        <item>"today {0}"</item>
+        <item>"tomorrow {0}"</item>
+        <item>"not found in your guide"</item>
+        <item>"found on {0} of your channels"</item>
+        <item>"catch-up"</item>
+        <item>"on now"</item>
+        <item>"airs {0} (later)"</item>
+        <item>"starts {0}"</item>
+        <item>"Always use this channel for {0}"</item>
+        <item>"{0} uses {1} from now on"</item>
+        <item>"{0} uses the channels found in your guide again"</item>
+        <item>"{0} (network)"</item>
+        <item>"WAITING"</item>
+        <item>"LATER"</item>
+        <item>"SERIES"</item>
+        <item>"Day {0} of {1}"</item>
+        <item>"At home {0}"</item>
+        <item>"In theaters {0}"</item>
+        <item>"a channel no longer in your playlist"</item>
+        <item>"Using {0} for {1} (you set it)"</item>
+        <item>"Always using {0} for {1}"</item>
+        <item>"You'll be reminded when {0} starts on {1}"</item>
+        <item>"{0}: set to record it as soon as it's in your guide"</item>
+        <item>"{0}: set to remind you as soon as it's in your guide"</item>
+        <item>"Stopped recording new episodes of {0}"</item>
+        <item>"Recording every new episode of {0} as it shows up in your guide"</item>
+        <item>"Couldn't find \"{0}\" to follow"</item>
+        <item>"Bell on: new episodes of {0} will show on Home and in your Calendar"</item>
+        <item>"Bell turned off for {0}"</item>
+        <item>"{0} is on your Calendar ({1})"</item>
+        <item>"{0} taken off your Calendar"</item>
+        <item>"{0} is on your Calendar"</item>
+        <item>"{0} is hidden from the Calendar (Hidden shows brings it back)"</item>
+        <item>"Bell on: you'll get a card on Home when {0} is out to watch at home"</item>
+        <item>"Was in theaters {0}"</item>
+        <item>"Out to watch at home {0}"</item>
+        <item>"Out at home since {0}"</item>
+        <item>"On disc {0}"</item>
+        <item>"On disc since {0}"</item>
+        <item>"Recording on {0}"</item>
+        <item>"Record on {0}"</item>
+        <item>"Record on {0} · {1}"</item>
+        <item>"Season {0} premieres"</item>
+        <item>"{0}: {1}"</item>
+        <item>"On {0} now"</item>
+        <item>"On {0} {1}"</item>
+        <item>"To send this report: put your phone on the same Wi-Fi as this TV, scan the code with your phone's camera, tap Copy short report and paste it in your message. No Wi-Fi? Take a photo of this screen instead. Use up/down to scroll."</item>
+        <item>"Continue Watching, new-episode cards and your rows. To take Home off the menu, open the app on another page first (above)."</item>
+        <item>"Continue Watching, new-episode cards and your rows. Off: Home leaves the menu, and anything that would go back to Home goes to the page the app opens on."</item>
+        <item>"Pick another page in Open the App On first"</item>
+        <item>"Search movies, shows, channels and On Demand"</item>
+        <item>"Your saved movies and shows"</item>
+        <item>"Picks made from what you watch, moods and Your taste"</item>
+        <item>"Browse by genre, network and more"</item>
+        <item>"In the menu"</item>
+        <item>"Inside Search"</item>
+        <item>"Off: no bells on show pages, no new-episode cards on Home"</item>
+        <item>"Release dates of your shows and movies, bells on show pages and new-episode cards on Home"</item>
+        <item>"Shows up in the menu by itself once your shows (watch history, Library or a bell) have episodes coming"</item>
+        <item>"Always in the menu"</item>
+        <item>"The guide, Recordings, the Live TV row on Home and channels in Search"</item>
+        <item>"The Sports page, game reminders and scores on the info bar"</item>
+        <item>"Off: no On Demand page, no On Demand in Search or in the stream list"</item>
+        <item>"Not in the menu. Your provider's movies and series still show in Search and in the stream list"</item>
+        <item>"Your provider's movies and series: the page, in Search and in the stream list"</item>
+        <item>"Your provider's movies and series. Shows up once they're imported (Settings → Live TV → On Demand)"</item>
+        <item>"Off the menu only"</item>
+        <item>"In the menu once anything is recorded or set to record. Always in Live TV too (● by the guide's ⚙)"</item>
+        <item>"Off the menu only: recording still works, and Recordings is always in Live TV (● by the guide's ⚙)"</item>
+        <item>"Menu &amp; Features"</item>
+        <item>"What's in the app, its order in the side menu, and the page it opens on. A page that's off is off everywhere."</item>
+        <item>"When the App Starts"</item>
+        <item>"Open the App On"</item>
+        <item>"The app opens straight on this page; Back opens the menu as usual. Takes effect the next time the app starts."</item>
+        <item>"OK turns a page on or off. The arrows move it up or down the menu. Settings always stays at the bottom."</item>
+        <item>"How the Menu Looks"</item>
+        <item>"Line Above Live TV"</item>
+        <item>"The thin line between Nuvio's pages and the Live TV pages. Off: the pages sit a little closer together."</item>
+        <item>"Shrink the Menu to Fit"</item>
+        <item>"When there are more pages than fit on screen, the menu gets a little smaller so everything shows without scrolling. Off: the menu scrolls."</item>
+        <item>"Put Back the Usual Order"</item>
+        <item>"Home, Discover, Search, Library, Calendar, Live TV, Sports, On Demand, Recordings"</item>
+        <item>"Menu order put back"</item>
+        <item>"Its own page in the side menu"</item>
+        <item>"A tab on the Search page"</item>
+        <item>"In the menu, in Search and in the stream list"</item>
+        <item>"No page in the menu; still in Search and in the stream list"</item>
+        <item>"Nowhere: no page, no Search results, not in the stream list"</item>
+        <item>"In the menu once your shows have episodes coming"</item>
+        <item>"Including Airing Today, before you follow anything"</item>
+        <item>"No Calendar, no bells, no new-episode cards on Home"</item>
+        <item>"When your shows' new episodes and your movies come out (shows whose bell you rang, your Library, and what you're watching)"</item>
+        <item>"On Home"</item>
+        <item>"New Episode Cards"</item>
+        <item>"A card in Continue Watching when a new episode of a show whose bell you rang is out. OK finds its sources."</item>
+        <item>"Your Shows in the Upcoming Row"</item>
+        <item>"The next episodes of your shows in the coming week, in Home's Upcoming row"</item>
+        <item>"The Calendar"</item>
+        <item>"Games for Teams You Follow"</item>
+        <item>"Your Sports teams' games, with the channel showing them (not whole leagues). Scores follow Hide Scores in Sports settings"</item>
+        <item>"Hide Spoilers"</item>
+        <item>"Episodes past the next one you'd watch don't show their titles or pictures"</item>
+        <item>"Opens In"</item>
+        <item>"The list by day, a week, or a month at a time"</item>
+        <item>"Week Starts On"</item>
+        <item>"The first day of the week in the Week and Month views"</item>
+        <item>"Sunday"</item>
+        <item>"Saturday"</item>
+        <item>"Monday"</item>
+        <item>"Picking an Episode in Your Guide"</item>
+        <item>"OK on an episode that's in your Live TV guide opens its Live TV options (watch, record, remind) or the show's page"</item>
+        <item>"Channels you told the Calendar to use, for a network or for one show: change or forget them"</item>
+        <item>"Your Country"</item>
+        <item>"For Airing Today and movie release dates"</item>
+        <item>"Airing Today: Leave Out News and Talk Shows"</item>
+        <item>"Also sports and panel shows"</item>
+        <item>"Your Shows"</item>
+        <item>"Look Up All Shows Again"</item>
+        <item>"Looking up…"</item>
+        <item>"{0} shows and movies on your Calendar · {1} bell rung"</item>
+        <item>"{0} shows and movies on your Calendar · {1} bells rung"</item>
+        <item>"{0} hidden"</item>
+        <item>"Looking up your shows again"</item>
+        <item>"Netherlands"</item>
+        <item>"Saving…"</item>
+        <item>"Login saved"</item>
+        <item>"Login needed"</item>
+        <item>"Out now"</item>
+        <item>"Not today (back on Home tomorrow)"</item>
+        <item>"Ring the bell (new episodes on your Calendar)"</item>
+        <item>"Ring the bell: new episodes on Home and in your Calendar"</item>
+        <item>"Still searching…"</item>
+        <item>"Looking through your On Demand movies and series"</item>
+        <item>"{0} folders"</item>
+        <item>"{0} folder"</item>
+        <item>"Status: {0}"</item>
+        <item>"Airs {0}"</item>
+        <item>"Failed to load metadata"</item>
+        <item>"{0} GB"</item>
+        <item>"{0} MB"</item>
+        <item>"{0} KB"</item>
+        <item>"{0}+{1} MB"</item>
+        <item>"1 GB"</item>
+        <item>"1.5 GB"</item>
+        <item>"2 GB"</item>
+        <item>"3 GB"</item>
+        <item>"4 GB"</item>
+        <item>"6 GB"</item>
+        <item>"8 GB"</item>
+        <item>"12 GB"</item>
+        <item>"16 GB"</item>
+        <item>"Audience Score"</item>
+        <item>"AI"</item>
+        <item>"Source: {0}"</item>
+        <item>"Stalker playback failed ({0}). Retry playback to refresh the stream link."</item>
+        <item>"Stalker playback could not be prepared. Check the source and VPN settings."</item>
+        <item>"VPN protection could not be verified for this Stalker stream."</item>
+        <item>"VPN connection could not be verified."</item>
+        <item>"Stalker playback could not start. Use the internal ExoPlayer and check the source and VPN settings."</item>
+        <item>"Unable to send report"</item>
+        <item>"Playback VPN proxy could not be applied."</item>
+        <item>"{0}d {1}h"</item>
+        <item>"Premiumize said: {0}"</item>
+        <item>"no sign-in code was returned (check the client ID)."</item>
+        <item>"Stalker streams currently play only inside Nuvio. External playback is unavailable."</item>
+        <item>"Scan the code on the TV again"</item>
+        <item>"Failed to fetch streams"</item>
+        <item>"Unable to sync Simkl"</item>
+        <item>"Simkl authentication is required"</item>
+        <item>"Simkl request failed"</item>
+        <item>"A Simkl item can have only one list status"</item>
+        <item>"Simkl could not match {0} of {1} library items"</item>
+        <item>"Removing this Simkl status would also clear watched history or a rating"</item>
+        <item>"Library source changed"</item>
+        <item>"This library does not support list management"</item>
+        <item>"Connect the library account first"</item>
+        <item>"Invalid list for the library provider"</item>
+        <item>"Profile changed"</item>
+        <item>"This provider does not support list management"</item>
+        <item>"This provider does not support list reordering"</item>
+        <item>"This list is no longer available"</item>
+        <item>"This static list is no longer available"</item>
+        <item>"This list does not accept this item"</item>
+        <item>"An external movie or show ID is required"</item>
+        <item>"Enter a list name"</item>
+        <item>"MDBList does not support editing list descriptions"</item>
+        <item>"MDBList supports private and public lists"</item>
+        <item>"MDBList lists support movies and shows"</item>
+        <item>"DV Only"</item>
+        <item>"HDR Only"</item>
+        <item>"Czech"</item>
+        <item>"Japanese"</item>
+        <item>"Korean"</item>
+        <item>"Chinese"</item>
+        <item>"Hebrew"</item>
+        <item>"Ready"</item>
+        <item>"Logo for {0}"</item>
+        <item>"Send to TV"</item>
+        <item>"VPN profiles are being restored. Retry playback."</item>
+        <item>"VPN profiles are being restored."</item>
+        <item>"VPN settings are unavailable."</item>
+        <item>"VPN settings are not ready."</item>
+        <item>"VPN protection could not be verified. Playback was not started."</item>
+        <item>"VPN connection timed out. Playback was not started."</item>
+        <item>"HTTP playback protection could not be prepared."</item>
+        <item>"VPN settings changed before playback started."</item>
+        <item>"HTTP playback protection timed out."</item>
+        <item>"Unsupported protected stream address."</item>
+        <item>"VPN protection could not be prepared. Check your selected profile and scope."</item>
+        <item>"Select a VPN profile in Settings before playing."</item>
+        <item>"VPN settings changed before the connection started."</item>
+        <item>"VPN settings changed before permission was requested."</item>
+        <item>"Open VPN settings to grant Android VPN permission."</item>
+        <item>"Nuvio left the foreground before Full app protection could start."</item>
+        <item>"VPN connection could not start. Check VPN settings."</item>
+        <item>"VPN settings could not be read. Playback was not started."</item>
+        <item>"VPN permission was declined. Playback was not started."</item>
+        <item>"VPN settings are unavailable. Playback was not started."</item>
+        <item>"The active Nuvio profile changed. Reopen VPN settings."</item>
+        <item>"Invalid VPN settings."</item>
+        <item>"Waiting for the active Nuvio profile."</item>
+        <item>"Selected VPN profile is missing."</item>
+        <item>"Select a VPN profile and protection scope first."</item>
+        <item>"Streams-only modes do not support DNS search domains. Use Full app mode or a profile with DNS server IP addresses only."</item>
+        <item>"Set the OpenVPN service credentials in VPN profiles."</item>
+        <item>"VPN settings changed. Retry playback."</item>
+        <item>"The VPN is on in Full app mode: type the computer's IP address (like 192.168.1.20) so it can be reached past the VPN."</item>
+        <item>"The VPN is on in Full app mode, and only home network addresses (like 192.168.x.x) are reached past it."</item>
+        <item>"The VPN uses the same home network addresses as the network folder, so the folder can't be reached while the VPN is on in Full app mode. Use \"HTTP + HTTPS streams\" mode instead."</item>
     </string-array>
     <string-array name="livetv_texts" tools:ignore="MissingTranslation">
         <item>" · Hold OK: 1 other stream"</item>
@@ -2790,5 +3629,844 @@
         <item>"The connection to the Stalker portal failed. Try again."</item>
         <item>"The Stalker portal couldn't be updated ({0}). Try again."</item>
         <item>"NEW"</item>
+        <item>"in {0} min"</item>
+        <item>"in {0} h {1}"</item>
+        <item>"{0}Home"</item>
+        <item>"Win"</item>
+        <item>"Draw"</item>
+        <item>"Loss"</item>
+        <item>"Played"</item>
+        <item>"Won"</item>
+        <item>"Drawn"</item>
+        <item>"Lost"</item>
+        <item>"Tied"</item>
+        <item>"Round {0}"</item>
+        <item>"Week {0}"</item>
+        <item>"Matchday {0}"</item>
+        <item>"Practice {0}"</item>
+        <item>"Half-time"</item>
+        <item>"1st half"</item>
+        <item>"2nd half"</item>
+        <item>"Halftime"</item>
+        <item>"HT"</item>
+        <item>"FT"</item>
+        <item>"Final/OT"</item>
+        <item>"AET"</item>
+        <item>"Delayed"</item>
+        <item>"Suspended"</item>
+        <item>"Canceled"</item>
+        <item>"Abandoned"</item>
+        <item>"OT"</item>
+        <item>"H{0}"</item>
+        <item>"Basketball"</item>
+        <item>"Mentions {0}"</item>
+        <item>"1 game"</item>
+        <item>"{0} games"</item>
+        <item>"Guess: {0}"</item>
+        <item>"Airs {0} · {1}"</item>
+        <item>"MAYBE"</item>
+        <item>"Scores updated {0} ago"</item>
+        <item>"{0} days"</item>
+        <item>"No channel found for {0}. Open it and use Fix Channel to pick one."</item>
+        <item>"{0} has finished, and {1} can't replay it"</item>
+        <item>"{0} can't replay this from the start"</item>
+        <item>"Showing {0} leagues"</item>
+        <item>"  ·  {0} hidden"</item>
+        <item>"All Events · {0} live"</item>
+        <item>"No {0} games today"</item>
+        <item>"No {0} games tomorrow"</item>
+        <item>"No {0} games yesterday"</item>
+        <item>"No {0} games on {1}"</item>
+        <item>"Showing the next match day: {0}"</item>
+        <item>"No {0} games this day or in the week ahead."</item>
+        <item>"{0} found"</item>
+        <item>"{0} of {1} on"</item>
+        <item>"Also on {0}"</item>
+        <item>" Tip: {0} ({1}) has replays of most games: add it in Add-ons."</item>
+        <item>"No replay of this game in {0} yet. "</item>
+        <item>"None of your {0} channels list this game, so here are all of them."</item>
+        <item>"Only {0} channels"</item>
+        <item>"+ {0} from other regions"</item>
+        <item>"📣  Score alerts on"</item>
+        <item>"📣  Score alerts"</item>
+        <item>"Score alerts off for this game"</item>
+        <item>"You'll see this game's scores and the final result wherever you are"</item>
+        <item>"MATCHES"</item>
+        <item>"RESULTS"</item>
+        <item>"LEADERBOARD"</item>
+        <item>"FINISHED"</item>
+        <item>"SCHEDULE"</item>
+        <item>"Overview"</item>
+        <item>"Saved: {0} on {1}"</item>
+        <item>"Use {0} for more games?"</item>
+        <item>"{0} is on {1}. "</item>
+        <item>"Pick a network or a team, and their games from now on use {0} too (a team's own channel, say)."</item>
+        <item>"Yes, every {0} game"</item>
+        <item>"Saved: {0} games use {1}"</item>
+        <item>"Yes, every {0} event"</item>
+        <item>"Saved: {0} events use {1}"</item>
+        <item>"Pick the channel for {0}"</item>
+        <item>"{0} won't be used for this game"</item>
+        <item>"Edit League List  ›"</item>
+        <item>"Edit League List"</item>
+        <item>"Remove leagues you never want to see. They stay gone until you add them back. Leagues you follow always show. OK turns a league on or off, and opens or closes a sport."</item>
+        <item>"Showing it now"</item>
+        <item>"Something else on now"</item>
+        <item>"On now: {0} · the game is listed at {1}"</item>
+        <item>"Shows it at {0}"</item>
+        <item>"On now: {0}"</item>
+        <item>"Its listing has ended"</item>
+        <item>"Not in this channel's guide"</item>
+        <item>"choose a channel"</item>
+        <item>"None of your channels or add-ons show this game right now."</item>
+        <item>"Add-on stream · {0}"</item>
+        <item>"Add-on stream"</item>
+        <item>"Might be showing it"</item>
+        <item>"▶  Watch"</item>
+        <item>"Head to Head"</item>
+        <item>"Form"</item>
+        <item>"Match Info"</item>
+        <item>"Table"</item>
+        <item>"Line-ups"</item>
+        <item>"Top Players"</item>
+        <item>"Win Chance"</item>
+        <item>"Referee: {0}"</item>
+        <item>"attendance %,d"</item>
+        <item>"START"</item>
+        <item>"NOW"</item>
+        <item>"END"</item>
+        <item>"No matched streams remain for {0}."</item>
+        <item>"this view"</item>
+        <item>" · Hold OK: {0} other streams"</item>
+        <item>"OK: play this stream in {0} · Back: back to games"</item>
+        <item>"OK: play in {0}{1} · Up / Down: Sports rows · Back: close"</item>
+        <item>"+1 stream"</item>
+        <item>"+{0} streams"</item>
+        <item>"NEXT"</item>
+        <item>"SOON"</item>
+        <item>"Starting in {0} minutes"</item>
+        <item>"Switches to {0} by itself at {1}."</item>
+        <item>"Watch on {0}"</item>
+        <item>"Watch on {0} now"</item>
+        <item>"SWITCHING IN {0}"</item>
+        <item>"FULL TIME"</item>
+        <item>"{0} SCORE!"</item>
+        <item>"Pick a game to see it here"</item>
+        <item>"Hold OK on a game to watch it here while you browse."</item>
+        <item>"Add a playlist in Live TV settings to watch games here"</item>
+        <item>"Finished  ·  OK: results, highlights and replays"</item>
+        <item>"Not found on your channels yet  ·  OK: game page"</item>
+        <item>"Not found on your channels yet"</item>
+        <item>"On {0}  ·  Hold OK to watch it here"</item>
+        <item>"On {0} of your channels  ·  Hold OK to watch it here"</item>
+        <item>"Getting the {0} table…"</item>
+        <item>"ON YOUR CHANNELS"</item>
+        <item>"{0} table"</item>
+        <item>"{0} standings"</item>
+        <item>"DRIVER"</item>
+        <item>"TEAM"</item>
+        <item>"Saved: {0} uses {1}"</item>
+        <item>"{0}FOOTBALL"</item>
+        <item>"SOCCER"</item>
+        <item>"+{0} more"</item>
+        <item>"Other copies of {0}"</item>
+        <item>"{0} is automatic again"</item>
+        <item>"Nothing coming up in {0} yet."</item>
+        <item>"No games found for {0} yet. They show here as soon as the schedule has them."</item>
+        <item>"1 game ahead"</item>
+        <item>"{0} games ahead"</item>
+        <item>"FINAL · {0}"</item>
+        <item>"NEXT FOR {0} · {1}"</item>
+        <item>"COMING UP · {0}"</item>
+        <item>"AT"</item>
+        <item>"{0} in {1}"</item>
+        <item>"1st"</item>
+        <item>"{0}st"</item>
+        <item>"{0}nd"</item>
+        <item>"{0}rd"</item>
+        <item>"{0}th"</item>
+        <item>"Group {0}"</item>
+        <item>"Season {0}"</item>
+        <item>"from {0}"</item>
+        <item>"{0} won"</item>
+        <item>"{0} drawn"</item>
+        <item>"{0} lost"</item>
+        <item>"goal difference {0}"</item>
+        <item>"{0} behind the leader"</item>
+        <item>"{0} games behind"</item>
+        <item>"{0} wins in a row"</item>
+        <item>"{0} losses in a row"</item>
+        <item>"{0} after {1}"</item>
+        <item>"LAST {0}"</item>
+        <item>"PLACE"</item>
+        <item>"BEHIND"</item>
+        <item>"RECORD"</item>
+        <item>"STREAK"</item>
+        <item>"HOME"</item>
+        <item>"OTL"</item>
+        <item>"STRK"</item>
+        <item>"PCT"</item>
+        <item>"GB"</item>
+        <item>"Age {0}"</item>
+        <item>"Height {0}"</item>
+        <item>"Weight {0}"</item>
+        <item>"LEADERS"</item>
+        <item>"tied"</item>
+        <item>"ALSO STOOD OUT"</item>
+        <item>"THIS GAME"</item>
+        <item>"TOP PLAYER SO FAR"</item>
+        <item>"PLAYER OF THE GAME"</item>
+        <item>"AST"</item>
+        <item>"STL"</item>
+        <item>"BLK"</item>
+        <item>"SV"</item>
+        <item>"HR"</item>
+        <item>"1ST STAR"</item>
+        <item>"2ND STAR"</item>
+        <item>"3RD STAR"</item>
+        <item>"BATTING"</item>
+        <item>"PITCHING"</item>
+        <item>"{0}% win"</item>
+        <item>"in {0} day"</item>
+        <item>"in {0} days"</item>
+        <item>"● REC"</item>
+        <item>"{0} league match \"{1}\""</item>
+        <item>"{0} leagues match \"{1}\""</item>
+        <item>"{0} teams match \"{1}\""</item>
+        <item>"\"{0}\" isn't in the leagues we list yet. You can still follow it as a name: any show in your TV guide with \"{0}\" in the title will show on My Sports."</item>
+        <item>"✓ Following \"{0}\""</item>
+        <item>"★ Follow \"{0}\" as a name"</item>
+        <item>"★  Following {0}"</item>
+        <item>"☆  Follow {0}"</item>
+        <item>"{0}'s schedule ({1}, with times and venues) comes from TheSportsDB, updated every day. "</item>
+        <item>"fight cards"</item>
+        <item>"weekly shows and big events"</item>
+        <item>"{0} comes from your own TV guide: live shows with \"{1}\" in the title. "</item>
+        <item>"{0} is listed by event (each race, card or tournament). Follow it to see every one on My Sports, or follow a name to catch shows that mention a driver or fighter."</item>
+        <item>"FOLLOWING · {0}"</item>
+        <item>"{0} followed"</item>
+        <item>"1 channel"</item>
+        <item>"{0} channels"</item>
+        <item>"Guide: {0}"</item>
+        <item>"Your channel for {0}"</item>
+        <item>"{0} listed by ESPN"</item>
+        <item>"this competition"</item>
+        <item>"From {0}"</item>
+        <item>"Couldn't reach the scores service ({0}). Showing what was saved."</item>
+        <item>"no internet or the address can't be found"</item>
+        <item>"timed out"</item>
+        <item>"A team (id {0})"</item>
+        <item>" (assist: {0})"</item>
+        <item>" (unassisted)"</item>
+        <item>"Until {0}"</item>
+        <item>"{0} · Live"</item>
+        <item>"Next: {0} · Race {1}"</item>
+        <item>"{0} seconds"</item>
+        <item>"{0}Schedule"</item>
+        <item>"Six Nations"</item>
+        <item>"The Rugby Championship"</item>
+        <item>"Scottish Premiership"</item>
+        <item>"Scottish Championship"</item>
+        <item>"Scottish Challenge Cup"</item>
+        <item>"Women's Super League"</item>
+        <item>"Russian Premier League"</item>
+        <item>"Indian Super League"</item>
+        <item>"Copa del Rey"</item>
+        <item>"DFB-Pokal"</item>
+        <item>"Coppa Italia"</item>
+        <item>"Taça de Portugal"</item>
+        <item>"Copa de la Reina"</item>
+        <item>"Copa do Brasil"</item>
+        <item>"Copa Argentina"</item>
+        <item>"Copa Colombia"</item>
+        <item>"Copa Chile"</item>
+        <item>"Supercopa Paraguay"</item>
+        <item>"World Baseball Classic"</item>
+        <item>"Little League World Series"</item>
+        <item>"QMJHL"</item>
+        <item>"Scores and schedules, and which of your channels show each game"</item>
+        <item>"Sports Is Turned Off"</item>
+        <item>"The Sports page, game reminders and scores on the info bar are off. It's switched on and off in Settings → Menu &amp; Features."</item>
+        <item>"Turn On"</item>
+        <item>"Your Teams"</item>
+        <item>"Teams and Leagues I Follow"</item>
+        <item>"Nothing yet. Follow teams and leagues to see them on My Sports."</item>
+        <item>" and {0} more"</item>
+        <item>"The order of your teams' and leagues' rows on My Sports"</item>
+        <item>"Your Region"</item>
+        <item>"All Events shows your region's leagues, plus anything you follow"</item>
+        <item>" (this TV)"</item>
+        <item>"{0}Watching"</item>
+        <item>"Hide Scores"</item>
+        <item>"For when you're watching on catch-up or later. Games show who's playing and when, but not the score"</item>
+        <item>"Score Delay"</item>
+        <item>"IPTV runs behind the live game. Scores, game clocks, results and scoring alerts wait this long so they don't show before you see it"</item>
+        <item>"Score on the Info Bar"</item>
+        <item>"Shows the live score on Live TV's info bar while you watch a game"</item>
+        <item>"Pinned Scoreboards"</item>
+        <item>"Pin up to 3 live games (from the info bar or a game's page) and their scores stay in the top-left corner while you watch. Off: the pin button is hidden"</item>
+        <item>"Video Window in Sports"</item>
+        <item>"Games play in a window on the Sports page while you browse. Off: games open full screen, and the page uses the whole width"</item>
+        <item>"Only Games on My Channels"</item>
+        <item>"Leaves out games none of your channels show. Games of teams you follow always show"</item>
+        <item>"Best Channel First"</item>
+        <item>"Puts 4K and FHD channels at the top of each game's list, then the rest"</item>
+        <item>"Reminders"</item>
+        <item>"Remind Me About My Teams"</item>
+        <item>"A message before your teams play, with a button to watch. Games you set a reminder on are always reminded"</item>
+        <item>"How Early"</item>
+        <item>"When the reminder comes up"</item>
+        <item>"When it starts"</item>
+        <item>"{0} minutes before"</item>
+        <item>"Switch to the Game Automatically"</item>
+        <item>"When a reminder goes off, Nuvio switches to the game a minute before it starts (with 10 seconds to cancel). Only while Nuvio is open. Each game's own choice on its page comes first"</item>
+        <item>"Scoring Alerts for My Teams"</item>
+        <item>"A small card in the corner when one of your teams scores, and the final score when the game ends, wherever you are in the app"</item>
+        <item>"Find Channels Again"</item>
+        <item>"Looks through your channels and guide for today's games now"</item>
+        <item>"Updating Sports…"</item>
+        <item>"Channels From"</item>
+        <item>"Each game lists only this region's (or language's) channels, with the others one click away. "</item>
+        <item>"Also on each game's page"</item>
+        <item>"Preferred Channel Groups"</item>
+        <item>"Channels in these groups go to the top of every game's list (your UK sports channels, say). "</item>
+        <item>"Without any, channels from your region come first"</item>
+        <item>"Your Channel Links"</item>
+        <item>"Channels you picked with Fix Channel for a network, a team, a league or one game. See them, or remove one"</item>
+        <item>"Forget My Channel Fixes"</item>
+        <item>"All channels you picked (or took off) with Fix Channel, including the ones used for whole networks"</item>
+        <item>"Replays &amp; Highlights"</item>
+        <item>"Show Highlights"</item>
+        <item>"A finished game's page lists highlights, recaps and big plays. Off: only replays of the whole game (and condensed games, if they're on)"</item>
+        <item>"Show Condensed Games"</item>
+        <item>"A finished game's page lists condensed games: the whole game cut down to the action"</item>
+        <item>"Scores, schedules, team logos and colors come from ESPN's free public feed. "</item>
+        <item>"Some event dates come from sporting-events.org, and the wrestling schedule and logos from TheSportsDB. "</item>
+        <item>"Darts, snooker, rugby and other sports they don't cover are found in your own TV guide."</item>
+        <item>"Your region"</item>
+        <item>"Same as this TV ({0})"</item>
+        <item>"Forget your channel fixes?"</item>
+        <item>"Sports goes back to finding channels by itself. Your teams and settings stay."</item>
+        <item>"Forget Them"</item>
+        <item>"Leagues on the Sports page"</item>
+        <item>"OK turns one on or off. Leagues you follow a team in always show."</item>
+        <item>"Preferred channel groups"</item>
+        <item>"OK ticks a group. Its channels go to the top of each game's list, above channels from elsewhere. Channels you picked with Fix Channel still come first."</item>
+        <item>"No channel groups yet. Add a playlist in Live TV first."</item>
+        <item>"Your channel links"</item>
+        <item>"OK removes a link. Its games go back to finding their channel by themselves."</item>
+        <item>"No links yet. On a game, hold OK → Fix Channel, pick the right channel, then choose a network or a team to keep using it."</item>
+        <item>"Removed: {0}"</item>
+        <item>"Channel no longer in your playlists"</item>
+        <item>"Forget All Channel Fixes"</item>
+        <item>"Fix match"</item>
+        <item>"Name, IMDb ID (tt…) or TMDB link"</item>
+        <item>"Year"</item>
+        <item>"Searching…"</item>
+        <item>"Nothing found. Try a shorter name, change All / Shows / Movies, clear the year, or paste the IMDb ID."</item>
+        <item>"Back to Automatic"</item>
+        <item>"Current"</item>
+        <item>"Picked"</item>
+        <item>"24-hour clock"</item>
+        <item>"Record until"</item>
+        <item>"Hold Record to skip this"</item>
+        <item>"◀ ▶ change the time"</item>
+        <item>"1 hour"</item>
+        <item>"{0} hours"</item>
+        <item>"Until I stop it"</item>
+        <item>"Until the show ends"</item>
+        <item>"Until a set time"</item>
+        <item>"Stop at"</item>
+        <item>"Start recording"</item>
+        <item>"1 list"</item>
+        <item>"{0} lists"</item>
+        <item>"Ticked = in the row"</item>
+        <item>"{0} · playlist group"</item>
+        <item>"No channel {0}"</item>
+        <item>"None of your channels show {0} right now"</item>
+        <item>"Reconnecting… (attempt {0})"</item>
+        <item>"Up next in {0}"</item>
+        <item>"{0} can't be played right now"</item>
+        <item>"Screen size: {0}"</item>
+        <item>"Now: {0}"</item>
+        <item>"(stream's shape ignored: it says {0})"</item>
+        <item>"(stream's shape)"</item>
+        <item>"stereo"</item>
+        <item>"Sleep timer: {0} min"</item>
+        <item>"Couldn't play this recording · press OK to try again"</item>
+        <item>"switch list"</item>
+        <item>"games"</item>
+        <item>"channels"</item>
+        <item>"Back"</item>
+        <item>"close row"</item>
+        <item>"pick a list"</item>
+        <item>"next list"</item>
+        <item>"game info or pick a channel"</item>
+        <item>"watch"</item>
+        <item>"{0} favorite in this group"</item>
+        <item>"{0} favorites in this group"</item>
+        <item>"Added {0} to Favorites"</item>
+        <item>"Removed {0} from Favorites"</item>
+        <item>"No channels match \"{0}\""</item>
+        <item>"{0} selected"</item>
+        <item>"Left / Right: move them to the top / bottom"</item>
+        <item>"Up / Down: move the group"</item>
+        <item>"Left / Right: straight to the top / bottom"</item>
+        <item>"Up / Down: choose a group"</item>
+        <item>"Left / Right: send it to the top / bottom"</item>
+        <item>"Up / Down: move the channel"</item>
+        <item>"CH+ / CH−: move 8 places"</item>
+        <item>"Up / Down: choose a channel"</item>
+        <item>"{0} of {1} picked"</item>
+        <item>"\"{0}\" is locked. Enter your PIN"</item>
+        <item>"Add \"{0}\" to…"</item>
+        <item>"Copy \"{0}\" to…"</item>
+        <item>"No logos match \"{0}\"."</item>
+        <item>"tv-logos library"</item>
+        <item>"iptv-org library"</item>
+        <item>"That isn't a web address (it should start with http:// or https://). Try again from your phone."</item>
+        <item>"1. Put your phone on the same Wi-Fi as this TV.\n2. Scan the code with your phone's camera.\n3. Paste the logo's web address and tap Send to TV."</item>
+        <item>"{0} hidden. It still shows in Backups."</item>
+        <item>"{0} isn't working right now. Switched to {1} from {2}."</item>
+        <item>"Recording \"{0}\" is using a connection to this provider. If this channel doesn't play, your account may allow only one at a time."</item>
+        <item>"\"{0}\" didn't say its time zone, so replays may start at the wrong time. Pick it under Catch-up time zone in the playlist's menu in Settings"</item>
+        <item>"Finding \"{0}\" in Nuvio…"</item>
+        <item>"Live TV closed while {0} was starting last time, so it wasn't started again. Pick it to try again."</item>
+        <item>"the last channel"</item>
+        <item>"This recording is starting"</item>
+        <item>"The recording could not start"</item>
+        <item>"storage unavailable"</item>
+        <item>"▼  Down to read more"</item>
+        <item>"▲  Up to go back"</item>
+        <item>"▲ ▼  Up / Down to read"</item>
+        <item>"No channel found for {0}. Open it on the Sports page and use Fix Channel to pick one."</item>
+        <item>"Next: {0} {1}"</item>
+        <item>"Soon"</item>
+        <item>"Lost the connection to this stream. Retry or choose another channel."</item>
+        <item>"Back: all panes"</item>
+        <item>"Hold OK: full screen"</item>
+        <item>"All panes"</item>
+        <item>"SOUND"</item>
+        <item>"1 screen"</item>
+        <item>"2 screens"</item>
+        <item>"3 screens"</item>
+        <item>"4 screens"</item>
+        <item>"2 on top, 1 wide below"</item>
+        <item>"1 wide on top, 2 below"</item>
+        <item>"1 big on the left, 2 right"</item>
+        <item>"1 wide on top, 3 below"</item>
+        <item>"Multiview already has {0} channels. Open Multiview to change them."</item>
+        <item>"Already in Multiview ({0} of {1})."</item>
+        <item>"Added to Multiview ({0} of {1}). Open Multiview from the guide's top row."</item>
+        <item>"OK: play in P{0} · Back: close search"</item>
+        <item>"OK: play this stream in P{0} · Back: games"</item>
+        <item>"OK: play in P{0} · Hold OK: more options · Back: close"</item>
+        <item>"OK: open or play in P{0} · Left: fold · Back: close"</item>
+        <item>"Pane {0}"</item>
+        <item>"Sound: P{0}"</item>
+        <item>"OK: try another stream · Next: {0}"</item>
+        <item>"OK: try another stream · Next: {0} · {1} more"</item>
+        <item>"4K thumbnails off in settings"</item>
+        <item>"another TV"</item>
+        <item>"This recording stopped playing"</item>
+        <item>"Provider's server error (HTTP {0})"</item>
+        <item>"Provider answered HTTP {0}"</item>
+        <item>"none seen yet"</item>
+        <item>"{0} isn't working right now. Switched to {1}, showing the same game."</item>
+        <item>"{0} (built-in)"</item>
+        <item>"Check the Stalker portal address and provider-issued identity."</item>
+        <item>"Couldn't connect to the Stalker portal. Check the address and port; the portal may be down or blocked on this network."</item>
+        <item>"The Stalker portal address wasn't found. Check the address is typed correctly."</item>
+        <item>"The Stalker portal answered with an error."</item>
+        <item>"The Stalker portal kept redirecting and never answered."</item>
+        <item>"The Stalker portal rejected the account credentials."</item>
+        <item>"The Stalker portal returned an invalid response."</item>
+        <item>"The Stalker portal's secure (https) connection failed. Try the address with http:// instead."</item>
+        <item>"The Stalker source changed while the request was running."</item>
+        <item>"The guide needs a supported provider time zone."</item>
+        <item>"The portal did not return a complete, consistent catalogue."</item>
+        <item>"The portal response exceeds the safe import limit."</item>
+        <item>"The provider did not return a playable stream link."</item>
+        <item>"The provider has blocked or disabled this Stalker account."</item>
+        <item>"This Stalker portal does not support the requested operation."</item>
+        <item>"This movie contains multiple provider files. Selecting or combining these files is not supported yet."</item>
+        <item>"This portal requires a provider-issued username and password."</item>
+        <item>"This portal requires additional provider-issued device credentials."</item>
+        <item>"HTTP 401: the provider refused the request (wrong login, or it blocks this app; try setting a user agent)"</item>
+        <item>"HTTP 403: the provider refused the request (wrong login, or it blocks this app; try setting a user agent)"</item>
+        <item>"HTTP 456: the provider refused this login for now (too many connections, expired, or blocked). Close other apps using it and try again later."</item>
+        <item>"HTTP 458: the provider refused this login for now (too many connections, expired, or blocked). Close other apps using it and try again later."</item>
+        <item>"HTTP 461: the provider refused this login for now (too many connections, expired, or blocked). Close other apps using it and try again later."</item>
+        <item>"HTTP 502: the provider's server didn't respond, try again later"</item>
+        <item>"HTTP 503: the provider's server didn't respond, try again later"</item>
+        <item>"HTTP 504: the provider's server didn't respond, try again later"</item>
+        <item>"HTTP 520: the provider's server didn't respond, try again later"</item>
+        <item>"HTTP 521: the provider's server didn't respond, try again later"</item>
+        <item>"HTTP 522: the provider's server didn't respond, try again later"</item>
+        <item>"HTTP 523: the provider's server didn't respond, try again later"</item>
+        <item>"HTTP 524: the provider's server didn't respond, try again later"</item>
+        <item>"Films directed by {0}. Known for {1}."</item>
+        <item>"Films with {0}. Known for {1}."</item>
+        <item>"Starting recording \"{0}\""</item>
+        <item>"Couldn't start recording \"{0}\": {1}"</item>
+        <item>"Nothing recorded yet. What you record shows here."</item>
+        <item>"Nothing scheduled. In the guide, hold OK on a show and choose Record."</item>
+        <item>"No series set to record. In the guide, hold OK on a show and choose Record Series."</item>
+        <item>"All episodes"</item>
+        <item>"Stopping ({0} of {1})"</item>
+        <item>"Stopping"</item>
+        <item>"Stops when this recording is done"</item>
+        <item>"To stop, choose Move To again"</item>
+        <item>"Fix Match"</item>
+        <item>"Keep Forever"</item>
+        <item>"Used for every recording of this show, now and later"</item>
+        <item>"({0} of {1})"</item>
+        <item>"Recordings already moved stay moved; the rest stay where they are."</item>
+        <item>"To or from the network folder, it stops once the recording being moved now is done."</item>
+        <item>"Stop Moving"</item>
+        <item>"Keep Going"</item>
+        <item>"Recording settings"</item>
+        <item>"Recording now, on another TV"</item>
+        <item>"Live, as it aired, on another TV"</item>
+        <item>"Kept"</item>
+        <item>"Forever (never deleted by age)"</item>
+        <item>"The recording folder could not be created"</item>
+        <item>"\"{0}\" is already set to record"</item>
+        <item>"\"{0}\" was missed (the box was off or asleep)"</item>
+        <item>"\"{0}\" was missed"</item>
+        <item>"\"{0}\" couldn't be saved: its portal identity changed"</item>
+        <item>"\"{0}\" couldn't be saved: its portal archive identifier is unavailable"</item>
+        <item>"\"{0}\" couldn't be saved: this channel's catch-up isn't available"</item>
+        <item>"The network folder isn't set up, so \"{0}\" is saved to this device"</item>
+        <item>"The app no longer has access to the folder for recordings, so \"{0}\" is saved to this device"</item>
+        <item>"The drive for recordings isn't plugged in, so \"{0}\" is saved to this device"</item>
+        <item>"Not enough storage space to record \"{0}\""</item>
+        <item>"The network folder is nearly full ({0} free), so \"{1}\" may stop early"</item>
+        <item>"Can't reach the network folder right now ({0}). \"{1}\" records on this device and is copied across once it's back"</item>
+        <item>"That's being recorded on another TV: stop it there"</item>
+        <item>"That's still being recorded on another TV: delete it once it's finished"</item>
+        <item>"\"{0}\" was deleted here, but the network folder couldn't be reached to delete it there. Delete its folder ({1}) on the network folder yourself"</item>
+        <item>"Deleted \"{0}\": it was older than {1} days"</item>
+        <item>"Deleted {0} recordings older than {1} days"</item>
+        <item>"Nothing to move: already on {0}"</item>
+        <item>"Not enough room on {0}: needs {1}, has {2} free"</item>
+        <item>"No network folder is set up"</item>
+        <item>"Couldn't reach the network folder ({0}). Nothing was moved"</item>
+        <item>"Not enough room on the network folder: needs {0}, has {1} free"</item>
+        <item>"something went wrong"</item>
+        <item>"\"{0}\" couldn't be moved"</item>
+        <item>"Stopped moving. Nothing was moved."</item>
+        <item>"Stopped moving. Moved {0} of {1} to {2}; the rest are where they were."</item>
+        <item>"Couldn't move: {0}. Nothing was lost."</item>
+        <item>"Moved {0} of {1} to {2}. Stopped: {3}"</item>
+        <item>"Moved \"{0}\" to {1}"</item>
+        <item>"Moved {0} recordings to {1}"</item>
+        <item>"\"{0}\" is still being saved. Try again in a minute"</item>
+        <item>"\"{0}\" is still being copied to the network folder. Try again in a minute"</item>
+        <item>"\"{0}\" is already on {1}"</item>
+        <item>"the copy of \"{0}\" came out the wrong size"</item>
+        <item>"couldn't finish copying to {0}"</item>
+        <item>"\"{0}\": {1}"</item>
+        <item>"Storage is low: deleted the oldest recording, \"{0}\""</item>
+        <item>"{0}; it carried on from where it got to"</item>
+        <item>"{0}; it reconnected where it could"</item>
+        <item>"{0} while this box was playing another channel from the same provider (many accounts allow only one connection at a time)"</item>
+        <item>"The provider answered HTTP {0}"</item>
+        <item>"The connection dropped ({0})"</item>
+        <item>"Stopped early: the network folder couldn't take it ({0}). What was recorded is kept"</item>
+        <item>"copying to it couldn't keep up"</item>
+        <item>"The other TV stopped sending this before it finished, so it may stop early"</item>
+        <item>"Wrong username or password for {0}"</item>
+        <item>"That account is turned off on {0}"</item>
+        <item>"That account's password has expired on {0}"</item>
+        <item>"There's no shared folder called \"{0}\" on {1}"</item>
+        <item>"That folder can't be saved to. Share it with Read/Write for this user"</item>
+        <item>"That folder isn't there and couldn't be made"</item>
+        <item>"The network folder is full"</item>
+        <item>"{0} doesn't allow this. Make sure SMB 2 or 3 file sharing is turned on"</item>
+        <item>"{0} said no ({1})"</item>
+        <item>"Couldn't find \"{0}\". Try the computer's IP address instead (like 192.168.1.20)"</item>
+        <item>"Couldn't reach {0}. Check it's turned on, on the same network, and that file sharing is on"</item>
+        <item>"{0} didn't answer in time. Check it's awake and on the same network"</item>
+        <item>"{0} only offers old file sharing (SMB 1). Turn on SMB 2 or 3 on it"</item>
+        <item>"The network folder didn't work ({0})"</item>
+        <item>"\"{0}\" on {1} isn't a shared folder"</item>
+        <item>"{0} didn't offer its list of shared folders"</item>
+        <item>"The computer wouldn't give its list of shared folders"</item>
+        <item>"This user isn't allowed to see the list of shared folders"</item>
+        <item>"A test file couldn't be saved there in full"</item>
+        <item>"it's already on the network folder"</item>
+        <item>"its details couldn't be read"</item>
+        <item>"couldn't finish setting it up"</item>
+        <item>"The network folder isn't set up any more"</item>
+        <item>"it's already there"</item>
+        <item>"its file is missing from the network folder ({0})"</item>
+        <item>"part of it is missing from the network folder ({0})"</item>
+        <item>"the copy came out the wrong size"</item>
+        <item>"couldn't finish copying"</item>
+        <item>"%.1f GB"</item>
+        <item>"%.0f MB"</item>
+        <item>"%d KB"</item>
+        <item>"◀ ▶ change the highlighted setting"</item>
+        <item>"Sort {0}"</item>
+        <item>"this group"</item>
+        <item>"Default ({0})"</item>
+        <item>"Sort: {0}"</item>
+        <item>"Its poster, artwork and details, and what it opens"</item>
+        <item>"On Demand - {0}"</item>
+        <item>"Episode {0}"</item>
+        <item>"On {0} · {1} {2}"</item>
+        <item>"Next: {0}"</item>
+        <item>"{0} with the bell on"</item>
+        <item>"Looking up your shows… {0} of {1}"</item>
+        <item>"Hide this movie from the Calendar"</item>
+        <item>"Hide this show from the Calendar"</item>
+        <item>"title hidden: you're not there yet"</item>
+        <item>"streaming"</item>
+        <item>"Games · {0}"</item>
+        <item>"{0} episodes (whole season)"</item>
+        <item>"{0} on this day"</item>
+        <item>"{0} days ago"</item>
+        <item>"In {0} min"</item>
+        <item>"In {0} h"</item>
+        <item>"In {0} days"</item>
+        <item>"Watch live on {0}"</item>
+        <item>"Through {0}'s catch-up"</item>
+        <item>"Record this movie"</item>
+        <item>"Record this game"</item>
+        <item>"Record this episode"</item>
+        <item>"On {0} · {1}"</item>
+        <item>"Found on {0} of your channels · or search all of them"</item>
+        <item>"Now: {0} (pick \"Use the guide's channels\" to undo)"</item>
+        <item>"now"</item>
+        <item>"today {0}"</item>
+        <item>"tomorrow {0}"</item>
+        <item>"not found in your guide"</item>
+        <item>"found on {0} of your channels"</item>
+        <item>"catch-up"</item>
+        <item>"on now"</item>
+        <item>"airs {0} (later)"</item>
+        <item>"starts {0}"</item>
+        <item>"Always use this channel for {0}"</item>
+        <item>"{0} uses {1} from now on"</item>
+        <item>"{0} uses the channels found in your guide again"</item>
+        <item>"{0} (network)"</item>
+        <item>"WAITING"</item>
+        <item>"LATER"</item>
+        <item>"SERIES"</item>
+        <item>"Day {0} of {1}"</item>
+        <item>"At home {0}"</item>
+        <item>"In theaters {0}"</item>
+        <item>"a channel no longer in your playlist"</item>
+        <item>"Using {0} for {1} (you set it)"</item>
+        <item>"Always using {0} for {1}"</item>
+        <item>"You'll be reminded when {0} starts on {1}"</item>
+        <item>"{0}: set to record it as soon as it's in your guide"</item>
+        <item>"{0}: set to remind you as soon as it's in your guide"</item>
+        <item>"Stopped recording new episodes of {0}"</item>
+        <item>"Recording every new episode of {0} as it shows up in your guide"</item>
+        <item>"Couldn't find \"{0}\" to follow"</item>
+        <item>"Bell on: new episodes of {0} will show on Home and in your Calendar"</item>
+        <item>"Bell turned off for {0}"</item>
+        <item>"{0} is on your Calendar ({1})"</item>
+        <item>"{0} taken off your Calendar"</item>
+        <item>"{0} is on your Calendar"</item>
+        <item>"{0} is hidden from the Calendar (Hidden shows brings it back)"</item>
+        <item>"Bell on: you'll get a card on Home when {0} is out to watch at home"</item>
+        <item>"Was in theaters {0}"</item>
+        <item>"Out to watch at home {0}"</item>
+        <item>"Out at home since {0}"</item>
+        <item>"On disc {0}"</item>
+        <item>"On disc since {0}"</item>
+        <item>"Recording on {0}"</item>
+        <item>"Record on {0}"</item>
+        <item>"Record on {0} · {1}"</item>
+        <item>"Season {0} premieres"</item>
+        <item>"{0}: {1}"</item>
+        <item>"On {0} now"</item>
+        <item>"On {0} {1}"</item>
+        <item>"To send this report: put your phone on the same Wi-Fi as this TV, scan the code with your phone's camera, tap Copy short report and paste it in your message. No Wi-Fi? Take a photo of this screen instead. Use up/down to scroll."</item>
+        <item>"Continue Watching, new-episode cards and your rows. To take Home off the menu, open the app on another page first (above)."</item>
+        <item>"Continue Watching, new-episode cards and your rows. Off: Home leaves the menu, and anything that would go back to Home goes to the page the app opens on."</item>
+        <item>"Pick another page in Open the App On first"</item>
+        <item>"Search movies, shows, channels and On Demand"</item>
+        <item>"Your saved movies and shows"</item>
+        <item>"Picks made from what you watch, moods and Your taste"</item>
+        <item>"Browse by genre, network and more"</item>
+        <item>"In the menu"</item>
+        <item>"Inside Search"</item>
+        <item>"Off: no bells on show pages, no new-episode cards on Home"</item>
+        <item>"Release dates of your shows and movies, bells on show pages and new-episode cards on Home"</item>
+        <item>"Shows up in the menu by itself once your shows (watch history, Library or a bell) have episodes coming"</item>
+        <item>"Always in the menu"</item>
+        <item>"The guide, Recordings, the Live TV row on Home and channels in Search"</item>
+        <item>"The Sports page, game reminders and scores on the info bar"</item>
+        <item>"Off: no On Demand page, no On Demand in Search or in the stream list"</item>
+        <item>"Not in the menu. Your provider's movies and series still show in Search and in the stream list"</item>
+        <item>"Your provider's movies and series: the page, in Search and in the stream list"</item>
+        <item>"Your provider's movies and series. Shows up once they're imported (Settings → Live TV → On Demand)"</item>
+        <item>"Off the menu only"</item>
+        <item>"In the menu once anything is recorded or set to record. Always in Live TV too (● by the guide's ⚙)"</item>
+        <item>"Off the menu only: recording still works, and Recordings is always in Live TV (● by the guide's ⚙)"</item>
+        <item>"Menu &amp; Features"</item>
+        <item>"What's in the app, its order in the side menu, and the page it opens on. A page that's off is off everywhere."</item>
+        <item>"When the App Starts"</item>
+        <item>"Open the App On"</item>
+        <item>"The app opens straight on this page; Back opens the menu as usual. Takes effect the next time the app starts."</item>
+        <item>"OK turns a page on or off. The arrows move it up or down the menu. Settings always stays at the bottom."</item>
+        <item>"How the Menu Looks"</item>
+        <item>"Line Above Live TV"</item>
+        <item>"The thin line between Nuvio's pages and the Live TV pages. Off: the pages sit a little closer together."</item>
+        <item>"Shrink the Menu to Fit"</item>
+        <item>"When there are more pages than fit on screen, the menu gets a little smaller so everything shows without scrolling. Off: the menu scrolls."</item>
+        <item>"Put Back the Usual Order"</item>
+        <item>"Home, Discover, Search, Library, Calendar, Live TV, Sports, On Demand, Recordings"</item>
+        <item>"Menu order put back"</item>
+        <item>"Its own page in the side menu"</item>
+        <item>"A tab on the Search page"</item>
+        <item>"In the menu, in Search and in the stream list"</item>
+        <item>"No page in the menu; still in Search and in the stream list"</item>
+        <item>"Nowhere: no page, no Search results, not in the stream list"</item>
+        <item>"In the menu once your shows have episodes coming"</item>
+        <item>"Including Airing Today, before you follow anything"</item>
+        <item>"No Calendar, no bells, no new-episode cards on Home"</item>
+        <item>"When your shows' new episodes and your movies come out (shows whose bell you rang, your Library, and what you're watching)"</item>
+        <item>"On Home"</item>
+        <item>"New Episode Cards"</item>
+        <item>"A card in Continue Watching when a new episode of a show whose bell you rang is out. OK finds its sources."</item>
+        <item>"Your Shows in the Upcoming Row"</item>
+        <item>"The next episodes of your shows in the coming week, in Home's Upcoming row"</item>
+        <item>"The Calendar"</item>
+        <item>"Games for Teams You Follow"</item>
+        <item>"Your Sports teams' games, with the channel showing them (not whole leagues). Scores follow Hide Scores in Sports settings"</item>
+        <item>"Hide Spoilers"</item>
+        <item>"Episodes past the next one you'd watch don't show their titles or pictures"</item>
+        <item>"Opens In"</item>
+        <item>"The list by day, a week, or a month at a time"</item>
+        <item>"Week Starts On"</item>
+        <item>"The first day of the week in the Week and Month views"</item>
+        <item>"Sunday"</item>
+        <item>"Saturday"</item>
+        <item>"Monday"</item>
+        <item>"Picking an Episode in Your Guide"</item>
+        <item>"OK on an episode that's in your Live TV guide opens its Live TV options (watch, record, remind) or the show's page"</item>
+        <item>"Channels you told the Calendar to use, for a network or for one show: change or forget them"</item>
+        <item>"Your Country"</item>
+        <item>"For Airing Today and movie release dates"</item>
+        <item>"Airing Today: Leave Out News and Talk Shows"</item>
+        <item>"Also sports and panel shows"</item>
+        <item>"Your Shows"</item>
+        <item>"Look Up All Shows Again"</item>
+        <item>"Looking up…"</item>
+        <item>"{0} shows and movies on your Calendar · {1} bell rung"</item>
+        <item>"{0} shows and movies on your Calendar · {1} bells rung"</item>
+        <item>"{0} hidden"</item>
+        <item>"Looking up your shows again"</item>
+        <item>"Netherlands"</item>
+        <item>"Saving…"</item>
+        <item>"Login saved"</item>
+        <item>"Login needed"</item>
+        <item>"Out now"</item>
+        <item>"Not today (back on Home tomorrow)"</item>
+        <item>"Ring the bell (new episodes on your Calendar)"</item>
+        <item>"Ring the bell: new episodes on Home and in your Calendar"</item>
+        <item>"Still searching…"</item>
+        <item>"Looking through your On Demand movies and series"</item>
+        <item>"{0} folders"</item>
+        <item>"{0} folder"</item>
+        <item>"Status: {0}"</item>
+        <item>"Airs {0}"</item>
+        <item>"Failed to load metadata"</item>
+        <item>"{0} GB"</item>
+        <item>"{0} MB"</item>
+        <item>"{0} KB"</item>
+        <item>"{0}+{1} MB"</item>
+        <item>"1 GB"</item>
+        <item>"1.5 GB"</item>
+        <item>"2 GB"</item>
+        <item>"3 GB"</item>
+        <item>"4 GB"</item>
+        <item>"6 GB"</item>
+        <item>"8 GB"</item>
+        <item>"12 GB"</item>
+        <item>"16 GB"</item>
+        <item>"Audience Score"</item>
+        <item>"AI"</item>
+        <item>"Source: {0}"</item>
+        <item>"Stalker playback failed ({0}). Retry playback to refresh the stream link."</item>
+        <item>"Stalker playback could not be prepared. Check the source and VPN settings."</item>
+        <item>"VPN protection could not be verified for this Stalker stream."</item>
+        <item>"VPN connection could not be verified."</item>
+        <item>"Stalker playback could not start. Use the internal ExoPlayer and check the source and VPN settings."</item>
+        <item>"Unable to send report"</item>
+        <item>"Playback VPN proxy could not be applied."</item>
+        <item>"{0}d {1}h"</item>
+        <item>"Premiumize said: {0}"</item>
+        <item>"no sign-in code was returned (check the client ID)."</item>
+        <item>"Stalker streams currently play only inside Nuvio. External playback is unavailable."</item>
+        <item>"Scan the code on the TV again"</item>
+        <item>"Failed to fetch streams"</item>
+        <item>"Unable to sync Simkl"</item>
+        <item>"Simkl authentication is required"</item>
+        <item>"Simkl request failed"</item>
+        <item>"A Simkl item can have only one list status"</item>
+        <item>"Simkl could not match {0} of {1} library items"</item>
+        <item>"Removing this Simkl status would also clear watched history or a rating"</item>
+        <item>"Library source changed"</item>
+        <item>"This library does not support list management"</item>
+        <item>"Connect the library account first"</item>
+        <item>"Invalid list for the library provider"</item>
+        <item>"Profile changed"</item>
+        <item>"This provider does not support list management"</item>
+        <item>"This provider does not support list reordering"</item>
+        <item>"This list is no longer available"</item>
+        <item>"This static list is no longer available"</item>
+        <item>"This list does not accept this item"</item>
+        <item>"An external movie or show ID is required"</item>
+        <item>"Enter a list name"</item>
+        <item>"MDBList does not support editing list descriptions"</item>
+        <item>"MDBList supports private and public lists"</item>
+        <item>"MDBList lists support movies and shows"</item>
+        <item>"DV Only"</item>
+        <item>"HDR Only"</item>
+        <item>"Czech"</item>
+        <item>"Japanese"</item>
+        <item>"Korean"</item>
+        <item>"Chinese"</item>
+        <item>"Hebrew"</item>
+        <item>"Ready"</item>
+        <item>"Logo for {0}"</item>
+        <item>"Send to TV"</item>
+        <item>"VPN profiles are being restored. Retry playback."</item>
+        <item>"VPN profiles are being restored."</item>
+        <item>"VPN settings are unavailable."</item>
+        <item>"VPN settings are not ready."</item>
+        <item>"VPN protection could not be verified. Playback was not started."</item>
+        <item>"VPN connection timed out. Playback was not started."</item>
+        <item>"HTTP playback protection could not be prepared."</item>
+        <item>"VPN settings changed before playback started."</item>
+        <item>"HTTP playback protection timed out."</item>
+        <item>"Unsupported protected stream address."</item>
+        <item>"VPN protection could not be prepared. Check your selected profile and scope."</item>
+        <item>"Select a VPN profile in Settings before playing."</item>
+        <item>"VPN settings changed before the connection started."</item>
+        <item>"VPN settings changed before permission was requested."</item>
+        <item>"Open VPN settings to grant Android VPN permission."</item>
+        <item>"Nuvio left the foreground before Full app protection could start."</item>
+        <item>"VPN connection could not start. Check VPN settings."</item>
+        <item>"VPN settings could not be read. Playback was not started."</item>
+        <item>"VPN permission was declined. Playback was not started."</item>
+        <item>"VPN settings are unavailable. Playback was not started."</item>
+        <item>"The active Nuvio profile changed. Reopen VPN settings."</item>
+        <item>"Invalid VPN settings."</item>
+        <item>"Waiting for the active Nuvio profile."</item>
+        <item>"Selected VPN profile is missing."</item>
+        <item>"Select a VPN profile and protection scope first."</item>
+        <item>"Streams-only modes do not support DNS search domains. Use Full app mode or a profile with DNS server IP addresses only."</item>
+        <item>"Set the OpenVPN service credentials in VPN profiles."</item>
+        <item>"VPN settings changed. Retry playback."</item>
+        <item>"The VPN is on in Full app mode: type the computer's IP address (like 192.168.1.20) so it can be reached past the VPN."</item>
+        <item>"The VPN is on in Full app mode, and only home network addresses (like 192.168.x.x) are reached past it."</item>
+        <item>"The VPN uses the same home network addresses as the network folder, so the folder can't be reached while the VPN is on in Full app mode. Use \"HTTP + HTTPS streams\" mode instead."</item>
     </string-array>
 </resources>

@@ -592,7 +592,7 @@ class SportsRepository @Inject constructor(
             val ev = event ?: return null
             val m = matched[ch.key] ?: return null
             // An add-on's stream of the game has no guide: it's the game itself.
-            if (ch.sourceId == SportsAddonSource.SOURCE_ID) return GuideLine(GuideKind.NOW, "Add-on stream", null)
+            if (ch.sourceId == SportsAddonSource.SOURCE_ID) return GuideLine(GuideKind.NOW, com.nuvio.tv.livetv.ui.LiveTvTexts.tr("Add-on stream"), null)
             return guideLine(ev, m, onNow, now, use24h)
         }
     }
@@ -1043,7 +1043,7 @@ class SportsRepository @Inject constructor(
                 }
             }
             val why = reasons.take(2).joinToString(", ")
-            _problem.value = if (failed.size >= due.size && due.isNotEmpty()) "Couldn't reach the scores service ($why). Showing what was saved." else null
+            _problem.value = if (failed.size >= due.size && due.isNotEmpty()) com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Couldn't reach the scores service ({0}). Showing what was saved.", reasons.take(2).joinToString(", ") { com.nuvio.tv.livetv.ui.LiveTvTexts.tr(it) }) else null
             if (failed.isNotEmpty()) {
                 val line = "Sports: couldn't get scores for ${failed.take(6).joinToString(", ")}${if (failed.size > 6) " and ${failed.size - 6} more" else ""} ($why)"
                 if (line != lastFailLine) { lastFailLine = line; LiveTvLoadReport.add(line) }
@@ -3015,14 +3015,14 @@ class SportsRepository @Inject constructor(
         val now = System.currentTimeMillis()
         val out = ArrayList<ChannelLink>()
         s.networkChannels.forEach { (n, key) -> out += ChannelLink(ChannelLink.Kind.NETWORK, n, ChannelLink.networkLabel(n), channels[key]) }
-        s.teamChannels.forEach { (t, key) -> out += ChannelLink(ChannelLink.Kind.TEAM, t, teams[t] ?: "A team (id ${t.substringAfter('|')})", channels[key]) }
-        s.leagueChannels.forEach { (l, key) -> out += ChannelLink(ChannelLink.Kind.LEAGUE, l, SportsCatalog.league(l)?.name ?: l, channels[key]) }
+        s.teamChannels.forEach { (t, key) -> out += ChannelLink(ChannelLink.Kind.TEAM, t, teams[t] ?: com.nuvio.tv.livetv.ui.LiveTvTexts.trf("A team (id {0})", t.substringAfter('|')), channels[key]) }
+        s.leagueChannels.forEach { (l, key) -> out += ChannelLink(ChannelLink.Kind.LEAGUE, l, SportsCatalog.league(l)?.name?.let { com.nuvio.tv.livetv.ui.LiveTvTexts.tr(it) } ?: l, channels[key]) }
         s.eventChannels.forEach { (id, v) ->
             val start = v.substringAfterLast('|').toLongOrNull() ?: 0L
             if (start > now - 6 * HOUR) {
                 val ev = games[id]
                 val day = java.text.SimpleDateFormat("EEE d MMM", java.util.Locale.getDefault()).format(java.util.Date(start))
-                out += ChannelLink(ChannelLink.Kind.GAME, id, (ev?.title ?: "A game") + ", " + day, channels[v.substringBeforeLast('|')])
+                out += ChannelLink(ChannelLink.Kind.GAME, id, (ev?.title ?: com.nuvio.tv.livetv.ui.LiveTvTexts.tr("A game")) + ", " + day, channels[v.substringBeforeLast('|')])
             }
         }
         return out.sortedWith(compareBy<ChannelLink> { it.kind.ordinal }.thenBy { it.label.lowercase() })

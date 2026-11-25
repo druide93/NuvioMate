@@ -45,6 +45,7 @@ import com.nuvio.tv.domain.model.MetaPreview
 import com.nuvio.tv.ui.components.GridContentCard
 import com.nuvio.tv.ui.components.LoadingIndicator
 import com.nuvio.tv.ui.components.PosterCardStyle
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.theme.NuvioTheme
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -122,7 +123,7 @@ internal fun OnDemandSeeAll(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = row?.catalogName ?: "On Demand",
+                text = row?.catalogName ?: "On Demand".tr(),
                 style = MaterialTheme.typography.headlineLarge,
                 color = NuvioTheme.colors.TextPrimary
             )
@@ -199,7 +200,7 @@ private fun SortButton(label: String, onClick: () -> Unit) {
         )
         Spacer(Modifier.width(8.dp))
         com.nuvio.tv.livetv.ui.LiveText(
-            "Sort: $label", size = 14.sp, weight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+            com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Sort: {0}", label.tr()), size = 14.sp, weight = androidx.compose.ui.text.font.FontWeight.SemiBold,
             color = if (focused) colors.Background else colors.TextPrimary
         )
     }

@@ -422,7 +422,7 @@ class LiveTvViewModel @Inject constructor(
             .sortedBy { if (it.sourceId != failed.sourceId) 0 else 1 }
             .firstOrNull() ?: return false
         com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Channel ${failed.name} won't play: switched to ${pick.name} (${pick.group})")
-        com.nuvio.tv.livetv.record.LiveTvNotice.show("${failed.name} isn't working right now. Switched to ${pick.name} from ${pick.group}.")
+        com.nuvio.tv.livetv.record.LiveTvNotice.show(LiveTvTexts.trf("{0} isn't working right now. Switched to {1} from {2}.", failed.name, pick.name, pick.group))
         lastBackupPick = pick.key
         switchingToBackup = true
         try { preview(pick) } finally { switchingToBackup = false }
@@ -468,7 +468,7 @@ class LiveTvViewModel @Inject constructor(
         }?.let { rec ->
             if (playback.playingChannel?.key != channel.key) {
                 com.nuvio.tv.livetv.record.LiveTvNotice.show(
-                    "Recording \"${rec.title}\" is using a connection to this provider. If this channel doesn't play, your account may allow only one at a time."
+                    LiveTvTexts.trf("Recording \"{0}\" is using a connection to this provider. If this channel doesn't play, your account may allow only one at a time.", rec.title)
                 )
             }
         }
@@ -1034,7 +1034,7 @@ class LiveTvViewModel @Inject constructor(
         viewModelScope.launch {
             val name = prefs.currentPlaylists().firstOrNull { it.id == sourceId }?.name ?: return@launch
             com.nuvio.tv.livetv.record.LiveTvNotice.show(
-                "\"$name\" didn't say its time zone, so replays may start at the wrong time. Pick it under Catch-up time zone in the playlist's menu in Settings"
+                LiveTvTexts.trf("\"{0}\" didn't say its time zone, so replays may start at the wrong time. Pick it under Catch-up time zone in the playlist's menu in Settings", name)
             )
         }
     }
@@ -1960,7 +1960,7 @@ class LiveTvViewModel @Inject constructor(
             com.nuvio.tv.livetv.data.LiveTvPosterResolver.isSports(channel, program)) { onSearch(searchTitle); return }
         viewModelScope.launch {
             val hint = com.nuvio.tv.livetv.data.LiveTvPosterResolver.typeHint(program, channel)
-            com.nuvio.tv.livetv.record.LiveTvNotice.show("Finding \"${titleMarks(program.title).title}\" in Nuvio…")
+            com.nuvio.tv.livetv.record.LiveTvNotice.show(LiveTvTexts.trf("Finding \"{0}\" in Nuvio…", titleMarks(program.title).title))
             val looking = com.nuvio.tv.livetv.record.LiveTvNotice.current.value
             val hit = try {
                 withTimeoutOrNull(6_000) {
@@ -2283,7 +2283,7 @@ class LiveTvViewModel @Inject constructor(
                     }
                     val until = if (untilStopped) "you stop it".tr() else formatClock(stopAt, settings.value.use24HourClock)
                     if (request.isActive) onResult(when {
-                        !rec.isRecording -> rec.problem ?: "The recording could not start".tr()
+                        !rec.isRecording -> rec.problem?.let { com.nuvio.tv.livetv.record.recordingProblemText(it) } ?: "The recording could not start".tr()
                         freeBytes < needed -> LiveTvTexts.trf("Recording \"{0}\" until {1}. Storage is low, so it may stop early.", title, until)
                         else -> LiveTvTexts.trf("Recording \"{0}\" until {1}", title, until)
                     })
@@ -2388,8 +2388,9 @@ class LiveTvViewModel @Inject constructor(
     private fun skipCrashed(key: String): Boolean {
         if (playback.crashedWhileStarting != key || session.crashNoticeShown) return false
         session.crashNoticeShown = true
-        val name = displayChannels.value.firstOrNull { it.key == key }?.name ?: "the last channel"
-        com.nuvio.tv.livetv.record.LiveTvNotice.show("Live TV closed while $name was starting last time, so it wasn't started again. Pick it to try again.")
+        val found = displayChannels.value.firstOrNull { it.key == key }?.name
+        val name = found ?: "the last channel"
+        com.nuvio.tv.livetv.record.LiveTvNotice.show(LiveTvTexts.trf("Live TV closed while {0} was starting last time, so it wasn't started again. Pick it to try again.", found ?: "the last channel".tr()))
         com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Start-up: the app closed while $name was starting last time; not starting it by itself")
         return true
     }

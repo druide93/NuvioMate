@@ -26,7 +26,7 @@
         <item>"Ajouter une chaîne"</item>
         <item>"Ajoutez une playlist dans les réglages TV en direct pour regarder d’ici."</item>
         <item>"Ajoutez une playlist dans les réglages TV en direct pour regarder les matchs d’ici. Les scores et horaires restent affichés."</item>
-        <item>"Ajoutez une playlist M3U, un compte Xtream ou un guide XMLTV dans Réglages › TV en direct."</item>
+        <item>"Ajoutez une playlist M3U, un compte Xtream ou un guide XMLTV dans Paramètres › TV en direct."</item>
         <item>"Ajouter une fenêtre"</item>
         <item>"Ajouter au Multiview"</item>
         <item>"Ajouter aux favoris"</item>
@@ -868,7 +868,7 @@
         <item>"Chaînes enregistrées"</item>
         <item>"La liste de chaînes enregistrée contenait des chaînes d’une playlist désactivée : elles sont retirées"</item>
         <item>"Chaînes et guide enregistrés affichés pendant la mise à jour de la liste des chaînes"</item>
-        <item>"Enregistré le"</item>
+        <item>"Enregistré sur"</item>
         <item>"Enregistrement depuis le replay en cours"</item>
         <item>"Programmer"</item>
         <item>"Programme + votre guide"</item>
@@ -910,7 +910,7 @@
         <item>"Séance"</item>
         <item>"Définir"</item>
         <item>"Choisir la chaîne de cette série"</item>
-        <item>"Réglages"</item>
+        <item>"Paramètres"</item>
         <item>"Synchro de la configuration"</item>
         <item>"Format"</item>
         <item>"Tirs"</item>
@@ -1102,7 +1102,7 @@
         <item>"Turc"</item>
         <item>"Désactiver la cloche"</item>
         <item>"Désactiver la cloche pour cette série"</item>
-        <item>"Activez À la demande pour une playlist dans Réglages → TV en direct, ou affichez des groupes avec le bouton des réglages."</item>
+        <item>"Activez À la demande pour une playlist dans Paramètres → TV en direct, ou affichez des groupes avec le bouton des réglages."</item>
         <item>"Tapez une partie du nom de la chaîne"</item>
         <item>"Coupe du monde U-17"</item>
         <item>"Qualifications Euro U-21"</item>
@@ -1233,7 +1233,7 @@
         <item>"Votre propre guide TV est aussi consulté pour trouver la chaîne qui le diffuse. Suivez-le pour voir chaque diffusion dans Mes sports."</item>
         <item>"Votre choix"</item>
         <item>"Vos playlists"</item>
-        <item>"Vos playlists (identifiants compris), guides, favoris, choix Sports et Calendrier et réglages TV en direct sont enregistrés, pour que chaque TV où vous vous connectez ait la même configuration. Un téléphone garde son propre aspect et sa disposition. Vous pouvez changer ce qui est inclus, ou désactiver la fonction, à tout moment dans Réglages → TV en direct → Synchro de la configuration."</item>
+        <item>"Vos playlists (identifiants compris), guides, favoris, choix Sports et Calendrier et réglages TV en direct sont enregistrés, pour que chaque TV où vous vous connectez ait la même configuration. Un téléphone garde son propre aspect et sa disposition. Vous pouvez changer ce qui est inclus, ou désactiver la fonction, à tout moment dans Paramètres → TV en direct → Synchro de la configuration."</item>
         <item>"Votre fournisseur propose ce titre plusieurs fois."</item>
         <item>"[Flux Stalker]"</item>
         <item>"‹  Ajouter un groupe de playlists"</item>
@@ -1395,5 +1395,844 @@
         <item>"La connexion au portail Stalker a échoué. Réessayez."</item>
         <item>"Impossible de mettre à jour le portail Stalker ({0}). Réessayez."</item>
         <item>"NOUVEAU"</item>
+        <item>"dans {0} min"</item>
+        <item>"dans {0} h {1}"</item>
+        <item>"{0}Domicile"</item>
+        <item>"Victoire"</item>
+        <item>"Nul"</item>
+        <item>"Défaite"</item>
+        <item>"Joués"</item>
+        <item>"Gagnés"</item>
+        <item>"Nuls"</item>
+        <item>"Perdus"</item>
+        <item>"Nuls"</item>
+        <item>"Journée {0}"</item>
+        <item>"Semaine {0}"</item>
+        <item>"Journée {0}"</item>
+        <item>"Essais {0}"</item>
+        <item>"Mi-temps"</item>
+        <item>"1re mi-temps"</item>
+        <item>"2e mi-temps"</item>
+        <item>"Mi-temps"</item>
+        <item>"MT"</item>
+        <item>"Fin"</item>
+        <item>"Terminé (prol.)"</item>
+        <item>"Ap. prol."</item>
+        <item>"Retardé"</item>
+        <item>"Suspendu"</item>
+        <item>"Annulé"</item>
+        <item>"Abandonné"</item>
+        <item>"Prol."</item>
+        <item>"MT{0}"</item>
+        <item>"Basket"</item>
+        <item>"Mentionne {0}"</item>
+        <item>"1 match"</item>
+        <item>"{0} matchs"</item>
+        <item>"Supposition : {0}"</item>
+        <item>"Diffusé à {0} · {1}"</item>
+        <item>"PEUT-ÊTRE"</item>
+        <item>"Scores mis à jour il y a {0}"</item>
+        <item>"{0} jours"</item>
+        <item>"Aucune chaîne trouvée pour {0}. Ouvrez-le et utilisez Corriger la chaîne pour en choisir une."</item>
+        <item>"{0} est terminé, et {1} ne peut pas le rediffuser"</item>
+        <item>"{0} ne peut pas le rediffuser depuis le début"</item>
+        <item>"{0} ligues affichées"</item>
+        <item>"  ·  {0} masquées"</item>
+        <item>"Tous les événements · {0} en direct"</item>
+        <item>"Aucun match de {0} aujourd’hui"</item>
+        <item>"Aucun match de {0} demain"</item>
+        <item>"Aucun match de {0} hier"</item>
+        <item>"Aucun match de {0} le {1}"</item>
+        <item>"Voici la prochaine journée : {0}"</item>
+        <item>"Aucun match de {0} ce jour-là ni dans la semaine à venir."</item>
+        <item>"{0} trouvée(s)"</item>
+        <item>"{0} sur {1} activées"</item>
+        <item>"Aussi sur {0}"</item>
+        <item>" Astuce : {0} ({1}) propose les replays de la plupart des matchs : ajoutez-le dans Add-ons."</item>
+        <item>"Pas encore de replay de ce match dans {0}. "</item>
+        <item>"Aucune de vos chaînes ({0}) ne diffuse ce match : les voici toutes."</item>
+        <item>"Uniquement les chaînes ({0})"</item>
+        <item>"+ {0} d’autres régions"</item>
+        <item>"📣  Alertes de score activées"</item>
+        <item>"📣  Alertes de score"</item>
+        <item>"Alertes de score désactivées pour ce match"</item>
+        <item>"Vous verrez les scores et le résultat final de ce match où que vous soyez"</item>
+        <item>"MATCHS"</item>
+        <item>"RÉSULTATS"</item>
+        <item>"CLASSEMENT"</item>
+        <item>"TERMINÉS"</item>
+        <item>"AU PROGRAMME"</item>
+        <item>"Aperçu"</item>
+        <item>"Enregistré : {0} sur {1}"</item>
+        <item>"Utiliser {0} pour d’autres matchs ?"</item>
+        <item>"{0} est diffusé sur {1}. "</item>
+        <item>"Choisissez un réseau ou une équipe : leurs matchs utiliseront désormais {0} aussi (la chaîne d’une équipe, par exemple)."</item>
+        <item>"Oui, tous les matchs {0}"</item>
+        <item>"Enregistré : les matchs {0} utilisent {1}"</item>
+        <item>"Oui, tous les événements {0}"</item>
+        <item>"Enregistré : les événements {0} utilisent {1}"</item>
+        <item>"Choisir la chaîne pour {0}"</item>
+        <item>"{0} ne sera pas utilisée pour ce match"</item>
+        <item>"Modifier la liste des ligues  ›"</item>
+        <item>"Modifier la liste des ligues"</item>
+        <item>"Retirez les ligues que vous ne voulez jamais voir. Elles restent masquées jusqu’à ce que vous les remettiez. Les ligues que vous suivez s’affichent toujours. OK active ou désactive une ligue, et ouvre ou ferme un sport."</item>
+        <item>"Le diffuse en ce moment"</item>
+        <item>"Autre chose en ce moment"</item>
+        <item>"En ce moment : {0} · le match est prévu à {1}"</item>
+        <item>"Le diffuse à {0}"</item>
+        <item>"En ce moment : {0}"</item>
+        <item>"Son programme est terminé"</item>
+        <item>"Absent du guide de cette chaîne"</item>
+        <item>"choisissez une chaîne"</item>
+        <item>"Aucune de vos chaînes ni aucun add-on ne diffuse ce match pour le moment."</item>
+        <item>"Flux d’add-on · {0}"</item>
+        <item>"Flux d’add-on"</item>
+        <item>"Le diffuse peut-être"</item>
+        <item>"▶  Regarder"</item>
+        <item>"Face-à-face"</item>
+        <item>"Forme"</item>
+        <item>"Infos du match"</item>
+        <item>"Classement"</item>
+        <item>"Compositions"</item>
+        <item>"Meilleurs joueurs"</item>
+        <item>"Chances de victoire"</item>
+        <item>"Arbitre : {0}"</item>
+        <item>"affluence %,d"</item>
+        <item>"DÉBUT"</item>
+        <item>"MAINTENANT"</item>
+        <item>"FIN"</item>
+        <item>"Plus aucun flux associé pour {0}."</item>
+        <item>"cette vue"</item>
+        <item>" · Maintenir OK : {0} autres flux"</item>
+        <item>"OK : lire ce flux dans {0} · Retour : revenir aux matchs"</item>
+        <item>"OK : lire dans {0}{1} · Haut / Bas : rangées Sports · Retour : fermer"</item>
+        <item>"+1 flux"</item>
+        <item>"+{0} flux"</item>
+        <item>"PROCHAIN"</item>
+        <item>"BIENTÔT"</item>
+        <item>"Commence dans {0} minutes"</item>
+        <item>"Passe automatiquement sur {0} à {1}."</item>
+        <item>"Regarder sur {0}"</item>
+        <item>"Regarder sur {0} maintenant"</item>
+        <item>"CHANGEMENT DANS {0}"</item>
+        <item>"FIN DU MATCH"</item>
+        <item>"{0} MARQUE !"</item>
+        <item>"Choisissez un match pour l’afficher ici"</item>
+        <item>"Maintenez OK sur un match pour le regarder ici pendant que vous naviguez."</item>
+        <item>"Ajoutez une playlist dans les réglages TV en direct pour regarder les matchs ici"</item>
+        <item>"Terminé  ·  OK : résultats, temps forts et replays"</item>
+        <item>"Pas encore trouvé sur vos chaînes  ·  OK : page du match"</item>
+        <item>"Pas encore trouvé sur vos chaînes"</item>
+        <item>"Sur {0}  ·  Maintenez OK pour le regarder ici"</item>
+        <item>"Sur {0} de vos chaînes  ·  Maintenez OK pour le regarder ici"</item>
+        <item>"Chargement du classement {0}…"</item>
+        <item>"SUR VOS CHAÎNES"</item>
+        <item>"Classement {0}"</item>
+        <item>"Classement {0}"</item>
+        <item>"PILOTE"</item>
+        <item>"ÉQUIPE"</item>
+        <item>"Enregistré : {0} utilise {1}"</item>
+        <item>"{0}FOOTBALL AMÉRICAIN"</item>
+        <item>"FOOTBALL"</item>
+        <item>"+{0} autres"</item>
+        <item>"Autres copies de {0}"</item>
+        <item>"{0} est de nouveau automatique"</item>
+        <item>"{0} : rien de prévu pour l’instant."</item>
+        <item>"Aucun match trouvé pour {0} pour l’instant. Ils apparaîtront ici dès qu’ils seront au calendrier."</item>
+        <item>"1 match à venir"</item>
+        <item>"{0} matchs à venir"</item>
+        <item>"TERMINÉ · {0}"</item>
+        <item>"PROCHAIN MATCH DE {0} · {1}"</item>
+        <item>"À VENIR · {0}"</item>
+        <item>"@"</item>
+        <item>"{0} en {1}"</item>
+        <item>"1er"</item>
+        <item>"{0}e"</item>
+        <item>"{0}e"</item>
+        <item>"{0}e"</item>
+        <item>"{0}e"</item>
+        <item>"Groupe {0}"</item>
+        <item>"Saison {0}"</item>
+        <item>"source : {0}"</item>
+        <item>"{0} V"</item>
+        <item>"{0} N"</item>
+        <item>"{0} D"</item>
+        <item>"différence de buts {0}"</item>
+        <item>"à {0} du leader"</item>
+        <item>"{0} matchs de retard"</item>
+        <item>"{0} victoires d’affilée"</item>
+        <item>"{0} défaites d’affilée"</item>
+        <item>"{0} après le {1}"</item>
+        <item>"DERNIERS ({0})"</item>
+        <item>"RANG"</item>
+        <item>"ÉCART"</item>
+        <item>"BILAN"</item>
+        <item>"SÉRIE"</item>
+        <item>"DOMICILE"</item>
+        <item>"DP"</item>
+        <item>"SÉRIE"</item>
+        <item>"%"</item>
+        <item>"ÉCART"</item>
+        <item>"{0} ans"</item>
+        <item>"Taille {0}"</item>
+        <item>"Poids {0}"</item>
+        <item>"MEILLEURS"</item>
+        <item>"égalité"</item>
+        <item>"ONT AUSSI BRILLÉ"</item>
+        <item>"CE MATCH"</item>
+        <item>"MEILLEUR JOUEUR POUR L’INSTANT"</item>
+        <item>"JOUEUR DU MATCH"</item>
+        <item>"PD"</item>
+        <item>"INT"</item>
+        <item>"CTR"</item>
+        <item>"ARR"</item>
+        <item>"CC"</item>
+        <item>"1RE ÉTOILE"</item>
+        <item>"2E ÉTOILE"</item>
+        <item>"3E ÉTOILE"</item>
+        <item>"À LA BATTE"</item>
+        <item>"AU LANCER"</item>
+        <item>"{0} % de victoire"</item>
+        <item>"dans {0} jour"</item>
+        <item>"dans {0} jours"</item>
+        <item>"● ENR"</item>
+        <item>"{0} ligue correspond à « {1} »"</item>
+        <item>"{0} ligues correspondent à « {1} »"</item>
+        <item>"{0} équipes correspondent à « {1} »"</item>
+        <item>"« {0} » ne fait pas encore partie des ligues proposées. Vous pouvez quand même le suivre comme nom : tout programme de votre guide TV avec « {0} » dans le titre apparaîtra dans Mes sports."</item>
+        <item>"✓ « {0} » suivi"</item>
+        <item>"★ Suivre « {0} » comme nom"</item>
+        <item>"★  Vous suivez {0}"</item>
+        <item>"☆  Suivre {0}"</item>
+        <item>"Le calendrier de {0} ({1}, avec horaires et lieux) vient de TheSportsDB, mis à jour chaque jour. "</item>
+        <item>"cartes de combats"</item>
+        <item>"émissions hebdomadaires et grands événements"</item>
+        <item>"{0} provient de votre propre guide TV : les programmes en direct avec « {1} » dans le titre. "</item>
+        <item>"{0} est listé par événement (chaque course, carte ou tournoi). Suivez-le pour tous les voir dans Mes sports, ou suivez un nom pour repérer les programmes qui mentionnent un pilote ou un combattant."</item>
+        <item>"SUIVIS · {0}"</item>
+        <item>"{0} suivie(s)"</item>
+        <item>"1 chaîne"</item>
+        <item>"{0} chaînes"</item>
+        <item>"Guide : {0}"</item>
+        <item>"Votre chaîne pour {0}"</item>
+        <item>"{0} d’après ESPN"</item>
+        <item>"cette compétition"</item>
+        <item>"Via {0}"</item>
+        <item>"Service des scores injoignable ({0}). Affichage des données enregistrées."</item>
+        <item>"pas d’internet ou adresse introuvable"</item>
+        <item>"délai dépassé"</item>
+        <item>"Une équipe (id {0})"</item>
+        <item>" (passe : {0})"</item>
+        <item>" (sans passe)"</item>
+        <item>"Jusqu’au {0}"</item>
+        <item>"{0} · En direct"</item>
+        <item>"À suivre : {0} · Course {1}"</item>
+        <item>"{0} secondes"</item>
+        <item>"{0}Au programme"</item>
+        <item>"Tournoi des Six Nations"</item>
+        <item>"Rugby Championship"</item>
+        <item>"Premiership écossaise"</item>
+        <item>"Championship écossais"</item>
+        <item>"Challenge Cup écossaise"</item>
+        <item>"Super League féminine"</item>
+        <item>"Premier League russe"</item>
+        <item>"Super League indienne"</item>
+        <item>"Coupe du Roi"</item>
+        <item>"Coupe d’Allemagne"</item>
+        <item>"Coupe d’Italie"</item>
+        <item>"Coupe du Portugal"</item>
+        <item>"Coupe de la Reine"</item>
+        <item>"Coupe du Brésil"</item>
+        <item>"Coupe d’Argentine"</item>
+        <item>"Coupe de Colombie"</item>
+        <item>"Coupe du Chili"</item>
+        <item>"Supercoupe du Paraguay"</item>
+        <item>"Classique mondiale de baseball"</item>
+        <item>"Série mondiale des petites ligues"</item>
+        <item>"LHJMQ"</item>
+        <item>"Scores et calendriers, et lesquelles de vos chaînes diffusent chaque match"</item>
+        <item>"Sports est désactivé"</item>
+        <item>"La page Sports, les rappels de match et les scores du bandeau d’infos sont désactivés. Cela s’active et se désactive dans Paramètres → Menu et options."</item>
+        <item>"Activer"</item>
+        <item>"Vos équipes"</item>
+        <item>"Équipes et ligues suivies"</item>
+        <item>"Rien pour l’instant. Suivez des équipes et des ligues pour les voir dans Mes sports."</item>
+        <item>" et {0} de plus"</item>
+        <item>"L’ordre des rangées de vos équipes et ligues dans Mes sports"</item>
+        <item>"Votre région"</item>
+        <item>"Tous les événements affiche les ligues de votre région, plus tout ce que vous suivez"</item>
+        <item>" (cette TV)"</item>
+        <item>"{0}Visionnage"</item>
+        <item>"Masquer les scores"</item>
+        <item>"Pour regarder en replay ou en différé. Les matchs indiquent qui joue et quand, mais pas le score"</item>
+        <item>"Retard des scores"</item>
+        <item>"L’IPTV est en retard sur le direct. Scores, chronos, résultats et alertes de score attendent ce délai pour ne pas apparaître avant que vous voyiez l’action"</item>
+        <item>"Score sur le bandeau d’infos"</item>
+        <item>"Affiche le score en direct sur le bandeau d’infos de la TV en direct pendant un match"</item>
+        <item>"Scores épinglés"</item>
+        <item>"Épinglez jusqu’à 3 matchs en direct (depuis le bandeau d’infos ou la page d’un match) : leurs scores restent en haut à gauche pendant le visionnage. Désactivé : le bouton d’épinglage est masqué"</item>
+        <item>"Fenêtre vidéo dans Sports"</item>
+        <item>"Les matchs se lisent dans une fenêtre de la page Sports pendant que vous naviguez. Désactivé : les matchs s’ouvrent en plein écran et la page utilise toute la largeur"</item>
+        <item>"Uniquement les matchs sur mes chaînes"</item>
+        <item>"Masque les matchs qu’aucune de vos chaînes ne diffuse. Les matchs des équipes suivies s’affichent toujours"</item>
+        <item>"Meilleure chaîne en premier"</item>
+        <item>"Place les chaînes 4K et FHD en tête de la liste de chaque match, puis les autres"</item>
+        <item>"Rappels"</item>
+        <item>"Me rappeler les matchs de mes équipes"</item>
+        <item>"Un message avant que vos équipes jouent, avec un bouton pour regarder. Les matchs avec un rappel sont toujours rappelés"</item>
+        <item>"Combien de temps avant"</item>
+        <item>"Quand le rappel apparaît"</item>
+        <item>"Au début"</item>
+        <item>"{0} minutes avant"</item>
+        <item>"Basculer automatiquement sur le match"</item>
+        <item>"Quand un rappel se déclenche, Nuvio bascule sur le match une minute avant son début (avec 10 secondes pour annuler). Uniquement si Nuvio est ouvert. Le choix fait sur la page de chaque match passe en premier"</item>
+        <item>"Alertes de score pour mes équipes"</item>
+        <item>"Une petite carte dans le coin quand une de vos équipes marque, et le score final à la fin du match, où que vous soyez dans l’app"</item>
+        <item>"Rechercher à nouveau les chaînes"</item>
+        <item>"Parcourt maintenant vos chaînes et votre guide pour les matchs du jour"</item>
+        <item>"Mise à jour de Sports…"</item>
+        <item>"Chaînes de"</item>
+        <item>"Chaque match ne liste que les chaînes de cette région (ou langue), les autres étant à un clic. "</item>
+        <item>"Aussi sur la page de chaque match"</item>
+        <item>"Groupes de chaînes préférés"</item>
+        <item>"Les chaînes de ces groupes passent en tête de la liste de chaque match (vos chaînes sport britanniques, par exemple). "</item>
+        <item>"Sans groupe choisi, les chaînes de votre région passent en premier"</item>
+        <item>"Vos liens de chaînes"</item>
+        <item>"Chaînes choisies avec Corriger la chaîne pour un réseau, une équipe, une ligue ou un match. Consultez-les ou retirez-en une"</item>
+        <item>"Oublier mes corrections de chaînes"</item>
+        <item>"Toutes les chaînes choisies (ou retirées) avec Corriger la chaîne, y compris celles utilisées pour des réseaux entiers"</item>
+        <item>"Replays et résumés"</item>
+        <item>"Afficher les temps forts"</item>
+        <item>"La page d’un match terminé liste les temps forts, résumés et grandes actions. Désactivé : uniquement les replays du match entier (et les matchs condensés, s’ils sont activés)"</item>
+        <item>"Afficher les matchs condensés"</item>
+        <item>"La page d’un match terminé liste les matchs condensés : tout le match réduit à l’action"</item>
+        <item>"Les scores, calendriers, logos et couleurs des équipes proviennent du flux public gratuit d’ESPN. "</item>
+        <item>"Certaines dates d’événements viennent de sporting-events.org, et le calendrier et les logos du catch de TheSportsDB. "</item>
+        <item>"Les fléchettes, le snooker, le rugby et les autres sports qu’ils ne couvrent pas sont trouvés dans votre propre guide TV."</item>
+        <item>"Votre région"</item>
+        <item>"Comme cette TV ({0})"</item>
+        <item>"Oublier vos corrections de chaînes ?"</item>
+        <item>"Sports recherche de nouveau les chaînes tout seul. Vos équipes et réglages sont conservés."</item>
+        <item>"Les oublier"</item>
+        <item>"Ligues de la page Sports"</item>
+        <item>"OK active ou désactive une ligue. Les ligues où vous suivez une équipe s’affichent toujours."</item>
+        <item>"Groupes de chaînes préférés"</item>
+        <item>"OK coche un groupe. Ses chaînes passent en tête de la liste de chaque match, avant les chaînes d’ailleurs. Les chaînes choisies avec Corriger la chaîne restent en premier."</item>
+        <item>"Aucun groupe de chaînes pour l’instant. Ajoutez d’abord une playlist dans TV en direct."</item>
+        <item>"Vos liens de chaînes"</item>
+        <item>"OK retire un lien. Ses matchs retrouvent de nouveau leur chaîne tout seuls."</item>
+        <item>"Aucun lien pour l’instant. Sur un match, maintenez OK → Corriger la chaîne, choisissez la bonne chaîne, puis un réseau ou une équipe pour continuer à l’utiliser."</item>
+        <item>"Retiré : {0}"</item>
+        <item>"Chaîne absente de vos playlists"</item>
+        <item>"Oublier toutes les corrections de chaînes"</item>
+        <item>"Corriger la correspondance"</item>
+        <item>"Nom, ID IMDb (tt…) ou lien TMDB"</item>
+        <item>"Année"</item>
+        <item>"Recherche…"</item>
+        <item>"Aucun résultat. Essayez un nom plus court, changez Tous / Séries / Films, effacez l’année ou collez l’ID IMDb."</item>
+        <item>"Revenir en automatique"</item>
+        <item>"Actuel"</item>
+        <item>"Coché"</item>
+        <item>"Horloge 24 h"</item>
+        <item>"Enregistrer jusqu’à"</item>
+        <item>"Maintenez Enregistrer pour passer cette étape"</item>
+        <item>"◀ ▶ changer l’heure"</item>
+        <item>"1 heure"</item>
+        <item>"{0} heures"</item>
+        <item>"Jusqu’à ce que je l’arrête"</item>
+        <item>"Jusqu’à la fin du programme"</item>
+        <item>"Jusqu’à une heure précise"</item>
+        <item>"Arrêter à"</item>
+        <item>"Lancer l’enregistrement"</item>
+        <item>"1 liste"</item>
+        <item>"{0} listes"</item>
+        <item>"Coché = dans la rangée"</item>
+        <item>"{0} · groupe de la playlist"</item>
+        <item>"Aucune chaîne {0}"</item>
+        <item>"Aucune de vos chaînes ne diffuse {0} pour le moment"</item>
+        <item>"Reconnexion… (tentative {0})"</item>
+        <item>"À suivre dans {0}"</item>
+        <item>"Impossible de lire {0} pour le moment"</item>
+        <item>"Taille de l’écran : {0}"</item>
+        <item>"En ce moment : {0}"</item>
+        <item>"(format du flux ignoré : il indique {0})"</item>
+        <item>"(format du flux)"</item>
+        <item>"stéréo"</item>
+        <item>"Minuterie de veille : {0} min"</item>
+        <item>"Impossible de lire cet enregistrement · appuyez sur OK pour réessayer"</item>
+        <item>"changer de liste"</item>
+        <item>"matchs"</item>
+        <item>"chaînes"</item>
+        <item>"Retour"</item>
+        <item>"fermer la rangée"</item>
+        <item>"choisir une liste"</item>
+        <item>"liste suivante"</item>
+        <item>"infos du match ou choix de la chaîne"</item>
+        <item>"regarder"</item>
+        <item>"{0} favori dans ce groupe"</item>
+        <item>"{0} favoris dans ce groupe"</item>
+        <item>"{0} chaîne(s) ajoutée(s) aux favoris"</item>
+        <item>"{0} chaîne(s) retirée(s) des favoris"</item>
+        <item>"Aucune chaîne ne correspond à « {0} »"</item>
+        <item>"{0} sélectionné(s)"</item>
+        <item>"Gauche / Droite : les placer en haut / en bas"</item>
+        <item>"Haut / Bas : déplacer le groupe"</item>
+        <item>"Gauche / Droite : directement en haut / en bas"</item>
+        <item>"Haut / Bas : choisir un groupe"</item>
+        <item>"Gauche / Droite : l’envoyer en haut / en bas"</item>
+        <item>"Haut / Bas : déplacer la chaîne"</item>
+        <item>"CH+ / CH− : déplacer de 8 places"</item>
+        <item>"Haut / Bas : choisir une chaîne"</item>
+        <item>"{0} sur {1} cochée(s)"</item>
+        <item>"« {0} » est verrouillé. Saisissez votre code PIN"</item>
+        <item>"Ajouter « {0} » à…"</item>
+        <item>"Copier « {0} » dans…"</item>
+        <item>"Aucun logo ne correspond à « {0} »."</item>
+        <item>"Bibliothèque tv-logos"</item>
+        <item>"Bibliothèque iptv-org"</item>
+        <item>"Ce n’est pas une adresse web (elle doit commencer par http:// ou https://). Réessayez depuis votre téléphone."</item>
+        <item>"1. Connectez votre téléphone au même Wi-Fi que cette TV.\n2. Scannez le code avec l’appareil photo du téléphone.\n3. Collez l’adresse web du logo et appuyez sur « Envoyer à la TV »."</item>
+        <item>"{0} masquée. Elle apparaît toujours dans Sauvegardes."</item>
+        <item>"{0} ne fonctionne pas pour le moment. Passage à {1} depuis {2}."</item>
+        <item>"L’enregistrement de « {0} » utilise une connexion à ce fournisseur. Si cette chaîne ne se lance pas, votre abonnement n’en permet peut-être qu’une à la fois."</item>
+        <item>"« {0} » n’a pas indiqué son fuseau horaire : les replays risquent de démarrer au mauvais moment. Choisissez-le dans Fuseau horaire du replay, dans le menu de la playlist dans les Paramètres"</item>
+        <item>"Recherche de « {0} » dans Nuvio…"</item>
+        <item>"La TV en direct s’est fermée pendant le lancement de {0} la dernière fois : elle n’a donc pas été relancée. Choisissez-la pour réessayer."</item>
+        <item>"la dernière chaîne"</item>
+        <item>"Cet enregistrement est en cours de démarrage"</item>
+        <item>"L’enregistrement n’a pas pu démarrer"</item>
+        <item>"stockage indisponible"</item>
+        <item>"▼  Bas pour lire la suite"</item>
+        <item>"▲  Haut pour revenir en arrière"</item>
+        <item>"▲ ▼  Haut / Bas pour lire"</item>
+        <item>"Aucune chaîne trouvée pour {0}. Ouvrez ce match sur la page Sports et utilisez Corriger la chaîne pour en choisir une."</item>
+        <item>"À suivre : {0} {1}"</item>
+        <item>"Bientôt"</item>
+        <item>"Connexion à ce flux perdue. Réessayez ou choisissez une autre chaîne."</item>
+        <item>"Retour : tous les panneaux"</item>
+        <item>"Maintenir OK : plein écran"</item>
+        <item>"Tous les panneaux"</item>
+        <item>"SON"</item>
+        <item>"1 écran"</item>
+        <item>"2 écrans"</item>
+        <item>"3 écrans"</item>
+        <item>"4 écrans"</item>
+        <item>"2 en haut, 1 large en bas"</item>
+        <item>"1 large en haut, 2 en bas"</item>
+        <item>"1 grand à gauche, 2 à droite"</item>
+        <item>"1 large en haut, 3 en bas"</item>
+        <item>"Le Multiview contient déjà {0} chaînes. Ouvrez le Multiview pour les changer."</item>
+        <item>"Déjà dans le Multiview ({0} sur {1})."</item>
+        <item>"Ajoutée au Multiview ({0} sur {1}). Ouvrez le Multiview depuis la rangée du haut du guide."</item>
+        <item>"OK : lire dans P{0} · Retour : fermer la recherche"</item>
+        <item>"OK : lire ce flux dans P{0} · Retour : matchs"</item>
+        <item>"OK : lire dans P{0} · Maintenir OK : plus d’options · Retour : fermer"</item>
+        <item>"OK : ouvrir ou lire dans P{0} · Gauche : replier · Retour : fermer"</item>
+        <item>"Panneau {0}"</item>
+        <item>"Son : P{0}"</item>
+        <item>"OK : essayer un autre flux · Suivant : {0}"</item>
+        <item>"OK : essayer un autre flux · Suivant : {0} · {1} de plus"</item>
+        <item>"Miniatures 4K désactivées dans les paramètres"</item>
+        <item>"un autre téléviseur"</item>
+        <item>"Cet enregistrement s’est arrêté"</item>
+        <item>"Erreur du serveur du fournisseur (HTTP {0})"</item>
+        <item>"Le fournisseur a répondu HTTP {0}"</item>
+        <item>"aucun détecté pour l’instant"</item>
+        <item>"{0} ne fonctionne pas pour le moment. Passage à {1}, qui diffuse le même match."</item>
+        <item>"{0} (intégré)"</item>
+        <item>"Vérifiez l’adresse du portail Stalker et l’identité fournie par le fournisseur."</item>
+        <item>"Impossible de se connecter au portail Stalker. Vérifiez l’adresse et le port ; le portail est peut-être hors service ou bloqué sur ce réseau."</item>
+        <item>"L’adresse du portail Stalker est introuvable. Vérifiez qu’elle est bien saisie."</item>
+        <item>"Le portail Stalker a répondu par une erreur."</item>
+        <item>"Le portail Stalker a redirigé sans fin et n’a jamais répondu."</item>
+        <item>"Le portail Stalker a refusé les identifiants du compte."</item>
+        <item>"Le portail Stalker a renvoyé une réponse non valide."</item>
+        <item>"La connexion sécurisée (https) au portail Stalker a échoué. Essayez plutôt l’adresse avec http://."</item>
+        <item>"La source Stalker a changé pendant la requête."</item>
+        <item>"Le guide a besoin d’un fuseau horaire du fournisseur pris en charge."</item>
+        <item>"Le portail n’a pas renvoyé de catalogue complet et cohérent."</item>
+        <item>"La réponse du portail dépasse la limite d’importation sécurisée."</item>
+        <item>"Le fournisseur n’a pas renvoyé de lien de flux lisible."</item>
+        <item>"Le fournisseur a bloqué ou désactivé ce compte Stalker."</item>
+        <item>"Ce portail Stalker ne prend pas en charge l’opération demandée."</item>
+        <item>"Ce film contient plusieurs fichiers du fournisseur. Choisir ou combiner ces fichiers n’est pas encore possible."</item>
+        <item>"Ce portail demande un nom d’utilisateur et un mot de passe fournis par le fournisseur."</item>
+        <item>"Ce portail demande des identifiants d’appareil supplémentaires fournis par le fournisseur."</item>
+        <item>"HTTP 401 : le fournisseur a refusé la requête (identifiants incorrects, ou il bloque cette application ; essayez de définir un user agent)"</item>
+        <item>"HTTP 403 : le fournisseur a refusé la requête (identifiants incorrects, ou il bloque cette application ; essayez de définir un user agent)"</item>
+        <item>"HTTP 456 : le fournisseur refuse cet identifiant pour le moment (trop de connexions, expiré ou bloqué). Fermez les autres applications qui l’utilisent et réessayez plus tard."</item>
+        <item>"HTTP 458 : le fournisseur refuse cet identifiant pour le moment (trop de connexions, expiré ou bloqué). Fermez les autres applications qui l’utilisent et réessayez plus tard."</item>
+        <item>"HTTP 461 : le fournisseur refuse cet identifiant pour le moment (trop de connexions, expiré ou bloqué). Fermez les autres applications qui l’utilisent et réessayez plus tard."</item>
+        <item>"HTTP 502 : le serveur du fournisseur n’a pas répondu, réessayez plus tard"</item>
+        <item>"HTTP 503 : le serveur du fournisseur n’a pas répondu, réessayez plus tard"</item>
+        <item>"HTTP 504 : le serveur du fournisseur n’a pas répondu, réessayez plus tard"</item>
+        <item>"HTTP 520 : le serveur du fournisseur n’a pas répondu, réessayez plus tard"</item>
+        <item>"HTTP 521 : le serveur du fournisseur n’a pas répondu, réessayez plus tard"</item>
+        <item>"HTTP 522 : le serveur du fournisseur n’a pas répondu, réessayez plus tard"</item>
+        <item>"HTTP 523 : le serveur du fournisseur n’a pas répondu, réessayez plus tard"</item>
+        <item>"HTTP 524 : le serveur du fournisseur n’a pas répondu, réessayez plus tard"</item>
+        <item>"Films réalisés par {0}. Connu(e) pour {1}."</item>
+        <item>"Films avec {0}. Connu(e) pour {1}."</item>
+        <item>"Démarrage de l’enregistrement de « {0} »"</item>
+        <item>"Impossible de lancer l’enregistrement de « {0} » : {1}"</item>
+        <item>"Rien d’enregistré pour l’instant. Ce que vous enregistrez apparaît ici."</item>
+        <item>"Rien de programmé. Dans le guide, maintenez OK sur un programme et choisissez Enregistrer."</item>
+        <item>"Aucune série à enregistrer. Dans le guide, maintenez OK sur un programme et choisissez Enregistrer la série."</item>
+        <item>"Tous les épisodes"</item>
+        <item>"Arrêt en cours ({0} sur {1})"</item>
+        <item>"Arrêt en cours"</item>
+        <item>"S’arrête une fois cet enregistrement terminé"</item>
+        <item>"Pour arrêter, choisissez de nouveau Déplacer vers"</item>
+        <item>"Corriger la correspondance"</item>
+        <item>"Conserver pour toujours"</item>
+        <item>"Utilisé pour chaque enregistrement de ce programme, actuel ou futur"</item>
+        <item>"({0} sur {1})"</item>
+        <item>"Les enregistrements déjà déplacés le restent ; les autres restent où ils sont."</item>
+        <item>"Vers ou depuis le dossier réseau, le déplacement s’arrête une fois terminé l’enregistrement en cours de déplacement."</item>
+        <item>"Arrêter le déplacement"</item>
+        <item>"Continuer"</item>
+        <item>"Paramètres d’enregistrement"</item>
+        <item>"Enregistrement en cours, sur une autre TV"</item>
+        <item>"En direct, tel que diffusé, sur une autre TV"</item>
+        <item>"Conservé"</item>
+        <item>"Pour toujours (jamais supprimé pour cause d’ancienneté)"</item>
+        <item>"Le dossier des enregistrements n’a pas pu être créé"</item>
+        <item>"« {0} » est déjà programmé pour l’enregistrement"</item>
+        <item>"« {0} » a été manqué (le boîtier était éteint ou en veille)"</item>
+        <item>"« {0} » a été manqué"</item>
+        <item>"« {0} » n’a pas pu être sauvegardé : l’identité de son portail a changé"</item>
+        <item>"« {0} » n’a pas pu être sauvegardé : l’identifiant d’archive du portail est indisponible"</item>
+        <item>"« {0} » n’a pas pu être sauvegardé : le replay de cette chaîne n’est pas disponible"</item>
+        <item>"Le dossier réseau n’est pas configuré, « {0} » est donc enregistré sur cet appareil"</item>
+        <item>"L’application n’a plus accès au dossier des enregistrements, « {0} » est donc enregistré sur cet appareil"</item>
+        <item>"Le disque des enregistrements n’est pas branché, « {0} » est donc enregistré sur cet appareil"</item>
+        <item>"Pas assez d’espace de stockage pour enregistrer « {0} »"</item>
+        <item>"Le dossier réseau est presque plein ({0} libres), « {1} » pourrait donc s’arrêter plus tôt"</item>
+        <item>"Le dossier réseau est injoignable pour l’instant ({0}). « {1} » s’enregistre sur cet appareil et y sera copié dès son retour"</item>
+        <item>"Cet enregistrement se fait sur une autre TV : arrêtez-le là-bas"</item>
+        <item>"Cet enregistrement est encore en cours sur une autre TV : supprimez-le une fois terminé"</item>
+        <item>"« {0} » a été supprimé ici, mais le dossier réseau était injoignable pour le supprimer là-bas. Supprimez vous-même son dossier ({1}) dans le dossier réseau"</item>
+        <item>"« {0} » supprimé : il avait plus de {1} jours"</item>
+        <item>"{0} enregistrements de plus de {1} jours supprimés"</item>
+        <item>"Rien à déplacer : déjà sur {0}"</item>
+        <item>"Pas assez de place sur {0} : il faut {1}, il reste {2}"</item>
+        <item>"Aucun dossier réseau n’est configuré"</item>
+        <item>"Dossier réseau injoignable ({0}). Rien n’a été déplacé"</item>
+        <item>"Pas assez de place dans le dossier réseau : il faut {0}, il reste {1}"</item>
+        <item>"un problème est survenu"</item>
+        <item>"« {0} » n’a pas pu être déplacé"</item>
+        <item>"Déplacement arrêté. Rien n’a été déplacé."</item>
+        <item>"Déplacement arrêté. {0} sur {1} déplacés vers {2} ; les autres sont restés où ils étaient."</item>
+        <item>"Déplacement impossible : {0}. Rien n’a été perdu."</item>
+        <item>"{0} sur {1} déplacés vers {2}. Arrêté : {3}"</item>
+        <item>"« {0} » déplacé vers {1}"</item>
+        <item>"{0} enregistrements déplacés vers {1}"</item>
+        <item>"« {0} » est encore en cours de sauvegarde. Réessayez dans une minute"</item>
+        <item>"« {0} » est encore en cours de copie vers le dossier réseau. Réessayez dans une minute"</item>
+        <item>"« {0} » est déjà sur {1}"</item>
+        <item>"la copie de « {0} » n’a pas la bonne taille"</item>
+        <item>"impossible de terminer la copie vers {0}"</item>
+        <item>"« {0} » : {1}"</item>
+        <item>"Stockage presque plein : l’enregistrement le plus ancien, « {0} », a été supprimé"</item>
+        <item>"{0} ; l’enregistrement a repris là où il s’était arrêté"</item>
+        <item>"{0} ; il s’est reconnecté dès que possible"</item>
+        <item>"{0} pendant que ce boîtier lisait une autre chaîne du même fournisseur (beaucoup d’abonnements n’autorisent qu’une connexion à la fois)"</item>
+        <item>"Le fournisseur a répondu HTTP {0}"</item>
+        <item>"La connexion a été coupée ({0})"</item>
+        <item>"Arrêté plus tôt : le dossier réseau ne suivait pas ({0}). Ce qui a été enregistré est conservé"</item>
+        <item>"la copie n’arrivait pas à suivre"</item>
+        <item>"L’autre TV a cessé de l’envoyer avant la fin, il pourrait donc s’arrêter plus tôt"</item>
+        <item>"Nom d’utilisateur ou mot de passe incorrect pour {0}"</item>
+        <item>"Ce compte est désactivé sur {0}"</item>
+        <item>"Le mot de passe de ce compte a expiré sur {0}"</item>
+        <item>"Il n’y a pas de dossier partagé appelé « {0} » sur {1}"</item>
+        <item>"Impossible d’enregistrer dans ce dossier. Partagez-le en lecture/écriture pour cet utilisateur"</item>
+        <item>"Ce dossier n’existe pas et n’a pas pu être créé"</item>
+        <item>"Le dossier réseau est plein"</item>
+        <item>"{0} ne le permet pas. Vérifiez que le partage de fichiers SMB 2 ou 3 est activé"</item>
+        <item>"{0} a refusé ({1})"</item>
+        <item>"« {0} » introuvable. Essayez plutôt l’adresse IP de l’ordinateur (par exemple 192.168.1.20)"</item>
+        <item>"{0} injoignable. Vérifiez qu’il est allumé, sur le même réseau, et que le partage de fichiers est activé"</item>
+        <item>"{0} n’a pas répondu à temps. Vérifiez qu’il est réveillé et sur le même réseau"</item>
+        <item>"{0} ne propose que l’ancien partage de fichiers (SMB 1). Activez-y SMB 2 ou 3"</item>
+        <item>"Le dossier réseau n’a pas fonctionné ({0})"</item>
+        <item>"« {0} » sur {1} n’est pas un dossier partagé"</item>
+        <item>"{0} n’a pas fourni sa liste de dossiers partagés"</item>
+        <item>"L’ordinateur n’a pas voulu donner sa liste de dossiers partagés"</item>
+        <item>"Cet utilisateur n’a pas le droit de voir la liste des dossiers partagés"</item>
+        <item>"Un fichier de test n’a pas pu y être enregistré en entier"</item>
+        <item>"il est déjà dans le dossier réseau"</item>
+        <item>"ses informations n’ont pas pu être lues"</item>
+        <item>"impossible de terminer sa mise en place"</item>
+        <item>"Le dossier réseau n’est plus configuré"</item>
+        <item>"il y est déjà"</item>
+        <item>"son fichier manque dans le dossier réseau ({0})"</item>
+        <item>"une partie manque dans le dossier réseau ({0})"</item>
+        <item>"la copie n’a pas la bonne taille"</item>
+        <item>"impossible de terminer la copie"</item>
+        <item>"%.1f Go"</item>
+        <item>"%.0f Mo"</item>
+        <item>"%d Ko"</item>
+        <item>"◀ ▶ : modifier le réglage sélectionné"</item>
+        <item>"Trier {0}"</item>
+        <item>"ce groupe"</item>
+        <item>"Par défaut ({0})"</item>
+        <item>"Tri : {0}"</item>
+        <item>"Son affiche, ses visuels et ses infos, et ce qu’il ouvre"</item>
+        <item>"À la demande - {0}"</item>
+        <item>"Épisode {0}"</item>
+        <item>"Sur {0} · {1} {2}"</item>
+        <item>"Prochain : {0}"</item>
+        <item>"{0} avec la cloche activée"</item>
+        <item>"Recherche de vos séries… {0} sur {1}"</item>
+        <item>"Masquer ce film du Calendrier"</item>
+        <item>"Masquer cette série du Calendrier"</item>
+        <item>"titre masqué : vous n’en êtes pas encore là"</item>
+        <item>"en streaming"</item>
+        <item>"Matchs · {0}"</item>
+        <item>"{0} épisodes (saison complète)"</item>
+        <item>"{0} ce jour-là"</item>
+        <item>"Il y a {0} jours"</item>
+        <item>"Dans {0} min"</item>
+        <item>"Dans {0} h"</item>
+        <item>"Dans {0} jours"</item>
+        <item>"Regarder en direct sur {0}"</item>
+        <item>"Via le replay de {0}"</item>
+        <item>"Enregistrer ce film"</item>
+        <item>"Enregistrer ce match"</item>
+        <item>"Enregistrer cet épisode"</item>
+        <item>"Sur {0} · {1}"</item>
+        <item>"Trouvé sur {0} de vos chaînes · ou cherchez dans toutes"</item>
+        <item>"Actuellement : {0} (choisissez « Utiliser les chaînes du guide » pour annuler)"</item>
+        <item>"maintenant"</item>
+        <item>"aujourd’hui {0}"</item>
+        <item>"demain {0}"</item>
+        <item>"introuvable dans votre guide"</item>
+        <item>"trouvé sur {0} de vos chaînes"</item>
+        <item>"replay"</item>
+        <item>"en ce moment"</item>
+        <item>"diffusé à {0} (plus tard)"</item>
+        <item>"commence à {0}"</item>
+        <item>"Toujours utiliser cette chaîne pour {0}"</item>
+        <item>"{0} utilise désormais {1}"</item>
+        <item>"{0} utilise de nouveau les chaînes trouvées dans votre guide"</item>
+        <item>"{0} (réseau)"</item>
+        <item>"EN ATTENTE"</item>
+        <item>"PLUS TARD"</item>
+        <item>"SÉRIE"</item>
+        <item>"Jour {0} sur {1}"</item>
+        <item>"À la maison le {0}"</item>
+        <item>"Au cinéma le {0}"</item>
+        <item>"une chaîne qui n’est plus dans votre playlist"</item>
+        <item>"{0} utilisée pour {1} (votre choix)"</item>
+        <item>"{0} toujours utilisée pour {1}"</item>
+        <item>"Vous serez prévenu quand {0} commencera sur {1}"</item>
+        <item>"{0} : sera enregistré dès qu’il sera dans votre guide"</item>
+        <item>"{0} : vous serez prévenu dès qu’il sera dans votre guide"</item>
+        <item>"Les nouveaux épisodes de {0} ne sont plus enregistrés"</item>
+        <item>"Chaque nouvel épisode de {0} sera enregistré dès qu’il apparaîtra dans votre guide"</item>
+        <item>"Impossible de trouver « {0} » pour le suivre"</item>
+        <item>"Cloche activée : les nouveaux épisodes de {0} apparaîtront sur l’Accueil et dans votre Calendrier"</item>
+        <item>"Cloche désactivée pour {0}"</item>
+        <item>"{0} est dans votre Calendrier ({1})"</item>
+        <item>"{0} retiré de votre Calendrier"</item>
+        <item>"{0} est dans votre Calendrier"</item>
+        <item>"{0} est masqué du Calendrier (Séries masquées permet de le rétablir)"</item>
+        <item>"Cloche activée : une carte apparaîtra sur l’Accueil quand {0} sera disponible à la maison"</item>
+        <item>"Sorti au cinéma le {0}"</item>
+        <item>"Disponible à la maison le {0}"</item>
+        <item>"Disponible à la maison depuis le {0}"</item>
+        <item>"En disque le {0}"</item>
+        <item>"En disque depuis le {0}"</item>
+        <item>"Enregistrement sur {0}"</item>
+        <item>"Enregistrer sur {0}"</item>
+        <item>"Enregistrer sur {0} · {1}"</item>
+        <item>"Début de la saison {0}"</item>
+        <item>"{0} : {1}"</item>
+        <item>"Sur {0} en ce moment"</item>
+        <item>"Sur {0} à {1}"</item>
+        <item>"Pour envoyer ce rapport : connectez votre téléphone au même Wi-Fi que cette TV, scannez le code avec l’appareil photo du téléphone, appuyez sur « Copy short report » et collez-le dans votre message. Pas de Wi-Fi ? Prenez plutôt cet écran en photo. Haut/bas pour faire défiler."</item>
+        <item>"Continuer à regarder, cartes de nouveaux épisodes et vos rangées. Pour retirer Accueil du menu, faites d’abord ouvrir l’application sur une autre page (ci-dessus)."</item>
+        <item>"Continuer à regarder, cartes de nouveaux épisodes et vos rangées. Désactivé : Accueil quitte le menu, et tout ce qui reviendrait à l’Accueil va sur la page d’ouverture de l’application."</item>
+        <item>"Choisissez d’abord une autre page dans « Ouvrir l’application sur »"</item>
+        <item>"Rechercher des films, des séries, des chaînes et À la demande"</item>
+        <item>"Vos films et séries enregistrés"</item>
+        <item>"Des suggestions selon ce que vous regardez, vos envies et Vos goûts"</item>
+        <item>"Parcourir par genre, chaîne et plus"</item>
+        <item>"Dans le menu"</item>
+        <item>"Dans Rechercher"</item>
+        <item>"Désactivé : pas de cloche sur les pages des séries, pas de cartes de nouveaux épisodes sur l’Accueil"</item>
+        <item>"Dates de sortie de vos séries et films, cloches sur les pages des séries et cartes de nouveaux épisodes sur l’Accueil"</item>
+        <item>"Apparaît tout seul dans le menu dès que vos séries (historique, Bibliothèque ou cloche) ont des épisodes à venir"</item>
+        <item>"Toujours dans le menu"</item>
+        <item>"Le guide, les Enregistrements, la rangée TV en direct sur l’Accueil et les chaînes dans Rechercher"</item>
+        <item>"La page Sports, les rappels de matchs et les scores dans la barre d’infos"</item>
+        <item>"Désactivé : pas de page À la demande, ni dans Rechercher, ni dans la liste des flux"</item>
+        <item>"Pas dans le menu. Les films et séries de votre fournisseur apparaissent toujours dans Rechercher et dans la liste des flux"</item>
+        <item>"Les films et séries de votre fournisseur : la page, dans Rechercher et dans la liste des flux"</item>
+        <item>"Les films et séries de votre fournisseur. Apparaît une fois qu’ils sont importés (Paramètres → TV en direct → À la demande)"</item>
+        <item>"Seulement hors du menu"</item>
+        <item>"Dans le menu dès qu’un programme est enregistré ou programmé. Toujours aussi dans TV en direct (● à côté du ⚙ du guide)"</item>
+        <item>"Seulement hors du menu : l’enregistrement fonctionne toujours, et Enregistrements reste dans TV en direct (● à côté du ⚙ du guide)"</item>
+        <item>"Menu et options"</item>
+        <item>"Ce que contient l’application, l’ordre du menu latéral et la page d’ouverture. Une page désactivée l’est partout."</item>
+        <item>"Au démarrage de l’application"</item>
+        <item>"Ouvrir l’application sur"</item>
+        <item>"L’application s’ouvre directement sur cette page ; Retour ouvre le menu comme d’habitude. Prend effet au prochain démarrage."</item>
+        <item>"OK active ou désactive une page. Les flèches la montent ou la descendent dans le menu. Paramètres reste toujours en bas."</item>
+        <item>"Apparence du menu"</item>
+        <item>"Ligne au-dessus de TV en direct"</item>
+        <item>"La fine ligne entre les pages de Nuvio et celles de TV en direct. Désactivé : les pages sont un peu plus rapprochées."</item>
+        <item>"Réduire le menu pour tout afficher"</item>
+        <item>"Quand il y a plus de pages que l’écran ne peut en afficher, le menu rétrécit un peu pour tout montrer sans défiler. Désactivé : le menu défile."</item>
+        <item>"Rétablir l’ordre habituel"</item>
+        <item>"Accueil, Découvrir, Rechercher, Bibliothèque, Calendrier, TV en direct, Sports, À la demande, Enregistrements"</item>
+        <item>"Ordre du menu rétabli"</item>
+        <item>"Sa propre page dans le menu latéral"</item>
+        <item>"Un onglet de la page Rechercher"</item>
+        <item>"Dans le menu, dans Rechercher et dans la liste des flux"</item>
+        <item>"Pas de page dans le menu ; toujours dans Rechercher et dans la liste des flux"</item>
+        <item>"Nulle part : pas de page, pas de résultats dans Rechercher, pas dans la liste des flux"</item>
+        <item>"Dans le menu dès que vos séries ont des épisodes à venir"</item>
+        <item>"Avec Diffusé aujourd’hui, avant même de suivre quoi que ce soit"</item>
+        <item>"Pas de Calendrier, pas de cloches, pas de cartes de nouveaux épisodes sur l’Accueil"</item>
+        <item>"Quand sortent les nouveaux épisodes de vos séries et vos films (séries dont vous avez activé la cloche, votre Bibliothèque et ce que vous regardez)"</item>
+        <item>"Sur l’Accueil"</item>
+        <item>"Cartes de nouveaux épisodes"</item>
+        <item>"Une carte dans Continuer à regarder quand sort un nouvel épisode d’une série dont vous avez activé la cloche. OK cherche ses sources."</item>
+        <item>"Vos séries dans la rangée À venir"</item>
+        <item>"Les prochains épisodes de vos séries dans la semaine, dans la rangée À venir de l’Accueil"</item>
+        <item>"Le Calendrier"</item>
+        <item>"Matchs des équipes que vous suivez"</item>
+        <item>"Les matchs de vos équipes Sports, avec la chaîne qui les diffuse (pas les ligues entières). Les scores suivent « Masquer les scores » des paramètres Sports"</item>
+        <item>"Masquer les spoilers"</item>
+        <item>"Les épisodes au-delà du prochain à regarder n’affichent ni titre ni image"</item>
+        <item>"S’ouvre en"</item>
+        <item>"La liste par jour, une semaine ou un mois à la fois"</item>
+        <item>"La semaine commence le"</item>
+        <item>"Le premier jour de la semaine dans les vues Semaine et Mois"</item>
+        <item>"Dimanche"</item>
+        <item>"Samedi"</item>
+        <item>"Lundi"</item>
+        <item>"Choisir un épisode de votre guide"</item>
+        <item>"OK sur un épisode présent dans votre guide TV en direct ouvre ses options TV en direct (regarder, enregistrer, rappel) ou la page de la série"</item>
+        <item>"Chaînes que vous avez imposées au Calendrier, pour un réseau ou un programme : modifiez-les ou oubliez-les"</item>
+        <item>"Votre pays"</item>
+        <item>"Pour Diffusé aujourd’hui et les dates de sortie des films"</item>
+        <item>"Diffusé aujourd’hui : exclure l’info et les talk-shows"</item>
+        <item>"Ainsi que le sport et les émissions de débat"</item>
+        <item>"Vos séries"</item>
+        <item>"Rechercher de nouveau toutes les séries"</item>
+        <item>"Recherche…"</item>
+        <item>"{0} séries et films dans votre Calendrier · {1} cloche activée"</item>
+        <item>"{0} séries et films dans votre Calendrier · {1} cloches activées"</item>
+        <item>"{0} masqués"</item>
+        <item>"Nouvelle recherche de vos séries"</item>
+        <item>"Pays-Bas"</item>
+        <item>"Enregistrement…"</item>
+        <item>"Identifiants enregistrés"</item>
+        <item>"Identifiants requis"</item>
+        <item>"Disponible"</item>
+        <item>"Pas aujourd’hui (de retour sur l’Accueil demain)"</item>
+        <item>"Activer la cloche (nouveaux épisodes dans votre Calendrier)"</item>
+        <item>"Activer la cloche : nouveaux épisodes sur l’Accueil et dans votre Calendrier"</item>
+        <item>"Recherche en cours…"</item>
+        <item>"Recherche dans vos films et séries À la demande"</item>
+        <item>"{0} dossiers"</item>
+        <item>"{0} dossier"</item>
+        <item>"Statut : {0}"</item>
+        <item>"Diffusion le {0}"</item>
+        <item>"Impossible de charger les métadonnées"</item>
+        <item>"{0} Go"</item>
+        <item>"{0} Mo"</item>
+        <item>"{0} ko"</item>
+        <item>"{0}+{1} Mo"</item>
+        <item>"1 Go"</item>
+        <item>"1,5 Go"</item>
+        <item>"2 Go"</item>
+        <item>"3 Go"</item>
+        <item>"4 Go"</item>
+        <item>"6 Go"</item>
+        <item>"8 Go"</item>
+        <item>"12 Go"</item>
+        <item>"16 Go"</item>
+        <item>"Score du public"</item>
+        <item>"IA"</item>
+        <item>"Source : {0}"</item>
+        <item>"Échec de la lecture Stalker ({0}). Relancez la lecture pour actualiser le lien du flux."</item>
+        <item>"Impossible de préparer la lecture Stalker. Vérifiez la source et les réglages VPN."</item>
+        <item>"Impossible de vérifier la protection VPN pour ce flux Stalker."</item>
+        <item>"Impossible de vérifier la connexion VPN."</item>
+        <item>"Impossible de démarrer la lecture Stalker. Utilisez l’ExoPlayer interne et vérifiez la source et les réglages VPN."</item>
+        <item>"Impossible d’envoyer le rapport"</item>
+        <item>"Impossible d’appliquer le proxy VPN de lecture."</item>
+        <item>"{0} j {1} h"</item>
+        <item>"Réponse de Premiumize : {0}"</item>
+        <item>"aucun code de connexion n’a été renvoyé (vérifiez l’ID client)."</item>
+        <item>"Les flux Stalker ne sont lisibles que dans Nuvio pour l’instant. La lecture externe n’est pas disponible."</item>
+        <item>"Scannez à nouveau le code affiché sur la TV"</item>
+        <item>"Échec de la récupération des flux"</item>
+        <item>"Impossible de synchroniser Simkl"</item>
+        <item>"Connexion à Simkl requise"</item>
+        <item>"La requête Simkl a échoué"</item>
+        <item>"Un titre Simkl ne peut avoir qu’un seul statut de liste"</item>
+        <item>"Simkl n’a pas pu identifier {0} des {1} titres de la bibliothèque"</item>
+        <item>"Retirer ce statut Simkl effacerait aussi l’historique de visionnage ou une note"</item>
+        <item>"La source de la bibliothèque a changé"</item>
+        <item>"Cette bibliothèque ne permet pas de gérer les listes"</item>
+        <item>"Connectez d’abord le compte de la bibliothèque"</item>
+        <item>"Liste non valide pour ce service de bibliothèque"</item>
+        <item>"Le profil a changé"</item>
+        <item>"Ce service ne permet pas de gérer les listes"</item>
+        <item>"Ce service ne permet pas de réordonner les listes"</item>
+        <item>"Cette liste n’est plus disponible"</item>
+        <item>"Cette liste statique n’est plus disponible"</item>
+        <item>"Cette liste n’accepte pas ce titre"</item>
+        <item>"Un identifiant externe de film ou de série est requis"</item>
+        <item>"Saisissez un nom de liste"</item>
+        <item>"MDBList ne permet pas de modifier la description des listes"</item>
+        <item>"MDBList accepte les listes privées et publiques"</item>
+        <item>"Les listes MDBList n’acceptent que les films et les séries"</item>
+        <item>"DV seul"</item>
+        <item>"HDR seul"</item>
+        <item>"Tchèque"</item>
+        <item>"Japonais"</item>
+        <item>"Coréen"</item>
+        <item>"Chinois"</item>
+        <item>"Hébreu"</item>
+        <item>"Prêt"</item>
+        <item>"Logo pour {0}"</item>
+        <item>"Envoyer à la TV"</item>
+        <item>"Les profils VPN sont en cours de restauration. Relancez la lecture."</item>
+        <item>"Les profils VPN sont en cours de restauration."</item>
+        <item>"Les réglages VPN sont indisponibles."</item>
+        <item>"Les réglages VPN ne sont pas prêts."</item>
+        <item>"La protection VPN n’a pas pu être vérifiée. La lecture n’a pas démarré."</item>
+        <item>"La connexion VPN a expiré. La lecture n’a pas démarré."</item>
+        <item>"La protection HTTP de la lecture n’a pas pu être préparée."</item>
+        <item>"Les réglages VPN ont changé avant le début de la lecture."</item>
+        <item>"La protection HTTP de la lecture a expiré."</item>
+        <item>"Adresse de flux protégé non prise en charge."</item>
+        <item>"La protection VPN n’a pas pu être préparée. Vérifiez le profil choisi et le mode de protection."</item>
+        <item>"Choisissez un profil VPN dans les Paramètres avant de lancer la lecture."</item>
+        <item>"Les réglages VPN ont changé avant le début de la connexion."</item>
+        <item>"Les réglages VPN ont changé avant la demande d’autorisation."</item>
+        <item>"Ouvrez les réglages VPN pour accorder l’autorisation VPN d’Android."</item>
+        <item>"Nuvio est passé en arrière-plan avant le démarrage de la protection « Toute l’app »."</item>
+        <item>"La connexion VPN n’a pas pu démarrer. Vérifiez les réglages VPN."</item>
+        <item>"Les réglages VPN n’ont pas pu être lus. La lecture n’a pas démarré."</item>
+        <item>"L’autorisation VPN a été refusée. La lecture n’a pas démarré."</item>
+        <item>"Les réglages VPN sont indisponibles. La lecture n’a pas démarré."</item>
+        <item>"Le profil Nuvio actif a changé. Rouvrez les réglages VPN."</item>
+        <item>"Réglages VPN non valides."</item>
+        <item>"En attente du profil Nuvio actif."</item>
+        <item>"Le profil VPN choisi est introuvable."</item>
+        <item>"Choisissez d’abord un profil VPN et un mode de protection."</item>
+        <item>"Les modes limités aux flux ne prennent pas en charge les domaines de recherche DNS. Utilisez le mode « Toute l’app » ou un profil avec uniquement des adresses IP de serveurs DNS."</item>
+        <item>"Renseignez les identifiants du service OpenVPN dans les profils VPN."</item>
+        <item>"Les réglages VPN ont changé. Relancez la lecture."</item>
+        <item>"Le VPN est activé en mode « Toute l’app » : saisissez l’adresse IP de l’ordinateur (comme 192.168.1.20) pour l’atteindre sans passer par le VPN."</item>
+        <item>"Le VPN est activé en mode « Toute l’app », et seules les adresses du réseau local (comme 192.168.x.x) sont atteintes sans passer par lui."</item>
+        <item>"Le VPN utilise les mêmes adresses de réseau local que le dossier réseau : le dossier est injoignable tant que le VPN est activé en mode « Toute l’app ». Utilisez plutôt le mode « Flux HTTP + HTTPS »."</item>
     </string-array>
 </resources>

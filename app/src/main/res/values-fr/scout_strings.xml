@@ -21,7 +21,7 @@
     <string name="scout_row_tiles">Tuiles Scout</string>
     <string name="scout_row_tiles_sub">Surprenez-moi, ambiances, décennies</string>
     <string name="scout_row_mixes">Mix</string>
-    <string name="scout_row_mixes_sub">Tes mix enregistrés et le mix de fête de la saison</string>
+    <string name="scout_row_mixes_sub">Vos mix enregistrés et le mix de fête de la saison</string>
     <string name="scout_ratings_enabled">Noter les titres</string>
     <string name="scout_ratings_enabled_sub">Affiche le bouton Noter, les pouces dans le menu d\'appui long et la question après un film</string>
     <string name="scout_ratings_off_note">Masque le bouton Noter, les pouces du menu et la question après un film. Vos notes comptent toujours.</string>

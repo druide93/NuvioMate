@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home_rows_add_button">"Ajouter une rangée"</string>
-    <string name="home_rows_add_button_hint">"Chaînes Live TV ou matchs de Sports en cours"</string>
+    <string name="home_rows_add_button_hint">"Chaînes TV en direct ou matchs de Sports en cours"</string>
     <string name="home_rows_edit">"Modifier"</string>
-    <string name="home_rows_type_live">"Live TV"</string>
+    <string name="home_rows_type_live">"TV en direct"</string>
     <string name="home_rows_type_sports">"Sports"</string>
     <string name="home_rows_desc_channels">"%1$s · jusqu’à %2$d chaînes"</string>
     <string name="home_rows_desc_sports">"%1$s · jusqu’à %2$d matchs"</string>
     <string name="home_rows_add_title">"Ajouter une rangée"</string>
     <string name="home_rows_add_subtitle">"Elle se place tout en haut de l’Accueil. Déplacez-la dans cette liste comme les autres rangées."</string>
     <string name="home_rows_add_hint">"Choisissez ce que la rangée affiche."</string>
-    <string name="home_rows_section_live">"Live TV"</string>
+    <string name="home_rows_section_live">"TV en direct"</string>
     <string name="home_rows_section_sports">"Sports"</string>
     <string name="home_rows_pick_favorites">"Favoris"</string>
     <string name="home_rows_pick_favorites_hint">"Vos chaînes favorites avec ce qui passe maintenant."</string>
@@ -33,7 +33,7 @@
     <string name="home_rows_sports_title">"Sports en direct"</string>
     <string name="home_rows_sports_one_title">"En direct : %1$s"</string>
     <string name="home_rows_next">"Ensuite : %1$s %2$s"</string>
-    <string name="home_rows_options_channels_subtitle">"Rangée Live TV"</string>
+    <string name="home_rows_options_channels_subtitle">"Rangée TV en direct"</string>
     <string name="home_rows_options_sports_subtitle">"Rangée Sports"</string>
     <string name="home_rows_option_name">"Nom de la rangée"</string>
     <string name="home_rows_option_name_hint">"Laisser vide pour le nom du groupe"</string>
@@ -93,7 +93,7 @@
     <string name="home_rows_section_vod">"À la demande"</string>
     <string name="home_rows_pick_vod_group">"Une catégorie de films ou de séries"</string>
     <string name="home_rows_pick_vod_group_title">"Choisir une catégorie"</string>
-    <string name="home_rows_pick_vod_none">"Pas encore de catégories À la demande. Activez À la demande pour une playlist dans Paramètres → Live TV, ou affichez des groupes dans Gérer les groupes VOD."</string>
+    <string name="home_rows_pick_vod_none">"Pas encore de catégories À la demande. Activez À la demande pour une playlist dans Paramètres → TV en direct, ou affichez des groupes dans Gérer les groupes VOD."</string>
     <string name="home_rows_pick_vod_recent">"Ajoutés récemment"</string>
     <string name="home_rows_pick_vod_recent_hint">"Films ou séries"</string>
     <string name="home_rows_vod_movies">"Films"</string>

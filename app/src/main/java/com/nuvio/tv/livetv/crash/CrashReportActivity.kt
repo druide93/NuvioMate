@@ -13,6 +13,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import com.nuvio.tv.livetv.ui.tr
 
 /**
  * Plain Android views only (no Compose, no Hilt), so it still works when the crash came from the
@@ -37,15 +38,16 @@ class CrashReportActivity : Activity() {
         fun dp(v: Int) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), resources.displayMetrics).toInt()
 
         val title = TextView(this).apply {
-            text = "NuvioMate stopped"
+            text = "NuvioMate stopped".tr()
             setTextColor(Color.WHITE)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
             typeface = Typeface.DEFAULT_BOLD
         }
         val hint = TextView(this).apply {
-            text = "To send this report: put your phone on the same Wi-Fi as this TV, scan the code with " +
+            // The screen around the report in the device's language (the report itself stays in English).
+            text = ("To send this report: put your phone on the same Wi-Fi as this TV, scan the code with " +
                 "your phone's camera, tap Copy short report and paste it in your message. No Wi-Fi? Take a " +
-                "photo of this screen instead. Use up/down to scroll."
+                "photo of this screen instead. Use up/down to scroll.").tr()
             setTextColor(Color.parseColor("#B0B0B8"))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             setPadding(0, dp(6), dp(16), dp(12))
@@ -103,7 +105,7 @@ class CrashReportActivity : Activity() {
         }
         // Only offered after a crash, when this screen is all that's left of the app.
         val restart = Button(this).apply {
-            text = "Restart app"
+            text = "Restart app".tr()
             visibility = if (isTaskRoot) View.VISIBLE else View.GONE
             setOnClickListener {
                 packageManager.getLaunchIntentForPackage(packageName)?.let {
@@ -113,7 +115,7 @@ class CrashReportActivity : Activity() {
             }
         }
         val close = Button(this).apply {
-            text = "Close"
+            text = "Close".tr()
             setOnClickListener { finish() }
         }
         val buttons = LinearLayout(this).apply {

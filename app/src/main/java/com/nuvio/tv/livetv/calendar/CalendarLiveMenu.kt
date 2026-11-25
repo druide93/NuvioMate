@@ -36,6 +36,8 @@ import com.nuvio.tv.livetv.ui.LiveDialog
 import com.nuvio.tv.livetv.ui.LiveFocusRow
 import com.nuvio.tv.livetv.ui.LiveTag
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.livetv.ui.focusedTextColor
 import com.nuvio.tv.livetv.ui.formatClock
 import com.nuvio.tv.ui.theme.NuvioTheme
@@ -85,14 +87,14 @@ internal fun liveActions(
     // Already aired: nothing about this airing can be recorded or picked any more; only the
     // show-wide things (every new episode, the show's channel) still mean something.
     val over = e.airMs?.let { it + (e.runtimeMin ?: 30) * 60_000L <= now } ?: e.day.isBefore(java.time.LocalDate.now())
-    if (onNow != null) add(MenuAction("Watch live on ${onNow.channelName}", if (channels.size > 1) "Or choose the channel below" else null, h.watch))
-    if (replay != null) add(MenuAction("Watch from the start", "Through ${replay.channelName}'s catch-up", h.fromStart))
+    if (onNow != null) add(MenuAction(LiveTvTexts.trf("Watch live on {0}", onNow.channelName), if (channels.size > 1) "Or choose the channel below" else null, h.watch))
+    if (replay != null) add(MenuAction("Watch from the start", LiveTvTexts.trf("Through {0}'s catch-up", replay.channelName), h.fromStart))
     if (st.recordedId != null && h.playRecording != null) add(MenuAction("Play the recording", null, h.playRecording))
     if (best != null && best.stopMs > now) {
         add(
             if (st.recording) MenuAction("Cancel the recording", null, h.record)
-            else MenuAction("Record this ${when (e.kind) { CalendarKind.MOVIE -> "movie"; CalendarKind.GAME -> "game"; else -> "episode" }}",
-                "On ${best.channelName} · ${whenLabel(best.startMs, now, use24h)}", h.record)
+            else MenuAction(when (e.kind) { CalendarKind.MOVIE -> "Record this movie"; CalendarKind.GAME -> "Record this game"; else -> "Record this episode" },
+                LiveTvTexts.trf("On {0} · {1}", best.channelName, whenLabel(best.startMs, now, use24h)), h.record)
         )
     }
     if (e.kind == CalendarKind.EPISODE) {
@@ -112,7 +114,7 @@ internal fun liveActions(
                 when (channels.size) {
                     0 -> "Not found in your guide: search all your channels"
                     1 -> "Found on 1 of your channels · or search all of them"
-                    else -> "Found on ${channels.size} of your channels · or search all of them"
+                    else -> LiveTvTexts.trf("Found on {0} of your channels · or search all of them", channels.size)
                 },
                 h.choose
             )
@@ -122,7 +124,7 @@ internal fun liveActions(
         add(
             MenuAction(
                 if (h.myChannel != null) "Change the channel for this show" else "Set the channel for this show",
-                if (h.myChannel != null) "Now: ${h.myChannel} (pick \"Use the guide's channels\" to undo)"
+                if (h.myChannel != null) LiveTvTexts.trf("Now: {0} (pick \"Use the guide's channels\" to undo)", h.myChannel)
                 else "When it isn't found in your guide, or on the wrong channel",
                 h.setChannel
             )
@@ -142,15 +144,15 @@ internal fun liveActions(
 
 /** "Tonight 10:00 PM", "Tomorrow 9:00 PM", "Fri 8:00 PM", "Now". */
 internal fun whenLabel(ms: Long, now: Long, use24h: Boolean): String {
-    if (ms <= now) return "now"
+    if (ms <= now) return "now".tr()
     val day = java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
     val d = ChronoUnit.DAYS.between(LocalDate.now(), day)
     val clock = formatClock(ms, use24h)
     return when (d) {
-        0L -> "today $clock"
-        1L -> "tomorrow $clock"
+        0L -> LiveTvTexts.trf("today {0}", clock)
+        1L -> LiveTvTexts.trf("tomorrow {0}", clock)
         in 2L..6L -> day.format(java.time.format.DateTimeFormatter.ofPattern("EEE")) + " " + clock
-        else -> day.format(java.time.format.DateTimeFormatter.ofPattern("EEE MMM d")) + " " + clock
+        else -> day.format(java.time.format.DateTimeFormatter.ofPattern(com.nuvio.tv.livetv.ui.localDatePattern("EEEMMMd"))) + " " + clock
     }
 }
 
@@ -241,7 +243,7 @@ internal fun ChannelPicker(
             listOfNotNull(
                 entry.episodeCode,
                 entry.airMs?.let { whenLabel(it, now, use24h).replaceFirstChar { c -> c.uppercase() } },
-                if (options.isEmpty()) "not found in your guide" else "found on ${options.size} of your channels"
+                if (options.isEmpty()) "not found in your guide".tr() else LiveTvTexts.trf("found on {0} of your channels", options.size)
             ).joinToString(" · "),
             size = 13.sp, color = NuvioTheme.colors.TextSecondary
         )
@@ -278,12 +280,12 @@ internal fun ChannelPicker(
                         LiveText(
                             listOfNotNull(
                                 h.group ?: h.playlist,
-                                if (h.favorite) "Favorite" else null,
-                                if (h.catchup) "catch-up" else null,
+                                if (h.favorite) "Favorite".tr() else null,
+                                if (h.catchup) "catch-up".tr() else null,
                                 when {
-                                    onNow -> "on now"
-                                    h.later -> "airs ${formatClock(h.startMs, use24h)} (later)"
-                                    else -> "starts ${formatClock(h.startMs, use24h)}"
+                                    onNow -> "on now".tr()
+                                    h.later -> LiveTvTexts.trf("airs {0} (later)", formatClock(h.startMs, use24h))
+                                    else -> LiveTvTexts.trf("starts {0}", formatClock(h.startMs, use24h))
                                 }
                             ).joinToString(" · "),
                             size = 12.sp, color = focusedTextColor(focused).copy(alpha = 0.7f), maxLines = 2
@@ -306,7 +308,7 @@ internal fun ChannelPicker(
                 LiveFocusRow(modifier = Modifier.fillMaxWidth().padding(top = 6.dp), onClick = { always = !always }) { focused ->
                     SwitchMark(always)
                     Spacer(Modifier.width(4.dp))
-                    LiveText("Always use this channel for ${entry.title}", size = 14.sp, color = focusedTextColor(focused))
+                    LiveText(LiveTvTexts.trf("Always use this channel for {0}", entry.title), size = 14.sp, color = focusedTextColor(focused))
                 }
             }
             if (onSearchAll != null) item {
@@ -555,7 +557,7 @@ internal fun LiveMenuHost(state: LiveMenuState, kicker: String) {
                 scope.launch {
                     repo.setShowChannel(e.contentId, ch?.key)
                     state.entry = repo.rematch(e)
-                    LiveTvNotice.show(if (ch != null) "${e.title} uses ${ch.name} from now on" else "${e.title} uses the channels found in your guide again")
+                    LiveTvNotice.show(if (ch != null) LiveTvTexts.trf("{0} uses {1} from now on", e.title, ch.name) else LiveTvTexts.trf("{0} uses the channels found in your guide again", e.title))
                 }
             },
             onDismiss = { state.search = false }
@@ -589,7 +591,7 @@ fun CalendarSavedChannelsDialog(onDismiss: () -> Unit) {
                         onClick = { scope.launch { repo.forgetSaved(c.pickKey) } }
                     ) { focused ->
                         Column(Modifier.weight(1f)) {
-                            LiveText(if (c.forShow) c.label else "${c.label} (network)", size = 15.sp, weight = FontWeight.SemiBold, color = focusedTextColor(focused))
+                            LiveText(if (c.forShow) c.label else LiveTvTexts.trf("{0} (network)", c.label), size = 15.sp, weight = FontWeight.SemiBold, color = focusedTextColor(focused))
                             LiveText(c.channel, size = 12.sp, color = focusedTextColor(focused).copy(alpha = 0.7f))
                         }
                         LiveText(if (focused) "OK: forget" else "", size = 11.sp, color = focusedTextColor(focused).copy(alpha = 0.7f))

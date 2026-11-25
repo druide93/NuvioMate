@@ -110,6 +110,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.map
 import kotlin.math.roundToInt
+import com.nuvio.tv.livetv.ui.tr
 
 private enum class IntegrationSettingsSection {
     Hub,
@@ -181,8 +182,8 @@ private fun settingsSectionSpec(category: SettingsCategory): SettingsSectionSpec
     SettingsCategory.LIVE_TV -> SettingsSectionSpec(category, stringResource(R.string.iptv_settings_live_tv), Icons.Default.LiveTv, destination = SettingsSectionDestination.Inline)
     SettingsCategory.ON_DEMAND -> SettingsSectionSpec(category, stringResource(R.string.iptv_settings_on_demand), Icons.Default.Movie, destination = SettingsSectionDestination.Inline)
     SettingsCategory.SPORTS -> SettingsSectionSpec(category, "Sports", Icons.Default.EmojiEvents, destination = SettingsSectionDestination.Inline)
-    SettingsCategory.SIDE_MENU -> SettingsSectionSpec(category, "Menu & Features", Icons.Default.Menu, destination = SettingsSectionDestination.Inline)
-    SettingsCategory.CALENDAR -> SettingsSectionSpec(category, "Calendar", Icons.Default.DateRange, destination = SettingsSectionDestination.Inline)
+    SettingsCategory.SIDE_MENU -> SettingsSectionSpec(category, "Menu & Features".tr(), Icons.Default.Menu, destination = SettingsSectionDestination.Inline)
+    SettingsCategory.CALENDAR -> SettingsSectionSpec(category, "Calendar".tr(), Icons.Default.DateRange, destination = SettingsSectionDestination.Inline)
     SettingsCategory.SCOUT -> SettingsSectionSpec(category, stringResource(R.string.scout_title), rawIconRes = R.raw.sidebar_scout, destination = SettingsSectionDestination.Inline)
     SettingsCategory.EXPERIENCE -> SettingsSectionSpec(category, stringResource(R.string.settings_experience), Icons.Default.Tune, destination = SettingsSectionDestination.Inline)
 }

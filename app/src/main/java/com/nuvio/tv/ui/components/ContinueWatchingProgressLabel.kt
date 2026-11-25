@@ -1,6 +1,7 @@
 package com.nuvio.tv.ui.components
 
 import com.nuvio.tv.domain.model.WatchProgress
+import com.nuvio.tv.livetv.ui.tr
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
@@ -12,7 +13,7 @@ internal fun formatContinueWatchingProgressLabel(
     minLeftLabel: String
 ): String {
     // Live TV fork: a Calendar card for a movie you rang the bell on, now out to watch at home.
-    if (progress.source == com.nuvio.tv.livetv.calendar.CalendarHomeFeed.SOURCE) return "Out now"
+    if (progress.source == com.nuvio.tv.livetv.calendar.CalendarHomeFeed.SOURCE) return "Out now".tr()
     val effectiveDuration = progress.duration
     val effectivePosition = if (progress.position > 0L) {
         progress.position

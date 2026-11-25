@@ -155,7 +155,7 @@ private fun OnDemandSearchCard(
     com.nuvio.tv.livetv.ui.SearchResultCard(
         title = OnDemandDatabase.displayTitle(item.name),
         lines = listOf(
-            listOfNotNull(if (item.kind == VodKind.SERIES) "Series" else "Movie", item.year?.toString()).joinToString(" · ")
+            listOfNotNull(com.nuvio.tv.livetv.ui.LiveTvTexts.tr(if (item.kind == VodKind.SERIES) "Series" else "Movie"), item.year?.toString()).joinToString(" · ")
         ),
         poster = poster,
         logo = null,

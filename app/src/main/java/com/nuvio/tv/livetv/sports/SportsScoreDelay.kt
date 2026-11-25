@@ -87,11 +87,12 @@ internal class SportsScoreDelay {
         /** Choices in Sports settings, in seconds. */
         val CHOICES = listOf(0, 15, 30, 60, 120, 180, 300)
 
+        /** The choice's name, in the device's language. */
         fun label(seconds: Int): String = when {
-            seconds <= 0 -> "Off"
-            seconds < 60 -> "$seconds seconds"
-            seconds == 60 -> "1 minute"
-            else -> "${seconds / 60} minutes"
+            seconds <= 0 -> com.nuvio.tv.livetv.ui.LiveTvTexts.tr("Off")
+            seconds < 60 -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("{0} seconds", seconds)
+            seconds == 60 -> com.nuvio.tv.livetv.ui.LiveTvTexts.tr("1 minute")
+            else -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("{0} minutes", seconds / 60)
         }
 
         /**

@@ -2,6 +2,7 @@ package com.nuvio.tv.data.simkl
 
 import android.util.Log
 import com.nuvio.tv.core.tracking.TRACKING_SCROBBLE_DIAGNOSTIC_TAG
+import com.nuvio.tv.livetv.ui.tr
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
@@ -107,7 +108,7 @@ class SimklApiClient(
                             )
                         }
                     }
-                    ?: throw SimklApiException(401, "authentication_required", "Simkl authentication is required")
+                    ?: throw SimklApiException(401, "authentication_required", "Simkl authentication is required".tr())
             } else {
                 null
             }
@@ -132,7 +133,7 @@ class SimklApiClient(
                     throw error
                 } catch (error: Throwable) {
                     if (attempt == maxAttempts - 1) {
-                        throw SimklApiException(null, "transport_failure", "Simkl request failed", error)
+                        throw SimklApiException(null, "transport_failure", "Simkl request failed".tr(), error)
                     }
                     sleep(retryDelayMs(attempt, null, retryJitterMs()))
                     return@repeat

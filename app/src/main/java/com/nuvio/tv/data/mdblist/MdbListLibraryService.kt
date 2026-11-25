@@ -8,6 +8,7 @@ import com.nuvio.tv.core.tracking.TrackingRefreshIntent
 import com.nuvio.tv.domain.model.LibraryEntryInput
 import com.nuvio.tv.domain.model.ListMembershipChanges
 import com.nuvio.tv.domain.model.ListMembershipSnapshot
+import com.nuvio.tv.livetv.ui.tr
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -74,7 +75,7 @@ class MdbListLibraryService(
         val scope = sync.currentScope()
         sync.mutate(scope) { previous ->
             val library = previous.library ?: throw MdbListDecodingException()
-            require(library.listOptions().any { it.key == key }) { "This list is no longer available" }
+            require(library.listOptions().any { it.key == key }) { "This list is no longer available".tr() }
             if ((key !in library.hiddenListKeys) == visible) return@mutate previous to Unit
             val updated = if (visible) {
                 // Hidden lists are not synced, so load the items before showing the list again.

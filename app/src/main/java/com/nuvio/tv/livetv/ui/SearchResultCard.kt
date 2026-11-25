@@ -63,7 +63,7 @@ internal fun SearchResultsRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = title,
+                text = title.tr(),
                 style = MaterialTheme.typography.headlineMedium,
                 color = NuvioTheme.colors.TextPrimary,
                 maxLines = 1

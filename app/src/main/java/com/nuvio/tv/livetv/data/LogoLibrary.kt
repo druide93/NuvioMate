@@ -207,7 +207,7 @@ object TmdbLogos {
                     out += LogoChoice(
                         url = url,
                         name = title + (if (year.isNotBlank()) " ($year)" else ""),
-                        from = "TMDB · " + (if (type == "tv") "Show" else "Movie") + (lang?.let { " · $it" } ?: ""),
+                        from = "TMDB · " + com.nuvio.tv.livetv.ui.LiveTvTexts.tr(if (type == "tv") "Show" else "Movie") + (lang?.let { " · $it" } ?: ""),
                         group = LogoChoice.TMDB,
                         score = 100 - rank * 10
                     )

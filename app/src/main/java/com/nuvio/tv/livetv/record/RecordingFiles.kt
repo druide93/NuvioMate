@@ -115,7 +115,7 @@ internal class RecordingFiles(
                 more = true
                 if (net) {
                     val folder = NetworkFolderStore.folder(context)
-                    val p = if (folder != null) SmbFolder.describe(e, folder.config) else (e.message ?: e.javaClass.simpleName)
+                    val p = if (folder != null) SmbFolder.describeEnglish(e, folder.config) else (e.message ?: e.javaClass.simpleName)
                     if (p != problem) com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Network folder: couldn't copy a recording across ($p)")
                     problem = p
                     netFailed = true
@@ -504,7 +504,7 @@ internal class RecordingFiles(
                         return@map f
                     }
                     val name = f.path.substringAfterLast('/')
-                    val expected = folder.size(f.path) ?: throw IllegalStateException("its file is missing from the network folder (${f.path})")
+                    val expected = folder.size(f.path) ?: throw IllegalStateException(com.nuvio.tv.livetv.ui.LiveTvTexts.trf("its file is missing from the network folder ({0})", f.path))
                     val got = folder.download(f.path, File(tmp, name))
                     if (got != expected) throw IllegalStateException("the copy came out the wrong size")
                     copied += got; onCopied(copied)
@@ -516,7 +516,7 @@ internal class RecordingFiles(
                 val local = src.listFiles()?.filter { it.isFile && !isMeta(it) }.orEmpty()
                 for (name in referencedNames(src).filter { n -> local.none { it.name == n } }) {
                     val rel = remoteDir(src.name) + "/" + name
-                    val expected = folder.size(rel) ?: throw IllegalStateException("part of it is missing from the network folder ($name)")
+                    val expected = folder.size(rel) ?: throw IllegalStateException(com.nuvio.tv.livetv.ui.LiveTvTexts.trf("part of it is missing from the network folder ({0})", name))
                     val got = folder.download(rel, File(tmp, name))
                     if (got != expected) throw IllegalStateException("the copy came out the wrong size")
                     copied += got; onCopied(copied)

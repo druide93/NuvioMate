@@ -1,6 +1,7 @@
 package com.nuvio.tv.core.tracking
 
 import com.nuvio.tv.domain.model.LibraryListPrivacy
+import com.nuvio.tv.livetv.ui.tr
 
 data class TrackingListManagementCapabilities(
     val privacyOptions: List<LibraryListPrivacy>,
@@ -14,6 +15,6 @@ interface TrackingListManager {
     suspend fun updateList(key: String, name: String, description: String?, privacy: LibraryListPrivacy)
     suspend fun deleteList(key: String)
     suspend fun reorderLists(keys: List<String>) {
-        throw UnsupportedOperationException("This provider does not support list reordering")
+        throw UnsupportedOperationException("This provider does not support list reordering".tr())
     }
 }

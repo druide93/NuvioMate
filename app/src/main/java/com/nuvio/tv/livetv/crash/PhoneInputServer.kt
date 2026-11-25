@@ -1,5 +1,6 @@
 package com.nuvio.tv.livetv.crash
 
+import com.nuvio.tv.livetv.ui.tr
 import java.net.Inet4Address
 import java.net.NetworkInterface
 import java.net.ServerSocket
@@ -69,7 +70,7 @@ object PhoneInputServer {
                         val v = query.split('&').firstOrNull { it.startsWith("v=") }?.substringAfter("v=")
                             ?.let { runCatching { URLDecoder.decode(it, "UTF-8") }.getOrNull() }?.trim().orEmpty()
                         if (v.isNotEmpty()) onValue(v)
-                        page(title, prompt, placeholder, if (v.isNotEmpty()) "Sent. Look at your TV." else "Nothing to send.")
+                        page(title, prompt, placeholder, if (v.isNotEmpty()) "Sent. Look at your TV.".tr() else "Nothing to send.".tr())
                     }
                     else -> null
                 }
@@ -107,7 +108,7 @@ button{margin-top:12px;font-size:18px;padding:14px 22px;border:0;border-radius:1
 <p>${esc(prompt)}</p>
 <form action="send" method="get" onsubmit="this.action=location.pathname.replace(/\/send$/,'').replace(/\/$/,'')+'/send'">
 <input name="v" placeholder="${esc(placeholder)}" autocomplete="off" autocapitalize="off" autocorrect="off" inputmode="url">
-<button type="submit">Send to TV</button>
+<button type="submit">${esc("Send to TV".tr())}</button>
 </form>
 <div id="msg">${esc(msg ?: "")}</div>
 </body></html>"""

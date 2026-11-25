@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nuvio.tv.domain.model.Meta
 import com.nuvio.tv.livetv.record.LiveTvNotice
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.theme.NuvioTheme
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.launch
@@ -96,8 +98,8 @@ private fun rememberMovieBell(meta: Meta): CalendarBell? {
         scope.launch {
             val on = repo.toggleFollow(follow)
             LiveTvNotice.show(
-                if (on) "Bell on: you'll get a card on Home when ${meta.name} is out to watch at home"
-                else "Bell turned off for ${meta.name}"
+                if (on) LiveTvTexts.trf("Bell on: you'll get a card on Home when {0} is out to watch at home", meta.name)
+                else LiveTvTexts.trf("Bell turned off for {0}", meta.name)
             )
         }
     })
@@ -122,7 +124,7 @@ fun rememberShowBell(id: String, imdbId: String?, name: String, poster: String?,
         val follow = existing ?: CalendarFollow(id = imdb ?: id, type = "series", name = name, poster = poster, background = background, imdbId = imdb)
         scope.launch {
             val on = repo.toggleFollow(follow)
-            LiveTvNotice.show(if (on) "Bell on: new episodes of $name will show on Home and in your Calendar" else "Bell turned off for $name")
+            LiveTvNotice.show(if (on) LiveTvTexts.trf("Bell on: new episodes of {0} will show on Home and in your Calendar", name) else LiveTvTexts.trf("Bell turned off for {0}", name))
         }
     })
 }
@@ -157,17 +159,17 @@ fun CalendarNextLine(meta: Meta, onFocused: () -> Unit = {}) {
             val info = repo.showInfo(meta.id, imdb, meta.apiType) ?: return@LaunchedEffect
             val next = info.next
             entry = next
-            line = next?.let { describe(it) } ?: info.status
+            line = next?.let { describe(it) } ?: info.status?.tr()
         } else {
             val d = repo.movieDates(meta.id, imdb) ?: return@LaunchedEffect
             val today = LocalDate.now()
-            fun fmt(x: LocalDate) = x.format(DateTimeFormatter.ofPattern(if (x.year == today.year) "MMM d" else "MMM d, yyyy"))
+            fun fmt(x: LocalDate) = x.format(DateTimeFormatter.ofPattern(com.nuvio.tv.livetv.ui.localDatePattern(if (x.year == today.year) "MMMd" else "yMMMd")))
             val parts = buildList {
-                d.theater?.let { add((if (it.isAfter(today)) "In theaters " else "Was in theaters ") + fmt(it)) }
+                d.theater?.let { add(LiveTvTexts.trf(if (it.isAfter(today)) "In theaters {0}" else "Was in theaters {0}", fmt(it))) }
                 when {
-                    d.digital != null -> add((if (d.digital.isAfter(today)) "Out to watch at home " else "Out at home since ") + fmt(d.digital))
-                    d.disc != null -> add((if (d.disc.isAfter(today)) "On disc " else "On disc since ") + fmt(d.disc))
-                    d.theater != null && !d.theater.isBefore(today.minusDays(120)) -> add("No date yet to watch at home")
+                    d.digital != null -> add(LiveTvTexts.trf(if (d.digital.isAfter(today)) "Out to watch at home {0}" else "Out at home since {0}", fmt(d.digital)))
+                    d.disc != null -> add(LiveTvTexts.trf(if (d.disc.isAfter(today)) "On disc {0}" else "On disc since {0}", fmt(d.disc)))
+                    d.theater != null && !d.theater.isBefore(today.minusDays(120)) -> add("No date yet to watch at home".tr())
                 }
             }
             // Only worth a line while it's new.
@@ -198,11 +200,11 @@ fun CalendarNextLine(meta: Meta, onFocused: () -> Unit = {}) {
         if (e != null && hasLiveTv && series) {
             GuideChip(
                 text = when {
-                    st.recording && g != null -> "Recording on ${repo.channelLabel(g)}"
-                    st.series -> "Recording new episodes"
-                    g != null && g.stopMs > now -> "Record on ${repo.channelLabel(g)}"
-                    st.waitRecord -> "Records when it's in your guide"
-                    else -> "Live TV options"
+                    st.recording && g != null -> LiveTvTexts.trf("Recording on {0}", repo.channelLabel(g))
+                    st.series -> "Recording new episodes".tr()
+                    g != null && g.stopMs > now -> LiveTvTexts.trf("Record on {0}", repo.channelLabel(g))
+                    st.waitRecord -> "Records when it's in your guide".tr()
+                    else -> "Live TV options".tr()
                 },
                 onFocused = onFocused,
                 onClick = { live.entry = e; live.menu = true },
@@ -253,11 +255,11 @@ fun rememberEpisodeLiveTv(videoId: String?, season: Int?, episode: Int?): List<P
     return buildList {
         if (g != null && g.stopMs > now) {
             add(
-                (if (st.recording) "Cancel the recording" else "Record on ${repo.channelLabel(g)} · ${whenLabel(g.startMs, now, false)}") to
+                (if (st.recording) "Cancel the recording".tr() else LiveTvTexts.trf("Record on {0} · {1}", repo.channelLabel(g), whenLabel(g.startMs, now, false))) to
                     { liveAct(repo, entryPoint, live, scope, e, record = true) }
             )
         }
-        add("Live TV options (record, remind, channel…)" to { live.entry = e; live.menu = true })
+        add("Live TV options (record, remind, channel…)".tr() to { live.entry = e; live.menu = true })
     }
 }
 
@@ -289,25 +291,27 @@ private fun GuideChip(text: String, onFocused: () -> Unit, onClick: () -> Unit, 
 private fun describe(e: CalendarEntry): String {
     val today = LocalDate.now()
     val day = when (ChronoUnit.DAYS.between(today, e.day)) {
-        0L -> "Today"
-        1L -> "Tomorrow"
+        0L -> "Today".tr()
+        1L -> "Tomorrow".tr()
         in 2L..6L -> e.day.format(DateTimeFormatter.ofPattern("EEEE"))
-        else -> e.day.format(DateTimeFormatter.ofPattern(if (e.day.year == today.year) "EEE MMM d" else "EEE MMM d, yyyy"))
+        else -> e.day.format(DateTimeFormatter.ofPattern(com.nuvio.tv.livetv.ui.localDatePattern(if (e.day.year == today.year) "EEEMMMd" else "yEEEMMMd")))
     }
     val time = e.airMs?.takeIf { !e.streaming }?.let {
-        DateTimeFormatter.ofPattern("h:mm a").format(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()))
+        // The device's own way of writing a time (20:30 in French, 8:30 PM in American English).
+        DateTimeFormatter.ofLocalizedTime(java.time.format.FormatStyle.SHORT).format(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()))
     }
     val lead = when {
-        CalendarTag.SERIES_PREMIERE in e.tags -> "Series premiere"
-        CalendarTag.SEASON_PREMIERE in e.tags -> "Season ${e.season} premieres"
-        CalendarTag.SEASON_FINALE in e.tags || CalendarTag.SERIES_FINALE in e.tags -> "Next episode (finale)"
-        else -> "Next episode"
+        CalendarTag.SERIES_PREMIERE in e.tags -> "Series premiere".tr()
+        CalendarTag.SEASON_PREMIERE in e.tags -> LiveTvTexts.trf("Season {0} premieres", e.season)
+        CalendarTag.SEASON_FINALE in e.tags || CalendarTag.SERIES_FINALE in e.tags -> "Next episode (finale)".tr()
+        else -> "Next episode".tr()
     }
-    return buildString {
-        append(lead).append(": ")
+    val rest = buildString {
         if (CalendarTag.SEASON_PREMIERE !in e.tags) e.episodeCode?.let { append(it).append(" · ") }
         append(day)
         time?.let { append(", ").append(it) }
         e.network?.let { append(" · ").append(it) }
     }
+    // "Prochain épisode : …" in French (a space before the colon).
+    return LiveTvTexts.trf("{0}: {1}", lead, rest)
 }

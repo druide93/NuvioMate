@@ -7,6 +7,7 @@ import java.io.File
 import java.util.Locale
 import com.nuvio.tv.R
 import com.nuvio.tv.core.util.withAppLocale
+import com.nuvio.tv.livetv.ui.tr
 
 /**
  * The places recordings can be saved: this device, and each USB drive (or SD card) that's
@@ -249,9 +250,10 @@ object RecordingStorage {
 
     /** UI callers may use the app locale; existing callers retain their US-format output. */
     fun sizeLabel(bytes: Long, locale: Locale): String = when {
-        bytes >= 1024L * 1024 * 1024 -> String.format(locale, "%.1f GB", bytes / (1024.0 * 1024 * 1024))
-        bytes >= 1024L * 1024 -> String.format(locale, "%.0f MB", bytes / (1024.0 * 1024))
-        else -> String.format(locale, "%d KB", bytes / 1024)
+        // Units in the device's language ("Go" in French).
+        bytes >= 1024L * 1024 * 1024 -> String.format(locale, "%.1f GB".tr(), bytes / (1024.0 * 1024 * 1024))
+        bytes >= 1024L * 1024 -> String.format(locale, "%.0f MB".tr(), bytes / (1024.0 * 1024))
+        else -> String.format(locale, "%d KB".tr(), bytes / 1024)
     }
 }
 

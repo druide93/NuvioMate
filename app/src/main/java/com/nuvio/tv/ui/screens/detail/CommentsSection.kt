@@ -1096,7 +1096,7 @@ private fun formatCommentTimestamp(createdAt: String?, updatedAt: String?): Stri
         }
     }.getOrNull() ?: return null
 
-    val formatter = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.getDefault())
+    val formatter = DateTimeFormatter.ofPattern(com.nuvio.tv.livetv.ui.localDatePattern("yMMMd"), Locale.getDefault())
     return formatter.format(instant.atZone(ZoneId.systemDefault()))
 }
 

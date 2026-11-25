@@ -49,6 +49,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.tv.material3.Icon
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.theme.NuvioTheme
 
 /** The parts of a group's line, left to right. */
@@ -252,18 +254,18 @@ internal fun ManageVodGroupsPanel(
         }
         com.nuvio.tv.ui.components.NuvioDialog(
             onDismiss = { confirmLeave = false; runCatching { keys.requestFocus() } },
-            title = "Save your changes?",
-            subtitle = "You changed some of your groups. Save them before you go?",
+            title = "Save your changes?".tr(),
+            subtitle = "You changed some of your groups. Save them before you go?".tr(),
             width = 520.dp
         ) {
             com.nuvio.tv.ui.screens.settings.SettingsDialogActionRow {
                 com.nuvio.tv.ui.screens.settings.SettingsDialogActionButton(
-                    text = "Don't Save",
+                    text = "Don't Save".tr(),
                     onClick = { confirmLeave = false; onDismiss() }
                 )
                 Box(Modifier.focusRequester(saveFocus)) {
                     com.nuvio.tv.ui.screens.settings.SettingsDialogActionButton(
-                        text = "Save",
+                        text = "Save".tr(),
                         onClick = { confirmLeave = false; onDone(edited.toList()) },
                         primary = true
                     )
@@ -275,9 +277,9 @@ internal fun ManageVodGroupsPanel(
     sorting?.let { i ->
         val g = edited.getOrNull(i)
         if (g == null) { sorting = null } else VodSortPicker(
-            title = "Sort " + g.name,
+            title = LiveTvTexts.trf("Sort {0}", g.name),
             current = VodSort.parse(g.sort)?.first,
-            useDefaultLabel = "Default ($defaultSortLabel)",
+            useDefaultLabel = LiveTvTexts.trf("Default ({0})", defaultSortLabel.tr()),
             onPick = { picked ->
                 edited[i] = g.copy(sort = picked?.let { VodSort.encode(it) })
                 sorting = null

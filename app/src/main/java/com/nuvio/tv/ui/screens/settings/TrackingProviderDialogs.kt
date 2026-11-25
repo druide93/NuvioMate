@@ -926,7 +926,7 @@ internal fun formatTrackingDuration(valueMs: Long): String {
     val minutes = TimeUnit.SECONDS.toMinutes(totalSeconds) % 60
     val seconds = totalSeconds % 60
     return when {
-        days > 0 -> "${days}d ${hours}h"
+        days > 0 -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("{0}d {1}h", days, hours)
         hours > 0 -> "${hours}h ${minutes}m"
         minutes > 0 -> "${minutes}m ${seconds}s"
         else -> "${seconds}s"

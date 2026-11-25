@@ -512,7 +512,7 @@ private fun LazyListScope.sportsChoiceItems(
         item(key = c.source) {
             Choice(
                 icon = null,
-                title = "${c.icon}  ${c.name}",
+                title = "${c.icon}  ${com.nuvio.tv.livetv.ui.LiveTvTexts.tr(c.name)}",
                 subtitle = null,
                 modifier = if (i == 0) Modifier.focusRequester(first) else Modifier,
                 onFocused = { onFocused(i + 1, ordered.size) },

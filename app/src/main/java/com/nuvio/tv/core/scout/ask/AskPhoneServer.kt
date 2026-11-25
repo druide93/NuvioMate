@@ -1,5 +1,6 @@
 package com.nuvio.tv.core.scout.ask
 
+import com.nuvio.tv.livetv.ui.tr
 import fi.iki.elonen.NanoHTTPD
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -96,7 +97,7 @@ class AskPhoneServer(
 
     private fun html(body: String) = newFixedLengthResponse(Response.Status.OK, "text/html; charset=utf-8", body)
     private fun ok(body: String) = newFixedLengthResponse(Response.Status.OK, "application/json; charset=utf-8", body)
-    private fun forbidden() = newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Scan the code on the TV again").closing()
+    private fun forbidden() = newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Scan the code on the TV again".tr()).closing()
     private fun badRequest() = newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/json; charset=utf-8", """{"error":"bad request"}""").closing()
 
     /** A refused request's body may be unread, and would be taken for the next request on the same connection. */

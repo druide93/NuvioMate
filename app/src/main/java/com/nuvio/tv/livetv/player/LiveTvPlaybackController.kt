@@ -1627,8 +1627,8 @@ class LiveTvPlaybackController @Inject constructor(
                     403 -> "Provider refused the stream (HTTP 403): too many connections on this account, or it's expired or blocked"
                     404 -> "Stream not found (HTTP 404). Try another stream format in the playlist's settings"
                     429, 456, 458, 509 -> "Too many connections on this account (HTTP ${cause.responseCode})"
-                    in 500..599 -> "Provider's server error (HTTP ${cause.responseCode})"
-                    else -> "Provider answered HTTP ${cause.responseCode}"
+                    in 500..599 -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Provider's server error (HTTP {0})", cause.responseCode)
+                    else -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Provider answered HTTP {0}", cause.responseCode)
                 }
             }
             cause = cause.cause
@@ -2467,7 +2467,7 @@ class LiveTvPlaybackController @Inject constructor(
         val primary = primaryCaption(all)
         // Closed captions stay on offer even when none have been seen yet (some streams carry
         // them in ways the check misses): just labelled so.
-        val shown = primary?.let { if (LiveCaptions.noneFound() && !it.selected) it.copy(label = it.label + " (none seen yet)") else it }
+        val shown = primary?.let { if (LiveCaptions.noneFound() && !it.selected) it.copy(label = it.label + " (" + com.nuvio.tv.livetv.ui.LiveTvTexts.tr("none seen yet") + ")") else it }
         val subs = all.filter { it.kind == null }
         return when {
             shown == null -> subs
@@ -2500,7 +2500,7 @@ class LiveTvPlaybackController @Inject constructor(
                 if (!group.isTrackSupported(ti)) continue
                 val f = group.getTrackFormat(ti)
                 val kind = LiveCaptions.kindOf(f)
-                val captions = kind?.let { LiveCaptions.label(it) }
+                val captions = kind?.let { com.nuvio.tv.livetv.ui.LiveTvTexts.tr(LiveCaptions.label(it)) }
                 val parts = listOfNotNull(
                     captions ?: f.label,
                     f.language?.let { java.util.Locale.forLanguageTag(it).displayLanguage.ifBlank { it } },
@@ -3277,7 +3277,7 @@ class LiveTvPlaybackController @Inject constructor(
         val next = runCatching { f(ch.key, gameTried.toSet()) }.getOrNull() ?: return false
         if (next.key == ch.key) return false
         com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Channel ${ch.name} $why: switched to ${next.name} (${next.group}), same game")
-        com.nuvio.tv.livetv.record.LiveTvNotice.show("${ch.name} isn't working right now. Switched to ${next.name}, showing the same game.")
+        com.nuvio.tv.livetv.record.LiveTvNotice.show(com.nuvio.tv.livetv.ui.LiveTvTexts.trf("{0} isn't working right now. Switched to {1}, showing the same game.", ch.name, next.name))
         switchingForGame = true
         try { play(next) } finally { switchingForGame = false }
         return true

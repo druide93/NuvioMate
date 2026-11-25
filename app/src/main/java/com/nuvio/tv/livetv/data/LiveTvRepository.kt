@@ -2252,7 +2252,7 @@ class LiveTvRepository @Inject constructor(
         is java.net.UnknownHostException -> statusText(R.string.iptv_repository_status_unknown_host_address,
             e.message?.substringAfter("\"")?.substringBefore("\"") ?: statusText(R.string.iptv_repository_status_address))
         is java.net.SocketTimeoutException -> statusText(R.string.iptv_repository_status_provider_timeout)
-        else -> e.message ?: e.javaClass.simpleName
+        else -> e.message?.let { com.nuvio.tv.livetv.ui.LiveTvTexts.tr(it) } ?: e.javaClass.simpleName
     }
 
     /** What went wrong with a download, in plain words (for the pill). */
@@ -2264,7 +2264,7 @@ class LiveTvRepository @Inject constructor(
     private fun plainNetworkError(e: Throwable): String = when (e) {
         is java.net.UnknownHostException -> statusText(R.string.iptv_repository_status_unknown_host_short)
         is java.net.SocketTimeoutException -> statusText(R.string.iptv_repository_status_timeout_short)
-        else -> e.message?.takeIf { it.isNotBlank() } ?: statusText(R.string.iptv_repository_status_generic_error)
+        else -> e.message?.takeIf { it.isNotBlank() }?.let { com.nuvio.tv.livetv.ui.LiveTvTexts.tr(it) } ?: statusText(R.string.iptv_repository_status_generic_error)
     }
 
     /** The device ran out of storage (the database or a file couldn't be written). */
@@ -2341,7 +2341,7 @@ class LiveTvRepository @Inject constructor(
         for (pl in playlists) {
             if (pl.isStalker) {
                 val identity = pl.stalkerConfig?.let { com.nuvio.tv.livetv.stalker.StalkerGateway.configIdentity(it) } ?: "invalid"
-                targets += EpgTarget("auto_stalker_${pl.id}_$identity", null, "${pl.name} (built-in)", "stalker:${pl.id}", "",
+                targets += EpgTarget("auto_stalker_${pl.id}_$identity", null, com.nuvio.tv.livetv.ui.LiveTvTexts.trf("{0} (built-in)", pl.name), "stalker:${pl.id}", "",
                     playlistId = pl.id, shiftMs = pl.guideShiftMinutes * 60_000L)
                 continue
             }
@@ -2353,7 +2353,7 @@ class LiveTvRepository @Inject constructor(
                 ownersByUrl.getOrPut(url) { HashSet() } += pl.id
                 if (targets.none { it.url == url }) {
                     targets += EpgTarget(
-                        "auto_" + sha1(url), null, "${pl.name} (built-in)", url, pl.effectiveUserAgent,
+                        "auto_" + sha1(url), null, com.nuvio.tv.livetv.ui.LiveTvTexts.trf("{0} (built-in)", pl.name), url, pl.effectiveUserAgent,
                         playlistId = pl.id, shiftMs = pl.guideShiftMinutes * 60_000L,
                         autoAgent = pl.userAgent.isBlank()
                     )

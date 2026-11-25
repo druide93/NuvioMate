@@ -688,7 +688,7 @@ class AccountViewModel @Inject constructor(
                             "approved" -> context.getString(R.string.qr_login_approved)
                             "pending" -> context.getString(R.string.qr_login_pending)
                             "expired" -> context.getString(R.string.qr_login_expired)
-                            else -> "Status: ${result.status}"
+                            else -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Status: {0}", result.status)
                         },
                         qrLoginExpiresAtMillis = expiresAtMillis ?: it.qrLoginExpiresAtMillis,
                         qrLoginPollIntervalSeconds = (result.pollIntervalSeconds ?: it.qrLoginPollIntervalSeconds).coerceAtLeast(2)

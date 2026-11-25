@@ -165,7 +165,7 @@ internal object SportsWatchPolicy {
         // Live Now and Coming Up; sorting their week-start date ahead of today's games is wrong.
         return listOfNotNull(
             row("live", "Live Now", page.sections.live),
-            row("upcoming", if (page.query.day > 0) "Schedule" else "Coming Up", page.sections.upcoming),
+            row("upcoming", if (page.query.day > 0) trOwn("Schedule") else "Coming Up", page.sections.upcoming),
             row("week", "This Week", page.sections.weekLong),
         )
     }

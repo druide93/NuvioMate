@@ -205,7 +205,7 @@ class SportsViewModel @Inject constructor(
             startMs = ev.startMs - extraEarly,
             stopMs = ev.startMs + minutes * 60_000L,
             title = ev.title,
-            description = listOfNotNull(league?.name, ev.subtitle).joinToString(" · ").ifBlank { null }
+            description = listOfNotNull(league?.name?.let { com.nuvio.tv.livetv.ui.LiveTvTexts.tr(it) }, shownSubtitle(ev.subtitle)).joinToString(" · ").ifBlank { null }
         )
         return recordings.add(m.channel, program)
     }

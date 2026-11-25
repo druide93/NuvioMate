@@ -54,6 +54,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.livetv.ui.LiveTextField
 import com.nuvio.tv.livetv.ui.TextInputDialog
 import com.nuvio.tv.ui.theme.NuvioTheme
@@ -193,7 +195,7 @@ fun SportsPicker(viewModel: SportsViewModel, onClose: () -> Unit) {
                     if (query.trim().length >= 2) {
                         if (leagueResults.isNotEmpty()) {
                             LiveText(
-                                "${leagueResults.size} " + (if (leagueResults.size == 1) "league" else "leagues") + " match \"${query.trim()}\"",
+                                LiveTvTexts.trf(if (leagueResults.size == 1) "{0} league match \"{1}\"" else "{0} leagues match \"{1}\"", leagueResults.size, query.trim()),
                                 color = colors.TextSecondary, size = 12.sp, weight = FontWeight.Bold
                             )
                             Spacer(Modifier.height(4.dp))
@@ -218,7 +220,7 @@ fun SportsPicker(viewModel: SportsViewModel, onClose: () -> Unit) {
                             Spacer(Modifier.height(10.dp))
                         }
                         LiveText(
-                            if (results == null) "Searching teams…" else "${results.size} teams match \"${query.trim()}\"",
+                            if (results == null) "Searching teams…" else LiveTvTexts.trf("{0} teams match \"{1}\"", results.size, query.trim()),
                             color = colors.TextSecondary, size = 12.sp, weight = FontWeight.Bold
                         )
                         Spacer(Modifier.height(8.dp))
@@ -228,12 +230,11 @@ fun SportsPicker(viewModel: SportsViewModel, onClose: () -> Unit) {
                             val q = query.trim()
                             val already = follows.words.any { it.equals(q, ignoreCase = true) }
                             LiveText(
-                                "\"$q\" isn't in the leagues we list yet. You can still follow it as a name: " +
-                                    "any show in your TV guide with \"$q\" in the title will show on My Sports.",
+                                LiveTvTexts.trf("\"{0}\" isn't in the leagues we list yet. You can still follow it as a name: any show in your TV guide with \"{0}\" in the title will show on My Sports.", q),
                                 color = colors.TextSecondary, size = 13.sp, maxLines = 3
                             )
                             Spacer(Modifier.height(12.dp))
-                            SportsPill(if (already) "✓ Following \"$q\"" else "★ Follow \"$q\" as a name", selected = already) {
+                            SportsPill(LiveTvTexts.trf(if (already) "✓ Following \"{0}\"" else "★ Follow \"{0}\" as a name", q), selected = already) {
                                 if (!already) viewModel.repo.addWord(q)
                             }
                             return@Column
@@ -270,7 +271,7 @@ fun SportsPicker(viewModel: SportsViewModel, onClose: () -> Unit) {
                             // Following a league: its row on My Sports. A league with teams is
                             // there to browse; an event sport's events (UFC, F1…) count as yours.
                             SportsPill(
-                                if (followed) "★  Following ${league.name}" else "☆  Follow ${league.name}",
+                                LiveTvTexts.trf(if (followed) "★  Following {0}" else "☆  Follow {0}", league.name.tr()),
                                 selected = followed,
                                 onClick = { viewModel.repo.togglePin(league.id) }
                             )
@@ -281,19 +282,19 @@ fun SportsPicker(viewModel: SportsViewModel, onClose: () -> Unit) {
                         Spacer(Modifier.height(10.dp))
                         when {
                             league.sport == Sport.WRESTLING || league.id == "guide/boxing" -> LiveText(
-                                "${league.name}'s schedule (" + (if (league.id == "guide/boxing") "fight cards" else "weekly shows and big events") +
-                                    ", with times and venues) comes from TheSportsDB, updated every day. " +
-                                    "Your own TV guide is checked too, to find the channel it's on. Follow it to see every show on My Sports.",
+                                LiveTvTexts.trf(
+                                    "{0}'s schedule ({1}, with times and venues) comes from TheSportsDB, updated every day. ",
+                                    league.name.tr(), (if (league.id == "guide/boxing") "fight cards" else "weekly shows and big events").tr()
+                                ) + "Your own TV guide is checked too, to find the channel it's on. Follow it to see every show on My Sports.".tr(),
                                 color = colors.TextSecondary, size = 13.sp, maxLines = 4
                             )
                             league.guideOnly -> LiveText(
-                                "${league.name} comes from your own TV guide: live shows with \"${league.guideWords.first()}\" in the title. " +
-                                    "Follow it to see them on My Sports. Follow a name (a player, a team) to catch shows that mention it.",
+                                LiveTvTexts.trf("{0} comes from your own TV guide: live shows with \"{1}\" in the title. ", league.name.tr(), league.guideWords.first()) +
+                                    "Follow it to see them on My Sports. Follow a name (a player, a team) to catch shows that mention it.".tr(),
                                 color = colors.TextSecondary, size = 13.sp, maxLines = 4
                             )
                             league.kind == LeagueKind.EVENT -> LiveText(
-                                "${league.name} is listed by event (each race, card or tournament). Follow it to see every one on My Sports, " +
-                                    "or follow a name to catch shows that mention a driver or fighter.",
+                                LiveTvTexts.trf("{0} is listed by event (each race, card or tournament). Follow it to see every one on My Sports, or follow a name to catch shows that mention a driver or fighter.", league.name.tr()),
                                 color = colors.TextSecondary, size = 13.sp, maxLines = 4
                             )
                             teams == null -> LiveText("Getting the teams…", color = colors.TextSecondary, size = 13.sp)
@@ -353,7 +354,7 @@ private fun FollowingBar(follows: SportsFollows, viewModel: SportsViewModel, fir
         }
         follows.pins.forEach { id ->
             val l = SportsCatalog.league(id)
-            add(FollowEntry("l$id", l?.name ?: id, { LeagueMark(l, 18.dp) }) { viewModel.repo.togglePin(id) })
+            add(FollowEntry("l$id", l?.name?.tr() ?: id, { LeagueMark(l, 18.dp) }) { viewModel.repo.togglePin(id) })
         }
         follows.words.forEach { w -> add(FollowEntry("w$w", "\"$w\"", null) { viewModel.repo.removeWord(w) }) }
     }
@@ -377,7 +378,7 @@ private fun FollowingBar(follows: SportsFollows, viewModel: SportsViewModel, fir
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            LiveText("FOLLOWING · ${entries.size}", color = colors.TextTertiary, size = 10.sp, weight = FontWeight.ExtraBold)
+            LiveText(LiveTvTexts.trf("FOLLOWING · {0}", entries.size), color = colors.TextTertiary, size = 10.sp, weight = FontWeight.ExtraBold)
             Spacer(Modifier.width(10.dp))
             if (entries.isEmpty()) {
                 LiveText("Nothing yet: pick a team below.", color = colors.TextSecondary, size = 12.sp)
@@ -482,16 +483,16 @@ private fun LeagueCard(
         LeagueMark(league, 30.dp)
         Spacer(Modifier.width(10.dp))
         Column {
-            LiveText(league.name + if (followed) " ★" else "", color = Color.White, size = 13.sp, weight = FontWeight.ExtraBold)
+            LiveText(league.name.tr() + if (followed) " ★" else "", color = Color.White, size = 13.sp, weight = FontWeight.ExtraBold)
             LiveText(
                 listOfNotNull(
-                    if (teamsFollowed > 0) "$teamsFollowed followed" else null,
-                    if (league.sport == Sport.WRESTLING || league.id == "guide/boxing") "Schedule + your guide" else if (league.guideOnly) "From your guide" else null,
+                    if (teamsFollowed > 0) LiveTvTexts.trf("{0} followed", teamsFollowed) else null,
+                    (if (league.sport == Sport.WRESTLING || league.id == "guide/boxing") "Schedule + your guide" else if (league.guideOnly) "From your guide" else null)?.tr(),
                     // "inRegion" is really "shown on the Hub by default" (your region, or your
                     // own choice from the Leagues dialog) — the old wording implied a broadcast
                     // restriction that was never real, and games and scores are fetched for
                     // every league regardless of this.
-                    if (!inRegion) "Not on your Hub by default" else null
+                    if (!inRegion) "Not on your Hub by default".tr() else null
                 ).joinToString(" · ").ifBlank { if (league.kind == LeagueKind.EVENT) "Events" else "Teams" },
                 color = SportsLook.Dim, size = 10.sp
             )

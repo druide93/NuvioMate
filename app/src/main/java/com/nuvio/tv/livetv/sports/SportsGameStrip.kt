@@ -56,6 +56,8 @@ import com.nuvio.tv.livetv.multiview.MultiviewNeutralTag
 import com.nuvio.tv.livetv.multiview.multiviewPanel
 import com.nuvio.tv.livetv.ui.ChannelLogo
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.theme.NuvioTheme
 import kotlinx.coroutines.launch
 
@@ -402,7 +404,7 @@ internal fun SportsGameStrip(
                 Column(Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.Center) {
                     LiveText("No streams available", size = 16.sp, weight = FontWeight.SemiBold)
                     LiveText(if (streamGame == null) "Choose a game for this pane first."
-                        else "No matched streams remain for ${streamGame.event.title}.",
+                        else LiveTvTexts.trf("No matched streams remain for {0}.", streamGame.event.title),
                         size = 12.sp, color = NuvioTheme.colors.TextSecondary)
                 }
             } else {
@@ -542,16 +544,16 @@ internal fun SportsGameStrip(
             }
         }
         Spacer(Modifier.height(3.dp))
-        val destination = if (visiblePanes == 1) "this view" else "P${focusedPane.coerceIn(0, visiblePanes - 1) + 1}"
+        val destination = if (visiblePanes == 1) "this view".tr() else "P${focusedPane.coerceIn(0, visiblePanes - 1) + 1}"
         val focusedGame = rowGames.firstOrNull { it.event.id == lastGameId }
         val others = (focusedGame?.channels?.distinctBy { it.channel.key }?.size ?: 0) - 1
         val hold = when {
-            others == 1 -> " · Hold OK: 1 other stream"
-            others > 1 -> " · Hold OK: $others other streams"
+            others == 1 -> " · Hold OK: 1 other stream".tr()
+            others > 1 -> LiveTvTexts.trf(" · Hold OK: {0} other streams", others)
             else -> ""
         }
-        LiveText(if (streamsOpen) "OK: play this stream in $destination · Back: back to games"
-            else "OK: play in $destination$hold · Up / Down: Sports rows · Back: close",
+        LiveText(if (streamsOpen) LiveTvTexts.trf("OK: play this stream in {0} · Back: back to games", destination)
+            else LiveTvTexts.trf("OK: play in {0}{1} · Up / Down: Sports rows · Back: close", destination, hold),
             size = 10.sp, color = NuvioTheme.colors.TextSecondary)
     }
 }
@@ -625,7 +627,7 @@ private fun StripStreamCard(
                 color = NuvioTheme.colors.TextSecondary)
         }
         val reason = match.how.takeIf { it.isNotBlank() }
-        LiveText(if (!match.sure && reason != null) "Guess: $reason" else reason.orEmpty(),
+        LiveText(if (!match.sure && reason != null) LiveTvTexts.trf("Guess: {0}", reason) else reason.orEmpty(),
             size = 10.sp, color = NuvioTheme.colors.TextSecondary)
     }
 }
@@ -709,7 +711,7 @@ internal fun StripGameCard(
                 LiveText(channel?.channel?.name ?: (if (upcoming != null) event.broadcasts.take(3).joinToString(" · ") else "No matched channel"), Modifier.weight(1f, fill = false), size = 11.sp,
                     color = if (available) NuvioTheme.colors.TextPrimary else NuvioTheme.colors.TextSecondary,
                     weight = FontWeight.SemiBold)
-                if (otherStreams > 0) SportsBadge(if (otherStreams == 1) "+1 stream" else "+$otherStreams streams",
+                if (otherStreams > 0) SportsBadge(if (otherStreams == 1) "+1 stream" else LiveTvTexts.trf("+{0} streams", otherStreams),
                     MultiviewNeutralTag, NuvioTheme.colors.TextPrimary)
             }
         }

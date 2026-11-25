@@ -6,6 +6,8 @@ import com.nuvio.tv.livetv.model.EpgProgram
 import com.nuvio.tv.livetv.model.LiveChannel
 import com.nuvio.tv.livetv.sports.SportsCatalog.hasWord
 import com.nuvio.tv.livetv.sports.SportsCatalog.norm
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import java.io.File
 
 /**
@@ -194,7 +196,7 @@ internal class SportsMatcher(
         // Shows found in the guide already know their channels.
         val guideWanted = wanted.filter { it.source == EventSource.GUIDE }
         guideWanted.forEach { ev ->
-            ev.guideHits.forEach { (key, p) -> add(ev.id, key, 100, "Guide: ${p.title}", p) }
+            ev.guideHits.forEach { (key, p) -> add(ev.id, key, 100, LiveTvTexts.trf("Guide: {0}", p.title), p) }
         }
         // A race, show or fight night from a schedule (TheSportsDB's "Portugal Sprint Race") also
         // gets the channels of a guide listing of the same competition that's on air when it
@@ -207,7 +209,7 @@ internal class SportsMatcher(
                 if (SportsCatalog.league(ev.leagueId)?.kind != LeagueKind.EVENT) continue
                 for (g in guideByLeague[ev.leagueId].orEmpty()) for ((key, p) in g.guideHits) {
                     if (ev.startMs >= p.startMs - 15 * MINUTE && ev.startMs < p.stopMs)
-                        add(ev.id, key, 95, "Guide: ${p.title}", p)
+                        add(ev.id, key, 95, LiveTvTexts.trf("Guide: {0}", p.title), p)
                 }
             }
         }
@@ -408,8 +410,8 @@ internal class SportsMatcher(
                         if (score <= 0) continue
                         // Pre-game shows often start an hour early on the same channel; much earlier or later is less likely the game.
                         if (p.startMs < ev.startMs - 80 * MINUTE || p.startMs > ev.startMs + 25 * MINUTE) score -= 10
-                        add(ev.id, key, score, "Guide: ${p.title}", p)
-                        if (score > 0) finds += SlotFind(ev.id, key, score, "Guide: ${p.title}", p)
+                        add(ev.id, key, score, LiveTvTexts.trf("Guide: {0}", p.title), p)
+                        if (score > 0) finds += SlotFind(ev.id, key, score, LiveTvTexts.trf("Guide: {0}", p.title), p)
                     }
                 }
             }
@@ -487,7 +489,7 @@ internal class SportsMatcher(
             // Your own channel for a network counts even when no channel is named like it (Sky
             // Sports F1 for "Apple TV"): nothing to look through, but the pick still applies.
             for (ev in slot) for (b in ev.broadcasts) {
-                input.settings.networkChannels[networkKey(b)]?.let { key -> add(ev.id, key, 75, "Your channel for $b", null) }
+                input.settings.networkChannels[networkKey(b)]?.let { key -> add(ev.id, key, 75, LiveTvTexts.trf("Your channel for {0}", b), null) }
             }
             val keys = slot.flatMap { ev -> ev.broadcasts.flatMap { candidates[networkKey(it)].orEmpty() } }.map { it.key }.distinct()
             if (keys.isEmpty()) return@forEach
@@ -500,7 +502,7 @@ internal class SportsMatcher(
                 val sporty = (league.guideWords + SPORT_WORDS).map { norm(it).trim() }
                 for (b in ev.broadcasts) {
                     val n = networkKey(b)
-                    input.settings.networkChannels[n]?.let { key -> add(ev.id, key, 75, "Your channel for $b", onNow[key]) }
+                    input.settings.networkChannels[n]?.let { key -> add(ev.id, key, 75, LiveTvTexts.trf("Your channel for {0}", b), onNow[key]) }
                     // No start time (a race weekend, a tournament): the network's listing says nothing about what's on now.
                     if (ev.id in noStart) continue
                     val national = n in NATIONAL
@@ -527,7 +529,7 @@ internal class SportsMatcher(
                         // More than the top few: their FHD/HD/SD copies (one row on the game page)
                         // and the same network from other providers, as backups if one freezes.
                         .take(if (national) 8 else 12)
-                        .forEach { (ch, score, p) -> add(ev.id, ch.key, score, "$b listed by ESPN", p); byNetwork++ }
+                        .forEach { (ch, score, p) -> add(ev.id, ch.key, score, LiveTvTexts.trf("{0} listed by ESPN", b), p); byNetwork++ }
                 }
             }
         }
@@ -537,9 +539,9 @@ internal class SportsMatcher(
             checkpoint()
             input.settings.eventChannels[ev.id]?.substringBeforeLast('|')?.let { add(ev.id, it, 200, "Your pick", null) }
             // Your channel for the whole competition (every Formula 1 round, every PGA Tour event).
-            input.settings.leagueChannels[ev.leagueId]?.let { add(ev.id, it, 140, "Your channel for ${SportsCatalog.league(ev.leagueId)?.name ?: "this competition"}", null) }
+            input.settings.leagueChannels[ev.leagueId]?.let { add(ev.id, it, 140, LiveTvTexts.trf("Your channel for {0}", SportsCatalog.league(ev.leagueId)?.name?.tr() ?: "this competition".tr()), null) }
             if (input.settings.teamChannels.isNotEmpty()) for (side in ev.sides) {
-                input.settings.teamChannels[teamChannelKey(ev.leagueId, side.team.id)]?.let { add(ev.id, it, 150, "Your channel for ${side.team.name}", null) }
+                input.settings.teamChannels[teamChannelKey(ev.leagueId, side.team.id)]?.let { add(ev.id, it, 150, LiveTvTexts.trf("Your channel for {0}", side.team.name), null) }
             }
         }
 

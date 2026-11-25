@@ -498,8 +498,8 @@ fun MultiviewScreen(
                         errorHint = nextUp?.let {
                             when (it.size) {
                                 0 -> "OK: pick another game"
-                                1 -> "OK: try another stream · Next: ${it.first().channel.name}"
-                                else -> "OK: try another stream · Next: ${it.first().channel.name} · ${it.size - 1} more"
+                                1 -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("OK: try another stream · Next: {0}", it.first().channel.name)
+                                else -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("OK: try another stream · Next: {0} · {1} more", it.first().channel.name, it.size - 1)
                             }
                         },
                         emptyHint = if (sportsMode) "OK to pick a game" else "OK to pick a channel",
@@ -597,7 +597,7 @@ fun MultiviewScreen(
             }
             MultiviewChip("Exit", onClick = onBack)
             MultiviewBarDivider()
-            LiveText(if (soundPaused) "Paused" else "Sound: P${state.focusedPane + 1}",
+            LiveText(if (soundPaused) "Paused" else com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Sound: P{0}", state.focusedPane + 1),
                 size = 11.sp, color = NuvioTheme.colors.TextSecondary, modifier = Modifier.padding(end = 6.dp))
         }
         if (soundPaused) {

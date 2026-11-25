@@ -1,13 +1,14 @@
 package com.nuvio.tv.data.mdblist
 
 import com.nuvio.tv.domain.model.LibraryEntryInput
+import com.nuvio.tv.livetv.ui.tr
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 internal fun LibraryEntryInput.mdbListLibraryItem(): MdbListLibraryItem {
-    val type = requireNotNull(mdbListLibraryType(itemType)) { "MDBList lists support movies and shows" }
+    val type = requireNotNull(mdbListLibraryType(itemType)) { "MDBList lists support movies and shows".tr() }
     val ids = decodeMdbListIds(buildJsonObject {
         when {
             itemId.startsWith("tt") -> put("imdb", itemId)
@@ -30,7 +31,7 @@ internal fun MdbListLibraryItem.membershipBody(watchlist: Boolean): String {
         media.ids.tvdb?.let { put("tvdb", it) }
         media.ids.trakt?.let { put("trakt", it) }
     }
-    require(ids.isNotEmpty()) { "An external movie or show ID is required" }
+    require(ids.isNotEmpty()) { "An external movie or show ID is required".tr() }
     return buildJsonObject {
         put(if (type == MdbListItemType.MOVIE) "movies" else "shows", JsonArray(listOf(
             if (watchlist) buildJsonObject { put("ids", ids) } else ids

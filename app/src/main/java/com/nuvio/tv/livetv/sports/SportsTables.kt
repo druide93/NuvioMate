@@ -52,6 +52,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nuvio.tv.livetv.record.LiveTvNotice
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.theme.NuvioTheme
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
@@ -384,7 +386,7 @@ private fun TableView(
         }
         val season = listOfNotNull(
             if (table.groupTabs) table.tabName(conference) else null,
-            table.season?.let { "Season $it" }, "from ${table.source}"
+            table.season?.let { LiveTvTexts.trf("Season {0}", it) }, LiveTvTexts.trf("from {0}", table.source)
         ).joinToString(" · ")
         LiveText(season, color = SportsLook.Faint, size = 10.sp, modifier = Modifier.padding(start = 6.dp, top = 6.dp))
         // Column headings.
@@ -395,7 +397,7 @@ private fun TableView(
             Spacer(Modifier.width(POS_W))
             LiveText(if (table.kind == StandingsKind.RACING) "DRIVER" else "TEAM", color = SportsLook.Dim, size = 9.sp, weight = FontWeight.Black, modifier = Modifier.weight(1f).padding(start = 30.dp))
             columns.forEach { c ->
-                LiveText(c.label, color = SportsLook.Dim, size = 9.sp, weight = FontWeight.Black, align = TextAlign.End, modifier = Modifier.width(cellWidth(c.key)))
+                LiveText(columnHeading(c.label), color = SportsLook.Dim, size = 9.sp, weight = FontWeight.Black, align = TextAlign.End, modifier = Modifier.width(cellWidth(c.key)))
             }
             if (showForm) LiveText("LAST 5", color = SportsLook.Dim, size = 9.sp, weight = FontWeight.Black, align = TextAlign.End, modifier = Modifier.width(FORM_W + 8.dp))
         }
@@ -583,8 +585,8 @@ private fun TeamSummary(table: Standings, row: StandingsRow, mine: Boolean, view
             val other = ev.sides.firstOrNull { it.team.id != row.id }?.team?.name
             val home = ev.sides.firstOrNull { it.team.id == row.id }?.home == true
             val text = when {
-                ev.state == GameState.LIVE -> "Now: " + (if (home) "v " else "@ ") + (other ?: ev.title) + (ev.status?.let { " · $it" } ?: "")
-                else -> "Next: " + (if (home) "v " else "@ ") + (other ?: ev.title) + " · " + dayWord(ev.startMs, now) + " " + startLabel(ev, use24h)
+                ev.state == GameState.LIVE -> "Now: ".tr() + (if (home) "v " else "@ ") + (other ?: ev.title) + (ev.status?.let { " · " + it.tr() } ?: "")
+                else -> "Next: ".tr() + (if (home) "v " else "@ ") + (other ?: ev.title) + " · " + dayWord(ev.startMs, now) + " " + startLabel(ev, use24h)
             }
             Spacer(Modifier.height(2.dp))
             OneLine(text, Color(0xFFC9CCD6), 12.sp)
@@ -600,19 +602,19 @@ private fun summaryLine(table: Standings, r: StandingsRow): String {
     return when (table.kind) {
         StandingsKind.TABLE -> listOfNotNull(
             v["points"]?.let { "$it points" },
-            listOfNotNull(v["wins"]?.let { "$it won" }, v["ties"]?.let { "$it drawn" }, v["losses"]?.let { "$it lost" }).joinToString(", ").ifBlank { null },
-            v["pointDifferential"]?.let { "goal difference $it" }
+            listOfNotNull(v["wins"]?.let { LiveTvTexts.trf("{0} won", it) }, v["ties"]?.let { LiveTvTexts.trf("{0} drawn", it) }, v["losses"]?.let { LiveTvTexts.trf("{0} lost", it) }).joinToString(", ").ifBlank { null },
+            v["pointDifferential"]?.let { LiveTvTexts.trf("goal difference {0}", it) }
         ).joinToString(" · ")
         StandingsKind.HOCKEY -> listOfNotNull(
             v["points"]?.let { "$it points" },
             listOfNotNull(v["wins"], v["losses"], v["otLosses"]).joinToString("–").ifBlank { null },
             streakWords(r.streak)
         ).joinToString(" · ")
-        StandingsKind.RACING -> listOfNotNull(v["points"]?.let { "$it points" }, v["behind"]?.takeIf { it != "–" }?.let { "${it.trimStart('-')} behind the leader" }).joinToString(" · ")
+        StandingsKind.RACING -> listOfNotNull(v["points"]?.let { "$it points" }, v["behind"]?.takeIf { it != "–" }?.let { LiveTvTexts.trf("{0} behind the leader", it.trimStart('-')) }).joinToString(" · ")
         StandingsKind.RECORD -> listOfNotNull(
             listOfNotNull(v["wins"], v["losses"], v["ties"]?.takeIf { it != "0" }).joinToString("–").ifBlank { null },
             streakWords(r.streak),
-            v["gamesBehind"]?.takeIf { it != "–" && it != "-" && it != "0" }?.let { "$it games behind" }
+            v["gamesBehind"]?.takeIf { it != "–" && it != "-" && it != "0" }?.let { LiveTvTexts.trf("{0} games behind", it) }
         ).joinToString(" · ")
     }
 }
@@ -620,7 +622,7 @@ private fun summaryLine(table: Standings, r: StandingsRow): String {
 private fun streakWords(s: String?): String? {
     val n = s?.drop(1)?.toIntOrNull() ?: return null
     if (n < 2) return null
-    return when (s.first()) { 'W' -> "$n wins in a row"; 'L' -> "$n losses in a row"; else -> null }
+    return when (s.first()) { 'W' -> LiveTvTexts.trf("{0} wins in a row", n); 'L' -> LiveTvTexts.trf("{0} losses in a row", n); else -> null }
 }
 
 /** What the coloured edges and letters mean. */
@@ -648,7 +650,7 @@ private fun TableKey(table: Standings, view: StandingsView) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 2.dp)) {
                 Box(Modifier.size(width = 16.dp, height = 1.dp).background(NuvioTheme.colors.Secondary))
                 Spacer(Modifier.width(8.dp))
-                LiveText(lines.joinToString(" · ") { "${it.second} after ${Standings.ordinal(it.first)}" }, color = Color(0xFFC9CCD6), size = 11.sp)
+                LiveText(lines.joinToString(" · ") { LiveTvTexts.trf("{0} after {1}", it.second.tr(), Standings.ordinal(it.first)) }, color = Color(0xFFC9CCD6), size = 11.sp)
             }
         }
     }
@@ -736,7 +738,7 @@ internal fun TeamCard(
                     LiveText(team.fullName.ifBlank { team.name } + if (following) " ★" else "", size = 19.sp, weight = FontWeight.Black)
                     val where = listOfNotNull(
                         if (hide) null else t?.placeText(team.id),
-                        SportsCatalog.league(team.leagueId)?.name
+                        SportsCatalog.league(team.leagueId)?.name?.tr()
                     ).distinct().joinToString(" · ")
                     if (where.isNotBlank()) LiveText(where, color = Color.White.copy(alpha = 0.85f), size = 11.sp, weight = FontWeight.Bold)
                 }
@@ -781,7 +783,7 @@ internal fun TeamCard(
             CardGame(ev, team, hide, now, use24h, live = true)
         }
         if (last.isNotEmpty() && !hide) {
-            CardHeading("LAST ${last.size}")
+            CardHeading(LiveTvTexts.trf("LAST {0}", last.size))
             last.forEach { ev -> CardGame(ev, team, hide, now, use24h) }
         }
         next?.let { ev ->
@@ -821,7 +823,7 @@ private fun cardStats(t: Standings, r: StandingsRow): List<Pair<String, String>>
             "PLACE" to Standings.ordinal(r.pos),
             v["points"]?.let { "POINTS" to it },
             v["pointDifferential"]?.let { "GOAL DIFF" to it },
-            (r.form ?: r.record)?.let { "FORM" to (r.form ?: it) }
+            (r.form ?: r.record)?.let { "FORM" to (r.form?.map { c -> resultLetter(c.toString()) }?.joinToString("") ?: it) }
         )
         StandingsKind.RACING -> listOfNotNull("PLACE" to Standings.ordinal(r.pos), v["points"]?.let { "POINTS" to it }, v["behind"]?.let { "BEHIND" to it })
         else -> listOfNotNull(
@@ -870,14 +872,14 @@ private fun CardGame(ev: SportsEvent, team: TeamInfo, hide: Boolean, now: Long, 
                     when (result) { 'W' -> Color(0xFF2E9E5B); 'L' -> Color(0xFFC0392B); else -> Color(0xFF5A5F6E) }
                 ),
                 contentAlignment = Alignment.Center
-            ) { LiveText(result.toString(), color = Color.White, size = 9.sp, weight = FontWeight.Black) }
+            ) { LiveText(resultLetter(result.toString()), color = Color.White, size = 9.sp, weight = FontWeight.Black) }
             else -> Spacer(Modifier.width(18.dp))
         }
         Spacer(Modifier.width(9.dp))
         val vs = if (us?.home == true) (if (sport.homeFirst) "v " else "v ") else "@ "
         LiveText(vs + (them?.team?.name ?: ev.title), size = 12.sp, weight = FontWeight.ExtraBold)
         val whenText = when (ev.state) {
-            GameState.LIVE -> ev.status.orEmpty()
+            GameState.LIVE -> ev.status.orEmpty().tr()
             GameState.PRE -> dayWord(ev.startMs, now) + " " + startLabel(ev, use24h)
             else -> SimpleDateFormat("EEE d MMM", Locale.getDefault()).format(Date(ev.startMs))
         }
@@ -939,7 +941,7 @@ internal fun PlayerProfile(p: Player, team: TeamInfo, photo: String? = p.smallPh
             LiveText((p.number?.let { "$it  " }.orEmpty()) + p.name, size = 20.sp, weight = FontWeight.Black)
             LiveText(listOfNotNull(p.position, team.fullName.ifBlank { team.name }).joinToString(" · "), color = SportsLook.Dim, size = 12.sp, weight = FontWeight.Bold)
             val facts = listOfNotNull(
-                p.country, p.age()?.let { "Age $it" }, p.height?.let { "Height $it" }, p.weight?.let { "Weight $it" }, p.side
+                p.country, p.age()?.let { LiveTvTexts.trf("Age {0}", it) }, p.height?.let { LiveTvTexts.trf("Height {0}", it) }, p.weight?.let { LiveTvTexts.trf("Weight {0}", it) }, p.side
             )
             if (facts.isNotEmpty()) LiveText(facts.joinToString(" · "), color = Color(0xFFC9CCD6), size = 11.sp, maxLines = 2)
         }
@@ -984,7 +986,7 @@ private fun gameLine(ev: SportsEvent, team: TeamInfo, hide: Boolean, now: Long, 
     val them = ev.sides.firstOrNull { it.team.id != team.id }
     val vs = (if (us?.home == true) "v " else "@ ") + (them?.team?.name ?: ev.title)
     val whenText = when (ev.state) {
-        GameState.LIVE -> "LIVE " + ev.status.orEmpty()
+        GameState.LIVE -> "LIVE ".tr() + ev.status.orEmpty().tr()
         GameState.PRE -> dayWord(ev.startMs, now) + " " + startLabel(ev, use24h)
         else -> SimpleDateFormat("EEE d MMM", Locale.getDefault()).format(Date(ev.startMs))
     }

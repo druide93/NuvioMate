@@ -83,6 +83,8 @@ import com.nuvio.tv.livetv.ui.LIVE_RED
 import com.nuvio.tv.livetv.ui.LiveFocusRow
 import com.nuvio.tv.livetv.ui.LiveTag
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.livetv.ui.focusedTextColor
 import com.nuvio.tv.livetv.ui.formatClock
 import com.nuvio.tv.livetv.ui.guideBackdrop
@@ -267,7 +269,7 @@ fun CalendarScreen(
         mine.firstOrNull { whenOf(it) > now }?.let { return it }
         if (!f.isAiring) mine.lastOrNull { whenOf(it) <= now }?.let { return it }
         val note = when {
-            f.isAiring -> "On ${f.channelName ?: "TV"} · ${dayWord(java.time.Instant.ofEpochMilli(f.startMs).atZone(ZoneId.systemDefault()).toLocalDate(), today)} ${formatClock(f.startMs, use24h)}"
+            f.isAiring -> LiveTvTexts.trf("On {0} · {1} {2}", f.channelName ?: "TV", dayWord(java.time.Instant.ofEpochMilli(f.startMs).atZone(ZoneId.systemDefault()).toLocalDate(), today), formatClock(f.startMs, use24h))
             f.type == "movie" -> "Waiting to come out"
             else -> "Nothing announced yet"
         }
@@ -407,9 +409,9 @@ fun CalendarScreen(
                     Spacer(Modifier.width(14.dp))
                     LiveText(
                         when {
-                            tab == CalTab.FOLLOWING -> "${follows.distinctBy { it.id }.size} with the bell on"
+                            tab == CalTab.FOLLOWING -> LiveTvTexts.trf("{0} with the bell on", follows.distinctBy { it.id }.size)
                             tab == CalTab.HIDDEN -> "Left off your Calendar"
-                            state.loading -> state.progress?.let { (a, b) -> "Looking up your shows… $a of $b" } ?: "Looking up your shows…"
+                            state.loading -> state.progress?.let { (a, b) -> LiveTvTexts.trf("Looking up your shows… {0} of {1}", a, b) } ?: "Looking up your shows…"
                             else -> "Times in your time zone"
                         },
                         size = 13.sp, color = NuvioTheme.colors.TextSecondary
@@ -673,7 +675,7 @@ fun CalendarScreen(
                     // Airing Today lists every show on today: nothing there is yours to take off.
                     fromAiringToday -> Unit
                     e.kind == CalendarKind.MOVIE && followed -> add(MenuAction("Turn off the bell") { val n = neighbourOf(e); close(); viewModel.toggleFollow(e); focusAfterRemoving(n) })
-                    else -> add(MenuAction("Hide this ${if (e.kind == CalendarKind.MOVIE) "movie" else "show"} from the Calendar",
+                    else -> add(MenuAction(if (e.kind == CalendarKind.MOVIE) "Hide this movie from the Calendar" else "Hide this show from the Calendar",
                         "It comes back from Hidden") { val n = neighbourOf(e); close(); viewModel.hide(e); focusAfterRemoving(n) })
                 }
             }
@@ -693,7 +695,7 @@ fun CalendarScreen(
                 kicker = null, title = f.name, subtitle = fe?.let { entryLine(it, use24h) }, status = fe?.let { viewModel.status(it) },
                 actions = buildList {
                     if (fe != null) addAll(liveList(fe, close))
-                    if ((!f.isAiring || f.imdbId != null) && !f.id.startsWith("tvmaze:")) add(MenuAction("Open ${if (f.type == "series") "show" else "movie"} page") {
+                    if ((!f.isAiring || f.imdbId != null) && !f.id.startsWith("tvmaze:")) add(MenuAction(if (f.type == "series") "Open show page" else "Open movie page") {
                         close()
                         if (f.isAiring) onOpenDetail(f.imdbId!!, "movie", null, null, null) else onOpenDetail(f.id, f.type, f.addonBaseUrl, null, null)
                     })
@@ -846,13 +848,13 @@ private fun Hero(
             else -> listOfNotNull(
                 e.episodeCode,
                 seasonDrop(e),
-                if (e.spoiler) "title hidden: you're not there yet" else e.episodeTitle
+                if (e.spoiler) "title hidden: you're not there yet".tr() else e.episodeTitle
             ).joinToString(" · ")
         }
         if (line.isNotBlank()) LiveText(line, size = 16.sp, weight = FontWeight.SemiBold, shadow = true, modifier = Modifier.width(560.dp))
         val whenText = dayWord(e.day, today) + when {
             airMs != null && !e.streaming -> " " + formatClock(airMs, use24h)
-            e.streaming && e.kind == CalendarKind.EPISODE -> " · streaming"
+            e.streaming && e.kind == CalendarKind.EPISODE -> " · " + "streaming".tr()
             else -> ""
         }
         if (!plain) LiveText(
@@ -957,11 +959,11 @@ private fun DayRows(
                     if (r.firstOfDay) {
                         LiveText(dayWord(r.day, today), size = 17.sp, weight = FontWeight.Bold)
                         Spacer(Modifier.width(8.dp))
-                        LiveText(r.day.format(DateTimeFormatter.ofPattern("EEE MMM d")), size = 13.sp, color = NuvioTheme.colors.TextSecondary)
+                        LiveText(r.day.format(DateTimeFormatter.ofPattern(com.nuvio.tv.livetv.ui.localDatePattern("EEEMMMd"))), size = 13.sp, color = NuvioTheme.colors.TextSecondary)
                         Spacer(Modifier.width(8.dp))
                     }
                     LiveText(
-                        if (r.games) "Games · ${r.list.size}" else "· ${r.list.size}",
+                        if (r.games) LiveTvTexts.trf("Games · {0}", r.list.size) else "· ${r.list.size}",
                         size = 13.sp, weight = if (r.games) FontWeight.SemiBold else FontWeight.Normal, color = NuvioTheme.colors.TextSecondary
                     )
                 }
@@ -1090,7 +1092,7 @@ private fun WideCard(
 private fun seasonDrop(e: CalendarEntry): String? {
     val first = e.episode ?: return null
     val last = e.lastEpisode?.takeIf { it > first } ?: return null
-    return "${last - first + 1} episodes" + if (first == 1) " (whole season)" else ""
+    return if (first == 1) LiveTvTexts.trf("{0} episodes (whole season)", last - first + 1) else LiveTvTexts.trf("{0} episodes", last - first + 1)
 }
 
 // -------------------------------------------------------------------- games
@@ -1325,7 +1327,7 @@ private fun WeekView(
     Column(Modifier.fillMaxSize().padding(start = 64.dp, end = 32.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             LiveText(
-                start.format(DateTimeFormatter.ofPattern("MMM d")) + " – " + start.plusDays(6).format(DateTimeFormatter.ofPattern("MMM d")),
+                start.format(DateTimeFormatter.ofPattern(com.nuvio.tv.livetv.ui.localDatePattern("MMMd"))) + " – " + start.plusDays(6).format(DateTimeFormatter.ofPattern(com.nuvio.tv.livetv.ui.localDatePattern("MMMd"))),
                 size = 20.sp, weight = FontWeight.ExtraBold
             )
             Spacer(Modifier.width(10.dp))
@@ -1551,15 +1553,15 @@ private fun MonthView(
     Column(Modifier.fillMaxSize()) {
         // The highlighted day, big: its releases as cards.
         Row(Modifier.padding(start = 64.dp), verticalAlignment = Alignment.CenterVertically) {
-            LiveText(selected.format(DateTimeFormatter.ofPattern("EEEE, MMM d")), size = 22.sp, weight = FontWeight.ExtraBold)
+            LiveText(selected.format(DateTimeFormatter.ofPattern(com.nuvio.tv.livetv.ui.localDatePattern("EEEEMMMd"))), size = 22.sp, weight = FontWeight.ExtraBold)
             Spacer(Modifier.width(10.dp))
             LiveText(
-                (if (list.isEmpty()) "Nothing out" else "${list.size} on this day") + " · " + dayWord(selected, today).lowercase(),
+                (if (list.isEmpty()) "Nothing out".tr() else LiveTvTexts.trf("{0} on this day", list.size)) + " · " + dayWord(selected, today).lowercase(),
                 size = 13.sp, color = NuvioTheme.colors.TextSecondary
             )
             Spacer(Modifier.weight(1f))
             Pill("‹", false) { shown = shown.minusMonths(1) }
-            LiveText(shown.format(DateTimeFormatter.ofPattern("MMMM yyyy")), size = 15.sp, weight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp))
+            LiveText(shown.format(DateTimeFormatter.ofPattern(com.nuvio.tv.livetv.ui.localDatePattern("yMMMM"))), size = 15.sp, weight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp))
             Pill("›", false) { shown = shown.plusMonths(1) }
         }
         Spacer(Modifier.height(6.dp))
@@ -1659,7 +1661,7 @@ private fun DayCell(
             GameArt(top, big = false, standalone = true, modifier = Modifier.fillMaxSize().graphicsLayer { alpha = 0.9f })
         }
         LiveText(
-            if (day.dayOfMonth == 1) day.format(DateTimeFormatter.ofPattern("MMM d")) else day.dayOfMonth.toString(),
+            if (day.dayOfMonth == 1) day.format(DateTimeFormatter.ofPattern(com.nuvio.tv.livetv.ui.localDatePattern("MMMd"))) else day.dayOfMonth.toString(),
             size = 12.sp, weight = if (today || focused) FontWeight.ExtraBold else FontWeight.SemiBold, color = Color.White, shadow = true,
             modifier = Modifier.align(Alignment.TopStart).padding(5.dp)
         )
@@ -1727,7 +1729,7 @@ private fun PosterCard(
                 corner?.let { LiveTag(it, Color.Black.copy(alpha = 0.78f), Color.White) }
                 Spacer(Modifier.weight(1f))
                 if (bell) Box(Modifier.size(20.dp).clip(RoundedCornerShape(50)).background(NuvioTheme.colors.Secondary), contentAlignment = Alignment.Center) {
-                    androidx.tv.material3.Icon(Icons.Default.Notifications, contentDescription = "Bell on", tint = NuvioTheme.colors.OnSecondary, modifier = Modifier.size(12.dp))
+                    androidx.tv.material3.Icon(Icons.Default.Notifications, contentDescription = "Bell on".tr(), tint = NuvioTheme.colors.OnSecondary, modifier = Modifier.size(12.dp))
                 }
             }
             Column(Modifier.align(Alignment.BottomStart).padding(6.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -1814,8 +1816,8 @@ private fun FollowingGrid(
         itemsIndexed(follows, key = { _, f -> f.id }) { i, f ->
             val next = entries.firstOrNull { (it.contentId == (f.imdbId ?: f.id) || it.contentId == f.id || it.key == f.id) && whenOf(it) > now }
             val caption = when {
-                f.isAiring -> "On ${f.channelName ?: "TV"} · ${dayWord(java.time.Instant.ofEpochMilli(f.startMs).atZone(ZoneId.systemDefault()).toLocalDate(), today)} ${formatClock(f.startMs, use24h)}"
-                next != null -> "Next: ${dayWord(next.day, today)}" + (next.episodeCode?.let { " · $it" } ?: "")
+                f.isAiring -> LiveTvTexts.trf("On {0} · {1} {2}", f.channelName ?: "TV", dayWord(java.time.Instant.ofEpochMilli(f.startMs).atZone(ZoneId.systemDefault()).toLocalDate(), today), formatClock(f.startMs, use24h))
+                next != null -> LiveTvTexts.trf("Next: {0}", dayWord(next.day, today)) + (next.episodeCode?.let { " · $it" } ?: "")
                 f.type == "movie" -> "Waiting to come out"
                 else -> "Nothing announced yet"
             }
@@ -1963,7 +1965,7 @@ private fun IconPill(modifier: Modifier = Modifier, onClick: () -> Unit) {
             .combinedClickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        androidx.tv.material3.Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = colors.text, modifier = Modifier.size(16.dp))
+        androidx.tv.material3.Icon(Icons.Default.Refresh, contentDescription = "Refresh".tr(), tint = colors.text, modifier = Modifier.size(16.dp))
     }
 }
 
@@ -2030,21 +2032,21 @@ private fun soonText(e: CalendarEntry, now: Long, today: LocalDate): String {
     val at = whenOf(e)
     val days = ChronoUnit.DAYS.between(today, e.day)
     return when {
-        at <= now && days == 0L -> "Today"
-        at <= now -> if (days == -1L) "Yesterday" else "${-days} days ago"
-        days == 0L && e.airMs != null -> ((at - now) / 3_600_000L).let { h -> if (h < 1) "In ${((at - now) / 60_000L).coerceAtLeast(1)} min" else "In $h h" }
-        days == 0L -> "Today"
-        days == 1L -> "Tomorrow"
-        else -> "In $days days"
+        at <= now && days == 0L -> "Today".tr()
+        at <= now -> if (days == -1L) "Yesterday".tr() else LiveTvTexts.trf("{0} days ago", -days)
+        days == 0L && e.airMs != null -> ((at - now) / 3_600_000L).let { h -> if (h < 1) LiveTvTexts.trf("In {0} min", ((at - now) / 60_000L).coerceAtLeast(1)) else LiveTvTexts.trf("In {0} h", h) }
+        days == 0L -> "Today".tr()
+        days == 1L -> "Tomorrow".tr()
+        else -> LiveTvTexts.trf("In {0} days", days)
     }
 }
 
 private fun dayWord(day: LocalDate, today: LocalDate): String = when (ChronoUnit.DAYS.between(today, day)) {
-    0L -> "Today"
-    1L -> "Tomorrow"
-    -1L -> "Yesterday"
+    0L -> "Today".tr()
+    1L -> "Tomorrow".tr()
+    -1L -> "Yesterday".tr()
     in 2L..6L -> day.format(DateTimeFormatter.ofPattern("EEEE"))
-    else -> day.format(DateTimeFormatter.ofPattern("EEE MMM d"))
+    else -> day.format(DateTimeFormatter.ofPattern(com.nuvio.tv.livetv.ui.localDatePattern("EEEMMMd")))
 }
 
 /** Whether it has a show or movie page to open (shows TVmaze alone knows, like many news shows, don't). */

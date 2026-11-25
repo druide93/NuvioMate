@@ -288,7 +288,7 @@ internal fun RecordedShowPage(
                     size = 14.sp, color = colors.TextSecondary, maxLines = 2
                 )
                 PillButton(
-                    (if (nextResume != null) "Resume " else "Play ") + episodeLabel(next),
+                    (if (nextResume != null) "Resume " else "Play ").tr() + episodeLabel(next),
                     primary = true,
                     modifier = Modifier.fillMaxWidth().focusRequester(first).focusRequester(buttons[0])
                         .then(if (pageFocus != null) Modifier.focusRequester(pageFocus) else Modifier),
@@ -396,7 +396,7 @@ private fun EpisodeRow(
                 marquee = focused
             )
             LiveText(
-                if (failed) rec.problem ?: "Couldn't be recorded"
+                if (failed) rec.problem?.let { recordingProblemText(it) } ?: "Couldn't be recorded"
                 else listOfNotNull(
                     dateLabel(airedMs(rec)),
                     durationLabel(rec.durationSec).takeIf { rec.durationSec > 0 },

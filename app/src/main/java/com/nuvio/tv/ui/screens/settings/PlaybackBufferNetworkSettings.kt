@@ -27,6 +27,8 @@ import com.nuvio.tv.data.local.PlayerSettings
 import com.nuvio.tv.data.local.VodCacheSizeMode
 import com.nuvio.tv.ui.screens.player.NuvioExoPlayerPerformanceHelper
 import kotlin.math.min
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
@@ -64,7 +66,7 @@ internal fun PlaybackBufferNetworkSection(
         SettingsNote(
             text = stringResource(
                 R.string.playback_net_device_memory_info,
-                NuvioExoPlayerPerformanceHelper.getFriendlyRamLabel(context),
+                NuvioExoPlayerPerformanceHelper.getFriendlyRamLabel(context).tr(),
                 NuvioExoPlayerPerformanceHelper.getSafeNativeMemoryLimitMb(context)
             )
         )
@@ -232,9 +234,9 @@ private fun CustomBufferControls(
         subtitle = stringResource(R.string.playback_buffer_target_sub),
         value = bufferSizeMb,
         valueText = if (settings.nuvioPerformanceModeEnabled && parallelActive && parallelOverheadMb > 0) {
-            "$effectiveExoMb+$parallelOverheadMb MB"
+            LiveTvTexts.trf("{0}+{1} MB", effectiveExoMb, parallelOverheadMb)
         } else {
-            "$bufferSizeMb MB"
+            LiveTvTexts.trf("{0} MB", bufferSizeMb)
         },
         minValue = minBufferSizeMb,
         maxValue = maxBufferSizeMb,
@@ -309,7 +311,7 @@ private fun DiskCacheControls(
             title = stringResource(R.string.playback_cache_vod_size),
             subtitle = stringResource(R.string.playback_cache_vod_size_sub),
             value = manualCacheMb,
-            valueText = "$manualCacheMb MB",
+            valueText = LiveTvTexts.trf("{0} MB", manualCacheMb),
             minValue = PlayerSettings.MIN_VOD_CACHE_SIZE_MB,
             maxValue = maxManualCacheMb,
             step = 50,
@@ -379,7 +381,7 @@ private fun ParallelNetworkControls(
             title = stringResource(R.string.playback_net_chunk_size),
             subtitle = stringResource(R.string.playback_net_chunk_size_sub),
             value = currentIndex,
-            valueText = chunkSizes.getOrNull(currentIndex)?.second ?: "${currentKb / 1024} MB",
+            valueText = (chunkSizes.getOrNull(currentIndex)?.second ?: "${currentKb / 1024} MB").let { LiveTvTexts.trf("{0} " + it.substringAfter(' '), it.substringBefore(' ')) },
             minValue = 0,
             maxValue = (chunkSizes.size - 1).coerceAtLeast(0),
             step = 1,

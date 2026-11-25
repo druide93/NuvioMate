@@ -1,6 +1,7 @@
 package com.nuvio.tv.livetv.branding
 
 import com.nuvio.tv.R
+import com.nuvio.tv.livetv.ui.tr
 
 /**
  * "NuvioMate" branding. The fork's own logo images sit next to Nuvio's (they don't replace
@@ -8,7 +9,8 @@ import com.nuvio.tv.R
  */
 object LiveTvBranding {
     const val APP_NAME = "NuvioMate"
-    const val TAGLINE = "Live TV  ·  On Demand  ·  Streaming"
+    /** In the device's language (see LiveTvTexts). */
+    val TAGLINE: String get() = "Live TV  ·  On Demand  ·  Streaming".tr()
 
     /** The "NuvioMate" version of a theme's Nuvio wordmark (any other image is returned as is). */
     fun iptvWordmark(nuvioWordmark: Int): Int = when (nuvioWordmark) {

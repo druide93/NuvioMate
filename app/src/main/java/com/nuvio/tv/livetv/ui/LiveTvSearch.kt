@@ -512,7 +512,7 @@ private fun ChannelQuickMenu(channel: LiveChannel, viewModel: LiveTvViewModel, p
         "group" -> GroupPickerDialog(
             channel = channel,
             groups = viewModel.copyTargets(channel),
-            title = "Copy \"${channel.name}\" to…",
+            title = LiveTvTexts.trf("Copy \"{0}\" to…", channel.name),
             onDismiss = onDismiss,
             onPick = { g -> viewModel.copyToGroup(g.id, channel); onDismiss() },
             onNewGroup = { step = "newgroup" }

@@ -96,6 +96,7 @@ import com.nuvio.tv.ui.util.rememberLongPressKeyTracker
 import com.nuvio.tv.ui.util.contentTextDirection
 import com.nuvio.tv.ui.util.rememberRawSvgPainter
 import java.util.Locale
+import com.nuvio.tv.livetv.ui.tr
 
 private const val MAX_VISIBLE_HERO_GENRES = 6
 
@@ -298,7 +299,7 @@ fun HeroContentSection(
                             ActionIconButton(
                                 icon = if (bell.on) Icons.Default.NotificationsActive
                                 else Icons.Default.NotificationsNone,
-                                contentDescription = if (bell.on) "Turn off the bell" else "Ring the bell: new episodes on Home and in your Calendar",
+                                contentDescription = (if (bell.on) "Turn off the bell" else "Ring the bell: new episodes on Home and in your Calendar").tr(),
                                 onClick = bell.toggle,
                                 selected = bell.on,
                                 selectedContainerColor = Color.White,

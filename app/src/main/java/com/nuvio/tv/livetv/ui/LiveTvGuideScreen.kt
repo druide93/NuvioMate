@@ -167,7 +167,7 @@ private fun guideDayLabel(windowStart: Long, now: Long): String {
         today -> "Today"
         dayOf(now + 24 * 3_600_000L) -> "Tomorrow"
         dayOf(now - 24 * 3_600_000L) -> "Yesterday"
-        else -> java.text.SimpleDateFormat("EEE, MMM d", java.util.Locale.getDefault()).format(java.util.Date(windowStart))
+        else -> java.text.SimpleDateFormat(com.nuvio.tv.livetv.ui.localDatePattern("EEEMMMd"), java.util.Locale.getDefault()).format(java.util.Date(windowStart))
     }
 }
 
@@ -1654,9 +1654,9 @@ private fun LiveTvGuideScreenBody(
                                             favoritesMode = false
                                             com.nuvio.tv.livetv.record.LiveTvNotice.show(
                                                 when {
-                                                    after == before -> "$after ${if (after == 1) "favorite" else "favorites"} in this group"
-                                                    after > before -> "Added ${after - before} to Favorites"
-                                                    else -> "Removed ${before - after} from Favorites"
+                                                    after == before -> LiveTvTexts.trf(if (after == 1) "{0} favorite in this group" else "{0} favorites in this group", after)
+                                                    after > before -> LiveTvTexts.trf("Added {0} to Favorites", after - before)
+                                                    else -> LiveTvTexts.trf("Removed {0} from Favorites", before - after)
                                                 }
                                             )
                                         }
@@ -1830,7 +1830,7 @@ private fun LiveTvGuideScreenBody(
                                 action = null
                             )
                             channels.isEmpty() && ui.selectedGroupId == ChannelGroup.SEARCH -> EmptyGuideMessage(
-                                title = if (ui.searchQuery.isBlank()) "Search channels" else "No channels match \"${ui.searchQuery}\"",
+                                title = if (ui.searchQuery.isBlank()) "Search channels" else LiveTvTexts.trf("No channels match \"{0}\"", ui.searchQuery),
                                 body = "Press OK on Search in the group list, or the search key on your remote.",
                                 action = null
                             )
@@ -2105,7 +2105,7 @@ private fun LiveTvGuideScreenBody(
                 val hint: @Composable (String) -> Unit = { LiveText(it, color = NuvioTheme.colors.TextSecondary, size = 13.sp) }
                 when {
                     groupTicked.isNotEmpty() -> {
-                        hint("${groupTicked.size} selected")
+                        hint(LiveTvTexts.trf("{0} selected", groupTicked.size))
                         hint("Left / Right: move them to the top / bottom")
                         hint("Hold OK: select or unselect another")
                     }
@@ -2155,7 +2155,7 @@ private fun LiveTvGuideScreenBody(
             ) {
                 LiveText("Copy channels to a group", size = 15.sp, weight = FontWeight.Bold)
                 Spacer(Modifier.height(4.dp))
-                LiveText("${copyPicked.size} of ${copyPickChannels.size} picked", color = NuvioTheme.colors.TextSecondary, size = 13.sp)
+                LiveText(LiveTvTexts.trf("{0} of {1} picked", copyPicked.size, copyPickChannels.size), color = NuvioTheme.colors.TextSecondary, size = 13.sp)
                 LiveText("OK: pick or unpick", color = NuvioTheme.colors.TextSecondary, size = 13.sp)
                 LiveText("Left: pick none", color = NuvioTheme.colors.TextSecondary, size = 13.sp)
                 LiveText("Right: pick all", color = NuvioTheme.colors.TextSecondary, size = 13.sp)
@@ -2172,7 +2172,7 @@ private fun LiveTvGuideScreenBody(
             ) {
                 LiveText("Pick favorites", size = 15.sp, weight = FontWeight.Bold)
                 Spacer(Modifier.height(4.dp))
-                LiveText("${favoritesChannels.count { it.key in pendingFavorites }} of ${favoritesChannels.size} picked", color = NuvioTheme.colors.TextSecondary, size = 13.sp)
+                LiveText(LiveTvTexts.trf("{0} of {1} picked", favoritesChannels.count { it.key in pendingFavorites }, favoritesChannels.size), color = NuvioTheme.colors.TextSecondary, size = 13.sp)
                 LiveText("OK: add or remove ★", color = NuvioTheme.colors.TextSecondary, size = 13.sp)
                 LiveText("Left: remove all", color = NuvioTheme.colors.TextSecondary, size = 13.sp)
                 LiveText("Right: add all", color = NuvioTheme.colors.TextSecondary, size = 13.sp)
@@ -2486,7 +2486,7 @@ private fun LiveTvGuideScreenBody(
         }
         pinGroup?.let { g ->
             TextInputDialog(
-                title = if (pinWrong) "Wrong PIN, try again" else if (pinRemovesLock) "Enter your PIN to remove the lock" else "\"${g.title}\" is locked. Enter your PIN",
+                title = if (pinWrong) "Wrong PIN, try again" else if (pinRemovesLock) "Enter your PIN to remove the lock" else LiveTvTexts.trf("\"{0}\" is locked. Enter your PIN", g.title),
                 initial = "",
                 hint = "PIN",
                 confirmLabel = if (pinRemovesLock) "Remove lock" else "Unlock",
@@ -2508,7 +2508,7 @@ private fun LiveTvGuideScreenBody(
             GroupPickerDialog(
                 channel = ch,
                 groups = viewModel.copyTargets(ch),
-                title = "Copy \"${ch.name}\" to…",
+                title = LiveTvTexts.trf("Copy \"{0}\" to…", ch.name),
                 onDismiss = { copyPickerFor = null },
                 onPick = { g -> viewModel.copyToGroup(g.id, ch); copyPickerFor = null },
                 onNewGroup = {
@@ -3194,14 +3194,14 @@ private fun GuideRow(
                 Spacer(Modifier.width(4.dp))
             }
             if (tmPlaying) {
-                Icon(Icons.Default.PlayArrow, contentDescription = "Playing", tint = TiviMateColors.Accent, modifier = Modifier.size(gdp(18f)))
+                Icon(Icons.Default.PlayArrow, contentDescription = "Playing".tr(), tint = TiviMateColors.Accent, modifier = Modifier.size(gdp(18f)))
                 Spacer(Modifier.width(3.dp))
             }
             // Catch-up available on this channel (not while managing visibility, like quality).
             if (channel.catchup != null && !reorderMode && !moving && visible == null) {
                 Icon(
                     imageVector = Icons.Default.History,
-                    contentDescription = "Catch-up",
+                    contentDescription = "Catch-up".tr(),
                     tint = if (channelFocused) cell.text else NuvioTheme.colors.TextSecondary,
                     modifier = Modifier.size(gdp(if (settings.guideTiviMateStyle) 16f else 14f))
                 )
@@ -3220,7 +3220,7 @@ private fun GuideRow(
                 Spacer(Modifier.width(6.dp))
                 Icon(
                     imageVector = Icons.Default.SwapVert,
-                    contentDescription = if (moving) "Moving" else "Can be moved",
+                    contentDescription = (if (moving) "Moving" else "Can be moved").tr(),
                     tint = if (moving || nameFocused) cell.text else NuvioTheme.colors.TextSecondary,
                     modifier = Modifier.size(gdp(18f))
                 )
@@ -3230,7 +3230,7 @@ private fun GuideRow(
                 Spacer(Modifier.width(6.dp))
                 Icon(
                     imageVector = Icons.Default.Check,
-                    contentDescription = "Picked",
+                    contentDescription = "Picked".tr(),
                     tint = if (channelFocused || nameFocused) cell.text else NuvioTheme.colors.Secondary,
                     modifier = Modifier.size(gdp(16f))
                 )
@@ -3240,7 +3240,7 @@ private fun GuideRow(
                 Spacer(Modifier.width(6.dp))
                 Icon(
                     imageVector = if (visible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                    contentDescription = if (visible) "Shown" else "Hidden",
+                    contentDescription = (if (visible) "Shown" else "Hidden").tr(),
                     // On the highlight, the highlight's text color (the accent color vanished on it).
                     tint = when {
                         channelFocused || nameFocused -> cell.text.copy(alpha = if (visible) 1f else 0.6f)
@@ -3517,11 +3517,11 @@ private fun ProgramBlock(
                 }
                 if (reminder && width > 60.dp) {
                     Spacer(Modifier.width(6.dp))
-                    Icon(Icons.Default.Notifications, contentDescription = "Reminder set", tint = colors.text, modifier = Modifier.size(gdp(13f)))
+                    Icon(Icons.Default.Notifications, contentDescription = "Reminder set".tr(), tint = colors.text, modifier = Modifier.size(gdp(13f)))
                 }
                 if (catchup && width > 60.dp) {
                     Spacer(Modifier.width(6.dp))
-                    Icon(Icons.Default.History, contentDescription = "Catch-up", tint = colors.text.copy(alpha = 0.8f), modifier = Modifier.size(gdp(13f)))
+                    Icon(Icons.Default.History, contentDescription = "Catch-up".tr(), tint = colors.text.copy(alpha = 0.8f), modifier = Modifier.size(gdp(13f)))
                 }
             }
             subtitle?.let {
@@ -4058,7 +4058,7 @@ private fun GroupItem(
         if (visible != null) {
             Icon(
                 imageVector = if (visible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                contentDescription = if (visible) "Shown" else "Hidden",
+                contentDescription = (if (visible) "Shown" else "Hidden").tr(),
                 tint = when {
                     focused -> colors.text.copy(alpha = if (visible) 1f else 0.6f)
                     visible -> NuvioTheme.colors.Secondary
@@ -4067,7 +4067,7 @@ private fun GroupItem(
                 modifier = Modifier.size(gdp(16f))
             )
         } else if (group.locked) {
-            Icon(Icons.Default.Lock, contentDescription = "Locked", tint = focusedSecondaryTextColor(focused), modifier = Modifier.size(gdp(14f)))
+            Icon(Icons.Default.Lock, contentDescription = "Locked".tr(), tint = focusedSecondaryTextColor(focused), modifier = Modifier.size(gdp(14f)))
         } else if (moving) {
             LiveText("⇅", color = colors.text, size = gsp(16f), weight = FontWeight.Bold)
         } else {
@@ -4427,15 +4427,15 @@ private fun EpgSidePanel(
         val filterName = sources.firstOrNull { it.sourceId == sourceFilter }?.name
         // What the channel uses now: your pick, or the automatic match (handy when a channel shows
         // the wrong listings, e.g. a guide's "Programming" placeholder).
-        val using = if (current?.isNone == true) "Unassigned: no guide (Automatic puts it back)" else (current ?: automatic)?.let { a ->
+        val using = if (current?.isNone == true) "Unassigned: no guide (Automatic puts it back)".tr() else (current ?: automatic)?.let { a ->
             val src = sources.firstOrNull { it.sourceId == a.sourceId }
             val name = src?.channels?.firstOrNull { it.id == a.xmltvId }?.displayName ?: a.xmltvId
-            (if (current != null) "Assigned: " else "Automatic: ") + name + (src?.let { " · ${it.label}" } ?: "")
-        } ?: "Automatic: no guide found"
+            (if (current != null) "Assigned: " else "Automatic: ").tr() + name + (src?.let { " · ${it.label}" } ?: "")
+        } ?: "Automatic: no guide found".tr()
         val sub = statusMessage ?: listOfNotNull(
             channel.name,
             using,
-            if (unassignedOnly) "Unassigned channels" else null,
+            if (unassignedOnly) "Unassigned channels".tr() else null,
             filterName,
             query.takeIf { it.isNotBlank() }?.let { "\"$it\"" }
         ).joinToString("  ·  ")
@@ -4588,7 +4588,7 @@ private fun EpgSidePanel(
         ActionMenuDialog(
             title = "Show channels from",
             actions = buildList<Pair<String, () -> Unit>> {
-                add(("All guides" + if (sourceFilter == null) "  ✓" else "") to { sourceFilter = null; filterOpen = false })
+                add(("All guides".tr() + if (sourceFilter == null) "  ✓" else "") to { sourceFilter = null; filterOpen = false })
                 sources.forEach { src ->
                     add(("${src.name} · ${src.label} (${src.channels.size})" + if (sourceFilter == src.sourceId) "  ✓" else "") to {
                         sourceFilter = src.sourceId
@@ -4728,7 +4728,7 @@ private fun EpgPanelButton(
             .padding(vertical = 10.dp, horizontal = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(icon, contentDescription = label, tint = colors.text, modifier = Modifier.size(20.dp))
+        Icon(icon, contentDescription = label.tr(), tint = colors.text, modifier = Modifier.size(20.dp))
         Spacer(Modifier.height(4.dp))
         LiveText(label, color = colors.text, size = 12.sp)
     }
@@ -4805,7 +4805,7 @@ internal fun GroupPickerDialog(
     onDismiss: () -> Unit,
     onPick: (ChannelGroup) -> Unit,
     onNewGroup: () -> Unit,
-    title: String = "Add \"${channel?.name.orEmpty()}\" to…"
+    title: String = LiveTvTexts.trf("Add \"{0}\" to…", channel?.name.orEmpty())
 ) {
     val first = remember { FocusRequester() }
     LiveDialog(onDismiss = onDismiss, width = 460.dp) {
@@ -5363,7 +5363,7 @@ private fun LogoSidePanel(
                 LiveText("Change Logo", size = 24.sp, weight = FontWeight.ExtraBold)
                 val sub = listOfNotNull(
                     channel.name,
-                    if (picked) "Using your pick" else "Using its own logo",
+                    (if (picked) "Using your pick" else "Using its own logo").tr(),
                     query.takeIf { it.isNotBlank() }?.let { "\"$it\"" }
                 ).joinToString("  ·  ")
                 LiveText(sub, color = NuvioTheme.colors.TextSecondary, size = 13.sp, marquee = true)
@@ -5413,7 +5413,7 @@ private fun LogoSidePanel(
             LiveText("Finding logos…", modifier = Modifier.padding(12.dp), color = NuvioTheme.colors.TextSecondary)
         } else if (list.isEmpty() && !libraryLoading) {
             LiveText(
-                if (query.isBlank()) "No logos found for this channel. Try Search with another name." else "No logos match \"$query\".",
+                if (query.isBlank()) "No logos found for this channel. Try Search with another name." else LiveTvTexts.trf("No logos match \"{0}\".", query),
                 modifier = Modifier.padding(12.dp), color = NuvioTheme.colors.TextSecondary, maxLines = 3
             )
         }
@@ -5585,8 +5585,8 @@ private fun LogoFromPhoneDialog(channelName: String, onDismiss: () -> Unit, onUr
     var noNetwork by remember { mutableStateOf(false) }
     androidx.compose.runtime.DisposableEffect(Unit) {
         val h = com.nuvio.tv.livetv.crash.PhoneInputServer.start(
-            title = "Logo for $channelName",
-            prompt = "Paste the web address of the logo (a picture link ending in .png, .jpg, .svg…), then tap Send to TV.",
+            title = LiveTvTexts.trf("Logo for {0}", channelName),
+            prompt = "Paste the web address of the logo (a picture link ending in .png, .jpg, .svg…), then tap Send to TV.".tr(),
             placeholder = "https://…/logo.png"
         ) { v -> received = v }
         handle = h

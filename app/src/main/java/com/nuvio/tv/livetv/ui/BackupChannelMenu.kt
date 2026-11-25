@@ -77,7 +77,7 @@ internal fun BackupChannelMenu(
         "copy" -> GroupPickerDialog(
             channel = channel,
             groups = viewModel.copyTargets(channel),
-            title = "Copy \"${channel.name}\" to…",
+            title = LiveTvTexts.trf("Copy \"{0}\" to…", channel.name),
             onDismiss = onDismiss,
             onPick = { g -> viewModel.copyToGroup(g.id, channel); onDismiss() },
             onNewGroup = { step = "newgroup" }
@@ -115,7 +115,7 @@ internal fun BackupChannelMenu(
                         .joinToString(" · "),
                     color = NuvioTheme.colors.TextSecondary, size = 13.sp
                 )
-                program?.let { LiveText("Now: ${titleMarks(it.title).title}", color = NuvioTheme.colors.TextSecondary, size = 13.sp, maxLines = 1) }
+                program?.let { LiveText(LiveTvTexts.trf("Now: {0}", titleMarks(it.title).title), color = NuvioTheme.colors.TextSecondary, size = 13.sp, maxLines = 1) }
                 Spacer(Modifier.height(14.dp))
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     if (!playing || canRestart) item { MenuHeader("Watch", first = true) }
@@ -168,7 +168,7 @@ internal fun BackupChannelMenu(
                     item {
                         MenuItem("Hide channel") {
                             viewModel.hideChannel(channel)
-                            LiveTvNotice.show("${channel.name} hidden. It still shows in Backups.")
+                            LiveTvNotice.show(LiveTvTexts.trf("{0} hidden. It still shows in Backups.", channel.name))
                             onDismiss()
                         }
                     }

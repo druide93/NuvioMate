@@ -11,6 +11,8 @@ import com.nuvio.stalker.StalkerStreamRef
 import com.nuvio.tv.livetv.stalker.StalkerGateway
 import com.nuvio.tv.livetv.player.LiveWatching
 import com.nuvio.tv.livetv.player.TsSegmenter
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -165,9 +167,9 @@ class LiveTvRecorder @Inject constructor(
         val storage = currentStorage()
         if (storage.id != settings.recordingStorage) {
             LiveTvNotice.show(
-                if (settings.recordingStorage == NetworkFolderStore.STORAGE_ID) "The network folder isn't set up, so \"$title\" is saved to this device"
-                else if (DriveFolders.isFolderId(settings.recordingStorage) && !DriveFolders.hasAccess()) "The app no longer has access to the folder for recordings, so \"$title\" is saved to this device"
-                else "The drive for recordings isn't plugged in, so \"$title\" is saved to this device"
+                if (settings.recordingStorage == NetworkFolderStore.STORAGE_ID) LiveTvTexts.trf("The network folder isn't set up, so \"{0}\" is saved to this device", title)
+                else if (DriveFolders.isFolderId(settings.recordingStorage) && !DriveFolders.hasAccess()) LiveTvTexts.trf("The app no longer has access to the folder for recordings, so \"{0}\" is saved to this device", title)
+                else LiveTvTexts.trf("The drive for recordings isn't plugged in, so \"{0}\" is saved to this device", title)
             )
         }
         // Several channels can start in the same millisecond. Keep numeric IDs and also avoid
@@ -238,7 +240,7 @@ class LiveTvRecorder @Inject constructor(
         // end as a failed recording, not an error thrown into the scheduler (that closes the app).
         val prepared = preparedStorage ?: try { prepareStorage(title) } catch (e: Exception) {
             val problem = e.message ?: "The recording folder could not be created"
-            LiveTvNotice.show("Couldn't start recording \"$title\": $problem")
+            LiveTvNotice.show(LiveTvTexts.trf("Couldn't start recording \"{0}\": {1}", title, problem.tr()))
             val failedAt = System.currentTimeMillis()
             val failed = LiveTvRecording(
                 id = "rec$failedAt", channelKey = channel.key, channelName = channel.name, channelLogo = channel.logo,
@@ -275,7 +277,7 @@ class LiveTvRecorder @Inject constructor(
         if (!prepared.hasSpace) {
             val failed = rec.copy(status = RecordingStatus.FAILED, endedAtMs = now, problem = "Not enough storage space to record")
             save(failed); update(failed)
-            LiveTvNotice.show("Not enough storage space to record \"$title\"")
+            LiveTvNotice.show(LiveTvTexts.trf("Not enough storage space to record \"{0}\"", title))
             runCatching { onFinished(failed) }
             return failed
         }
@@ -310,10 +312,10 @@ class LiveTvRecorder @Inject constructor(
         runCatching { folder.space() }
             .onSuccess { space ->
                 NetworkFolderStore.rememberSpace(context, space)
-                if (space != null && space.first < NETWORK_LOW) LiveTvNotice.show("The network folder is nearly full (${RecordingStorage.sizeLabel(space.first)} free), so \"$title\" may stop early")
+                if (space != null && space.first < NETWORK_LOW) LiveTvNotice.show(LiveTvTexts.trf("The network folder is nearly full ({0} free), so \"{1}\" may stop early", RecordingStorage.sizeLabel(space.first), title))
             }
             .onFailure { e ->
-                LiveTvNotice.show("Can't reach the network folder right now (${SmbFolder.describe(e, folder.config)}). \"$title\" records on this device and is copied across once it's back")
+                LiveTvNotice.show(LiveTvTexts.trf("Can't reach the network folder right now ({0}). \"{1}\" records on this device and is copied across once it's back", SmbFolder.describe(e, folder.config), title))
             }
     }
 
@@ -379,7 +381,7 @@ class LiveTvRecorder @Inject constructor(
                 // A copy that was under way finishes first.
                 delay(2_000)
                 if (!recordingFiles.deleteRemote(r.id, remoteFiles)) LiveTvNotice.show(
-                    "\"${r.title}\" was deleted here, but the network folder couldn't be reached to delete it there. Delete its folder (${r.id}) on the network folder yourself"
+                    LiveTvTexts.trf("\"{0}\" was deleted here, but the network folder couldn't be reached to delete it there. Delete its folder ({1}) on the network folder yourself", r.title, r.id)
                 )
             }
         } }
@@ -412,8 +414,8 @@ class LiveTvRecorder @Inject constructor(
         if (old.isEmpty()) return
         old.forEach { delete(it.id) }
         LiveTvNotice.show(
-            if (old.size == 1) "Deleted \"${old.first().title}\": it was older than $days days"
-            else "Deleted ${old.size} recordings older than $days days"
+            if (old.size == 1) LiveTvTexts.trf("Deleted \"{0}\": it was older than {1} days", old.first().title, days)
+            else LiveTvTexts.trf("Deleted {0} recordings older than {1} days", old.size, days)
         )
     }
 
@@ -460,12 +462,12 @@ class LiveTvRecorder @Inject constructor(
         if (_move.value != null) { LiveTvNotice.show("Already moving recordings: wait for it to finish"); return }
         val list = ids.mapNotNull { id -> _recordings.value.firstOrNull { it.id == id } }
             .filter { !it.isRecording && !it.dir.startsWith(target.dir.absolutePath + File.separator) }
-        if (list.isEmpty()) { LiveTvNotice.show("Nothing to move: already on ${target.label}"); return }
+        if (list.isEmpty()) { LiveTvNotice.show(LiveTvTexts.trf("Nothing to move: already on {0}", target.label)); return }
         val total = list.sumOf { dirSize(File(it.dir)) }
         val toNetwork = target.id == NetworkFolderStore.STORAGE_ID
         // The network folder's room is asked for below (it can't be read on this screen).
         if (!toNetwork && total + MOVE_MARGIN > target.freeBytes) {
-            LiveTvNotice.show("Not enough room on ${target.label}: needs ${RecordingStorage.sizeLabel(total)}, has ${RecordingStorage.sizeLabel(target.freeBytes)} free")
+            LiveTvNotice.show(LiveTvTexts.trf("Not enough room on {0}: needs {1}, has {2} free", target.label, RecordingStorage.sizeLabel(total), RecordingStorage.sizeLabel(target.freeBytes)))
             return
         }
         stopMoveAsked = false
@@ -477,9 +479,9 @@ class LiveTvRecorder @Inject constructor(
                 val space = runCatching { folder?.space() }
                 val problem = when {
                     folder == null -> "No network folder is set up"
-                    space.isFailure -> "Couldn't reach the network folder (${SmbFolder.describe(space.exceptionOrNull()!!, folder.config)}). Nothing was moved"
+                    space.isFailure -> LiveTvTexts.trf("Couldn't reach the network folder ({0}). Nothing was moved", SmbFolder.describe(space.exceptionOrNull()!!, folder.config))
                     else -> space.getOrNull()?.let { (free, _) ->
-                        if (total + MOVE_MARGIN > free) "Not enough room on the network folder: needs ${RecordingStorage.sizeLabel(total)}, has ${RecordingStorage.sizeLabel(free)} free" else null
+                        if (total + MOVE_MARGIN > free) LiveTvTexts.trf("Not enough room on the network folder: needs {0}, has {1} free", RecordingStorage.sizeLabel(total), RecordingStorage.sizeLabel(free)) else null
                     }
                 }
                 space.getOrNull()?.let { NetworkFolderStore.rememberSpace(context, it) }
@@ -499,10 +501,10 @@ class LiveTvRecorder @Inject constructor(
                         }
                     }.getOrElse {
                         if (it is MoveStopped) { stopped = true; return@getOrElse false }
-                        failure = it.message ?: "something went wrong"; false
+                        failure = it.message?.tr() ?: "something went wrong".tr(); false
                     }
                     if (stopped) break
-                    if (!ok) { if (failure == null) failure = "\"${rec.title}\" couldn't be moved"; break }
+                    if (!ok) { if (failure == null) failure = LiveTvTexts.trf("\"{0}\" couldn't be moved", rec.title); break }
                     moved++
                     done += dirSize(File(_recordings.value.firstOrNull { it.id == rec.id }?.dir ?: rec.dir))
                 }
@@ -513,11 +515,11 @@ class LiveTvRecorder @Inject constructor(
             LiveTvNotice.show(
                 when {
                     stopped && moved == 0 -> "Stopped moving. Nothing was moved."
-                    stopped -> "Stopped moving. Moved $moved of ${list.size} to ${target.label}; the rest are where they were."
-                    failure != null && moved == 0 -> "Couldn't move: $failure. Nothing was lost."
-                    failure != null -> "Moved $moved of ${list.size} to ${target.label}. Stopped: $failure"
-                    moved == 1 -> "Moved \"${list.first().title}\" to ${target.label}"
-                    else -> "Moved $moved recordings to ${target.label}"
+                    stopped -> LiveTvTexts.trf("Stopped moving. Moved {0} of {1} to {2}; the rest are where they were.", moved, list.size, target.label)
+                    failure != null && moved == 0 -> LiveTvTexts.trf("Couldn't move: {0}. Nothing was lost.", failure)
+                    failure != null -> LiveTvTexts.trf("Moved {0} of {1} to {2}. Stopped: {3}", moved, list.size, target.label, failure)
+                    moved == 1 -> LiveTvTexts.trf("Moved \"{0}\" to {1}", list.first().title, target.label)
+                    else -> LiveTvTexts.trf("Moved {0} recordings to {1}", moved, target.label)
                 }
             )
         }
@@ -527,11 +529,11 @@ class LiveTvRecorder @Inject constructor(
         val src = File(rec.dir)
         if (!src.isDirectory) return false
         // Its pieces are still being joined (or copied across) just after it finished.
-        if (recordingFiles.isBusy(src)) throw IllegalStateException("\"${rec.title}\" is still being saved. Try again in a minute")
+        if (recordingFiles.isBusy(src)) throw IllegalStateException(LiveTvTexts.trf("\"{0}\" is still being saved. Try again in a minute", rec.title))
         // To or from the network folder: copied across (or down) and checked, then removed from where it was.
         val fromNetwork = NetworkFolderStore.isNetworkDir(src)
         if (target.id == NetworkFolderStore.STORAGE_ID || fromNetwork) {
-            if (fromNetwork && recordingFiles.waitingBytes(src) > 0) throw IllegalStateException("\"${rec.title}\" is still being copied to the network folder. Try again in a minute")
+            if (fromNetwork && recordingFiles.waitingBytes(src) > 0) throw IllegalStateException(LiveTvTexts.trf("\"{0}\" is still being copied to the network folder. Try again in a minute", rec.title))
             val dst = if (target.id == NetworkFolderStore.STORAGE_ID) recordingFiles.moveIn(src, onCopied) else recordingFiles.moveOut(src, target.dir, onCopied)
             update(rec.copy(dir = dst.absolutePath))
             runCatching { src.deleteRecursively() }
@@ -539,7 +541,7 @@ class LiveTvRecorder @Inject constructor(
         }
         val root = target.dir.apply { mkdirs() }
         val dst = File(root, src.name)
-        if (dst.exists()) throw IllegalStateException("\"${rec.title}\" is already on ${target.label}")
+        if (dst.exists()) throw IllegalStateException(LiveTvTexts.trf("\"{0}\" is already on {1}", rec.title, target.label))
         // Copied into a hidden folder first (info.json last), so a half-copy is never taken for a recording.
         val tmp = File(root, ".moving-" + src.name)
         tmp.deleteRecursively()
@@ -568,9 +570,9 @@ class LiveTvRecorder @Inject constructor(
                 }
                 if (unsynced > 0) runCatching { o.fd.sync() }
             } }
-            if (out.length() != f.length()) { tmp.deleteRecursively(); throw IllegalStateException("the copy of \"${rec.title}\" came out the wrong size") }
+            if (out.length() != f.length()) { tmp.deleteRecursively(); throw IllegalStateException(LiveTvTexts.trf("the copy of \"{0}\" came out the wrong size", rec.title)) }
         }
-        if (!tmp.renameTo(dst)) { tmp.deleteRecursively(); throw IllegalStateException("couldn't finish copying to ${target.label}") }
+        if (!tmp.renameTo(dst)) { tmp.deleteRecursively(); throw IllegalStateException(LiveTvTexts.trf("couldn't finish copying to {0}", target.label)) }
         // The copy is complete: the list points at it, then the old one goes.
         val moved = rec.copy(dir = dst.absolutePath)
         update(moved)
@@ -811,7 +813,7 @@ class LiveTvRecorder @Inject constructor(
             recordingFiles.stopReason(dir)?.let { why ->
                 if (stopReasons.putIfAbsent(r.id, why) == null) {
                     stopRequested += r.id
-                    LiveTvNotice.show("\"${r.title}\": $why")
+                    LiveTvNotice.show(LiveTvTexts.trf("\"{0}\": {1}", r.title, recordingProblemText(why)))
                 }
             }
         }
@@ -1002,7 +1004,7 @@ class LiveTvRecorder @Inject constructor(
             .sortedBy { it.startedAtMs }
         for (r in oldest) {
             if (free() >= MIN_FREE) break
-            LiveTvNotice.show("Storage is low: deleted the oldest recording, \"${r.title}\"")
+            LiveTvNotice.show(LiveTvTexts.trf("Storage is low: deleted the oldest recording, \"{0}\"", r.title))
             RecordingResume.clear(context, r.id)
             _recordings.update { list -> list.filterNot { it.id == r.id } }
             runCatching { File(r.dir).deleteRecursively() }
@@ -1094,3 +1096,43 @@ class LiveTvRecorder @Inject constructor(
         const val HLS_SENT_NOTHING = "The HLS replay sent nothing"
     }
 }
+
+/**
+ * A recording's problem in the device's language. Problems are kept in English with the
+ * recording (the scheduler reads them): known ones, and ones built from a known pattern
+ * ("The provider answered HTTP 403; it reconnected where it could"), are translated here, for
+ * the screen.
+ */
+internal fun recordingProblemText(problem: String): String {
+    val whole = LiveTvTexts.tr(problem)
+    if (whole != problem) return whole
+    for ((template, regex) in PROBLEM_PATTERNS) {
+        val m = regex.matchEntire(problem) ?: continue
+        return LiveTvTexts.trf(template, *m.groupValues.drop(1).map { recordingProblemText(it) }.toTypedArray())
+    }
+    return problem
+}
+
+/** The patterns of [recordingProblemText], each with its {0}, {1}… as groups. */
+private val PROBLEM_PATTERNS: List<Pair<String, Regex>> = listOf(
+    "{0}; it carried on from where it got to",
+    "{0}; it reconnected where it could",
+    "{0} while this box was playing another channel from the same provider (many accounts allow only one connection at a time)",
+    "The provider answered HTTP {0}",
+    "The connection dropped ({0})",
+    "Stopped early: the network folder couldn't take it ({0}). What was recorded is kept",
+    // The network folder's own problems (SmbFolder.describe), inside the one above.
+    "Wrong username or password for {0}",
+    "That account is turned off on {0}",
+    "That account's password has expired on {0}",
+    "There's no shared folder called \"{0}\" on {1}",
+    "{0} doesn't allow this. Make sure SMB 2 or 3 file sharing is turned on",
+    "{0} said no ({1})",
+    "Couldn't find \"{0}\". Try the computer's IP address instead (like 192.168.1.20)",
+    "Couldn't reach {0}. Check it's turned on, on the same network, and that file sharing is on",
+    "{0} didn't answer in time. Check it's awake and on the same network",
+    "{0} only offers old file sharing (SMB 1). Turn on SMB 2 or 3 on it",
+    "The network folder didn't work ({0})",
+    "\"{0}\" on {1} isn't a shared folder",
+    "{0} didn't offer its list of shared folders"
+).map { t -> t to Regex(t.split(Regex("\\{\\d\\}")).joinToString("(.*)") { Regex.escape(it) }) }

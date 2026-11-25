@@ -184,8 +184,10 @@ class LiveTv247Matcher @Inject constructor(
                                 poster = IMG + photo,
                                 backdrop = null,
                                 overview = if (knownFor.isEmpty()) null else
-                                    (if (dept == "Directing") "Films directed by " else "Films with ") + r.optString("name") +
-                                        ". Known for " + knownFor.take(3).joinToString(", ") + ".",
+                                    com.nuvio.tv.livetv.ui.LiveTvTexts.trf(
+                                        if (dept == "Directing") "Films directed by {0}. Known for {1}." else "Films with {0}. Known for {1}.",
+                                        r.optString("name"), knownFor.take(3).joinToString(", ")
+                                    ),
                                 year = null,
                                 rating = null
                             ),

@@ -91,7 +91,7 @@ internal fun FixMatchDialog(
     LiveDialog(onDismiss = onDismiss, width = 960.dp) {
         LiveText("Fix match", size = 22.sp, weight = FontWeight.Bold)
         Spacer(Modifier.height(2.dp))
-        LiveText(title + "  ·  " + scopeNote, size = 13.sp, color = colors.TextSecondary, maxLines = 2)
+        LiveText(title + "  ·  " + scopeNote.tr(), size = 13.sp, color = colors.TextSecondary, maxLines = 2)
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.weight(1f)) {
@@ -110,7 +110,7 @@ internal fun FixMatchDialog(
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             listOf<Pair<String, Boolean?>>("All" to null, "Shows" to true, "Movies" to false).forEach { (label, value) ->
                 LiveFocusRow(selected = series == value, onClick = { series = value }, verticalPadding = 8.dp) { f ->
-                    LiveText((if (series == value) "✓ " else "") + label, color = focusedTextColor(f), size = 15.sp)
+                    LiveText((if (series == value) "✓ " else "") + label.tr(), color = focusedTextColor(f), size = 15.sp)
                 }
             }
             Spacer(Modifier.width(8.dp))
@@ -184,7 +184,7 @@ private fun MatchCard(c: TitleMatchFixes.Candidate, current: Boolean, modifier: 
         Spacer(Modifier.height(6.dp))
         LiveText(c.name, size = 13.sp, weight = FontWeight.SemiBold, maxLines = 2, color = if (focused) colors.TextPrimary else colors.TextPrimary.copy(alpha = 0.9f))
         LiveText(
-            listOfNotNull(if (c.series) "Show" else "Movie", c.year?.toString(), c.countries.take(2).joinToString("/").ifBlank { null }).joinToString(" · "),
+            listOfNotNull(if (c.series) "Show".tr() else "Movie".tr(), c.year?.toString(), c.countries.take(2).joinToString("/").ifBlank { null }).joinToString(" · "),
             size = 12.sp, color = colors.TextSecondary
         )
     }

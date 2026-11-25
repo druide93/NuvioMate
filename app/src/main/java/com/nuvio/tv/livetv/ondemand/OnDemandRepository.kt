@@ -923,7 +923,7 @@ class OnDemandRepository @Inject constructor(
                     val episodeRef = episode.stream.copy(sourceIdentity = identity)
                     val number = episode.number ?: episodeIndex + 1
                     episodes += VodEpisode(season.number ?: episode.seasonNumber ?: seasonIndex + 1,
-                        number, episode.id, "", episode.title.ifBlank { "Episode $number" }, episode.plot, episode.poster,
+                        number, episode.id, "", episode.title.ifBlank { com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Episode {0}", number) }, episode.plot, episode.poster,
                         com.nuvio.stalker.StalkerPlaybackLocator(pl.id, episodeRef).encode(),
                         stalkerRef = episodeRef, playlistId = pl.id)
                 }
@@ -960,7 +960,7 @@ class OnDemandRepository @Inject constructor(
                         episode = num,
                         id = id,
                         ext = ext,
-                        title = e.optString("title").ifBlank { "Episode $num" },
+                        title = e.optString("title").ifBlank { com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Episode {0}", num) },
                         plot = einfo?.optString("plot")?.takeIf { it.isNotBlank() },
                         image = einfo?.optString("movie_image")?.takeIf { it.startsWith("http") },
                         url = "${pl.xtreamBase()}/series/${enc(pl.xtreamUsername)}/${enc(pl.xtreamPassword)}/$id.$ext",

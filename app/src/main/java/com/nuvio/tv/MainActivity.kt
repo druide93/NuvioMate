@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.verticalScroll
 import com.nuvio.tv.livetv.ui.shrinkToFit
+import com.nuvio.tv.livetv.ui.tr
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -1335,12 +1336,12 @@ open class MainActivity : ComponentActivity() {
                             pages.SCOUT -> if (com.nuvio.tv.domain.model.ScoutFeature.available && id !in hiddenPages) {
                                 DrawerItem(route = Screen.Scout.route, label = "Scout", iconRes = R.raw.sidebar_scout)
                             } else null
-                            pages.CALENDAR -> if (calendarInSidebar && id !in hiddenPages) DrawerItem(route = Screen.Calendar.route, label = "Calendar", icon = Icons.Default.DateRange) else null
+                            pages.CALENDAR -> if (calendarInSidebar && id !in hiddenPages) DrawerItem(route = Screen.Calendar.route, label = "Calendar".tr(), icon = Icons.Default.DateRange) else null
                             // Live TV's dot: something is recording (Recordings opens from the guide).
-                            pages.LIVE_TV -> if (liveTvInSidebar) DrawerItem(route = Screen.LiveTv.route, label = "Live TV", icon = Icons.Default.LiveTv, badge = recordingNow && !recordingsInSidebar) else null
-                            pages.RECORDINGS -> if (recordingsInSidebar) DrawerItem(route = Screen.Recordings.route, label = "Recordings", icon = Icons.Default.RadioButtonChecked, badge = recordingNow) else null
+                            pages.LIVE_TV -> if (liveTvInSidebar) DrawerItem(route = Screen.LiveTv.route, label = "Live TV".tr(), icon = Icons.Default.LiveTv, badge = recordingNow && !recordingsInSidebar) else null
+                            pages.RECORDINGS -> if (recordingsInSidebar) DrawerItem(route = Screen.Recordings.route, label = "Recordings".tr(), icon = Icons.Default.RadioButtonChecked, badge = recordingNow) else null
                             pages.SPORTS -> if (sportsInSidebar) DrawerItem(route = Screen.Sports.route, label = "Sports", icon = Icons.Default.EmojiEvents) else null
-                            pages.ON_DEMAND -> if (onDemandInSidebar) DrawerItem(route = Screen.OnDemand.route, label = "On Demand", icon = Icons.Default.VideoLibrary) else null
+                            pages.ON_DEMAND -> if (onDemandInSidebar) DrawerItem(route = Screen.OnDemand.route, label = "On Demand".tr(), icon = Icons.Default.VideoLibrary) else null
                             else -> null
                         }
                         buildList {

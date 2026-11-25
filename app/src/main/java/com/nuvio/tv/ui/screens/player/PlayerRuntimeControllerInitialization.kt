@@ -1597,7 +1597,7 @@ internal fun PlayerRuntimeController.initializePlayer(
                             (_exoPlayer !== this@apply || streamFallbackJob?.isActive == true)) return
                         if (isReleasingPlayer && error.errorCode == PlaybackException.ERROR_CODE_TIMEOUT) return
                         cancelFirstFrameWatchdog()
-                        val detailedError = if (isStalker) "Stalker playback failed (${error.errorCodeName}). Retry playback to refresh the stream link."
+                        val detailedError = if (isStalker) com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Stalker playback failed ({0}). Retry playback to refresh the stream link.", error.errorCodeName)
                             else error.toDisplayMessage(context)
                         val userFacingError = error.toUserFacingMessage(context, detailedError)
                         if (returnToFeatureAfterExtraFailure(detailedError)) return

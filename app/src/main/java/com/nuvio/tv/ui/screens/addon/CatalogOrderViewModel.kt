@@ -458,7 +458,7 @@ class CatalogOrderViewModel @Inject constructor(
                 key = "collection_${collection.id}",
                 disableKey = "collection_${collection.id}",
                 catalogName = collection.title,
-                addonName = "${collection.folders.size} folder${if (collection.folders.size != 1) "s" else ""}",
+                addonName = com.nuvio.tv.livetv.ui.LiveTvTexts.trf(if (collection.folders.size != 1) "{0} folders" else "{0} folder", collection.folders.size),
                 typeLabel = "collection",
                 isPinnedToTop = collection.pinToTop
             )

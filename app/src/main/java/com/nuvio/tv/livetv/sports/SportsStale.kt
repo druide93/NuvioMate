@@ -74,7 +74,7 @@ internal object SportsStale {
         return when {
             minutes < 60 -> "$minutes min"
             minutes < 48 * 60 -> "${minutes / 60} h"
-            else -> "${minutes / (24 * 60)} days"
+            else -> com.nuvio.tv.livetv.ui.LiveTvTexts.trf("{0} days", minutes / (24 * 60))
         }
     }
 }

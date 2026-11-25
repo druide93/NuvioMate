@@ -10,6 +10,8 @@ import com.nuvio.tv.core.tracking.TrackingRefreshIntent
 import com.nuvio.tv.domain.model.LibraryEntryInput
 import com.nuvio.tv.domain.model.ListMembershipChanges
 import com.nuvio.tv.domain.model.ListMembershipSnapshot
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -84,7 +86,7 @@ class SimklLibraryService @Inject constructor(
         changes: ListMembershipChanges,
         destructiveRemovalConfirmed: Boolean
     ) {
-        require(authStorage.state.value.isAuthenticated) { "Simkl authentication is required" }
+        require(authStorage.state.value.isAuthenticated) { "Simkl authentication is required".tr() }
         syncRepository.ensureLoaded()
         val snapshot = syncRepository.state.value.snapshot
         val entryIndex = syncRepository.currentEntryIndex()
@@ -101,7 +103,7 @@ class SimklLibraryService @Inject constructor(
         val desiredDefinitions = simklLibraryStatusDefinitions.filter { definition ->
             changes.desiredMembership[definition.key] == true
         }
-        require(desiredDefinitions.size <= 1) { "A Simkl item can have only one list status" }
+        require(desiredDefinitions.size <= 1) { "A Simkl item can have only one list status".tr() }
         val desired = desiredDefinitions.singleOrNull()
         require(desired == null || desired.supportedContentTypes.any { supported ->
             supported.equals(item.itemType.normalizedContentType(), ignoreCase = true)
@@ -140,7 +142,7 @@ class SimklLibraryService @Inject constructor(
             SimklLibraryMutation.Remove -> mutationService.removeFromList(listOf(reference))
         }
         check(result.isComplete) {
-            "Simkl could not match ${result.notFoundCount} of ${result.attemptedCount} library items"
+            LiveTvTexts.trf("Simkl could not match {0} of {1} library items", result.notFoundCount, result.attemptedCount)
         }
     }
 
@@ -213,5 +215,5 @@ internal fun resolveSimklLibraryMutation(
 }
 
 class SimklDestructiveRemovalRequiredException : IllegalStateException(
-    "Removing this Simkl status would also clear watched history or a rating"
+    "Removing this Simkl status would also clear watched history or a rating".tr()
 )

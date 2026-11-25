@@ -39,6 +39,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.theme.NuvioTheme
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
@@ -192,7 +194,7 @@ private fun FormPanel(x: GameExtras) {
                             when (r) { "W" -> Color(0xFF2E9E5B); "L" -> Color(0xFFC0392B); else -> Color(0xFF5A5F6E) }
                         ),
                         contentAlignment = Alignment.Center
-                    ) { LiveText(r, color = Color.White, size = 9.sp, weight = FontWeight.Black) }
+                    ) { LiveText(resultLetter(r), color = Color.White, size = 9.sp, weight = FontWeight.Black) }
                 }
             }
         }
@@ -219,8 +221,8 @@ private fun InfoPanel(ev: SportsEvent, x: GameExtras, us: Boolean, showOdds: Boo
                 val t = if (us) "$f°F" else "${Math.round((f - 32) / 1.8)}°C"
                 listOfNotNull(x.conditions, t).joinToString(" · ")
             },
-            x.referee?.let { "Referee: $it" },
-            x.attendance?.let { "Attendance: %,d".format(it) }
+            x.referee?.let { LiveTvTexts.trf("Referee: {0}", it) },
+            x.attendance?.let { "Attendance: %,d".tr().format(it) }
         )
         lines.forEachIndexed { i, l ->
             LiveText(l, color = if (i == 0) Color.White else Color(0xFFC9CCD6), size = 12.sp, weight = if (i == 0) FontWeight.Bold else FontWeight.Normal, maxLines = 1)
@@ -239,7 +241,7 @@ private fun InfoPanel(ev: SportsEvent, x: GameExtras, us: Boolean, showOdds: Boo
 private fun ChanceBar(ev: SportsEvent, x: GameExtras, awayColor: Color, homeColor: Color) {
     val homeFirst = (SportsCatalog.league(ev.leagueId)?.sport ?: Sport.OTHER).homeFirst
     val parts = buildList {
-        val h = Triple(x.homeWin ?: 0.0, homeColor, ev.home?.team?.abbr ?: "HOME")
+        val h = Triple(x.homeWin ?: 0.0, homeColor, ev.home?.team?.abbr ?: homeAwayWord(true))
         val a = Triple(x.awayWin ?: 0.0, awayColor, ev.away?.team?.abbr ?: "AWAY")
         val d = x.draw?.let { Triple(it, Color(0xFF5A5F6E), "DRAW") }
         if (homeFirst) { add(h); d?.let { add(it) }; add(a) } else { add(a); d?.let { add(it) }; add(h) }
@@ -267,7 +269,7 @@ private fun TablePanel(x: GameExtras, opens: Boolean) {
     Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
         Spacer(Modifier.width(22.dp))
         Spacer(Modifier.weight(1f))
-        x.tableHead.forEach { LiveText(it, color = SportsLook.Dim, size = 9.sp, weight = FontWeight.Black, modifier = Modifier.width(34.dp)) }
+        x.tableHead.forEach { LiveText(columnHeading(it), color = SportsLook.Dim, size = 9.sp, weight = FontWeight.Black, modifier = Modifier.width(34.dp)) }
     }
     x.table.forEach { r ->
         r.group?.let { g ->
@@ -367,6 +369,6 @@ private fun ChancePanel(ev: SportsEvent, x: GameExtras, awayColor: Color, homeCo
     }
     x.attendance?.let {
         Spacer(Modifier.height(6.dp))
-        LiveText(listOfNotNull(x.venue, "attendance %,d".format(it)).joinToString(" · "), color = Color(0xFFC9CCD6), size = 11.sp, maxLines = 1)
+        LiveText(listOfNotNull(x.venue, "attendance %,d".tr().format(it)).joinToString(" · "), color = Color(0xFFC9CCD6), size = 11.sp, maxLines = 1)
     }
 }

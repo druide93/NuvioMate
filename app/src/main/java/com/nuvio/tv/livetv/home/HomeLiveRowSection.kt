@@ -453,7 +453,7 @@ private fun SportsRow(
         val m = sports.resolve(game.event.id)
         if (m == null) {
             com.nuvio.tv.livetv.record.LiveTvNotice.show(
-                "No channel found for ${game.event.title}. Open it on the Sports page and use Fix Channel to pick one."
+                com.nuvio.tv.livetv.ui.LiveTvTexts.trf("No channel found for {0}. Open it on the Sports page and use Fix Channel to pick one.", game.event.title)
             )
             return
         }
@@ -768,7 +768,7 @@ private fun TallGameCard(
             LiveText(channel?.name ?: ev.broadcasts.take(3).joinToString(" · "), color = NuvioTheme.colors.TextPrimary, size = 11.sp, weight = FontWeight.SemiBold, marquee = focused)
             if (others > 0) {
                 SportsBadge(
-                    if (others == 1) "+1 stream" else "+$others streams",
+                    if (others == 1) "+1 stream" else com.nuvio.tv.livetv.ui.LiveTvTexts.trf("+{0} streams", others),
                     Color.White.copy(alpha = 0.12f), NuvioTheme.colors.TextPrimary
                 )
             }

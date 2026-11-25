@@ -93,6 +93,7 @@ import com.nuvio.tv.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.TextStyle
+import com.nuvio.tv.livetv.ui.tr
 
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -678,9 +679,9 @@ private fun TmdbDiscoverForm(
             chips = listOf(
                 stringResource(R.string.collections_editor_country_us) to "US",
                 stringResource(R.string.collections_editor_country_uk) to "GB",
-                "Canada" to "CA",
-                "Australia" to "AU",
-                "Germany" to "DE"
+                "Canada".tr() to "CA",
+                "Australia".tr() to "AU",
+                "Germany".tr() to "DE"
             ),
             onSelect = { onFiltersChange(filters.copy(watchRegion = it)) }
         )

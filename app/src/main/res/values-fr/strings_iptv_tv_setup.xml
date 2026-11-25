@@ -37,7 +37,7 @@
     <string name="tv_setup_afr_on_reason">"Cet écran peut changer de fréquence (%1$s Hz), les films sont donc lus à leur propre fréquence, sans saccades."</string>
     <string name="tv_setup_afr_already">"Déjà activé. Cet écran peut changer de fréquence (%1$s Hz)."</string>
     <string name="tv_setup_afr_single">"Cet écran ne propose que %1$s Hz, changer ne sert donc à rien mais peut faire un écran noir."</string>
-    <string name="tv_setup_live_afr_title">"Adapter la fréquence d’images (Live TV)"</string>
+    <string name="tv_setup_live_afr_title">"Adapter la fréquence d’images (TV en direct)"</string>
     <string name="tv_setup_live_afr_on_reason">"Cet écran peut changer de fréquence, les chaînes en 50 Hz et 60 Hz sont donc fluides."</string>
     <string name="tv_setup_res_title">"Adapter la résolution"</string>
     <string name="tv_setup_res_choice">"Décide si le téléviseur ou ce boîtier met à l’échelle les résolutions inférieures. Le meilleur rendu dépend de votre téléviseur, c’est donc à vous de choisir."</string>

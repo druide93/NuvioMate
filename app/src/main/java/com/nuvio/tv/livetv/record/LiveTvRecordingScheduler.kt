@@ -14,6 +14,7 @@ import com.nuvio.tv.livetv.model.CatchupInfo
 import com.nuvio.tv.livetv.model.EpgProgram
 import com.nuvio.tv.livetv.model.LiveChannel
 import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.stalker.StalkerContentKind
 import com.nuvio.stalker.StalkerStreamRef
 import dagger.hilt.EntryPoint
@@ -377,7 +378,7 @@ class LiveTvRecordingScheduler @Inject constructor(
                         recorder.start(channel, channel.url, title, program.episode, program.description,
                             program.startMs, program.stopMs, program.stopMs + padPostMs,
                             onFinished = { seriesId?.let { keepOnlyNewest(it) } }, seriesId = seriesId)
-                    }.onFailure { LiveTvNotice.show("Couldn't start recording \"$title\": ${it.message ?: "storage unavailable"}") }
+                    }.onFailure { LiveTvNotice.show(LiveTvTexts.trf("Couldn't start recording \"{0}\": {1}", title, (it.message ?: "storage unavailable").tr())) }
                 }
             }
             return null to LiveTvTexts.trf("Recording \"{0}\" now", title)
@@ -466,7 +467,7 @@ class LiveTvRecordingScheduler @Inject constructor(
      */
     fun addSeries(channel: LiveChannel, program: EpgProgram, newOnly: Boolean = false): String {
         val title = cleanTitle(program.title)
-        seriesFor(channel.key, title)?.let { return "\"$title\" is already set to record" }
+        seriesFor(channel.key, title)?.let { return LiveTvTexts.trf("\"{0}\" is already set to record", title) }
         val rule = SeriesRule("r" + System.nanoTime(), ChannelSnapshot.of(channel), title, newOnly = newOnly)
         val now = System.currentTimeMillis()
         val takePicked = program.stopMs > now && (!newOnly || isNew(program))
@@ -635,7 +636,7 @@ class LiveTvRecordingScheduler @Inject constructor(
         _schedules.value.forEach { s ->
             if (!s.useCatchup && s.stopMs < now) {
                 // Missed while the box was off.
-                scope.launch { drop(s, "\"${s.title}\" was missed (the box was off or asleep)") }
+                scope.launch { drop(s, "\"{0}\" was missed (the box was off or asleep)", s.title) }
             } else arm(s)
         }
     }
@@ -684,7 +685,7 @@ class LiveTvRecordingScheduler @Inject constructor(
             val s = _schedules.value.firstOrNull { it.id == id } ?: run { recorder.stopServiceIfIdle(); return@launch }
             val now = System.currentTimeMillis()
             if (!s.useCatchup) {
-                if (now >= s.stopMs) { drop(s, "\"${s.title}\" was missed"); return@launch }
+                if (now >= s.stopMs) { drop(s, "\"{0}\" was missed", s.title); return@launch }
                 // Too early (the alarm came early): set it again.
                 if (now < s.startMs - s.pre - 60_000L) { arm(s); recorder.stopServiceIfIdle(); return@launch }
                 val channel = freshChannel(s.channel)
@@ -701,11 +702,11 @@ class LiveTvRecordingScheduler @Inject constructor(
             val catchup = channel.catchup ?: s.channel.catchup
             val stalkerArchive = channel.stalkerRef?.let { ref ->
                 if (s.providerSourceIdentity != ref.sourceIdentity) {
-                    drop(s, "\"${s.title}\" couldn't be saved: its portal identity changed")
+                    drop(s, "\"{0}\" couldn't be saved: its portal identity changed", s.title)
                     return@launch
                 }
                 val programId = s.providerProgramId?.takeIf { it.isNotBlank() }
-                    ?: run { drop(s, "\"${s.title}\" couldn't be saved: its portal archive identifier is unavailable"); return@launch }
+                    ?: run { drop(s, "\"{0}\" couldn't be saved: its portal archive identifier is unavailable", s.title); return@launch }
                 ref.copy(kind = StalkerContentKind.ARCHIVE, command = "", programId = programId)
             }
             val settings = prefs.currentSettings()
@@ -727,7 +728,7 @@ class LiveTvRecordingScheduler @Inject constructor(
             }
             if (url == null) {
                 // No catch-up link after all: nothing to download.
-                drop(s, "\"${s.title}\" couldn't be saved: this channel's catch-up isn't available")
+                drop(s, "\"{0}\" couldn't be saved: this channel's catch-up isn't available", s.title)
                 return@launch
             }
             // One catch-up download per provider at a time, oldest show first: most accounts allow
@@ -901,11 +902,12 @@ class LiveTvRecordingScheduler @Inject constructor(
         }
     }
 
-    private suspend fun drop(s: RecordingSchedule, message: String) {
+    /** [template] with {0}, {1}… for [args]: shown in the device's language, reported in English. */
+    private suspend fun drop(s: RecordingSchedule, template: String, vararg args: Any?) {
         remove(s)
         recorder.stopServiceIfIdle()
-        LiveTvNotice.show(message)
-        com.nuvio.tv.livetv.model.LiveTvLoadReport.add(message)
+        LiveTvNotice.show(LiveTvTexts.trf(template, *args))
+        com.nuvio.tv.livetv.model.LiveTvLoadReport.add(args.foldIndexed(template) { i, t, a -> t.replace("{$i}", a.toString()) })
     }
 
     // ------------------------------------------------------------------ saving

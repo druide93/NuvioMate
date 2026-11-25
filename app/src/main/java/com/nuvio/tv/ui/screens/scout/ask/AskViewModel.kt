@@ -105,7 +105,7 @@ internal fun AskProvider.displayName(): String = when (this) {
     AskProvider.GROQ -> "Groq"
     AskProvider.CHATGPT -> "OpenAI"
     AskProvider.CLAUDE -> "Claude"
-    AskProvider.OTHER -> "AI"
+    AskProvider.OTHER -> com.nuvio.tv.livetv.ui.LiveTvTexts.tr("AI")
 }
 
 @HiltViewModel

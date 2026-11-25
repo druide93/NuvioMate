@@ -319,7 +319,7 @@ class HomeLiveRows @Inject constructor(
         fun sportsTitle(ctx: android.content.Context, source: String): String = when {
             source.startsWith("sport:") -> com.nuvio.tv.livetv.sports.Sport.entries
                 .firstOrNull { it.name == source.removePrefix("sport:") }
-                ?.let { ctx.getString(R.string.home_rows_sports_one_title, it.label) }
+                ?.let { ctx.getString(R.string.home_rows_sports_one_title, com.nuvio.tv.livetv.ui.LiveTvTexts.tr(it.label)) }
                 ?: ctx.getString(R.string.home_rows_sports_title)
             source.startsWith("league:") -> com.nuvio.tv.livetv.sports.SportsCatalog.league(source.removePrefix("league:"))
                 ?.let { ctx.getString(R.string.home_rows_sports_one_title, it.name) }

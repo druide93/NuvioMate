@@ -6,6 +6,7 @@ import com.nuvio.tv.core.tracking.supportsMembershipFor
 import com.nuvio.tv.domain.model.LibraryEntryInput
 import com.nuvio.tv.domain.model.LibraryListPrivacy
 import com.nuvio.tv.domain.model.ListMembershipChanges
+import com.nuvio.tv.livetv.ui.tr
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.buildJsonObject
@@ -37,7 +38,7 @@ internal class MdbListLibraryWriter(
         val id = mdbListPersonalListId(key)
         val scope = sync.currentScope()
         write(scope) { library ->
-            require(library.lists.any { it.id == id }) { "This static list is no longer available" }
+            require(library.lists.any { it.id == id }) { "This static list is no longer available".tr() }
             val response = mdbListResponseElement(api.put("/lists/$id", body, scope).body).objectValue()
             if (response.flag("success") != true || response.number("id") != id) throw MdbListDecodingException()
             library.copy(lists = library.lists.map { list ->
@@ -51,7 +52,7 @@ internal class MdbListLibraryWriter(
         val id = mdbListPersonalListId(key)
         val scope = sync.currentScope()
         write(scope) { library ->
-            require(library.lists.any { it.id == id }) { "This static list is no longer available" }
+            require(library.lists.any { it.id == id }) { "This static list is no longer available".tr() }
             val response = api.delete("/lists/$id", scope)
             if (response.status != 204) {
                 val body = mdbListResponseElement(response.body).objectValue()
@@ -69,15 +70,15 @@ internal class MdbListLibraryWriter(
             mdbListLibraryItemsPath(key)
             write(scope) { library ->
                 val tab = library.tabs().firstOrNull { it.key == key }
-                require(tab != null) { "This list is no longer available" }
+                require(tab != null) { "This list is no longer available".tr() }
                 if (!desired && !tab.supportsMembershipFor(input.itemType)) return@write library
-                require(tab.supportsMembershipFor(input.itemType)) { "This list does not accept this item" }
+                require(tab.supportsMembershipFor(input.itemType)) { "This list does not accept this item".tr() }
                 val current = library.itemsByList[key].orEmpty()
                 val resolved = suppliedTarget ?: current.firstOrNull {
                     it.type == mdbListLibraryType(input.itemType) && input.itemId in it.media.ids.aliases()
                 }
                 if (resolved == null && !desired) return@write library
-                val target = requireNotNull(resolved) { "An external movie or show ID is required" }
+                val target = requireNotNull(resolved) { "An external movie or show ID is required".tr() }
                 if (current.any(target::matches) == desired) return@write library
                 val action = if (desired) "add" else "remove"
                 val response = api.post("${mdbListLibraryItemsPath(key)}/$action", target.membershipBody(key == MDBLIST_WATCHLIST_KEY), scope)
@@ -91,9 +92,9 @@ internal class MdbListLibraryWriter(
     }
 
     private fun metadataBody(name: String, description: String?, privacy: LibraryListPrivacy): String {
-        require(name.isNotBlank()) { "Enter a list name" }
-        require(description.isNullOrBlank()) { "MDBList does not support editing list descriptions" }
-        require(privacy in capabilities.privacyOptions) { "MDBList supports private and public lists" }
+        require(name.isNotBlank()) { "Enter a list name".tr() }
+        require(description.isNullOrBlank()) { "MDBList does not support editing list descriptions".tr() }
+        require(privacy in capabilities.privacyOptions) { "MDBList supports private and public lists".tr() }
         return buildJsonObject { put("name", name.trim()); put("private", privacy == LibraryListPrivacy.PRIVATE) }.toString()
     }
 

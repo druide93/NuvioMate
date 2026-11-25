@@ -2,7 +2,9 @@ package com.nuvio.tv.livetv.sports
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import com.nuvio.tv.livetv.ui.LiveTvTexts
 import com.nuvio.tv.livetv.ui.formatClock
+import com.nuvio.tv.livetv.ui.tr
 
 // ------------------------------------------------------------------ colors
 
@@ -29,29 +31,67 @@ internal fun leagueColor(l: League?): Color = Color(l?.color ?: 0xFF2A2F3A)
 internal fun startLabel(ev: SportsEvent, use24h: Boolean): String = when {
     ev.hasTime -> formatClock(ev.startMs, use24h)
     // Several days (a tournament, a race weekend): when it begins, not "All day".
-    ev.endMs != null && ev.endMs - ev.startMs > 20 * 3_600_000L -> "Starts"
-    else -> "All day"
+    ev.endMs != null && ev.endMs - ev.startMs > 20 * 3_600_000L -> "Starts".tr()
+    else -> "All day".tr()
 }
 
 /** "in 1 h 51", "in 12 min", "Tonight", "Tomorrow". */
 internal fun untilLabel(startMs: Long, now: Long, dayEnd: Long): String {
     val m = ((startMs - now) / 60_000L).toInt()
     return when {
-        m <= 0 -> "Starting"
-        m < 60 -> "in $m min"
-        m < 6 * 60 -> "in ${m / 60} h ${m % 60}"
-        startMs < dayEnd -> "Later today"
+        m <= 0 -> "Starting".tr()
+        m < 60 -> LiveTvTexts.trf("in {0} min", m)
+        m < 6 * 60 -> LiveTvTexts.trf("in {0} h {1}", m / 60, m % 60)
+        startMs < dayEnd -> "Later today".tr()
         else -> ""
     }
 }
 
-/** What the corner of a card says: the game clock, "Started 1:00", "Final", or the start time. */
+/**
+ * What the corner of a card says: the game clock, "Started 1:00", "Final", or the start time.
+ * In the device's language (callers put a "● " in front of it, or show it in capitals).
+ */
 internal fun cornerStatus(ev: SportsEvent, use24h: Boolean, hideScores: Boolean): String = when (ev.state) {
-    GameState.LIVE -> if (!hideScores && ev.status != null && ev.source != EventSource.GUIDE && ev.hasScore) ev.status
-    else "Started " + formatClock(ev.startMs, use24h)
-    GameState.POST -> if (ev.source == EventSource.GUIDE) "Ended" else (ev.status ?: "Final")
-    GameState.OFF -> ev.status ?: "Postponed"
+    GameState.LIVE -> if (!hideScores && ev.status != null && ev.source != EventSource.GUIDE && ev.hasScore) ev.status.tr()
+    else "Started ".tr() + formatClock(ev.startMs, use24h)
+    GameState.POST -> if (ev.source == EventSource.GUIDE) "Ended".tr() else (ev.status ?: "Final").tr()
+    GameState.OFF -> (ev.status ?: "Postponed").tr()
     GameState.PRE -> startLabel(ev, use24h)
+}
+
+// ------------------------------------------------------------------ words that need their own translation
+
+/**
+ * A word that means something else elsewhere in the app ("Home" a team's ground, not the Home
+ * page): looked up as "{0}" + [word], so it has a translation of its own. Shown as [word] when
+ * there's none.
+ */
+internal fun trOwn(word: String): String = LiveTvTexts.trf("{0}$word", "")
+
+/** "Home" or "Away" beside a team (not the app's Home page). */
+internal fun homeAwayWord(home: Boolean): String = if (home) trOwn("Home") else "Away".tr()
+
+/** A result letter (W, D, L) in the device's language: the first letter of its word (V, N, D in French). */
+internal fun resultLetter(r: String): String =
+    when (r) { "W" -> "Win"; "D" -> "Draw"; "L" -> "Loss"; else -> null }?.tr()?.take(1)?.uppercase() ?: r
+
+/** A table column's heading: the single letters (P, W, D, L, T) by the word they stand for; the rest as they are. */
+internal fun columnHeading(label: String): String =
+    when (label) { "P" -> "Played"; "W" -> "Won"; "D" -> "Drawn"; "L" -> "Lost"; "T" -> "Tied"; else -> null }?.tr()?.take(1)?.uppercase() ?: label
+
+/** A game's subtitle with its round or week in the device's language ("Round 12 · Anfield"). */
+internal fun shownSubtitle(s: String?): String? = s?.split(" · ")?.joinToString(" · ") { roundWords(it) }
+
+/** A race weekend's session ("Practice 2", "Qualifying", "Race") in the device's language. */
+internal fun sessionName(label: String): String =
+    if (label.startsWith("Practice ")) LiveTvTexts.trf("Practice {0}", label.removePrefix("Practice ")) else label.tr()
+
+/** "Round 12", "Week 8", "Matchday 3" in the device's language; anything else as it is. */
+internal fun roundWords(part: String): String = when {
+    part.startsWith("Round ") -> LiveTvTexts.trf("Round {0}", part.removePrefix("Round "))
+    part.startsWith("Week ") -> LiveTvTexts.trf("Week {0}", part.removePrefix("Week "))
+    part.startsWith("Matchday ") -> LiveTvTexts.trf("Matchday {0}", part.removePrefix("Matchday "))
+    else -> part
 }
 
 /** Time bar: how far through, from the game clock when known, otherwise from the start time and usual length. */

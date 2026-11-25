@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.theme.NuvioTheme
 import kotlinx.coroutines.delay
 
@@ -87,7 +88,7 @@ internal fun TopPlayersPanel(
     fun sameAs(a: Performer, b: Performer) = if (a.athleteId != null && b.athleteId != null) a.athleteId == b.athleteId else a.name == b.name
     /** A player's numbers in this game: "21 PTS · 8 AST" (or the feed's own line when it isn't one number). */
     fun gameLine(p: Performer): String = perf.filter { sameAs(it, p) }.joinToString(" · ") { q ->
-        if (isNumber(q.line)) "${q.line} ${shortLabel(q.category)}" else "${q.category.lowercase().replaceFirstChar { it.uppercase() }} ${q.line}"
+        if (isNumber(q.line)) "${q.line} ${shortLabel(q.category).tr()}" else "${q.category.lowercase().replaceFirstChar { it.uppercase() }} ${q.line}"
     }
 
     var picked by remember(ev.id) { mutableStateOf<PlayerPick?>(null) }

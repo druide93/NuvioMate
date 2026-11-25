@@ -340,7 +340,7 @@ class HomeLiveRowsViewModel @Inject constructor(
         }?.let { rec ->
             if (playback.playingChannel?.key != channel.key) {
                 com.nuvio.tv.livetv.record.LiveTvNotice.show(
-                    "Recording \"${rec.title}\" is using a connection to this provider. If this channel doesn't play, your account may allow only one at a time."
+                    com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Recording \"{0}\" is using a connection to this provider. If this channel doesn't play, your account may allow only one at a time.", rec.title)
                 )
             }
         }

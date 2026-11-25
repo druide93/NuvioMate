@@ -1489,7 +1489,7 @@ private fun formatEpisodeCardDate(isoDate: String): String {
     val formatter = java.time.format.DateTimeFormatter.ofPattern(bestPattern, locale)
     val localDate = parseEpisodeReleaseLocalDate(isoDate) ?: return ""
     // Live TV fork: episodes not out yet say when they air (instead of looking like they're missing).
-    if (localDate.isAfter(java.time.LocalDate.now())) return "Airs " + formatter.format(localDate)
+    if (localDate.isAfter(java.time.LocalDate.now())) return com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Airs {0}", formatter.format(localDate))
     return formatter.format(localDate)
 }
 

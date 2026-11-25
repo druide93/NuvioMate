@@ -215,7 +215,7 @@ internal fun GuideGearButton(modifier: Modifier = Modifier, onOpen: () -> Unit, 
     ) {
         androidx.tv.material3.Icon(
             androidx.compose.material.icons.Icons.Default.Settings,
-            contentDescription = "Guide display",
+            contentDescription = "Guide display".tr(),
             tint = focusedTextColor(focused),
             modifier = Modifier.size(18.dp)
         )
@@ -233,7 +233,7 @@ internal fun GuideMultiviewButton(modifier: Modifier = Modifier, onOpen: () -> U
     Box(
         modifier.size(34.dp).clip(shape).background(cell.background)
             .border(if (focused) 2.dp else 1.dp, if (focused) cell.border else GuideGlassEdge, shape)
-            .semantics { contentDescription = "Multiview" }
+            .semantics { contentDescription = "Multiview".tr() }
             .onFocusChanged { focused = it.isFocused }
             .onPreviewKeyEvent { event ->
                 if (event.key == Key.DirectionDown) {
@@ -299,7 +299,7 @@ internal fun GuideRecordingsButton(modifier: Modifier = Modifier, onOpen: () -> 
     ) {
         androidx.tv.material3.Icon(
             androidx.compose.material.icons.Icons.Default.RadioButtonChecked,
-            contentDescription = "Recordings",
+            contentDescription = "Recordings".tr(),
             tint = if (recordingNow) LIVE_RED else focusedTextColor(focused),
             modifier = Modifier.size(18.dp)
         )

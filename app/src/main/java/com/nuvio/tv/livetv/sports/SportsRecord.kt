@@ -122,7 +122,7 @@ internal fun RecordDialog(
                 SportsMenuRow(
                     (if (i == pick) "✓  " else "     ") + m.channel.name,
                     if (i == 0) Modifier.focusRequester(first) else Modifier,
-                    detail = listOfNotNull(src, if (m.sure) "SHOWING IT" else "MAYBE").joinToString(" · ")
+                    detail = listOfNotNull(src, (if (m.sure) "SHOWING IT" else "MAYBE").tr()).joinToString(" · ")
                 ) { pick = i }
             }
         }

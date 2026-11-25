@@ -458,7 +458,7 @@ private fun HomeCard(
                     Spacer(Modifier.height(3.dp))
                 }
                 val sub = if (showNext && entry.next != null) {
-                    "Next: ${formatClock(entry.next.startMs, use24h)} ${entry.next.title}"
+                    com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Next: {0} {1}", formatClock(entry.next.startMs, use24h), entry.next.title)
                 } else {
                     listOfNotNull("${entry.channel.number}  ${entry.channel.name}", p?.let { minutesLeftLabel(it.stopMs, now) })
                         .joinToString(" · ")

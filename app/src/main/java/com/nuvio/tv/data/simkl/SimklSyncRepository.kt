@@ -5,6 +5,7 @@ import com.nuvio.tv.core.profile.ProfileManager
 import com.nuvio.tv.core.tracking.TrackingMediaReference
 import com.nuvio.tv.core.tracking.TrackingRefreshIntent
 import com.nuvio.tv.data.local.TraktSettingsDataStore
+import com.nuvio.tv.livetv.ui.tr
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -365,7 +366,7 @@ class SimklSyncRepository @Inject constructor(
                 _state.value = previous.copy(
                     isLoading = false,
                     hasLoaded = true,
-                    errorMessage = error.message ?: "Unable to sync Simkl"
+                    errorMessage = (error.message ?: "Unable to sync Simkl").tr()
                 )
             }
             return@withLock

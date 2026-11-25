@@ -24,7 +24,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
 import com.nuvio.tv.livetv.ui.formatClock
+import com.nuvio.tv.livetv.ui.tr
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -74,7 +76,7 @@ internal fun PreGameTeamStats(t: PreGameTeam, wide: Boolean) {
         }
     } else {
         Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(end = 6.dp)) {
-            val top = listOfNotNull(t.place?.let { Standings.ordinal(it) }, t.win?.let { "${Math.round(it)}% win" }).joinToString("  ·  ")
+            val top = listOfNotNull(t.place?.let { Standings.ordinal(it) }, t.win?.let { LiveTvTexts.trf("{0}% win", Math.round(it)) }).joinToString("  ·  ")
             if (top.isNotEmpty()) LiveText(top, color = Color.White, size = 11.sp, weight = FontWeight.ExtraBold, maxLines = 1)
             t.form?.takeIf { it.isNotEmpty() }?.let { f ->
                 Spacer(Modifier.height(3.dp))
@@ -91,10 +93,10 @@ private val monthFmt = SimpleDateFormat("MMM", Locale.getDefault())
 internal fun countdownLabel(startMs: Long, now: Long): String {
     val m = ((startMs - now) / 60_000L).toInt()
     return when {
-        m <= 0 -> "Starting"
-        m < 60 -> "in $m min"
-        m < 24 * 60 -> "in ${m / 60} h ${m % 60}"
-        else -> { val d = m / (24 * 60); val h = (m % (24 * 60)) / 60; "in $d day${if (d == 1) "" else "s"}" + (if (h > 0) " $h h" else "") }
+        m <= 0 -> "Starting".tr()
+        m < 60 -> LiveTvTexts.trf("in {0} min", m)
+        m < 24 * 60 -> LiveTvTexts.trf("in {0} h {1}", m / 60, m % 60)
+        else -> { val d = m / (24 * 60); val h = (m % (24 * 60)) / 60; LiveTvTexts.trf(if (d == 1) "in {0} day" else "in {0} days", d) + (if (h > 0) " $h h" else "") }
     }
 }
 
@@ -129,7 +131,7 @@ internal fun PreGameTimeColumn(ev: SportsEvent, sides: List<Side>, x: GameExtras
             sides.forEach { s -> if (s.team.abbr.isNotBlank()) text = text.replace(s.team.name, s.team.abbr) }
             val month = m.dateMs?.let { synchronized(monthFmt) { monthFmt.format(Date(it)) } }
             Spacer(Modifier.height(4.dp))
-            LiveText("Last met " + text + (month?.let { " · $it" } ?: ""), color = SportsLook.Dim, size = 9.sp, maxLines = 1, align = TextAlign.Center)
+            LiveText("Last met ".tr() + text + (month?.let { " · $it" } ?: ""), color = SportsLook.Dim, size = 9.sp, maxLines = 1, align = TextAlign.Center)
         }
     }
 }

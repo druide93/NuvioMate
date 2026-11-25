@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Switch
 import androidx.tv.material3.Text
 import com.nuvio.tv.domain.model.AppIconOption
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.screens.settings.bannerResource
 import com.nuvio.tv.ui.screens.settings.iconResource
 import com.nuvio.tv.ui.theme.NuvioTheme
@@ -67,10 +68,10 @@ fun IptvIconToggle(enabled: Boolean, busy: Boolean, onToggle: (Boolean) -> Unit)
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("Use the NuvioMate icon", color = NuvioTheme.colors.TextPrimary)
+                Text("Use the NuvioMate icon".tr(), color = NuvioTheme.colors.TextPrimary)
                 Text(
-                    if (enabled) "On: the NuvioMate icon and banner in your chosen color"
-                    else "Off: Nuvio's original icons, in your chosen color",
+                    if (enabled) "On: the NuvioMate icon and banner in your chosen color".tr()
+                    else "Off: Nuvio's original icons, in your chosen color".tr(),
                     color = NuvioTheme.colors.TextSecondary,
                     style = androidx.tv.material3.MaterialTheme.typography.bodySmall
                 )

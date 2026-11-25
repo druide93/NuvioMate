@@ -39,6 +39,8 @@ import com.nuvio.tv.livetv.calendar.SideMenuPages
 import com.nuvio.tv.domain.model.DiscoverLocation
 import com.nuvio.tv.livetv.model.LiveTvSettings
 import com.nuvio.tv.livetv.record.LiveTvNotice
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.livetv.ui.focusedTextColor
 import com.nuvio.tv.livetv.ui.liveCellColors
 import com.nuvio.tv.ui.theme.NuvioTheme
@@ -159,13 +161,13 @@ fun SideMenuSettingsContent(initialFocusRequester: FocusRequester? = null) {
         if (SideMenuPages.LIBRARY !in hidden) add("LIBRARY" to "Library")
         if (SideMenuPages.SEARCH !in hidden) add("SEARCH" to "Search")
     }
-    val startLabel = if (startRoute == null) "Home" else startChoices.firstOrNull { it.first == s.openOn }?.second ?: "Home"
+    val startLabel = (if (startRoute == null) "Home" else startChoices.firstOrNull { it.first == s.openOn }?.second ?: "Home").tr()
 
     val first = initialFocusRequester ?: remember { FocusRequester() }
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)) {
         SettingsDetailHeader(
-            title = "Menu & Features",
-            subtitle = "What's in the app, its order in the side menu, and the page it opens on. A page that's off is off everywhere."
+            title = "Menu & Features".tr(),
+            subtitle = "What's in the app, its order in the side menu, and the page it opens on. A page that's off is off everywhere.".tr()
         )
         LazyColumn(
             modifier = Modifier.fillMaxWidth().weight(1f),
@@ -173,10 +175,10 @@ fun SideMenuSettingsContent(initialFocusRequester: FocusRequester? = null) {
             verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
         ) {
             item(key = "start") {
-                SettingsGroupCard(title = "When the App Starts") {
+                SettingsGroupCard(title = "When the App Starts".tr()) {
                     SettingsActionRow(
-                        title = "Open the App On",
-                        subtitle = "The app opens straight on this page; Back opens the menu as usual. Takes effect the next time the app starts.",
+                        title = "Open the App On".tr(),
+                        subtitle = "The app opens straight on this page; Back opens the menu as usual. Takes effect the next time the app starts.".tr(),
                         value = startLabel,
                         onClick = { dialog = "start" },
                         modifier = Modifier.focusRequester(first)
@@ -184,22 +186,22 @@ fun SideMenuSettingsContent(initialFocusRequester: FocusRequester? = null) {
                 }
             }
             item(key = "pages") {
-                SettingsGroupCard(title = "Pages", subtitle = "OK turns a page on or off. The arrows move it up or down the menu. Settings always stays at the bottom.") {
+                SettingsGroupCard(title = "Pages".tr(), subtitle = "OK turns a page on or off. The arrows move it up or down the menu. Settings always stays at the bottom.".tr()) {
                     order.forEachIndexed { index, id ->
                         val r = rowFor(id)
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             if (r.value != null) {
                                 SettingsActionRow(
-                                    title = r.title,
-                                    subtitle = r.subtitle,
-                                    value = r.value,
+                                    title = r.title.tr(),
+                                    subtitle = r.subtitle.tr(),
+                                    value = r.value?.tr(),
                                     onClick = r.onClick,
                                     modifier = Modifier.weight(1f)
                                 )
                             } else {
                                 SettingsToggleRow(
-                                    title = r.title,
-                                    subtitle = r.subtitle,
+                                    title = r.title.tr(),
+                                    subtitle = r.subtitle.tr(),
                                     checked = r.on,
                                     onToggle = r.onClick,
                                     modifier = Modifier.weight(1f)
@@ -212,16 +214,16 @@ fun SideMenuSettingsContent(initialFocusRequester: FocusRequester? = null) {
                 }
             }
             item(key = "look") {
-                SettingsGroupCard(title = "How the Menu Looks") {
+                SettingsGroupCard(title = "How the Menu Looks".tr()) {
                     SettingsToggleRow(
-                        title = "Line Above Live TV",
-                        subtitle = "The thin line between Nuvio's pages and the Live TV pages. Off: the pages sit a little closer together.",
+                        title = "Line Above Live TV".tr(),
+                        subtitle = "The thin line between Nuvio's pages and the Live TV pages. Off: the pages sit a little closer together.".tr(),
                         checked = s.sideMenuLine,
                         onToggle = { update { it.copy(sideMenuLine = !it.sideMenuLine) } }
                     )
                     SettingsToggleRow(
-                        title = "Shrink the Menu to Fit",
-                        subtitle = "When there are more pages than fit on screen, the menu gets a little smaller so everything shows without scrolling. Off: the menu scrolls.",
+                        title = "Shrink the Menu to Fit".tr(),
+                        subtitle = "When there are more pages than fit on screen, the menu gets a little smaller so everything shows without scrolling. Off: the menu scrolls.".tr(),
                         checked = s.sideMenuFit,
                         onToggle = { update { it.copy(sideMenuFit = !it.sideMenuFit) } }
                     )
@@ -230,8 +232,8 @@ fun SideMenuSettingsContent(initialFocusRequester: FocusRequester? = null) {
             item(key = "reset") {
                 SettingsGroupCard {
                     SettingsActionRow(
-                        title = "Put Back the Usual Order",
-                        subtitle = "Home, Discover, Search, Library, Calendar, Live TV, Sports, On Demand, Recordings",
+                        title = "Put Back the Usual Order".tr(),
+                        subtitle = "Home, Discover, Search, Library, Calendar, Live TV, Sports, On Demand, Recordings".tr(),
                         onClick = {
                             update { it.copy(sideMenuOrder = "") }
                             LiveTvNotice.show("Menu order put back")
@@ -244,8 +246,8 @@ fun SideMenuSettingsContent(initialFocusRequester: FocusRequester? = null) {
 
     when (dialog) {
         "start" -> SettingsSingleChoiceDialog(
-            title = "Open the App On",
-            options = startChoices.map { SettingsPickerOption(it.first, it.second) },
+            title = "Open the App On".tr(),
+            options = startChoices.map { SettingsPickerOption(it.first, it.second.tr()) },
             selectedValue = if (startRoute == null) "HOME" else s.openOn,
             onOptionSelected = { v ->
                 update {
@@ -258,22 +260,22 @@ fun SideMenuSettingsContent(initialFocusRequester: FocusRequester? = null) {
             onDismiss = { dialog = null }
         )
         "discover" -> SettingsSingleChoiceDialog(
-            title = "Discover",
+            title = "Discover".tr(),
             options = listOf(
-                SettingsPickerOption(DiscoverLocation.IN_SIDEBAR, "In the menu", "Its own page in the side menu"),
-                SettingsPickerOption(DiscoverLocation.IN_SEARCH, "Inside Search", "A tab on the Search page"),
-                SettingsPickerOption(DiscoverLocation.OFF, "Off", null)
+                SettingsPickerOption(DiscoverLocation.IN_SIDEBAR, "In the menu".tr(), "Its own page in the side menu".tr()),
+                SettingsPickerOption(DiscoverLocation.IN_SEARCH, "Inside Search".tr(), "A tab on the Search page".tr()),
+                SettingsPickerOption(DiscoverLocation.OFF, "Off".tr(), null)
             ),
             selectedValue = discover,
             onOptionSelected = { v -> scope.launch { layout.setDiscoverLocation(v) }; dialog = null },
             onDismiss = { dialog = null }
         )
         "on_demand" -> SettingsSingleChoiceDialog(
-            title = "On Demand",
+            title = "On Demand".tr(),
             options = listOf(
-                SettingsPickerOption("ON", "On", "In the menu, in Search and in the stream list"),
-                SettingsPickerOption("NO_MENU", "Off the menu only", "No page in the menu; still in Search and in the stream list"),
-                SettingsPickerOption("OFF", "Off", "Nowhere: no page, no Search results, not in the stream list")
+                SettingsPickerOption("ON", "On".tr(), "In the menu, in Search and in the stream list".tr()),
+                SettingsPickerOption("NO_MENU", "Off the menu only".tr(), "No page in the menu; still in Search and in the stream list".tr()),
+                SettingsPickerOption("OFF", "Off".tr(), "Nowhere: no page, no Search results, not in the stream list".tr())
             ),
             selectedValue = when { !s.onDemandEnabled -> "OFF"; s.onDemandInSidebar -> "ON"; else -> "NO_MENU" },
             onOptionSelected = { v ->
@@ -283,11 +285,11 @@ fun SideMenuSettingsContent(initialFocusRequester: FocusRequester? = null) {
             onDismiss = { dialog = null }
         )
         "calendar" -> SettingsSingleChoiceDialog(
-            title = "Calendar",
+            title = "Calendar".tr(),
             options = listOf(
-                SettingsPickerOption("BELL", "Automatic", "In the menu once your shows have episodes coming"),
-                SettingsPickerOption("ALWAYS", "Always in the menu", "Including Airing Today, before you follow anything"),
-                SettingsPickerOption("OFF", "Off", "No Calendar, no bells, no new-episode cards on Home")
+                SettingsPickerOption("BELL", "Automatic".tr(), "In the menu once your shows have episodes coming".tr()),
+                SettingsPickerOption("ALWAYS", "Always in the menu".tr(), "Including Airing Today, before you follow anything".tr()),
+                SettingsPickerOption("OFF", "Off".tr(), "No Calendar, no bells, no new-episode cards on Home".tr())
             ),
             selectedValue = when { SideMenuPages.CALENDAR in hidden -> "OFF"; s.calendarInMenu -> "ALWAYS"; else -> "BELL" },
             onOptionSelected = { v ->
@@ -357,8 +359,8 @@ fun CalendarSettingsContent(initialFocusRequester: FocusRequester? = null) {
     val first = initialFocusRequester ?: remember { FocusRequester() }
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)) {
         SettingsDetailHeader(
-            title = "Calendar",
-            subtitle = "When your shows' new episodes and your movies come out (shows whose bell you rang, your Library, and what you're watching)"
+            title = "Calendar".tr(),
+            subtitle = "When your shows' new episodes and your movies come out (shows whose bell you rang, your Library, and what you're watching)".tr()
         )
         LazyColumn(
             modifier = Modifier.fillMaxWidth().weight(1f),
@@ -366,40 +368,40 @@ fun CalendarSettingsContent(initialFocusRequester: FocusRequester? = null) {
             verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
         ) {
             item(key = "home") {
-                SettingsGroupCard(title = "On Home") {
+                SettingsGroupCard(title = "On Home".tr()) {
                     SettingsToggleRow(
-                        "New Episode Cards",
-                        "A card in Continue Watching when a new episode of a show whose bell you rang is out. OK finds its sources.",
+                        "New Episode Cards".tr(),
+                        "A card in Continue Watching when a new episode of a show whose bell you rang is out. OK finds its sources.".tr(),
                         s.calendarNewEpisodeCards,
                         { update { it.copy(calendarNewEpisodeCards = !it.calendarNewEpisodeCards) } },
                         modifier = Modifier.focusRequester(first)
                     )
                     SettingsToggleRow(
-                        "Your Shows in the Upcoming Row",
-                        "The next episodes of your shows in the coming week, in Home's Upcoming row",
+                        "Your Shows in the Upcoming Row".tr(),
+                        "The next episodes of your shows in the coming week, in Home's Upcoming row".tr(),
                         s.calendarUpcomingRow,
                         { update { it.copy(calendarUpcomingRow = !it.calendarUpcomingRow) } }
                     )
                 }
             }
             item(key = "page") {
-                SettingsGroupCard(title = "The Calendar") {
+                SettingsGroupCard(title = "The Calendar".tr()) {
                     SettingsToggleRow(
-                        "Games for Teams You Follow",
-                        "Your Sports teams' games, with the channel showing them (not whole leagues). Scores follow Hide Scores in Sports settings",
+                        "Games for Teams You Follow".tr(),
+                        "Your Sports teams' games, with the channel showing them (not whole leagues). Scores follow Hide Scores in Sports settings".tr(),
                         s.calendarSports,
                         { update { it.copy(calendarSports = !it.calendarSports) } }
                     )
                     SettingsToggleRow(
-                        "Hide Spoilers",
-                        "Episodes past the next one you'd watch don't show their titles or pictures",
+                        "Hide Spoilers".tr(),
+                        "Episodes past the next one you'd watch don't show their titles or pictures".tr(),
                         s.calendarHideSpoilers,
                         { update { it.copy(calendarHideSpoilers = !it.calendarHideSpoilers) } }
                     )
                     SettingsActionRow(
-                        title = "Opens In",
-                        subtitle = "The list by day, a week, or a month at a time",
-                        value = when (s.calendarView) { "MONTH" -> "Month"; "WEEK" -> "Week"; else -> "List" },
+                        title = "Opens In".tr(),
+                        subtitle = "The list by day, a week, or a month at a time".tr(),
+                        value = when (s.calendarView) { "MONTH" -> "Month"; "WEEK" -> "Week"; else -> "List" }.tr(),
                         onClick = {
                             update {
                                 it.copy(calendarView = when (it.calendarView) { "MONTH" -> "LIST"; "WEEK" -> "MONTH"; else -> "WEEK" })
@@ -407,9 +409,9 @@ fun CalendarSettingsContent(initialFocusRequester: FocusRequester? = null) {
                         }
                     )
                     SettingsActionRow(
-                        title = "Week Starts On",
-                        subtitle = "The first day of the week in the Week and Month views",
-                        value = when (s.calendarWeekStart) { "SUNDAY" -> "Sunday"; "SATURDAY" -> "Saturday"; else -> "Monday" },
+                        title = "Week Starts On".tr(),
+                        subtitle = "The first day of the week in the Week and Month views".tr(),
+                        value = when (s.calendarWeekStart) { "SUNDAY" -> "Sunday"; "SATURDAY" -> "Saturday"; else -> "Monday" }.tr(),
                         onClick = {
                             update {
                                 it.copy(calendarWeekStart = when (it.calendarWeekStart) { "SUNDAY" -> "MONDAY"; "SATURDAY" -> "SUNDAY"; else -> "SATURDAY" })
@@ -417,43 +419,43 @@ fun CalendarSettingsContent(initialFocusRequester: FocusRequester? = null) {
                         }
                     )
                     SettingsActionRow(
-                        title = "Picking an Episode in Your Guide",
-                        subtitle = "OK on an episode that's in your Live TV guide opens its Live TV options (watch, record, remind) or the show's page",
-                        value = if (s.calendarOkAction == "PAGE") "Show page" else "Live TV options",
+                        title = "Picking an Episode in Your Guide".tr(),
+                        subtitle = "OK on an episode that's in your Live TV guide opens its Live TV options (watch, record, remind) or the show's page".tr(),
+                        value = (if (s.calendarOkAction == "PAGE") "Show page" else "Live TV options").tr(),
                         onClick = { update { it.copy(calendarOkAction = if (it.calendarOkAction == "PAGE") "LIVE" else "PAGE") } }
                     )
                     var savedOpen by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
                     SettingsActionRow(
-                        title = "Saved Channels",
-                        subtitle = "Channels you told the Calendar to use, for a network or for one show: change or forget them",
-                        value = "Open",
+                        title = "Saved Channels".tr(),
+                        subtitle = "Channels you told the Calendar to use, for a network or for one show: change or forget them".tr(),
+                        value = "Open".tr(),
                         onClick = { savedOpen = true }
                     )
                     if (savedOpen) com.nuvio.tv.livetv.calendar.CalendarSavedChannelsDialog(onDismiss = { savedOpen = false })
                     SettingsActionRow(
-                        title = "Your Country",
-                        subtitle = "For Airing Today and movie release dates",
-                        value = countries.firstOrNull { it.first == s.calendarCountry }?.second ?: s.calendarCountry,
+                        title = "Your Country".tr(),
+                        subtitle = "For Airing Today and movie release dates".tr(),
+                        value = countries.firstOrNull { it.first == s.calendarCountry }?.second?.tr() ?: s.calendarCountry,
                         onClick = {
                             val i = countries.indexOfFirst { it.first == s.calendarCountry }
                             update { it.copy(calendarCountry = countries[(i + 1) % countries.size].first) }
                         }
                     )
                     SettingsToggleRow(
-                        "Airing Today: Leave Out News and Talk Shows",
-                        "Also sports and panel shows",
+                        "Airing Today: Leave Out News and Talk Shows".tr(),
+                        "Also sports and panel shows".tr(),
                         s.calendarSkipNewsTalk,
                         { update { it.copy(calendarSkipNewsTalk = !it.calendarSkipNewsTalk) } }
                     )
                 }
             }
             item(key = "data") {
-                SettingsGroupCard(title = "Your Shows") {
+                SettingsGroupCard(title = "Your Shows".tr()) {
                     SettingsActionRow(
-                        title = "Look Up All Shows Again",
-                        subtitle = if (state.loading) "Looking up…" else
-                            "${state.showCount} shows and movies on your Calendar · ${follows.size} bell${if (follows.size == 1) "" else "s"} rung" +
-                                if (hiddenShows.isNotEmpty()) " · ${hiddenShows.size} hidden" else "",
+                        title = "Look Up All Shows Again".tr(),
+                        subtitle = if (state.loading) "Looking up…".tr() else
+                            LiveTvTexts.trf(if (follows.size == 1) "{0} shows and movies on your Calendar · {1} bell rung" else "{0} shows and movies on your Calendar · {1} bells rung", state.showCount, follows.size) +
+                                if (hiddenShows.isNotEmpty()) " · " + LiveTvTexts.trf("{0} hidden", hiddenShows.size) else "",
                         onClick = {
                             calendar.refresh(force = true)
                             LiveTvNotice.show("Looking up your shows again")

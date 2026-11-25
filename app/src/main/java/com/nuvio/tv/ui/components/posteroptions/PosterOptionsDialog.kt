@@ -46,6 +46,7 @@ import com.nuvio.tv.domain.model.isSeriesLikeType
 import com.nuvio.tv.domain.model.localizedMembershipTitle
 import com.nuvio.tv.domain.model.LibrarySourceMode
 import com.nuvio.tv.ui.components.NuvioDialog
+import com.nuvio.tv.livetv.ui.tr
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -327,7 +328,7 @@ fun PosterOptionsHost(
                 }
                 controller.dismiss()
             },
-            bellLabel = bell?.let { if (it.on) "Turn off the bell" else "Ring the bell (new episodes on your Calendar)" },
+            bellLabel = bell?.let { (if (it.on) "Turn off the bell" else "Ring the bell (new episodes on your Calendar)").tr() },
             onBell = {
                 bell?.toggle?.invoke()
                 controller.dismiss()

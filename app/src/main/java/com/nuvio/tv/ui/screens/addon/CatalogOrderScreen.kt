@@ -400,7 +400,7 @@ private fun CatalogOrderCard(
                         com.nuvio.tv.livetv.home.HomeLiveRow.KIND_SPORTS -> stringResource(R.string.home_rows_type_sports)
                         com.nuvio.tv.livetv.home.HomeLiveRow.KIND_CHANNELS -> stringResource(R.string.home_rows_type_live)
                         com.nuvio.tv.livetv.home.HomeLiveRow.KIND_VOD -> stringResource(R.string.home_rows_type_vod)
-                        else -> item.typeLabel.toDisplayTypeLabel()
+                        else -> com.nuvio.tv.ui.util.localizedContentType(item.typeLabel)
                     }
                     Text(
                         text = "${item.catalogName} - $typeText",

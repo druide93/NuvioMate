@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.LocalTextStyle
 import androidx.tv.material3.Text
+import com.nuvio.tv.livetv.ui.tr
 import kotlin.math.floor
 
 /**
@@ -52,6 +53,8 @@ internal fun SidebarLabel(
     key: String = text,
     textAlign: TextAlign? = null
 ) {
+    // Live TV's own menu entries ("Live TV", "On Demand"…) are passed in English: shown translated.
+    @Suppress("NAME_SHADOWING") val text = text.tr()
     val style = LocalTextStyle.current
     val maxSize = if (style.fontSize.type == TextUnitType.Sp) style.fontSize else 16.sp
     val measurer = rememberTextMeasurer()

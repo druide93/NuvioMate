@@ -58,3 +58,16 @@ internal object LiveTvTexts {
 
 /** This Live TV word in the device's language (see [LiveTvTexts]). */
 internal fun String.tr(): String = LiveTvTexts.tr(this)
+
+/**
+ * A date pattern in the device's own order for [skeleton], for dates written in the code:
+ * "EEEMMMd" is "EEE, MMM d" in English and "EEE d MMM" in French.
+ */
+internal fun localDatePattern(skeleton: String): String {
+    val locale = java.util.Locale.getDefault()
+    return datePatterns.getOrPut(locale.toLanguageTag() + "|" + skeleton) {
+        runCatching { android.text.format.DateFormat.getBestDateTimePattern(locale, skeleton) }.getOrDefault(skeleton)
+    }
+}
+
+private val datePatterns = java.util.concurrent.ConcurrentHashMap<String, String>()

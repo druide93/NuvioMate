@@ -547,7 +547,7 @@ internal fun PlayerRuntimeController.showStreamSourceIndicator(stream: Stream) {
     _uiState.update {
         it.copy(
             showStreamSourceIndicator = true,
-            streamSourceIndicatorText = "Source: $chosenSource"
+            streamSourceIndicatorText = com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Source: {0}", chosenSource)
         )
     }
     hideStreamSourceIndicatorJob = scope.launch {

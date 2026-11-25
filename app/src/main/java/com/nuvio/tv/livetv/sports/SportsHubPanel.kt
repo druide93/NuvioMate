@@ -32,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.theme.NuvioTheme
 import kotlinx.coroutines.delay
 
@@ -130,8 +132,8 @@ internal fun HubIdlePanel(
                 !hasChannels -> "Add a playlist in Live TV settings to watch games here"
                 ms.isEmpty() && ev.state == GameState.POST -> "Finished  ·  OK: results, highlights and replays"
                 ms.isEmpty() -> "Not found on your channels yet  ·  OK: game page"
-                ms.size == 1 -> "On ${ms[0].channel.name}  ·  Hold OK to watch it here"
-                else -> "On ${ms.size} of your channels  ·  Hold OK to watch it here"
+                ms.size == 1 -> LiveTvTexts.trf("On {0}  ·  Hold OK to watch it here", ms[0].channel.name)
+                else -> LiveTvTexts.trf("On {0} of your channels  ·  Hold OK to watch it here", ms.size)
             },
             color = SportsLook.Dim, size = 11.sp, weight = FontWeight.Bold, maxLines = 1,
             modifier = Modifier.padding(start = 4.dp)
@@ -171,7 +173,7 @@ internal fun GameTablePanel(
         when {
             settings.hideScores -> if (channelsWhenHidden) ChannelsList(ev, ms, viewModel, now, use24h)
             canHave && table != null -> MiniTable(table, ev.sides.map { it.team.id }.toSet(), league, Modifier.fillMaxWidth().weight(1f), rowH)
-            canHave && !failed -> LiveText("Getting the ${league?.name ?: ""} table…", color = SportsLook.Dim, size = 11.sp, modifier = Modifier.padding(start = 4.dp))
+            canHave && !failed -> LiveText(LiveTvTexts.trf("Getting the {0} table…", league?.name?.tr() ?: ""), color = SportsLook.Dim, size = 11.sp, modifier = Modifier.padding(start = 4.dp))
             else -> ChannelsList(ev, ms, viewModel, now, use24h)
         }
     }
@@ -244,7 +246,7 @@ private fun MiniTable(table: Standings, marked: Set<String>, league: League?, mo
         Column {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)) {
                 LiveText(
-                    (league?.name ?: "League") + if (table.kind == StandingsKind.RACING) " standings" else " table",
+                    LiveTvTexts.trf(if (table.kind == StandingsKind.RACING) "{0} standings" else "{0} table", (league?.name ?: "League").tr()),
                     color = Color.White, size = 13.sp, weight = FontWeight.Black
                 )
             }
@@ -256,7 +258,7 @@ private fun MiniTable(table: Standings, marked: Set<String>, league: League?, mo
                     modifier = Modifier.weight(1f).padding(start = 28.dp)
                 )
                 columns.forEach { c ->
-                    LiveText(c.label, color = SportsLook.Dim, size = 9.sp, weight = FontWeight.Black, align = TextAlign.End, modifier = Modifier.width(cellWidth(c.key)))
+                    LiveText(columnHeading(c.label), color = SportsLook.Dim, size = 9.sp, weight = FontWeight.Black, align = TextAlign.End, modifier = Modifier.width(cellWidth(c.key)))
                 }
                 Spacer(Modifier.width(8.dp))
             }

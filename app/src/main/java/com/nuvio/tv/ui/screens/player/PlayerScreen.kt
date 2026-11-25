@@ -186,6 +186,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import com.nuvio.tv.livetv.ui.tr
 
 private const val PLAYER_CONTROLS_FADE_DURATION_MS = 200
 
@@ -4242,7 +4243,7 @@ private fun LoadingIssueReportAction(
     ) {
         val reportMessage = when (reportStatus) {
             PlaybackIssueReportStatus.Sent -> stringResource(R.string.player_report_issue_sent, reportId.orEmpty())
-            PlaybackIssueReportStatus.Failed -> reportError ?: stringResource(R.string.player_report_issue_failed)
+            PlaybackIssueReportStatus.Failed -> reportError?.tr() ?: stringResource(R.string.player_report_issue_failed)
             PlaybackIssueReportStatus.Sending -> stringResource(R.string.player_report_issue_sending)
             PlaybackIssueReportStatus.Idle -> {
                 val elapsedSeconds = (elapsedMs / 1000L).coerceAtLeast(1L).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
@@ -4337,7 +4338,7 @@ private fun ErrorOverlay(
             )
 
             Text(
-                text = message,
+                text = message.tr(),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center,
@@ -4352,7 +4353,7 @@ private fun ErrorOverlay(
                 PlaybackIssueReportStatus.Idle -> null
                 PlaybackIssueReportStatus.Sending -> stringResource(R.string.player_report_issue_sending)
                 PlaybackIssueReportStatus.Sent -> stringResource(R.string.player_report_issue_sent, reportId.orEmpty())
-                PlaybackIssueReportStatus.Failed -> reportError ?: stringResource(R.string.player_report_issue_failed)
+                PlaybackIssueReportStatus.Failed -> reportError?.tr() ?: stringResource(R.string.player_report_issue_failed)
             }
             if (showReportAction && reportMessage != null) {
                 Text(

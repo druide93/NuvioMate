@@ -92,6 +92,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.TextStyle
 import com.nuvio.tv.domain.model.CardDepthStyle
 import kotlinx.coroutines.delay
+import com.nuvio.tv.livetv.ui.tr
 
 private val BadgeShape = RoundedCornerShape(NuvioTheme.radii.xs)
 private val CwNewEpisodeBadgeColor = Color(0xFF1D4ED8)
@@ -1171,7 +1172,7 @@ fun ContinueWatchingOptionsDialog(
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Not today (back on Home tomorrow)")
+                Text("Not today (back on Home tomorrow)".tr())
             }
         }
 

@@ -2,8 +2,8 @@
 <!-- NuvioMate : réglages Home Assistant (MQTT). -->
 <resources>
     <string name="ha_title">Home Assistant</string>
-    <string name="ha_subtitle">Montre ce qui passe dans Home Assistant, par son broker MQTT (Mosquitto). Rien ne sort de ton réseau local.</string>
-    <string name="ha_hub_subtitle">Ce qui passe, pour tes automatisations Home Assistant</string>
+    <string name="ha_subtitle">Montre ce qui passe dans Home Assistant, par son broker MQTT (Mosquitto). Rien ne sort de votre réseau local.</string>
+    <string name="ha_hub_subtitle">Ce qui passe, pour vos automatisations Home Assistant</string>
     <string name="ha_enable_title">Se connecter à Home Assistant</string>
     <string name="ha_enable_subtitle">NuvioMate apparaît dans Home Assistant comme un appareil : ce qui passe, la chaîne, lecture ou pause.</string>
     <string name="ha_status_title">Connexion</string>
@@ -16,12 +16,12 @@
     <string name="ha_status_timeout">Pas de réponse du broker</string>
     <string name="ha_status_other">Erreur : %1$s</string>
     <string name="ha_phone_title">Configurer depuis le téléphone</string>
-    <string name="ha_phone_subtitle">Scanne un QR code et remplis la connexion sur ton téléphone</string>
-    <string name="ha_phone_dialog_text">Scanne ce code avec un téléphone sur le même Wi-Fi, remplis le formulaire, puis appuie sur Envoyer.</string>
-    <string name="ha_phone_no_network">Connecte cette TV au réseau de la maison pour utiliser ton téléphone.</string>
+    <string name="ha_phone_subtitle">Scannez un QR code et remplissez la connexion sur votre téléphone</string>
+    <string name="ha_phone_dialog_text">Scannez ce code avec un téléphone sur le même Wi-Fi, remplissez le formulaire, puis appuyez sur Envoyer.</string>
+    <string name="ha_phone_no_network">Connectez cette TV au réseau de la maison pour utiliser votre téléphone.</string>
     <string name="ha_phone_received">Reçu. Les réglages sont enregistrés.</string>
     <string name="ha_broker_title">Broker MQTT</string>
-    <string name="ha_broker_subtitle">L\'adresse de Home Assistant sur ton réseau, et le port (1883 par défaut)</string>
+    <string name="ha_broker_subtitle">L’adresse de Home Assistant sur votre réseau, et le port (1883 par défaut)</string>
     <string name="ha_broker_placeholder">192.168.1.10:1883</string>
     <string name="ha_username_title">Utilisateur</string>
     <string name="ha_username_subtitle">Un utilisateur Home Assistant créé pour NuvioMate</string>
@@ -29,7 +29,7 @@
     <string name="ha_password_subtitle">Enregistré chiffré sur cette TV</string>
     <string name="ha_device_name_title">Nom de l\'appareil</string>
     <string name="ha_device_name_subtitle">Le nom de la TV dans Home Assistant</string>
-    <string name="ha_page_intro">Ces réglages vont directement à ta TV, sur ton réseau local.</string>
+    <string name="ha_page_intro">Ces réglages vont directement à votre TV, sur votre réseau local.</string>
     <string name="ha_page_host">Adresse de Home Assistant (broker MQTT)</string>
     <string name="ha_page_port">Port</string>
     <string name="ha_page_username">Utilisateur</string>
@@ -37,21 +37,21 @@
     <string name="ha_page_password_hint">(laisser vide pour garder l\'actuel)</string>
     <string name="ha_page_device_name">Nom de l\'appareil</string>
     <string name="ha_page_send">Envoyer à la TV</string>
-    <string name="ha_page_sent">Envoyé. Regarde ta TV.</string>
+    <string name="ha_page_sent">Envoyé. Regardez votre TV.</string>
     <string name="ha_page_missing_host">L\'adresse est obligatoire.</string>
     <!-- Phase 4 : lumières pilotées depuis NuvioMate -->
     <string name="ha_lights_section">Lumières</string>
-    <string name="ha_lights_section_desc">NuvioMate baisse ou éteint tes lumières quand un film commence, et les remet ensuite. Même utilisateur Home Assistant ; Mosquitto n\'est pas nécessaire pour cette partie.</string>
+    <string name="ha_lights_section_desc">NuvioMate baisse ou éteint vos lumières quand un film commence, et les remet ensuite. Même utilisateur Home Assistant ; Mosquitto n\'est pas nécessaire pour cette partie.</string>
     <string name="ha_amb_title">Ambiance Cinéma</string>
     <string name="ha_amb_row_subtitle">Quand elle s\'applique, et ce que fait chaque lumière</string>
     <string name="ha_amb_on">Activée</string>
     <string name="ha_amb_off">Désactivée</string>
     <string name="ha_lights_title">Lumières</string>
-    <string name="ha_lights_row_subtitle">Choisis les lumières que NuvioMate peut piloter</string>
-    <string name="ha_lights_subtitle">Les lumières de Home Assistant, par pièce. Coche celles que l\'ambiance doit piloter.</string>
+    <string name="ha_lights_row_subtitle">Choisissez les lumières que NuvioMate peut piloter</string>
+    <string name="ha_lights_subtitle">Les lumières de Home Assistant, par pièce. Cochez celles que l’ambiance doit piloter.</string>
     <string name="ha_lights_value">%1$d choisie(s)</string>
     <string name="ha_lights_loading">Chargement des lumières…</string>
-    <string name="ha_lights_retry">Appuie sur OK pour réessayer</string>
+    <string name="ha_lights_retry">Appuyez sur OK pour réessayer</string>
     <string name="ha_lights_no_room">Sans pièce</string>
     <string name="ha_lights_none">Home Assistant n\'a aucune lumière</string>
     <string name="ha_light_group">groupe de %1$d</string>
@@ -61,7 +61,7 @@
     <string name="ha_cap_whites">Luminosité, blanc chaud/froid</string>
     <string name="ha_cap_colors">Luminosité, couleurs</string>
     <string name="ha_api_check_title">Connexion aux lumières</string>
-    <string name="ha_api_check_subtitle">Appuie pour tester la connexion à Home Assistant</string>
+    <string name="ha_api_check_subtitle">Appuyez pour tester la connexion à Home Assistant</string>
     <string name="ha_api_check_unknown">Tester</string>
     <string name="ha_api_check_checking">Test en cours…</string>
     <string name="ha_api_check_ok">Connecté en tant que %1$s</string>
@@ -70,7 +70,7 @@
     <string name="ha_api_url_subtitle">Pour les lumières. Par défaut, l\'adresse du broker sur le port 8123</string>
     <string name="ha_api_url_placeholder">http://192.168.1.10:8123</string>
     <string name="ha_token_title">Jeton d\'accès (facultatif)</string>
-    <string name="ha_token_subtitle">Seulement si la connexion échoue, par exemple avec la double authentification : crée un jeton longue durée dans ton profil Home Assistant</string>
+    <string name="ha_token_subtitle">Seulement si la connexion échoue, par exemple avec la double authentification : créez un jeton longue durée dans votre profil Home Assistant</string>
     <string name="ha_api_failure_not_configured">Adresse, utilisateur ou mot de passe manquant</string>
     <string name="ha_api_failure_unreachable">Home Assistant injoignable</string>
     <string name="ha_api_failure_bad_credentials">Utilisateur ou mot de passe refusé</string>

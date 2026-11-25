@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.nuvio.tv.R
 import com.nuvio.tv.ui.components.NuvioDialog
 import com.nuvio.tv.ui.screens.account.InputField
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.theme.NuvioTheme
 import com.nuvio.vpn.android.VpnSettingsController
 import kotlinx.coroutines.delay
@@ -133,7 +134,7 @@ fun VpnSettingsContent(initialFocusRequester: FocusRequester? = null) {
     ) {
         SettingsDetailHeader(
             title = stringResource(VpnR.string.vpn_profiles_title),
-            subtitle = if (busy) "Saving…" else stringResource(VpnR.string.vpn_profiles_description)
+            subtitle = if (busy) "Saving…".tr() else stringResource(VpnR.string.vpn_profiles_description)
         )
         LazyColumn(
             modifier = Modifier.fillMaxWidth().weight(1f),
@@ -228,8 +229,8 @@ fun VpnSettingsContent(initialFocusRequester: FocusRequester? = null) {
                             subtitle = if (profile.readable) {
                                 val kind = stringResource(VpnR.string.vpn_profiles_pending, profile.kind)
                                 val login = when (profile.login) {
-                                    VpnSettingsController.LOGIN_SAVED -> " · Login saved"
-                                    VpnSettingsController.LOGIN_REQUIRED -> " · Login needed"
+                                    VpnSettingsController.LOGIN_SAVED -> " · " + "Login saved".tr()
+                                    VpnSettingsController.LOGIN_REQUIRED -> " · " + "Login needed".tr()
                                     else -> ""
                                 }
                                 if (profile.selected) kind + " · " + stringResource(VpnR.string.vpn_profiles_selected) + login else kind + login

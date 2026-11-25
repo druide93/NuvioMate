@@ -2,6 +2,7 @@ package com.nuvio.tv.livetv.calendar
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nuvio.tv.livetv.ui.LiveTvTexts
 import com.nuvio.tv.livetv.data.LiveTvPreferences
 import com.nuvio.tv.livetv.player.LiveTvPlaybackController
 import com.nuvio.tv.livetv.record.LiveTvNotice
@@ -82,10 +83,10 @@ class CalendarViewModel @Inject constructor(
             val on = repo.toggleFollow(f)
             LiveTvNotice.show(
                 when {
-                    f.isAiring && on -> "${f.name} is on your Calendar"
-                    f.isAiring -> "${f.name} taken off your Calendar"
-                    on -> "Bell on: new episodes of ${f.name} will show on Home and in your Calendar"
-                    else -> "Bell turned off for ${f.name}"
+                    f.isAiring && on -> LiveTvTexts.trf("{0} is on your Calendar", f.name)
+                    f.isAiring -> LiveTvTexts.trf("{0} taken off your Calendar", f.name)
+                    on -> LiveTvTexts.trf("Bell on: new episodes of {0} will show on Home and in your Calendar", f.name)
+                    else -> LiveTvTexts.trf("Bell turned off for {0}", f.name)
                 }
             )
         }
@@ -94,7 +95,7 @@ class CalendarViewModel @Inject constructor(
     fun hide(e: CalendarEntry) {
         viewModelScope.launch {
             repo.hide(e.contentId, e.title)
-            LiveTvNotice.show("${e.title} is hidden from the Calendar (Hidden shows brings it back)")
+            LiveTvNotice.show(LiveTvTexts.trf("{0} is hidden from the Calendar (Hidden shows brings it back)", e.title))
         }
     }
 
@@ -175,7 +176,7 @@ class CalendarViewModel @Inject constructor(
     fun setShowChannel(e: CalendarEntry, channel: com.nuvio.tv.livetv.model.LiveChannel?) {
         viewModelScope.launch {
             repo.setShowChannel(e.contentId, channel?.key)
-            LiveTvNotice.show(if (channel != null) "${e.title} uses ${channel.name} from now on" else "${e.title} uses the channels found in your guide again")
+            LiveTvNotice.show(if (channel != null) LiveTvTexts.trf("{0} uses {1} from now on", e.title, channel.name) else LiveTvTexts.trf("{0} uses the channels found in your guide again", e.title))
         }
     }
 

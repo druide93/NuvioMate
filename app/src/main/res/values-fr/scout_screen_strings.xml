@@ -115,13 +115,13 @@
     <string name="scout_topic_politics">Politique</string>
     <string name="scout_family_magical">Magique</string>
     <string name="scout_just_me">Juste moi</string>
-    <string name="scout_who_and">Toi et %1$s</string>
+    <string name="scout_who_and">Vous et %1$s</string>
     <string name="scout_who_count">%1$d spectateurs</string>
     <string name="scout_or_just_ask">Ou demande simplement</string>
-    <string name="scout_who_hint">Les suggestions conviendront à tous ceux que tu coches</string>
-    <string name="scout_who_you">Toi</string>
+    <string name="scout_who_hint">Les suggestions conviendront à tous ceux que vous cochez</string>
+    <string name="scout_who_you">Vous</string>
     <string name="scout_family_suitable">Pour tous</string>
-    <string name="scout_for_you">Pour toi</string>
+    <string name="scout_for_you">Pour vous</string>
     <string name="scout_details">Détails</string>
     <string name="scout_taste_titles">Titres</string>
     <string name="scout_taste_shaping_short">Ce qui guide Scout</string>

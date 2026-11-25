@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- NuvioMate’s French for texts the upstream project hasn’t translated yet. When upstream later translates a key in its own values-fr file, remove that key from here: a duplicate breaks the build. -->
+
+    <!-- From values/strings.xml -->
+    <string name="episodes_cd_rewatched">Revu</string>
+    <string name="episodes_mark_rewatched">Marquer comme revu</string>
+    <string name="episodes_mark_not_rewatched">Marquer comme non revu</string>
+    <string name="detail_episode_marked_rewatched">Épisode marqué comme revu</string>
+    <string name="detail_episode_marked_not_rewatched">Épisode marqué comme non revu</string>
+    <string name="detail_rewatch_too_soon">Simkl n’a pas enregistré ce revisionnage&#160;: l’épisode a été regardé il y a moins de 48&#160;heures.</string>
+    <string name="detail_rewatch_not_recorded">Simkl n’a pas enregistré ce revisionnage.</string>
+    <string name="settings_tracking_completion_title">Seuil de visionnage</string>
+    <string name="settings_tracking_completion_subtitle">Pourcentage de lecture nécessaire pour marquer un titre comme vu. Les repères de générique de fin sont prioritaires lorsqu’ils sont disponibles.</string>
+    <string name="settings_tracking_completion_value">%1$s&#160;%%</string>
+    <string name="settings_tracking_rewatch_title">Suivre les revisionnages</string>
+    <string name="settings_tracking_rewatch_subtitle">Enregistre les nouveaux visionnages de titres terminés il y a plus de 2&#160;jours comme des sessions de revisionnage Simkl distinctes, et suit les revisionnages en cours dans Continuer à regarder.</string>
+    <string name="settings_tracking_rewatch_dialog_title">Suivre les revisionnages</string>
+    <string name="settings_tracking_rewatch_dialog_subtitle">Les sessions de revisionnage nécessitent Simkl PRO ou VIP et ne sont créées que pour les titres que vous avez déjà terminés.</string>
+    <string name="settings_tracking_rewatch_off">Désactivé</string>
+    <string name="settings_tracking_rewatch_off_subtitle">Ne pas enregistrer les nouveaux visionnages sur Simkl ni afficher les sessions de revisionnage en cours dans Continuer à regarder.</string>
+    <string name="settings_tracking_rewatch_semi">Semi-automatique</string>
+    <string name="settings_tracking_rewatch_semi_subtitle">Demande une fois avant de démarrer une nouvelle session de revisionnage. Une fois celle-ci active, les épisodes restants sont enregistrés automatiquement.</string>
+    <string name="settings_tracking_rewatch_automatic">Automatique</string>
+    <string name="settings_tracking_rewatch_automatic_subtitle">Démarre automatiquement une session de revisionnage et enregistre les nouveaux visionnages chaque fois que vous relancez un titre terminé.</string>
+    <string name="settings_tracking_rewatch_pro_title">Le suivi des revisionnages nécessite Simkl PRO ou VIP.</string>
+    <string name="settings_tracking_rewatch_pro_description">Simkl n’enregistre les revisionnages que pour les comptes Pro ou VIP. Les sessions déjà présentes sur votre compte Simkl y restent si votre abonnement change.</string>
+    <string name="settings_tracking_rewatch_pro_upgrade">Mettre à niveau</string>
+    <string name="settings_tracking_rewatch_pro_not_now">Pas maintenant</string>
+    <string name="rewatch_prompt_title">Vous avez déjà terminé ce titre.</string>
+    <string name="rewatch_prompt_subtitle">Démarrer une session de revisionnage sur Simkl&#160;?</string>
+    <string name="rewatch_prompt_confirm">Oui</string>
+    <string name="rewatch_prompt_dismiss">Non</string>
+    <string name="settings_usenet_subtitle">Fournisseurs, indexeurs, lecture et diagnostics</string>
+    <string name="subtitle_style_customize_ass">Personnaliser le style ASS/SSA</string>
+    <string name="player_finding_next_stream">Recherche du flux suivant…</string>
+    <string name="player_trying_next_stream">Essai du flux suivant (tentative %1$d)…</string>
+    <string name="player_stream_fallback_exhausted">Plus aucun flux ne fonctionne. Choisissez une autre source ou réessayez.</string>
+    <string name="usenet_builtin_addon_title">Usenet intégré</string>
+    <string name="usenet_builtin_addon_desc">Résultats de vos propres fournisseurs NNTP et indexeurs Newznab. Déplacez-le pour choisir où ils apparaissent.</string>
+    <string name="usenet_fallback">Repli Usenet automatique</string>
+    <string name="usenet_fallback_description">Si un flux Usenet échoue, essaie les sources Usenet suivantes, dans la limite de tentatives configurée. Les flux Torrent et autres ne basculent jamais automatiquement.</string>
+    <string name="player_disc_titles">Titres du disque</string>
+    <string name="player_disc_title_feature">Film · %1$d&#160;min</string>
+    <string name="player_disc_title_extra">Bonus · %1$d&#160;min</string>
+    <string name="player_disc_title_subtitles">Sous-titres %1$s</string>
+    <string name="player_disc_title_failed">Ce titre n’a pas pu être lu</string>
+    <plurals name="player_disc_title_clips">
+        <item quantity="one">%d clip</item>
+        <item quantity="many">%d clips</item>
+        <item quantity="other">%d clips</item>
+    </plurals>
+
+    <!-- From values/strings_iptv_drive_folder.xml -->
+    <string name="iptv_place_network_use">Utiliser le dossier réseau</string>
+    <string name="iptv_place_network_use_note">Les nouveaux enregistrements vont dans %1$s</string>
+    <string name="iptv_place_network_change">Changer de dossier réseau…</string>
+    <string name="iptv_place_network_change_note">Choisir un autre ordinateur, NAS ou dossier partagé</string>
+    <string name="iptv_place_network_remove">Retirer le dossier réseau</string>
+    <string name="iptv_place_network_remove_note">Revenir à la situation d’avant sa configuration</string>
+    <string name="iptv_place_network_remove_message">Ce téléviseur cesse d’utiliser %1$s. Les enregistrements déjà sauvegardés y restent et ne sont pas supprimés.</string>
+
+    <!-- From values/strings_iptv_settings_support.xml -->
+    <string name="iptv_settings_support_capture_start">Mesurer les performances de l’écran pendant 5&#160;minutes</string>
+    <string name="iptv_settings_support_capture_stop">Arrêter la mesure des performances</string>
+    <string name="iptv_settings_support_capture_hint">Fermez ce rapport et utilisez Guide, Sports ou Multiview. Rouvrez-le pour voir les mesures d’images et de blocages. La mesure s’arrête quand l’application est en arrière-plan.</string>
+
+    <!-- From values/strings_iptv_settings.xml -->
+    <string name="iptv_settings_adaptive_live_buffer">Tampon adaptatif de la TV en direct</string>
+    <string name="iptv_settings_adaptive_live_buffer_description">Constitue peu à peu une réserve de 20&#160;secondes sur ce téléviseur en ralentissant la lecture en direct jusqu’à 0,98× si besoin. Garde des voix naturelles avec une sortie audio compatible et respecte votre vitesse de lecture.</string>
+</resources>

@@ -252,8 +252,9 @@ class OnDemandViewModel @Inject constructor(
 
     /** The grid layout's header: "On Demand - <playlist>", for the title you're on. */
     val homeHeader: StateFlow<String> = kotlinx.coroutines.flow.combine(focusedPlaylist, playlistNames) { id, names ->
-        id?.let { names[it] }?.takeIf { it.isNotBlank() }?.let { "On Demand - $it" } ?: "On Demand"
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, "On Demand")
+        id?.let { names[it] }?.takeIf { it.isNotBlank() }?.let { com.nuvio.tv.livetv.ui.LiveTvTexts.trf("On Demand - {0}", it) }
+            ?: com.nuvio.tv.livetv.ui.LiveTvTexts.tr("On Demand")
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, com.nuvio.tv.livetv.ui.LiveTvTexts.tr("On Demand"))
 
     private var loadJob: Job? = null
     /** Hidden and locked categories as of the last reload (the settings flow can lag behind). */

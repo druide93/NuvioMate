@@ -10,6 +10,8 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import com.nuvio.tv.livetv.data.ForkHttp
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 
 /** A goal, touchdown or basket worth listing on the game page. */
 data class ScoringPlay(val clock: String, val teamAbbr: String?, val text: String, val awayScore: String?, val homeScore: String?)
@@ -522,7 +524,7 @@ internal class SportsFeeds {
                     val home = m.optBoolean("home")
                     if (home) hs++ else aS++
                     val who = m.str("player") ?: kind
-                    val text = who + (m.str("assist")?.let { " (assist: $it)" } ?: "") +
+                    val text = who + (m.str("assist")?.let { LiveTvTexts.trf(" (assist: {0})", it) } ?: "") +
                         (detail.takeIf { it.isNotBlank() && !it.equals("Normal Goal", true) }?.let { " · $it" } ?: "")
                     plays.put(JSONObject()
                         .put("clock", JSONObject().put("displayValue", m.str("min")?.let { "$it'" } ?: ""))
@@ -862,7 +864,7 @@ internal class SportsFeeds {
                     broadcasts = broadcasts.toList(),
                     espnId = espnId,
                     endMs = end,
-                    note = if (multiDay && end != null) "Until " + SimpleDateFormat("EEE d MMM", Locale.getDefault()).format(java.util.Date(end)) else null,
+                    note = if (multiDay && end != null) LiveTvTexts.trf("Until {0}", SimpleDateFormat("EEE d MMM", Locale.getDefault()).format(java.util.Date(end))) else null,
                     standings = runCatching {
                         when {
                             // Tennis matches, a fight card's bouts: two at a time.
@@ -993,10 +995,10 @@ internal class SportsFeeds {
                 else -> Triple(GameState.PRE, race.start, race)
             }
             val note = when (state) {
-                GameState.LIVE -> if (session.race) "Race · Live" else "${session.label} · Live"
+                GameState.LIVE -> if (session.race) "Race · Live".tr() else LiveTvTexts.trf("{0} · Live", sessionName(session.label))
                 GameState.PRE -> when {
-                    session.race -> "Race"
-                    else -> "Next: ${session.label} · Race ${dayFormat.format(java.util.Date(race.start))}"
+                    session.race -> "Race".tr()
+                    else -> LiveTvTexts.trf("Next: {0} · Race {1}", sessionName(session.label), dayFormat.format(java.util.Date(race.start)))
                 }
                 else -> null
             }
@@ -1768,7 +1770,7 @@ internal object OtherFeeds {
                 "PP".takeIf { g.optString("power_play") == "1" }, "SH".takeIf { g.optString("short_handed") == "1" },
                 "EN".takeIf { g.optString("empty_net") == "1" }, "PS".takeIf { g.optString("penalty_shot") == "1" }
             )
-            val text = scorer + (if (assists.isNotEmpty()) " (" + assists.joinToString(", ") + ")" else " (unassisted)") +
+            val text = scorer + (if (assists.isNotEmpty()) " (" + assists.joinToString(", ") + ")" else " (unassisted)".tr()) +
                 (if (tags.isNotEmpty()) " · " + tags.joinToString(" ") else "")
             plays.put(JSONObject()
                 .put("period", JSONObject().put("number", g.optString("period_id").toIntOrNull() ?: 0))

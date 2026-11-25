@@ -86,6 +86,7 @@ import com.nuvio.tv.ui.components.NuvioDialog
 import com.nuvio.tv.ui.screens.addon.QrCodeOverlay
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
+import com.nuvio.tv.livetv.ui.tr
 
 @Composable
 fun DebridSettingsContent(
@@ -468,7 +469,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_resolutions_preferred),
             selectedValues = uiState.streamPreferences.preferredResolutions,
             values = DebridStreamResolution.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(preferredResolutions = value.ifEmpty { DebridStreamResolution.defaultOrder }))
                 activeStreamPicker = null
@@ -479,7 +480,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_resolutions_required),
             selectedValues = uiState.streamPreferences.requiredResolutions,
             values = DebridStreamResolution.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(requiredResolutions = value))
                 activeStreamPicker = null
@@ -490,7 +491,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_resolutions_excluded),
             selectedValues = uiState.streamPreferences.excludedResolutions,
             values = DebridStreamResolution.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(excludedResolutions = value))
                 activeStreamPicker = null
@@ -501,7 +502,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_qualities_preferred),
             selectedValues = uiState.streamPreferences.preferredQualities,
             values = DebridStreamQuality.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(preferredQualities = value.ifEmpty { DebridStreamQuality.defaultOrder }))
                 activeStreamPicker = null
@@ -512,7 +513,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_qualities_required),
             selectedValues = uiState.streamPreferences.requiredQualities,
             values = DebridStreamQuality.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(requiredQualities = value))
                 activeStreamPicker = null
@@ -523,7 +524,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_qualities_excluded),
             selectedValues = uiState.streamPreferences.excludedQualities,
             values = DebridStreamQuality.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(excludedQualities = value))
                 activeStreamPicker = null
@@ -534,7 +535,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_visual_tags_preferred),
             selectedValues = uiState.streamPreferences.preferredVisualTags,
             values = DebridStreamVisualTag.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(preferredVisualTags = value.ifEmpty { DebridStreamVisualTag.defaultOrder }))
                 activeStreamPicker = null
@@ -545,7 +546,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_visual_tags_required),
             selectedValues = uiState.streamPreferences.requiredVisualTags,
             values = DebridStreamVisualTag.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(requiredVisualTags = value))
                 activeStreamPicker = null
@@ -556,7 +557,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_visual_tags_excluded),
             selectedValues = uiState.streamPreferences.excludedVisualTags,
             values = DebridStreamVisualTag.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(excludedVisualTags = value))
                 activeStreamPicker = null
@@ -567,7 +568,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_audio_tags_preferred),
             selectedValues = uiState.streamPreferences.preferredAudioTags,
             values = DebridStreamAudioTag.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(preferredAudioTags = value.ifEmpty { DebridStreamAudioTag.defaultOrder }))
                 activeStreamPicker = null
@@ -578,7 +579,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_audio_tags_required),
             selectedValues = uiState.streamPreferences.requiredAudioTags,
             values = DebridStreamAudioTag.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(requiredAudioTags = value))
                 activeStreamPicker = null
@@ -589,7 +590,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_audio_tags_excluded),
             selectedValues = uiState.streamPreferences.excludedAudioTags,
             values = DebridStreamAudioTag.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(excludedAudioTags = value))
                 activeStreamPicker = null
@@ -600,7 +601,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_channels_preferred),
             selectedValues = uiState.streamPreferences.preferredAudioChannels,
             values = DebridStreamAudioChannel.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(preferredAudioChannels = value.ifEmpty { DebridStreamAudioChannel.defaultOrder }))
                 activeStreamPicker = null
@@ -611,7 +612,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_channels_required),
             selectedValues = uiState.streamPreferences.requiredAudioChannels,
             values = DebridStreamAudioChannel.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(requiredAudioChannels = value))
                 activeStreamPicker = null
@@ -622,7 +623,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_channels_excluded),
             selectedValues = uiState.streamPreferences.excludedAudioChannels,
             values = DebridStreamAudioChannel.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(excludedAudioChannels = value))
                 activeStreamPicker = null
@@ -633,7 +634,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_encodes_preferred),
             selectedValues = uiState.streamPreferences.preferredEncodes,
             values = DebridStreamEncode.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(preferredEncodes = value.ifEmpty { DebridStreamEncode.defaultOrder }))
                 activeStreamPicker = null
@@ -644,7 +645,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_encodes_required),
             selectedValues = uiState.streamPreferences.requiredEncodes,
             values = DebridStreamEncode.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(requiredEncodes = value))
                 activeStreamPicker = null
@@ -655,7 +656,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_encodes_excluded),
             selectedValues = uiState.streamPreferences.excludedEncodes,
             values = DebridStreamEncode.defaultOrder,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(excludedEncodes = value))
                 activeStreamPicker = null
@@ -666,7 +667,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_languages_preferred),
             selectedValues = uiState.streamPreferences.preferredLanguages,
             values = DebridStreamLanguage.entries,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(preferredLanguages = value))
                 activeStreamPicker = null
@@ -677,7 +678,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_languages_required),
             selectedValues = uiState.streamPreferences.requiredLanguages,
             values = DebridStreamLanguage.entries,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(requiredLanguages = value))
                 activeStreamPicker = null
@@ -688,7 +689,7 @@ fun DebridSettingsContent(
             title = stringResource(R.string.debrid_stream_languages_excluded),
             selectedValues = uiState.streamPreferences.excludedLanguages,
             values = DebridStreamLanguage.entries,
-            label = { it.label },
+            label = { it.label.tr() },
             onSelected = { value ->
                 viewModel.setStreamPreferences(uiState.streamPreferences.copy(excludedLanguages = value))
                 activeStreamPicker = null
@@ -1265,7 +1266,7 @@ private fun DebridDeviceAuthDialog(
         statusMessage = if (session == null) {
             startResult.exceptionOrNull()?.message?.takeIf { it.contains("PREMIUMIZE_CLIENT_ID") }
                 ?.let { missingConfigurationMessage }
-                ?: startResult.exceptionOrNull()?.message?.takeIf { it.startsWith("Premiumize said:") } // Live TV fork
+                ?: startResult.exceptionOrNull()?.message?.takeIf { it.startsWith("Premiumize said:") }?.let { com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Premiumize said: {0}", com.nuvio.tv.livetv.ui.LiveTvTexts.tr(it.removePrefix("Premiumize said:").trim())) } // Live TV fork
                 ?: failedMessage
         } else {
             waitingMessage

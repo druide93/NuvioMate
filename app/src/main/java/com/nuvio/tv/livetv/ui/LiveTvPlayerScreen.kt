@@ -537,7 +537,7 @@ fun LiveTvPlayerScreen(
         delay(1_300)
         val n = numberBuffer.toIntOrNull()
         numberBuffer = ""
-        n?.let { viewModel.channelByNumber(it) }?.let { viewModel.preview(it) } ?: run { if (n != null) toast = "No channel $n" }
+        n?.let { viewModel.channelByNumber(it) }?.let { viewModel.preview(it) } ?: run { if (n != null) toast = LiveTvTexts.trf("No channel {0}", n) }
     }
     LaunchedEffect(listVisible, sportsGamesOpen) {
         if (!listVisible && !sportsGamesOpen) {
@@ -930,7 +930,7 @@ fun LiveTvPlayerScreen(
                                     onOpenSportsGame(g.event.id)
                                 } else {
                                     val pick = gamesNow.firstOrNull { it.event.id == g.event.id }
-                                    if (pick == null) toast = "None of your channels show ${g.event.title} right now"
+                                    if (pick == null) toast = LiveTvTexts.trf("None of your channels show {0} right now", g.event.title)
                                     else {
                                         // Its add-on streams join the list as they're found.
                                         sports.lookForStreams(pick.event.id)
@@ -1220,7 +1220,7 @@ fun LiveTvPlayerScreen(
             PlayerStatusMessage(
                 title = if (playingRecording) "Couldn't play this recording · press OK to try again"
                     else if (playback.reconnectAttempt > 8) "Stream unavailable · press OK to retry"
-                    else "Reconnecting… (attempt ${playback.reconnectAttempt})",
+                    else LiveTvTexts.trf("Reconnecting… (attempt {0})", playback.reconnectAttempt),
                 detail = reason,
                 modifier = Modifier.align(Alignment.Center)
             )
@@ -1675,7 +1675,7 @@ fun LiveTvPlayerScreen(
                     .padding(horizontal = 22.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                LiveText("Up next in $upNextSec", size = 13.sp, weight = FontWeight.Medium, color = Color.White.copy(alpha = 0.7f))
+                LiveText(LiveTvTexts.trf("Up next in {0}", upNextSec), size = 13.sp, weight = FontWeight.Medium, color = Color.White.copy(alpha = 0.7f))
                 LiveText(titleMarks(n.title).title, size = 20.sp, weight = FontWeight.Bold, color = Color.White)
                 LiveText(n.episode, size = 15.sp, color = Color.White.copy(alpha = 0.85f))
                 Spacer(Modifier.height(6.dp))
@@ -1724,12 +1724,12 @@ fun LiveTvPlayerScreen(
                 onWatch = { m ->
                     gamePick = null
                     closeFull()
-                    if (!playSportsGame(pick.event.id, m.channel.key)) toast = "${m.channel.name} can't be played right now"
+                    if (!playSportsGame(pick.event.id, m.channel.key)) toast = LiveTvTexts.trf("{0} can't be played right now", m.channel.name)
                     else showBanner()
                 },
                 onMultiview = { m ->
                     gamePick = null
-                    if (!sports.mayPlay(m.channel)) toast = "${m.channel.name} can't be played right now"
+                    if (!sports.mayPlay(m.channel)) toast = LiveTvTexts.trf("{0} can't be played right now", m.channel.name)
                     else {
                         // This channel and that one, side by side.
                         current?.key?.let { com.nuvio.tv.livetv.multiview.MultiviewQueue.add(it) }
@@ -1821,7 +1821,7 @@ fun LiveTvPlayerScreen(
                 },
                 onPickSleep = { minutes ->
                     viewModel.setSleepTimer(minutes)
-                    toast = if (minutes == null) "Sleep timer off" else "Sleep timer: $minutes min"
+                    toast = if (minutes == null) "Sleep timer off" else LiveTvTexts.trf("Sleep timer: {0} min", minutes)
                     dialog = PlayerDialog.NONE
                     scope.launch { delay(60); runCatching { rootFocus.requestFocus() } }
                 },
@@ -1843,7 +1843,7 @@ fun LiveTvPlayerScreen(
                     val mode = com.nuvio.tv.ui.screens.player.AspectMode.entries[i]
                     viewModel.updateSettings { it.copy(aspectMode = mode.name) }
                 },
-                sleepLabel = sleepAt?.let { "${((it - System.currentTimeMillis()) / 60_000 + 1).coerceAtLeast(1)} min left" } ?: "Off",
+                sleepLabel = sleepAt?.let { LiveTvTexts.trf("{0} min left", ((it - System.currentTimeMillis()) / 60_000 + 1).coerceAtLeast(1)) } ?: "Off",
                 timeAction = timeAction,
                 hidden = BarPart.hiddenOf(settings.barHidden),
                 quickSettings = settings,
@@ -1939,7 +1939,7 @@ fun LiveTvPlayerScreen(
         PlayerDialog.SLEEP -> SleepTimerDialog(
             onPick = { minutes ->
                 viewModel.setSleepTimer(minutes)
-                toast = if (minutes == null) "Sleep timer off" else "Sleep timer: $minutes min"
+                toast = if (minutes == null) "Sleep timer off" else LiveTvTexts.trf("Sleep timer: {0} min", minutes)
                 dialog = PlayerDialog.NONE
                 scope.launch { delay(60); runCatching { rootFocus.requestFocus() } }
             },
@@ -1976,7 +1976,7 @@ fun LiveTvPlayerScreen(
             onPick = { mode ->
                 // Remembered for every channel, until you change it again.
                 viewModel.updateSettings { it.copy(aspectMode = mode.name) }
-                toast = "Screen size: ${context.getString(mode.labelResId)}"
+                toast = LiveTvTexts.trf("Screen size: {0}", context.getString(mode.labelResId))
                 dialog = PlayerDialog.NONE
                 scope.launch { delay(60); runCatching { rootFocus.requestFocus() } }
             },
@@ -2063,7 +2063,7 @@ private fun TrackDialog(
                 item {
                     LiveFocusRow(modifier = Modifier.fillMaxWidth(), onClick = { showMore = !showMore }) { f ->
                         LiveText(
-                            (if (showMore) "▾  " else "▸  ") + "More caption tracks",
+                            (if (showMore) "▾  " else "▸  ") + "More caption tracks".tr(),
                             color = focusedTextColor(f).copy(alpha = 0.85f)
                         )
                     }
@@ -2173,7 +2173,7 @@ private fun BackupChannelsDialog(
                             }
                             // Only the highlighted copy shows where it comes from and what's on.
                             if (f) {
-                                val line = listOf(ch.sourceName, ch.group.takeIf { showGroup }.orEmpty(), nowTitle(ch.key)?.let { "Now: $it" }.orEmpty())
+                                val line = listOf(ch.sourceName, ch.group.takeIf { showGroup }.orEmpty(), nowTitle(ch.key)?.let { LiveTvTexts.trf("Now: {0}", it) }.orEmpty())
                                     .filter { it.isNotBlank() }.joinToString(" · ")
                                 if (line.isNotBlank()) LiveText(line, size = 9.sp, color = focusedTextColor(f), maxLines = 1)
                             }
@@ -2286,14 +2286,14 @@ private fun streamInfoRows(
             com.nuvio.tv.livetv.player.LivePictureShape.aspect(w, h, par, shape)?.let { aspect ->
                 val pic = com.nuvio.tv.livetv.player.LivePictureShape
                 val note = when {
-                    pic.ignoresFlag(w, par, shape) -> "  (stream's shape ignored: it says ${pic.ratioText(w * par / h)})"
-                    pic.hasFlag(par) -> "  (stream's shape)"
+                    pic.ignoresFlag(w, par, shape) -> "  " + LiveTvTexts.trf("(stream's shape ignored: it says {0})", pic.ratioText(w * par / h))
+                    pic.hasFlag(par) -> "  " + "(stream's shape)".tr()
                     else -> ""
                 }
                 add("Shape" to "${pic.ratioText(aspect)}$note")
             }
             if (f.frameRate > 0f) add("Frame rate" to "%.2f fps".format(f.frameRate).replace(".00", ""))
-            add("Video" to listOfNotNull(f.sampleMimeType?.substringAfter('/'), f.codecs).joinToString(" · ").ifBlank { "Unknown" })
+            add("Video" to listOfNotNull(f.sampleMimeType?.substringAfter('/'), f.codecs).joinToString(" · ").ifBlank { "Unknown".tr() })
             val br = if (f.bitrate > 0) f.bitrate else f.averageBitrate
             if (br > 0) add("Video bitrate" to "%.1f Mbps".format(br / 1_000_000f))
         } ?: add("Video" to "Not known yet")
@@ -2301,7 +2301,7 @@ private fun streamInfoRows(
             add(
                 "Audio" to listOfNotNull(
                     f.sampleMimeType?.substringAfter('/'),
-                    f.channelCount.takeIf { it > 0 }?.let { c -> when (c) { 1 -> "mono"; 2 -> "stereo"; 6 -> "5.1"; 8 -> "7.1"; else -> "$c ch" } },
+                    f.channelCount.takeIf { it > 0 }?.let { c -> when (c) { 1 -> "mono"; 2 -> "stereo".tr(); 6 -> "5.1"; 8 -> "7.1"; else -> "$c ch" } },
                     f.sampleRate.takeIf { it > 0 }?.let { r -> "${r / 1000} kHz" },
                     f.language
                 ).joinToString(" · ")
@@ -2331,7 +2331,7 @@ private fun SleepTimerDialog(onPick: (Int?) -> Unit, onDismiss: () -> Unit) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             MenuItem("Off", Modifier.focusRequester(first)) { onPick(null) }
             listOf(15, 30, 45, 60, 90, 120).forEach { m ->
-                MenuItem(if (m < 60) "$m minutes" else if (m == 60) "1 hour" else "${m / 60.0} hours".replace(".0 ", " ")) { onPick(m) }
+                MenuItem(sleepChoiceLabel(m)) { onPick(m) }
             }
         }
     }

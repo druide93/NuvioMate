@@ -14,6 +14,7 @@ import com.hierynomus.smbj.auth.NtlmAuthenticator
 import com.hierynomus.smbj.connection.Connection
 import com.hierynomus.smbj.session.Session
 import com.hierynomus.smbj.share.DiskShare
+import com.nuvio.tv.livetv.ui.LiveTvTexts
 import java.io.Closeable
 import java.io.File
 import java.io.OutputStream
@@ -82,7 +83,7 @@ class SmbFolder(val config: NetworkFolderConfig) : Closeable {
         val s = c.authenticate(auth)
         session = s
         val d = s.connectShare(config.share) as? DiskShare
-            ?: throw NetworkFolderException("\"${config.share}\" on ${config.host} isn't a shared folder")
+            ?: throw NetworkFolderException("\"{0}\" on {1} isn't a shared folder", config.share, config.host)
         disk = d
         d
     }
@@ -421,38 +422,51 @@ class SmbFolder(val config: NetworkFolderConfig) : Closeable {
             return h to null
         }
 
-        /** A problem with the network folder, in plain words for the screen. */
-        fun describe(e: Throwable, config: NetworkFolderConfig): String {
+        /** A problem with the network folder, in plain words for the screen (in the device's language). */
+        fun describe(e: Throwable, config: NetworkFolderConfig): String = describeIn(e, config, english = false)
+
+        /** [describe] in English, for the report and for a recording's problem (kept in English). */
+        fun describeEnglish(e: Throwable, config: NetworkFolderConfig): String = describeIn(e, config, english = true)
+
+        private fun describeIn(e: Throwable, config: NetworkFolderConfig, english: Boolean): String {
+            fun say(template: String, vararg args: Any?): String =
+                if (english) args.foldIndexed(template) { i, s, a -> s.replace("{$i}", a.toString()) }
+                else LiveTvTexts.trf(template, *args)
             val host = config.host
             var t: Throwable? = e
             while (t != null) {
                 when (t) {
-                    is NetworkFolderException -> return t.message ?: "The network folder didn't work"
+                    is NetworkFolderException -> return say(t.template, *t.args)
                     is SMBApiException -> return when (t.status) {
-                        NtStatus.STATUS_LOGON_FAILURE -> "Wrong username or password for $host"
-                        NtStatus.STATUS_ACCOUNT_DISABLED -> "That account is turned off on $host"
-                        NtStatus.STATUS_PASSWORD_EXPIRED -> "That account's password has expired on $host"
-                        NtStatus.STATUS_BAD_NETWORK_NAME -> "There's no shared folder called \"${config.share}\" on $host"
-                        NtStatus.STATUS_ACCESS_DENIED -> "That folder can't be saved to. Share it with Read/Write for this user"
-                        NtStatus.STATUS_OBJECT_PATH_NOT_FOUND, NtStatus.STATUS_OBJECT_NAME_NOT_FOUND -> "That folder isn't there and couldn't be made"
-                        NtStatus.STATUS_DISK_FULL -> "The network folder is full"
-                        NtStatus.STATUS_NOT_SUPPORTED -> "$host doesn't allow this. Make sure SMB 2 or 3 file sharing is turned on"
-                        else -> "$host said no (${t.status})"
+                        NtStatus.STATUS_LOGON_FAILURE -> say("Wrong username or password for {0}", host)
+                        NtStatus.STATUS_ACCOUNT_DISABLED -> say("That account is turned off on {0}", host)
+                        NtStatus.STATUS_PASSWORD_EXPIRED -> say("That account's password has expired on {0}", host)
+                        NtStatus.STATUS_BAD_NETWORK_NAME -> say("There's no shared folder called \"{0}\" on {1}", config.share, host)
+                        NtStatus.STATUS_ACCESS_DENIED -> say("That folder can't be saved to. Share it with Read/Write for this user")
+                        NtStatus.STATUS_OBJECT_PATH_NOT_FOUND, NtStatus.STATUS_OBJECT_NAME_NOT_FOUND -> say("That folder isn't there and couldn't be made")
+                        NtStatus.STATUS_DISK_FULL -> say("The network folder is full")
+                        NtStatus.STATUS_NOT_SUPPORTED -> say("{0} doesn't allow this. Make sure SMB 2 or 3 file sharing is turned on", host)
+                        else -> say("{0} said no ({1})", host, t.status)
                     }
-                    is java.net.UnknownHostException -> return "Couldn't find \"$host\". Try the computer's IP address instead (like 192.168.1.20)"
+                    is java.net.UnknownHostException -> return say("Couldn't find \"{0}\". Try the computer's IP address instead (like 192.168.1.20)", host)
                     is java.net.ConnectException, is java.net.NoRouteToHostException ->
-                        return "Couldn't reach $host. Check it's turned on, on the same network, and that file sharing is on"
+                        return say("Couldn't reach {0}. Check it's turned on, on the same network, and that file sharing is on", host)
                     is java.net.SocketTimeoutException, is java.util.concurrent.TimeoutException ->
-                        return "$host didn't answer in time. Check it's awake and on the same network"
+                        return say("{0} didn't answer in time. Check it's awake and on the same network", host)
                 }
                 t = t.cause
             }
             val msg = e.message.orEmpty()
             if (msg.contains("negotiat", ignoreCase = true) || msg.contains("dialect", ignoreCase = true))
-                return "$host only offers old file sharing (SMB 1). Turn on SMB 2 or 3 on it"
-            return "The network folder didn't work (${msg.ifBlank { e.javaClass.simpleName }})"
+                return say("{0} only offers old file sharing (SMB 1). Turn on SMB 2 or 3 on it", host)
+            return say("The network folder didn't work ({0})", msg.ifBlank { e.javaClass.simpleName })
         }
     }
 }
 
-class NetworkFolderException(message: String) : java.io.IOException(message)
+/**
+ * A network folder problem in plain words: [template] with {0}, {1}… for [args], so it can be
+ * shown in the device's language ([SmbFolder.describe]); the message is the English text.
+ */
+class NetworkFolderException(val template: String, vararg val args: Any?) :
+    java.io.IOException(args.foldIndexed(template) { i, s, a -> s.replace("{$i}", a.toString()) })

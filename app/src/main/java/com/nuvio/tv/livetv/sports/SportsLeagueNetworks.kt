@@ -46,6 +46,8 @@ import com.nuvio.tv.livetv.record.LiveTvNotice
 import com.nuvio.tv.livetv.sports.SportsCatalog.hasWord
 import com.nuvio.tv.livetv.ui.ChannelLogo
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.theme.NuvioTheme
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
@@ -143,6 +145,9 @@ internal object LeagueNetworks {
     }
 }
 
+/** A sport's heading on the page: "FOOTBALL" here is American football (soccer is "SOCCER"). */
+private fun networkHeading(sport: String): String = if (sport == "FOOTBALL") trOwn("FOOTBALL") else sport
+
 /** What a tile says under the name: the show on now (live = true), what's next, or that there's no guide. */
 private fun tileLine(p: Pair<EpgProgram?, EpgProgram?>?, now: Long, use24h: Boolean): Pair<String, Boolean> {
     val cur = p?.first
@@ -153,7 +158,7 @@ private fun tileLine(p: Pair<EpgProgram?, EpgProgram?>?, now: Long, use24h: Bool
             val dayKey = SimpleDateFormat("yyyyMMdd", Locale.US)
             val today = dayKey.format(Date(now)) == dayKey.format(Date(next.startMs))
             val day = if (today) "" else SimpleDateFormat("EEE", Locale.getDefault()).format(Date(next.startMs)) + " "
-            "Next: $day${clock(next.startMs, use24h)}" to false
+            "Next: ".tr() + day + clock(next.startMs, use24h) to false
         }
         else -> "No guide info" to false
     }
@@ -209,12 +214,12 @@ internal fun LeagueNetworksPage(
     }
     pickFor?.let { net ->
         ChannelPickerDialog(
-            title = "Pick the channel for ${net.name}",
+            title = LiveTvTexts.trf("Pick the channel for {0}", net.name),
             initial = net.name,
             viewModel = viewModel,
             onPick = { ch ->
                 viewModel.repo.pickLeagueNetwork(net.id, ch.key)
-                LiveTvNotice.show("Saved: ${net.name} uses ${ch.name}")
+                LiveTvNotice.show(LiveTvTexts.trf("Saved: {0} uses {1}", net.name, ch.name))
                 pickFor = null
             },
             onDismiss = { pickFor = null }
@@ -249,7 +254,7 @@ internal fun LeagueNetworksPage(
         ) {
             val bySport = tiles.groupBy { it.network.sport }
             bySport.forEach { (sport, all) ->
-                item(key = "h|$sport") { SectionHeader(sport, bottom = 0.dp) }
+                item(key = "h|$sport") { SectionHeader(networkHeading(sport), bottom = 0.dp) }
                 val sorted = all.sortedBy { it.lead == null }
                 if (sorted.size > 1 && sorted.all { it.lead == null }) {
                     // Nothing found for this sport: one tile, then pick which network to set by hand.
@@ -382,7 +387,7 @@ private fun NetworkCard(
                     LiveText(name, color = Color.White, size = 14.sp, weight = FontWeight.ExtraBold, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
                     if (others > 0) {
                         Spacer(Modifier.width(8.dp))
-                        LiveText("+$others more", color = SportsLook.Dim, size = 11.sp, maxLines = 1)
+                        LiveText(LiveTvTexts.trf("+{0} more", others), color = SportsLook.Dim, size = 11.sp, maxLines = 1)
                     }
                 }
                 Spacer(Modifier.height(3.dp))
@@ -413,7 +418,7 @@ private fun NetworkMenu(
     when (mode) {
         "copies" -> {
             SportsDialog(onDismiss = { mode = "menu" }, width = 560.dp) {
-                LiveText("Other copies of ${net.name}", size = 18.sp, weight = FontWeight.Bold, maxLines = 2)
+                LiveText(LiveTvTexts.trf("Other copies of {0}", net.name), size = 18.sp, weight = FontWeight.Bold, maxLines = 2)
                 LiveText("OK uses that copy.", color = SportsLook.Dim, size = 12.sp)
                 Spacer(Modifier.height(8.dp))
                 val list = listOf(lead) + tile.others
@@ -425,7 +430,7 @@ private fun NetworkMenu(
                             modifier = if (i == 0) Modifier.focusRequester(first) else Modifier,
                             onClick = {
                                 viewModel.repo.pickLeagueNetwork(net.id, ch.key)
-                                LiveTvNotice.show("Saved: ${net.name} uses ${ch.name}")
+                                LiveTvNotice.show(LiveTvTexts.trf("Saved: {0} uses {1}", net.name, ch.name))
                                 onDismiss()
                             }
                         )
@@ -435,12 +440,12 @@ private fun NetworkMenu(
             LaunchedEffect(Unit) { delay(80); runCatching { first.requestFocus() } }
         }
         "pick" -> ChannelPickerDialog(
-            title = "Pick the channel for ${net.name}",
+            title = LiveTvTexts.trf("Pick the channel for {0}", net.name),
             initial = net.name,
             viewModel = viewModel,
             onPick = { ch ->
                 viewModel.repo.pickLeagueNetwork(net.id, ch.key)
-                LiveTvNotice.show("Saved: ${net.name} uses ${ch.name}")
+                LiveTvNotice.show(LiveTvTexts.trf("Saved: {0} uses {1}", net.name, ch.name))
                 onDismiss()
             },
             onDismiss = { mode = "menu" }
@@ -455,7 +460,7 @@ private fun NetworkMenu(
                 SportsMenuRow("Pick a different channel…") { mode = "pick" }
                 if (tile.picked) SportsMenuRow("Reset to automatic") {
                     viewModel.repo.resetLeagueNetwork(net.id)
-                    LiveTvNotice.show("${net.name} is automatic again")
+                    LiveTvNotice.show(LiveTvTexts.trf("{0} is automatic again", net.name))
                     onDismiss()
                 }
             }

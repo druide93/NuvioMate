@@ -254,9 +254,9 @@ fun languageCodeToName(code: String): String {
 
 private fun resolveLanguageCodeToName(code: String): String {
     val lowerCode = code.lowercase()
-    if (lowerCode == "none") return "None"
+    if (lowerCode == "none") return com.nuvio.tv.livetv.ui.LiveTvTexts.tr("None")
     if (lowerCode == "und" || lowerCode == "unknown" || lowerCode == "unk") {
-        return "Unknown"
+        return com.nuvio.tv.livetv.ui.LiveTvTexts.tr("Unknown")
     }
     LANGUAGE_DISPLAY_OVERRIDES[lowerCode]?.let { return it }
     val tokenized = lowerCode

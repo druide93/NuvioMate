@@ -70,6 +70,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.draw.drawWithCache
 import com.nuvio.tv.ui.util.rememberRawSvgPainter
+import com.nuvio.tv.livetv.ui.tr
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.hazeEffect
@@ -370,7 +371,7 @@ private fun SidebarNavigationItem(
         Row(
             modifier = Modifier
                 .semantics {
-                    contentDescription = label
+                    contentDescription = label.tr()
                     role = Role.Tab
                     this.selected = selected
                 }

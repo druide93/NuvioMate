@@ -13,6 +13,7 @@ import android.text.StaticLayout
 import android.text.TextPaint
 import android.text.TextUtils
 import androidx.tvprovider.media.tv.TvContractCompat
+import com.nuvio.tv.livetv.ui.tr
 
 /** The shape of the cards in the launcher rows (Live TV settings → Integration). */
 internal enum class CardShape(val w: Int, val h: Int) {
@@ -443,7 +444,7 @@ internal object LauncherCards {
 
     private fun tagWidths(tags: List<CardTag>, h: Float): List<Float> {
         val tp = textPaint(h * 0.58f, Color.WHITE, BOLD).apply { letterSpacing = 0.06f }
-        return tags.map { t -> tp.measureText(t.text) + h * 0.78f + (if (t.dot != null) h * 0.42f else 0f) }
+        return tags.map { t -> tp.measureText(t.text.tr()) + h * 0.78f + (if (t.dot != null) h * 0.42f else 0f) }
     }
 
     private fun tagsWidth(tags: List<CardTag>, h: Float): Float =
@@ -466,7 +467,7 @@ internal object LauncherCards {
                 tx += h * 0.42f
             }
             tp.color = t.textColor
-            c.drawText(t.text, tx, rect.centerY() - (tp.descent() + tp.ascent()) / 2f, tp)
+            c.drawText(t.text.tr(), tx, rect.centerY() - (tp.descent() + tp.ascent()) / 2f, tp)
             x += widths[i] + gap
         }
     }

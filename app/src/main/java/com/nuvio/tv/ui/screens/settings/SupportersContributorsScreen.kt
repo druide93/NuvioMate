@@ -1342,7 +1342,7 @@ private fun supporterTierLabel(tier: MemberTier): String = stringResource(
 private fun formatSupporterDate(rawDate: String?): String? {
     if (rawDate.isNullOrBlank()) return null
     return runCatching {
-        val formatter = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.getDefault())
+        val formatter = DateTimeFormatter.ofPattern(com.nuvio.tv.livetv.ui.localDatePattern("yMMMd"), Locale.getDefault())
         Instant.parse(rawDate)
             .atZone(ZoneId.systemDefault())
             .format(formatter)

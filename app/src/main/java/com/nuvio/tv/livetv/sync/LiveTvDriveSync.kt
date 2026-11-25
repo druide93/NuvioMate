@@ -116,7 +116,7 @@ class LiveTvDriveSync @Inject constructor(
                     .get()
                     .build()
             ))
-            BackupInfo(json.optLong("savedAt"), json.optString("device").ifBlank { "another TV" }, json.optString("deviceId") == deviceId)
+            BackupInfo(json.optLong("savedAt"), json.optString("device").ifBlank { com.nuvio.tv.livetv.ui.LiveTvTexts.tr("another TV") }, json.optString("deviceId") == deviceId)
         }.getOrNull()
     }
 

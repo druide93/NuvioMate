@@ -47,6 +47,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Icon
 import com.nuvio.tv.domain.model.MetaPreview
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.components.LoadingIndicator
 import com.nuvio.tv.ui.components.PosterCardDefaults
 import com.nuvio.tv.ui.components.PosterCardStyle
@@ -377,7 +379,7 @@ fun OnDemandHomeScreen(
                     onCatalogItemLongPress = onCatalogLongPress,
                     onRequestTrailerPreview = requestTrailerForItem,
                     onItemFocus = onItemFocus,
-                    catalogSeeAllLabel = "See all",
+                    catalogSeeAllLabel = "See all".tr(),
                     onSaveFocusState = { vi, vo, rk, ikm, m, ma, ri, ii ->
                       if (focusEpoch == viewModel.homeFocusEpoch.value) {
                         focusState = focusState.copy(
@@ -406,7 +408,7 @@ fun OnDemandHomeScreen(
                     onCatalogItemLongPress = onCatalogLongPress,
                     posterCardStyle = posterCardStyle,
                     onItemFocus = onItemFocus,
-                    catalogSeeAllLabel = "See all",
+                    catalogSeeAllLabel = "See all".tr(),
                     stickyTitle = homeHeader,
                     onSaveGridFocusState = { vi, vo, key ->
                       if (focusEpoch == viewModel.homeFocusEpoch.value) {
@@ -487,9 +489,9 @@ fun OnDemandHomeScreen(
     sortingUid?.let { uid ->
         val saved = state.groups.firstOrNull { it.uid == uid }?.sort
         VodSortPicker(
-            title = "Sort " + (state.rows.firstOrNull { it.catalogId == uid }?.catalogName ?: "this group"),
+            title = LiveTvTexts.trf("Sort {0}", state.rows.firstOrNull { it.catalogId == uid }?.catalogName ?: "this group".tr()),
             current = VodSort.parse(saved)?.first,
-            useDefaultLabel = "Default (${viewModel.defaultSortLabel()})",
+            useDefaultLabel = LiveTvTexts.trf("Default ({0})", viewModel.defaultSortLabel().tr()),
             onPick = { picked -> sortingUid = null; viewModel.setGroupSort(uid, picked) },
             onDismiss = { sortingUid = null }
         )
@@ -526,7 +528,7 @@ fun OnDemandHomeScreen(
             onOpenDetail(id, type, addonBaseUrl.ifBlank { null }, optionsUid.orEmpty())
         },
         // Holding OK on a title that found the wrong match: pick the right one.
-        extraLabel = "Fix Match",
+        extraLabel = "Fix Match".tr(),
         onExtra = { optionsItem?.let { fixFor = it } }
     )
     providerItem?.let { item ->
@@ -556,7 +558,7 @@ internal fun FixMatchFor(item: VodItem, viewModel: OnDemandViewModel, onDone: ()
         initialQuery = pin?.meta?.name ?: OnDemandDatabase.displayTitle(item.name).let { OnDemandDatabase.withoutTrailingYear(it) ?: it },
         initialSeries = item.kind == VodKind.SERIES,
         initialYear = if (pin == null) item.year else null,
-        scopeNote = "Its poster, artwork and details, and what it opens",
+        scopeNote = "Its poster, artwork and details, and what it opens".tr(),
         hasFix = pin != null,
         current = com.nuvio.tv.livetv.data.TitleMatchFixes.currentOf(pin),
         search = { q, kind, year -> viewModel.searchMatches(q, kind, year) },

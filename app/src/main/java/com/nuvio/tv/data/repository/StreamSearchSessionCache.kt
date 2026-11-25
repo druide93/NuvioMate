@@ -2,6 +2,7 @@ package com.nuvio.tv.data.repository
 
 import com.nuvio.tv.core.network.NetworkResult
 import com.nuvio.tv.domain.model.AddonStreams
+import com.nuvio.tv.livetv.ui.tr
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -163,7 +164,7 @@ internal class StreamSearchSessionCache(
             } catch (error: Throwable) {
                 session.state.update { current ->
                     Snapshot(
-                        result = NetworkResult.Error(error.message ?: "Failed to fetch streams"),
+                        result = NetworkResult.Error(error.message ?: "Failed to fetch streams".tr()),
                         version = current.version + 1,
                         isComplete = false
                     )

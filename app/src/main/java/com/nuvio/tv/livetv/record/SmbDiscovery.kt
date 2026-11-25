@@ -150,7 +150,7 @@ object SmbDiscovery {
                 val session = c.authenticate(auth)
                 try {
                     val ipc = session.connectShare("IPC$") as? PipeShare
-                        ?: throw NetworkFolderException("$host didn't offer its list of shared folders")
+                        ?: throw NetworkFolderException("{0} didn't offer its list of shared folders", host)
                     ipc.use { share ->
                         val pipe = share.open(
                             "srvsvc",

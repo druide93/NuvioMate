@@ -23,6 +23,7 @@ import com.nuvio.tv.domain.model.MetaPreview
 import com.nuvio.tv.domain.model.MetaTrailer
 import com.nuvio.tv.domain.model.PersonDetail
 import com.nuvio.tv.domain.model.PosterShape
+import com.nuvio.tv.livetv.ui.tr
 import java.time.LocalDate
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
@@ -939,7 +940,7 @@ class TmdbMetadataService(
             header = header ?: TmdbEntityHeader(
                 id = entityId,
                 kind = entityKind,
-                name = fallbackName?.takeIf { it.isNotBlank() } ?: "Unknown",
+                name = fallbackName?.takeIf { it.isNotBlank() } ?: "Unknown".tr(),
                 logo = null,
                 originCountry = null,
                 secondaryLabel = null,
@@ -972,7 +973,7 @@ class TmdbMetadataService(
                             kind = entityKind,
                             name = body.name?.takeIf { it.isNotBlank() }
                                 ?: fallbackName?.takeIf { it.isNotBlank() }
-                                ?: "Unknown",
+                                ?: "Unknown".tr(),
                             logo = buildImageUrl(body.logoPath, size = "w500"),
                             originCountry = body.originCountry?.takeIf { it.isNotBlank() },
                             secondaryLabel = body.headquarters?.takeIf { it.isNotBlank() },
@@ -991,7 +992,7 @@ class TmdbMetadataService(
                             kind = entityKind,
                             name = body.name?.takeIf { it.isNotBlank() }
                                 ?: fallbackName?.takeIf { it.isNotBlank() }
-                                ?: "Unknown",
+                                ?: "Unknown".tr(),
                             logo = buildImageUrl(body.logoPath, size = "w500"),
                             originCountry = body.originCountry?.takeIf { it.isNotBlank() },
                             secondaryLabel = body.headquarters?.takeIf { it.isNotBlank() },
@@ -1361,7 +1362,7 @@ class TmdbMetadataService(
                     original = person.originalName,
                     fallbackEnglish = englishPerson?.name,
                     preferredLanguage = normalizedLanguage
-                ) ?: "Unknown"
+                ) ?: "Unknown".tr()
 
                 val preferCrewFilmography = preferCrewCredits ?: shouldPreferCrewCredits(person.knownForDepartment)
 

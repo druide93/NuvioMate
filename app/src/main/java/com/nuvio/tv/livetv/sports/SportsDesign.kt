@@ -63,7 +63,9 @@ import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import com.nuvio.tv.livetv.ui.ChannelLogo
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
 import com.nuvio.tv.livetv.ui.formatClock
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.theme.NuvioTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -545,7 +547,7 @@ internal fun EventBand(ev: SportsEvent, league: League?, sport: Sport, modifier:
             }
             // A long name scrolls (on the highlighted card, and on the game page) so all of it can be read.
             LiveText(look.headline, color = look.text, size = if (big) 28.sp else 19.sp, weight = FontWeight.Black, maxLines = 1, marquee = scroll)
-            (ev.note ?: ev.word?.let { "Mentions $it" } ?: ev.subtitle)?.let {
+            (ev.note ?: ev.word?.let { LiveTvTexts.trf("Mentions {0}", it) } ?: shownSubtitle(ev.subtitle))?.let {
                 OneLine(it, Color.White.copy(alpha = 0.72f), if (big) 13.sp else 10.sp)
             }
         }
@@ -724,7 +726,7 @@ internal fun SectionHeader(
         }
         LiveText(title, color = if (live) Color.White else Color(0xFFC9CCD6), size = 11.sp, weight = FontWeight.Black)
         Spacer(Modifier.weight(1f))
-        count?.let { LiveText(if (it == 1) "1 game" else "$it games", color = SportsLook.Dim, size = 11.sp, weight = FontWeight.Bold) }
+        count?.let { LiveText(if (it == 1) "1 game" else LiveTvTexts.trf("{0} games", it), color = SportsLook.Dim, size = 11.sp, weight = FontWeight.Bold) }
     }
 }
 
@@ -934,13 +936,13 @@ internal fun SportsChannelRow(
                     }
                 }
                 val line = when {
-                    focused && !m.sure -> "Guess: ${m.how}"
-                    finished -> if (m.catchup) "Replay from the start" else "No replay on this channel"
+                    focused && !m.sure -> LiveTvTexts.trf("Guess: {0}", m.how)
+                    finished -> (if (m.catchup) "Replay from the start" else "No replay on this channel").tr()
                     else -> m.program?.title?.takeIf { it != m.channel.name } ?: m.channel.group
                 }.let { base ->
                     val p = m.program
                     if (p != null && eventStartMs != null && kotlin.math.abs(p.startMs - eventStartMs) > 20 * 60_000L)
-                        "Airs ${com.nuvio.tv.livetv.ui.formatClock(p.startMs, use24h)} · $base" else base
+                        LiveTvTexts.trf("Airs {0} · {1}", com.nuvio.tv.livetv.ui.formatClock(p.startMs, use24h), base) else base
                 }
                 if (withGuide && guide != null) {
                     GuideLineText(guide, modifier = Modifier.padding(vertical = 1.dp))

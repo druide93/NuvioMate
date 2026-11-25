@@ -480,7 +480,7 @@ fun RecordingsScreen(
     val playNow: (LiveTvRecording) -> Unit = { rec ->
         // Nothing saved yet (it's still connecting): say so instead of an error.
         if (rec.durationSec <= 0) LiveTvNotice.show(
-            rec.problem?.let { LiveTvTexts.trf("\"{0}\" hasn't recorded anything yet: {1}", rec.title, it.tr()) }
+            rec.problem?.let { LiveTvTexts.trf("\"{0}\" hasn't recorded anything yet: {1}", rec.title, recordingProblemText(it)) }
                 ?: LiveTvTexts.trf("\"{0}\" hasn't recorded anything yet. Give it a few seconds.", rec.title)
         )
         else onPlay(viewModel.playUrl(rec), rec.title, posters[rec.id], rec.id, false)
@@ -848,7 +848,7 @@ fun RecordingsScreen(
                 else add("Mark as Watched" to { menuFor = null; viewModel.markWatched(listOf(rec)); resumeTick++ })
                 if (RecordingStorage.choices(recContext).size > 1) add("Move To…" to { menuFor = null; movePick = listOf(rec) })
                 // Never removed by "Delete recordings after" (Settings › Live TV › Recordings).
-                if (!rec.fromOtherTv) add((if (rec.keepForever) "Keep Forever  ✓" else "Keep Forever") to {
+                if (!rec.fromOtherTv) add((if (rec.keepForever) "Keep Forever".tr() + "  ✓" else "Keep Forever") to {
                     menuFor = null; viewModel.setKeepForever(rec, !rec.keepForever)
                 })
             }
@@ -859,7 +859,7 @@ fun RecordingsScreen(
                 add("Fix Match" to { menuFor = null; fixMatchFor = rec.title to (if (rec.episode.isNullOrBlank()) null else true) })
             add("Delete" to { menuFor = null; confirmDelete = rec })
         }
-        RecordingActionDialog(title = rec.title, detail = rec.problem, actions = actions, onDismiss = { menuFor = null })
+        RecordingActionDialog(title = rec.title, detail = rec.problem?.let { recordingProblemText(it) }, actions = actions, onDismiss = { menuFor = null })
     }
     fixMatchFor?.let { (title, series) ->
         val fix = viewModel.fixFor(title)
@@ -867,7 +867,7 @@ fun RecordingsScreen(
             title = title,
             initialQuery = fix?.meta?.name ?: com.nuvio.tv.livetv.ui.LiveTvSearchBridge.cleanTitle(title).ifBlank { title },
             initialSeries = series,
-            scopeNote = "Used for every recording of this show, now and later",
+            scopeNote = "Used for every recording of this show, now and later".tr(),
             hasFix = fix != null,
             current = com.nuvio.tv.livetv.data.TitleMatchFixes.currentOf(fix),
             search = { q, kind, year -> viewModel.searchMatches(q, kind, year) },
@@ -881,10 +881,10 @@ fun RecordingsScreen(
         val m = moving!!
         RecordingActionDialog(
             title = "Moving recordings",
-            detail = "\"${m.title}\"" + (if (m.count > 1) " (${m.index} of ${m.count})" else "") +
-                " · " + sizeLabel(m.doneBytes) + " of " + sizeLabel(m.totalBytes) + ". " +
-                "Recordings already moved stay moved; the rest stay where they are." +
-                if (m.network) " To or from the network folder, it stops once the recording being moved now is done." else "",
+            detail = "\"${m.title}\"" + (if (m.count > 1) " " + LiveTvTexts.trf("({0} of {1})", m.index, m.count) else "") +
+                " · " + LiveTvTexts.trf("{0} of {1}", sizeLabel(m.doneBytes), sizeLabel(m.totalBytes)) + ". " +
+                "Recordings already moved stay moved; the rest stay where they are.".tr() +
+                if (m.network) " " + "To or from the network folder, it stops once the recording being moved now is done.".tr() else "",
             actions = (if (m.stopping) emptyList<Pair<String, () -> Unit>>() else listOf("Stop Moving" to { movePick = null; viewModel.stopMove() })) +
                 listOf("Keep Going" to { movePick = null }),
             onDismiss = { movePick = null }
@@ -1136,8 +1136,8 @@ private fun RecordingNowCard(
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             LiveText(rec.title + (rec.episode?.let { " · $it" } ?: ""), size = 16.sp, weight = FontWeight.Bold, marquee = watchFocused || stopFocused)
             val status = when {
-                rec.durationSec <= 0 -> "Starting…".tr() + (rec.problem?.let { " (" + it.tr() + ")" } ?: "")
-                else -> LiveTvTexts.trf("{0} recorded", durationLabel(rec.durationSec)) + (rec.problem?.let { " · " + it.tr() } ?: "")
+                rec.durationSec <= 0 -> "Starting…".tr() + (rec.problem?.let { " (" + recordingProblemText(it) + ")" } ?: "")
+                else -> LiveTvTexts.trf("{0} recorded", durationLabel(rec.durationSec)) + (rec.problem?.let { " · " + recordingProblemText(it) } ?: "")
             }
             LiveText(
                 listOf(rec.channelName, time.format(Date(from)) + " – " + time.format(Date(to)), status).joinToString(" · "),
@@ -1207,7 +1207,7 @@ private fun RecordingsGearButton(onClick: () -> Unit) {
             .clip(androidx.compose.foundation.shape.CircleShape)
             .background(if (focused) colors.TextPrimary else com.nuvio.tv.livetv.ui.guideSurfaceVariant())
             .border(2.dp, if (focused) colors.FocusRing else com.nuvio.tv.livetv.ui.GuideGlassEdge, androidx.compose.foundation.shape.CircleShape)
-            .semantics { contentDescription = "Recording settings" }
+            .semantics { contentDescription = "Recording settings".tr() }
             .onFocusChanged { focused = it.isFocused }
             .combinedClickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -1528,9 +1528,9 @@ private fun dayStartOf(ms: Long): Long = java.util.Calendar.getInstance().apply 
 private fun dayHeading(dayStart: Long): String {
     val noon = dayStart + 12 * 3_600_000L
     val date = SimpleDateFormat("EEE d MMM", Locale.getDefault()).format(Date(noon))
-    return when (shortDayLabel(noon)) {
-        "Today" -> "Today · $date"
-        "Tomorrow" -> "Tomorrow · $date"
+    // shortDayLabel gives "Today"/"Tomorrow" in the device's language.
+    return when (val d = shortDayLabel(noon)) {
+        "Today".tr(), "Tomorrow".tr() -> "$d · $date"
         else -> SimpleDateFormat("EEEE d MMM", Locale.getDefault()).format(Date(noon))
     }
 }
@@ -1595,11 +1595,11 @@ internal fun RecordedCard(
             marquee = focused
         )
         LiveText(
-            if (failed) rec.problem ?: "Couldn't be recorded"
+            if (failed) rec.problem?.let { recordingProblemText(it) } ?: "Couldn't be recorded"
             else listOfNotNull(
                 shortDayLabel(rec.programStartMs.takeIf { it > 0 } ?: rec.startedAtMs),
                 durationLabel(rec.durationSec).takeIf { rec.durationSec > 0 }
-            ).joinToString(" · ") + (rec.problem?.let { " · " + it.tr() } ?: ""),
+            ).joinToString(" · ") + (rec.problem?.let { " · " + recordingProblemText(it) } ?: ""),
             size = 12.sp,
             color = if (failed) colors.Error else colors.TextSecondary
         )
@@ -1665,7 +1665,7 @@ private fun RecordingInfoDialog(rec: LiveTvRecording, savedOn: String, playlist:
         })
         add("Saved on" to savedOn)
         if (rec.keepForever) add("Kept" to "Forever (never deleted by age)")
-        rec.problem?.let { add("Note" to it) }
+        rec.problem?.let { add("Note" to recordingProblemText(it)) }
     }
     com.nuvio.tv.livetv.ui.LiveDialog(onDismiss = onDismiss, width = 520.dp) {
         LiveText(rec.title, size = 20.sp, weight = FontWeight.Bold, maxLines = 2)
@@ -1727,9 +1727,9 @@ internal fun durationLabel(sec: Double): String {
 }
 
 internal fun sizeLabel(bytes: Long): String = when {
-    bytes >= 1024L * 1024 * 1024 -> String.format(Locale.US, "%.1f GB", bytes / (1024.0 * 1024 * 1024))
-    bytes >= 1024L * 1024 -> String.format(Locale.US, "%.0f MB", bytes / (1024.0 * 1024))
-    else -> "${bytes / 1024} KB"
+    bytes >= 1024L * 1024 * 1024 -> String.format(Locale.US, "%.1f GB".tr(), bytes / (1024.0 * 1024 * 1024))
+    bytes >= 1024L * 1024 -> String.format(Locale.US, "%.0f MB".tr(), bytes / (1024.0 * 1024))
+    else -> String.format(Locale.US, "%d KB".tr(), bytes / 1024)
 }
 
 /** "8:30 PM" / "20:30" for a time of day in minutes after midnight. */

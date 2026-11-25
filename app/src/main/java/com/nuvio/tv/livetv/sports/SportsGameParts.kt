@@ -42,7 +42,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nuvio.tv.livetv.model.EpgProgram
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
 import com.nuvio.tv.livetv.ui.formatClock
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.theme.NuvioTheme
 
 /*
@@ -77,20 +79,20 @@ internal fun guideLine(ev: SportsEvent, m: ChannelMatch, onNow: EpgProgram?, now
     val nowTitle = onNow?.title?.takeIf { it.isNotBlank() }
     fun differs(a: EpgProgram?, b: EpgProgram?) = a == null || b == null || a.startMs != b.startMs || a.title != b.title
     return when {
-        p != null && now >= p.startMs && now < p.stopMs -> GuideLine(GuideKind.NOW, "Showing it now", p.title.takeIf { it.isNotBlank() })
+        p != null && now >= p.startMs && now < p.stopMs -> GuideLine(GuideKind.NOW, "Showing it now".tr(), p.title.takeIf { it.isNotBlank() })
         p != null && p.startMs > now -> {
             val at = formatClock(p.startMs, use24h)
             val onNowTitle = nowTitle?.takeIf { differs(onNow, p) }
             // The game has started but this channel's listing is later: something else is on now.
-            if (ev.state == GameState.LIVE && onNowTitle != null) GuideLine(GuideKind.OTHER, "Something else on now", "On now: $onNowTitle · the game is listed at $at")
-            else GuideLine(GuideKind.LATER, "Shows it at $at", onNowTitle?.let { "On now: $it" })
+            if (ev.state == GameState.LIVE && onNowTitle != null) GuideLine(GuideKind.OTHER, "Something else on now".tr(), LiveTvTexts.trf("On now: {0} · the game is listed at {1}", onNowTitle, at))
+            else GuideLine(GuideKind.LATER, LiveTvTexts.trf("Shows it at {0}", at), onNowTitle?.let { LiveTvTexts.trf("On now: {0}", it) })
         }
-        p != null -> GuideLine(GuideKind.ENDED, "Its listing has ended", nowTitle?.let { "On now: $it" })
+        p != null -> GuideLine(GuideKind.ENDED, "Its listing has ended".tr(), nowTitle?.let { LiveTvTexts.trf("On now: {0}", it) })
         nowTitle != null -> GuideLine(
             if (ev.state == GameState.LIVE) GuideKind.OTHER else GuideKind.UNKNOWN,
-            "Not in this channel's guide", "On now: $nowTitle"
+            "Not in this channel's guide".tr(), LiveTvTexts.trf("On now: {0}", nowTitle)
         )
-        else -> GuideLine(GuideKind.UNKNOWN, "No guide info", null)
+        else -> GuideLine(GuideKind.UNKNOWN, "No guide info".tr(), null)
     }
 }
 
@@ -282,7 +284,7 @@ internal fun GameChannelsDialog(
             size = 18.sp, weight = FontWeight.Bold
         )
         LiveText(
-            listOfNotNull(league?.name, cornerStatus(ev, use24h, hideScores = true), "choose a channel").joinToString("  ·  "),
+            listOfNotNull(league?.name?.tr(), cornerStatus(ev, use24h, hideScores = true), "choose a channel".tr()).joinToString("  ·  "),
             color = SportsLook.Dim, size = 12.sp
         )
         Spacer(Modifier.height(10.dp))
@@ -326,7 +328,7 @@ internal fun GameChannelsDialog(
                             }
                         }
                         if (guide != null) GuideLineText(guide, modifier = Modifier.padding(top = 2.dp))
-                        else if (m.channel.sourceId == SportsAddonSource.SOURCE_ID) LiveText("Add-on stream · ${m.channel.sourceName}", color = SportsLook.Dim, size = 10.sp)
+                        else if (m.channel.sourceId == SportsAddonSource.SOURCE_ID) LiveText(LiveTvTexts.trf("Add-on stream · {0}", m.channel.sourceName), color = SportsLook.Dim, size = 10.sp)
                         else if (!m.sure) LiveText("Might be showing it", color = SportsLook.Dim, size = 10.sp)
                     }
                     Spacer(Modifier.width(8.dp))

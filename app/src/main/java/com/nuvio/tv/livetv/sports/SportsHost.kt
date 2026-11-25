@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.navigation.Screen
 import com.nuvio.tv.ui.theme.NuvioTheme
 import dagger.hilt.EntryPoint
@@ -150,9 +152,9 @@ fun SportsHost(navController: NavController) {
                 if (best != null && repo.switchesFor(next)) armed = next to best
                 val mins = ((next.startMs - now) / 60_000L).toInt()
                 due = next to when {
-                    mins <= 0 -> "Starting now"
-                    mins == 1 -> "Starting in a minute"
-                    else -> "Starting in $mins minutes"
+                    mins <= 0 -> "Starting now".tr()
+                    mins == 1 -> "Starting in a minute".tr()
+                    else -> LiveTvTexts.trf("Starting in {0} minutes", mins)
                 }
             }
             runCatching {
@@ -243,20 +245,20 @@ private fun ReminderDialog(
             SportsBadge(heading.uppercase(), NuvioTheme.colors.Secondary, NuvioTheme.colors.OnSecondary)
             Spacer(Modifier.width(8.dp))
             LiveText(
-                listOfNotNull(SportsCatalog.league(ev.leagueId)?.name, best?.channel?.name ?: ev.broadcasts.firstOrNull()).joinToString(" · "),
+                listOfNotNull(SportsCatalog.league(ev.leagueId)?.name?.tr(), best?.channel?.name ?: ev.broadcasts.firstOrNull()).joinToString(" · "),
                 color = SportsLook.Dim, size = 12.sp
             )
         }
         if (switchingTo != null && switchAt != null) {
             Spacer(Modifier.height(6.dp))
             LiveText(
-                "Switches to ${switchingTo.channel.name} by itself at ${com.nuvio.tv.livetv.ui.formatClock(switchAt, use24h)}.",
+                LiveTvTexts.trf("Switches to {0} by itself at {1}.", switchingTo.channel.name, com.nuvio.tv.livetv.ui.formatClock(switchAt, use24h)),
                 color = Color.White, size = 13.sp
             )
         }
         Spacer(Modifier.height(10.dp))
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            if (best != null) SportsMenuRow("Watch on ${best.channel.name}" + if (switchingTo != null) " now" else "", Modifier.focusRequester(first)) { onWatch(best) }
+            if (best != null) SportsMenuRow(LiveTvTexts.trf(if (switchingTo != null) "Watch on {0} now" else "Watch on {0}", best.channel.name), Modifier.focusRequester(first)) { onWatch(best) }
             if (switchingTo != null) SportsMenuRow("Don't switch to it") { onDontSwitch(); onDismiss() }
             SportsMenuRow("Open in Sports", if (best == null) Modifier.focusRequester(first) else Modifier) { onOpen() }
             SportsMenuRow(if (switchingTo != null) "Close (it still switches)" else "Dismiss") { onDismiss() }
@@ -276,7 +278,7 @@ private fun SwitchCountdown(ev: SportsEvent, match: ChannelMatch, onSwitch: () -
     }
     SportsDialog(onDismiss = onCancel, width = 480.dp, header = { GameHeaderBands(ev, hideScores = true) }) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            SportsBadge("SWITCHING IN $left", NuvioTheme.colors.Secondary, NuvioTheme.colors.OnSecondary)
+            SportsBadge(LiveTvTexts.trf("SWITCHING IN {0}", left), NuvioTheme.colors.Secondary, NuvioTheme.colors.OnSecondary)
             Spacer(Modifier.width(8.dp))
             LiveText(match.channel.name, color = SportsLook.Dim, size = 12.sp)
         }
@@ -302,7 +304,7 @@ private fun ScoringAlertCard(a: SportsAlert) {
     ) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 7.dp), verticalAlignment = Alignment.CenterVertically) {
             if (a.final) SportsBadge(if (a.league.sport == Sport.FOOTBALL || a.league.sport == Sport.HANDBALL) "FULL TIME" else "FINAL", Color.White, SportsLook.Ink)
-            else SportsBadge("${a.team.name.uppercase()} SCORE!", SportsLook.Flash, SportsLook.Ink)
+            else SportsBadge(LiveTvTexts.trf("{0} SCORE!", a.team.name.uppercase()), SportsLook.Flash, SportsLook.Ink)
             Spacer(Modifier.weight(1f))
             if (!a.final) ev.status?.let { LiveText(it, color = Color.White, size = 11.sp, weight = FontWeight.Black) }
         }

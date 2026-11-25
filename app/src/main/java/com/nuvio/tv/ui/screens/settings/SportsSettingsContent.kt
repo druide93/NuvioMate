@@ -43,9 +43,12 @@ import com.nuvio.tv.livetv.sports.SportsCatalog
 import com.nuvio.tv.livetv.sports.SportsScoreDelay
 import com.nuvio.tv.livetv.sports.SportsSettings
 import com.nuvio.tv.livetv.sports.SportsViewModel
+import com.nuvio.tv.livetv.sports.trOwn
 import com.nuvio.tv.livetv.ui.LiveDialog
 import com.nuvio.tv.livetv.ui.LiveFocusRow
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.livetv.ui.MenuItem
 import com.nuvio.tv.livetv.ui.focusedTextColor
 import com.nuvio.tv.ui.theme.NuvioTheme
@@ -53,7 +56,7 @@ import kotlinx.coroutines.delay
 
 private val REMIND_TIMES = listOf(0, 5, 10, 15, 30, 60)
 
-private fun remindLabel(m: Int): String = if (m <= 0) "When it starts" else "$m minutes before"
+private fun remindLabel(m: Int): String = if (m <= 0) "When it starts".tr() else LiveTvTexts.trf("{0} minutes before", m)
 
 /** Sports, in Nuvio's settings (next to Live TV). */
 @Composable
@@ -77,7 +80,7 @@ fun SportsSettingsContent(
     ) {
         SettingsDetailHeader(
             title = "Sports",
-            subtitle = "Scores and schedules, and which of your channels show each game"
+            subtitle = "Scores and schedules, and which of your channels show each game".tr()
         )
         LazyColumn(
             modifier = Modifier.fillMaxWidth().weight(1f),
@@ -87,153 +90,153 @@ fun SportsSettingsContent(
             if (!s.showInSidebar) item(key = "off") {
                 SettingsGroupCard {
                     SettingsActionRow(
-                        title = "Sports Is Turned Off",
-                        subtitle = "The Sports page, game reminders and scores on the info bar are off. It's switched on and off in Settings → Menu & Features.",
-                        value = "Turn On",
+                        title = "Sports Is Turned Off".tr(),
+                        subtitle = "The Sports page, game reminders and scores on the info bar are off. It's switched on and off in Settings → Menu & Features.".tr(),
+                        value = "Turn On".tr(),
                         onClick = { update { it.copy(showInSidebar = true) } }
                     )
                 }
             }
             item(key = "teams") {
-                SettingsGroupCard(title = "Your Teams") {
-                    val names = (f.teams.map { it.name } + f.pins.mapNotNull { SportsCatalog.league(it)?.name } + f.words.map { "\"$it\"" })
+                SettingsGroupCard(title = "Your Teams".tr()) {
+                    val names = (f.teams.map { it.name } + f.pins.mapNotNull { SportsCatalog.league(it)?.name?.tr() } + f.words.map { "\"$it\"" })
                     SettingsActionRow(
-                        title = "Teams and Leagues I Follow",
-                        subtitle = if (names.isEmpty()) "Nothing yet. Follow teams and leagues to see them on My Sports."
-                        else names.take(6).joinToString(", ") + if (names.size > 6) " and ${names.size - 6} more" else "",
+                        title = "Teams and Leagues I Follow".tr(),
+                        subtitle = if (names.isEmpty()) "Nothing yet. Follow teams and leagues to see them on My Sports.".tr()
+                        else names.take(6).joinToString(", ") + if (names.size > 6) LiveTvTexts.trf(" and {0} more", names.size - 6) else "",
                         value = if (names.isEmpty()) null else names.size.toString(),
                         leadingIcon = Icons.Default.Star,
                         onClick = onOpenTeams,
                         modifier = if (initialFocusRequester != null) Modifier.focusRequester(initialFocusRequester) else Modifier
                     )
                     SettingsActionRow(
-                        title = "Arrange My Sports",
-                        subtitle = "The order of your teams' and leagues' rows on My Sports",
+                        title = "Arrange My Sports".tr(),
+                        subtitle = "The order of your teams' and leagues' rows on My Sports".tr(),
                         leadingIcon = Icons.Default.Tune,
                         onClick = { com.nuvio.tv.livetv.sports.SportsLaunch.openArrange(); onOpenTeams() }
                     )
                     SettingsActionRow(
-                        title = "Your Region",
-                        subtitle = "All Events shows your region's leagues, plus anything you follow",
-                        value = SportsCatalog.regionName(region) + if (s.region.isBlank()) " (this TV)" else "",
+                        title = "Your Region".tr(),
+                        subtitle = "All Events shows your region's leagues, plus anything you follow".tr(),
+                        value = SportsCatalog.regionName(region).tr() + if (s.region.isBlank()) " (this TV)".tr() else "",
                         leadingIcon = Icons.Default.Public,
                         onClick = { dialog = "region" }
                     )
                 }
             }
             item(key = "watching") {
-                SettingsGroupCard(title = "Watching") {
+                SettingsGroupCard(title = trOwn("Watching")) {
                     SettingsToggleRow(
-                        "Hide Scores",
-                        "For when you're watching on catch-up or later. Games show who's playing and when, but not the score",
+                        "Hide Scores".tr(),
+                        "For when you're watching on catch-up or later. Games show who's playing and when, but not the score".tr(),
                         s.hideScores,
                         { update { it.copy(hideScores = !it.hideScores) } }
                     )
                     if (!s.hideScores) {
                         SettingsActionRow(
-                            title = "Score Delay",
-                            subtitle = "IPTV runs behind the live game. Scores, game clocks, results and scoring alerts wait this long so they don't show before you see it",
+                            title = "Score Delay".tr(),
+                            subtitle = "IPTV runs behind the live game. Scores, game clocks, results and scoring alerts wait this long so they don't show before you see it".tr(),
                             value = SportsScoreDelay.label(s.scoreDelaySeconds),
                             leadingIcon = Icons.Default.Timer,
                             onClick = { dialog = "scoreDelay" }
                         )
                     }
                     SettingsToggleRow(
-                        "Score on the Info Bar",
-                        "Shows the live score on Live TV's info bar while you watch a game",
+                        "Score on the Info Bar".tr(),
+                        "Shows the live score on Live TV's info bar while you watch a game".tr(),
                         s.scoreOnInfoBar,
                         { update { it.copy(scoreOnInfoBar = !it.scoreOnInfoBar) } }
                     )
                     SettingsToggleRow(
-                        "Pinned Scoreboards",
-                        "Pin up to 3 live games (from the info bar or a game's page) and their scores stay in the top-left corner while you watch. Off: the pin button is hidden",
+                        "Pinned Scoreboards".tr(),
+                        "Pin up to 3 live games (from the info bar or a game's page) and their scores stay in the top-left corner while you watch. Off: the pin button is hidden".tr(),
                         s.pinnedScores,
                         { update { it.copy(pinnedScores = !it.pinnedScores) } }
                     )
                     SettingsToggleRow(
-                        "Video Window in Sports",
-                        "Games play in a window on the Sports page while you browse. Off: games open full screen, and the page uses the whole width",
+                        "Video Window in Sports".tr(),
+                        "Games play in a window on the Sports page while you browse. Off: games open full screen, and the page uses the whole width".tr(),
                         s.videoWindow,
                         { update { it.copy(videoWindow = !it.videoWindow) } }
                     )
                     SettingsToggleRow(
-                        "Only Games on My Channels",
-                        "Leaves out games none of your channels show. Games of teams you follow always show",
+                        "Only Games on My Channels".tr(),
+                        "Leaves out games none of your channels show. Games of teams you follow always show".tr(),
                         s.onlyOnMyChannels,
                         { update { it.copy(onlyOnMyChannels = !it.onlyOnMyChannels) } }
                     )
                     SettingsToggleRow(
-                        "Best Channel First",
-                        "Puts 4K and FHD channels at the top of each game's list, then the rest",
+                        "Best Channel First".tr(),
+                        "Puts 4K and FHD channels at the top of each game's list, then the rest".tr(),
                         s.bestChannelFirst,
                         { update { it.copy(bestChannelFirst = !it.bestChannelFirst) } }
                     )
                 }
             }
             item(key = "reminders") {
-                SettingsGroupCard(title = "Reminders") {
+                SettingsGroupCard(title = "Reminders".tr()) {
                     SettingsToggleRow(
-                        "Remind Me About My Teams",
-                        "A message before your teams play, with a button to watch. Games you set a reminder on are always reminded",
+                        "Remind Me About My Teams".tr(),
+                        "A message before your teams play, with a button to watch. Games you set a reminder on are always reminded".tr(),
                         s.remindMyTeams,
                         { update { it.copy(remindMyTeams = !it.remindMyTeams) } }
                     )
                     SettingsActionRow(
-                        title = "How Early",
-                        subtitle = "When the reminder comes up",
+                        title = "How Early".tr(),
+                        subtitle = "When the reminder comes up".tr(),
                         value = remindLabel(s.remindMinutes),
                         leadingIcon = Icons.Default.Notifications,
                         onClick = { dialog = "remind" }
                     )
                     SettingsToggleRow(
-                        "Switch to the Game Automatically",
-                        "When a reminder goes off, Nuvio switches to the game a minute before it starts (with 10 seconds to cancel). Only while Nuvio is open. Each game's own choice on its page comes first",
+                        "Switch to the Game Automatically".tr(),
+                        "When a reminder goes off, Nuvio switches to the game a minute before it starts (with 10 seconds to cancel). Only while Nuvio is open. Each game's own choice on its page comes first".tr(),
                         s.autoSwitch,
                         { update { it.copy(autoSwitch = !it.autoSwitch) } }
                     )
                     SettingsToggleRow(
-                        "Scoring Alerts for My Teams",
-                        "A small card in the corner when one of your teams scores, and the final score when the game ends, wherever you are in the app",
+                        "Scoring Alerts for My Teams".tr(),
+                        "A small card in the corner when one of your teams scores, and the final score when the game ends, wherever you are in the app".tr(),
                         s.scoringAlerts,
                         { update { it.copy(scoringAlerts = !it.scoringAlerts) } }
                     )
                 }
             }
             item(key = "channels") {
-                SettingsGroupCard(title = "Channels") {
+                SettingsGroupCard(title = "Channels".tr()) {
                     SettingsActionRow(
-                        title = "Find Channels Again",
-                        subtitle = "Looks through your channels and guide for today's games now",
+                        title = "Find Channels Again".tr(),
+                        subtitle = "Looks through your channels and guide for today's games now".tr(),
                         leadingIcon = Icons.Default.Refresh,
-                        onClick = { viewModel.repo.refreshNow(); LiveTvNotice.show("Updating Sports…") }
+                        onClick = { viewModel.repo.refreshNow(); LiveTvNotice.show("Updating Sports…".tr()) }
                     )
                     SettingsActionRow(
-                        title = "Channels From",
-                        subtitle = "Each game lists only this region's (or language's) channels, with the others one click away. " +
-                            "Also on each game's page",
+                        title = "Channels From".tr(),
+                        subtitle = "Each game lists only this region's (or language's) channels, with the others one click away. ".tr() +
+                            "Also on each game's page".tr(),
                         value = ChannelRegions.shortName(s.channelRegion),
                         leadingIcon = Icons.Default.Public,
                         onClick = { dialog = "channelRegion" }
                     )
                     SettingsActionRow(
-                        title = "Preferred Channel Groups",
-                        subtitle = "Channels in these groups go to the top of every game's list (your UK sports channels, say). " +
-                            "Without any, channels from your region come first",
-                        value = if (s.preferredGroups.isEmpty()) "None" else s.preferredGroups.size.toString(),
+                        title = "Preferred Channel Groups".tr(),
+                        subtitle = "Channels in these groups go to the top of every game's list (your UK sports channels, say). ".tr() +
+                            "Without any, channels from your region come first".tr(),
+                        value = if (s.preferredGroups.isEmpty()) "None".tr() else s.preferredGroups.size.toString(),
                         leadingIcon = Icons.Default.Star,
                         onClick = { dialog = "groups" }
                     )
                     SettingsActionRow(
-                        title = "Your Channel Links",
-                        subtitle = "Channels you picked with Fix Channel for a network, a team, a league or one game. See them, or remove one",
-                        value = if (links == 0) "None" else links.toString(),
+                        title = "Your Channel Links".tr(),
+                        subtitle = "Channels you picked with Fix Channel for a network, a team, a league or one game. See them, or remove one".tr(),
+                        value = if (links == 0) "None".tr() else links.toString(),
                         leadingIcon = Icons.Default.LiveTv,
                         onClick = { dialog = "links" }
                     )
                     SettingsActionRow(
-                        title = "Forget My Channel Fixes",
-                        subtitle = "All channels you picked (or took off) with Fix Channel, including the ones used for whole networks",
-                        value = if (fixes == 0) "None" else fixes.toString(),
+                        title = "Forget My Channel Fixes".tr(),
+                        subtitle = "All channels you picked (or took off) with Fix Channel, including the ones used for whole networks".tr(),
+                        value = if (fixes == 0) "None".tr() else fixes.toString(),
                         leadingIcon = Icons.Default.Refresh,
                         enabled = fixes > 0,
                         onClick = { dialog = "clear" }
@@ -241,16 +244,16 @@ fun SportsSettingsContent(
                 }
             }
             item(key = "replays") {
-                SettingsGroupCard(title = "Replays & Highlights") {
+                SettingsGroupCard(title = "Replays & Highlights".tr()) {
                     SettingsToggleRow(
-                        "Show Highlights",
-                        "A finished game's page lists highlights, recaps and big plays. Off: only replays of the whole game (and condensed games, if they're on)",
+                        "Show Highlights".tr(),
+                        "A finished game's page lists highlights, recaps and big plays. Off: only replays of the whole game (and condensed games, if they're on)".tr(),
                         s.showHighlights,
                         { update { it.copy(showHighlights = !it.showHighlights) } }
                     )
                     SettingsToggleRow(
-                        "Show Condensed Games",
-                        "A finished game's page lists condensed games: the whole game cut down to the action",
+                        "Show Condensed Games".tr(),
+                        "A finished game's page lists condensed games: the whole game cut down to the action".tr(),
                         s.showCondensed,
                         { update { it.copy(showCondensed = !it.showCondensed) } }
                     )
@@ -258,9 +261,9 @@ fun SportsSettingsContent(
             }
             item(key = "about") {
                 Text(
-                    text = "Scores, schedules, team logos and colors come from ESPN's free public feed. " +
-                        "Some event dates come from sporting-events.org, and the wrestling schedule and logos from TheSportsDB. " +
-                        "Darts, snooker, rugby and other sports they don't cover are found in your own TV guide.",
+                    text = "Scores, schedules, team logos and colors come from ESPN's free public feed. ".tr() +
+                        "Some event dates come from sporting-events.org, and the wrestling schedule and logos from TheSportsDB. ".tr() +
+                        "Darts, snooker, rugby and other sports they don't cover are found in your own TV guide.".tr(),
                     style = MaterialTheme.typography.bodySmall,
                     color = NuvioTheme.colors.TextTertiary,
                     modifier = Modifier.padding(start = NuvioTheme.spacing.lg, end = NuvioTheme.spacing.lg)
@@ -272,29 +275,29 @@ fun SportsSettingsContent(
     val close: () -> Unit = { dialog = null }
     when (dialog) {
         "region" -> SettingsSingleChoiceDialog(
-            title = "Your region",
-            options = listOf(SettingsPickerOption("", "Same as this TV (${SportsCatalog.regionName(SportsCatalog.deviceRegion())})")) +
-                SportsCatalog.regions.map { SettingsPickerOption(it.first, it.second) },
+            title = "Your region".tr(),
+            options = listOf(SettingsPickerOption("", LiveTvTexts.trf("Same as this TV ({0})", SportsCatalog.regionName(SportsCatalog.deviceRegion()).tr()))) +
+                SportsCatalog.regions.map { SettingsPickerOption(it.first, it.second.tr()) },
             selectedValue = s.region,
             onOptionSelected = { v -> update { it.copy(region = v) }; close() },
             onDismiss = close
         )
         "channelRegion" -> SettingsSingleChoiceDialog(
-            title = "Channels from",
-            options = ChannelRegions.all.map { SettingsPickerOption(it.first, it.second) },
+            title = "Channels from".tr(),
+            options = ChannelRegions.all.map { SettingsPickerOption(it.first, it.second.tr()) },
             selectedValue = s.channelRegion,
             onOptionSelected = { v -> update { it.copy(channelRegion = v) }; close() },
             onDismiss = close
         )
         "scoreDelay" -> SettingsSingleChoiceDialog(
-            title = "Score Delay",
+            title = "Score Delay".tr(),
             options = SportsScoreDelay.CHOICES.map { SettingsPickerOption(it, SportsScoreDelay.label(it)) },
             selectedValue = s.scoreDelaySeconds,
             onOptionSelected = { v -> update { it.copy(scoreDelaySeconds = v) }; close() },
             onDismiss = close
         )
         "remind" -> SettingsSingleChoiceDialog(
-            title = "Remind me",
+            title = "Remind me".tr(),
             options = REMIND_TIMES.map { SettingsPickerOption(it, remindLabel(it)) },
             selectedValue = s.remindMinutes,
             onOptionSelected = { v -> update { it.copy(remindMinutes = v) }; close() },
@@ -347,7 +350,7 @@ private fun LeaguesDialog(s: SportsSettings, onToggle: (League) -> Unit, onDismi
                     onClick = { onToggle(l) }
                 ) { focused ->
                     LiveText(if (on) "✓" else " ", color = focusedTextColor(focused), size = 16.sp, weight = FontWeight.Bold)
-                    LiveText("${l.sport.icon}  ${l.name}", color = focusedTextColor(focused), size = 15.sp, modifier = Modifier.weight(1f))
+                    LiveText("${l.sport.icon}  ${l.name.tr()}", color = focusedTextColor(focused), size = 15.sp, modifier = Modifier.weight(1f))
                     LiveText(
                         if (l.guideOnly) "From your guide" else l.sport.label,
                         color = if (focused) focusedTextColor(true) else NuvioTheme.colors.TextSecondary, size = 12.sp
@@ -431,7 +434,7 @@ private fun LinksDialog(s: SportsSettings, viewModel: SportsViewModel, onForgetA
                         modifier = Modifier.focusRequester(requesters[i]).fillMaxWidth(),
                         onClick = {
                             viewModel.repo.removeLink(l)
-                            LiveTvNotice.show("Removed: ${l.label}")
+                            LiveTvNotice.show(LiveTvTexts.trf("Removed: {0}", l.label))
                             focusAt = i
                         }
                     ) { focused ->

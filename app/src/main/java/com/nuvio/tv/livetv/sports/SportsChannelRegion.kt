@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nuvio.tv.livetv.model.LiveChannel
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.ui.theme.NuvioTheme
 import kotlinx.coroutines.delay
 
@@ -56,15 +58,16 @@ internal object ChannelRegions {
         "AU" to "Australia & New Zealand"
     ) + LANGUAGES.map { (code, name) -> "lang:$code" to name }
 
-    fun name(code: String): String = all.firstOrNull { it.first == code }?.second ?: code
+    /** A choice's name, in the device's language. */
+    fun name(code: String): String = all.firstOrNull { it.first == code }?.second?.tr() ?: code
 
-    /** The short form, for the button on the game page. */
+    /** The short form, for the button on the game page (in the device's language). */
     fun shortName(code: String): String = when (code) {
-        "" -> "All regions"
-        ENGLISH -> "English"
+        "" -> "All regions".tr()
+        ENGLISH -> "English".tr()
         "UK" -> "UK"
         "US" -> "USA"
-        "AU" -> "Australia"
+        "AU" -> "Australia".tr()
         else -> name(code)
     }
 
@@ -171,17 +174,17 @@ internal fun RegionDialog(
 ) {
     val choices = remember(codes, current) { ChannelRegions.choicesFor(codes, current) }
     val selected = remember { FocusRequester() }
-    fun count(n: Int) = if (n == 1) "1 channel" else "$n channels"
+    fun count(n: Int) = if (n == 1) "1 channel".tr() else LiveTvTexts.trf("{0} channels", n)
     SportsDialog(onDismiss = onDismiss, width = 520.dp) {
         LiveText("Channels from", color = Color.White, size = 20.sp, weight = FontWeight.Bold)
         LiveText(
-            "Shows only that region's channels for every game (handy for commentary in your language). " +
-                "Reminders and Watch now use them first too. The others are one click away.",
+            "Shows only that region's channels for every game (handy for commentary in your language). ".tr() +
+                "Reminders and Watch now use them first too. The others are one click away.".tr(),
             color = SportsLook.Dim, size = 12.sp, maxLines = 3
         )
         Spacer(Modifier.height(10.dp))
         SportsMenuRow(
-            (if (current.isBlank()) "✓  " else "     ") + "All regions",
+            (if (current.isBlank()) "✓  " else "     ") + "All regions".tr(),
             if (current.isBlank()) Modifier.focusRequester(selected) else Modifier,
             detail = count(codes.size)
         ) { onPick("") }

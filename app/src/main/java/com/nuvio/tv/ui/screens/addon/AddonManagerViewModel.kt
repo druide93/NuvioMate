@@ -464,7 +464,7 @@ class AddonManagerViewModel @Inject constructor(
                 key = colKey,
                 disableKey = colKey,
                 catalogName = col.title,
-                addonName = "${col.folders.size} folder${if (col.folders.size != 1) "s" else ""}",
+                addonName = com.nuvio.tv.livetv.ui.LiveTvTexts.trf(if (col.folders.size != 1) "{0} folders" else "{0} folder", col.folders.size),
                 type = "collection",
                 isDisabled = colKey in disabledHomeCatalogKeys
             )

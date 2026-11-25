@@ -73,6 +73,8 @@ import com.nuvio.tv.livetv.record.LiveTvNotice
 import com.nuvio.tv.livetv.ui.ChannelLogo
 import com.nuvio.tv.livetv.ui.LivePlayerSurface
 import com.nuvio.tv.livetv.ui.LiveText
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import com.nuvio.tv.livetv.ui.guideBackdrop
 import com.nuvio.tv.livetv.ui.drawGuideBackdrop
 import com.nuvio.tv.livetv.ui.LiveTextField
@@ -205,7 +207,7 @@ fun SportsScreen(
     // Scores refresh quietly. Only when they haven't been updated for a while (no connection, or
     // the scores service is down) does the corner say how old they are.
     val updateNote: String? =
-        if (!loading && updatedAt > 0L && now - updatedAt > 10 * 60_000L) "Scores updated " + SportsStale.ageText(now - updatedAt) + " ago"
+        if (!loading && updatedAt > 0L && now - updatedAt > 10 * 60_000L) LiveTvTexts.trf("Scores updated {0} ago", SportsStale.ageText(now - updatedAt))
         else null
     val hasChannels by viewModel.hasChannels.collectAsStateWithLifecycle()
     val playingKey by viewModel.playingKey.collectAsStateWithLifecycle()
@@ -295,14 +297,14 @@ fun SportsScreen(
     /** Full screen in Live TV (from the start when the game is over). */
     fun watch(ev: SportsEvent, m: ChannelMatch?) {
         if (m == null) {
-            LiveTvNotice.show("No channel found for ${ev.title}. Open it and use Fix Channel to pick one.")
+            LiveTvNotice.show(LiveTvTexts.trf("No channel found for {0}. Open it and use Fix Channel to pick one.", ev.title))
             return
         }
         SportsLaunch.openedFromSports(ev.id)
         SportsLaunch.pickGame(ev.id, m.channel.key)
         if (ev.state == GameState.POST) {
             if (viewModel.watchFromStart(ev, m)) onOpenLive()
-            else LiveTvNotice.show("${ev.title} has finished, and ${m.channel.name} can't replay it")
+            else LiveTvNotice.show(LiveTvTexts.trf("{0} has finished, and {1} can't replay it", ev.title, m.channel.name))
             return
         }
         viewModel.watch(m)
@@ -311,7 +313,7 @@ fun SportsScreen(
     fun fromStart(ev: SportsEvent, m: ChannelMatch) {
         SportsLaunch.openedFromSports(ev.id)
         if (viewModel.watchFromStart(ev, m)) onOpenLive()
-        else LiveTvNotice.show("${m.channel.name} can't replay this from the start")
+        else LiveTvNotice.show(LiveTvTexts.trf("{0} can't replay this from the start", m.channel.name))
     }
     /** A channel picked on the game page: in the window (again: full screen), or full screen. */
     fun choose(ev: SportsEvent, m: ChannelMatch) {
@@ -326,7 +328,7 @@ fun SportsScreen(
     fun quickWatch(ev: SportsEvent) {
         val m = matches[ev.id]?.firstOrNull()
         when {
-            m == null -> LiveTvNotice.show("No channel found for ${ev.title}. Open it and use Fix Channel to pick one.")
+            m == null -> LiveTvNotice.show(LiveTvTexts.trf("No channel found for {0}. Open it and use Fix Channel to pick one.", ev.title))
             videoOn && ev.state != GameState.POST -> { SportsLaunch.pickGame(ev.id, m.channel.key); viewModel.playHere(m) }
             else -> watch(ev, m)
         }
@@ -768,7 +770,7 @@ private fun SportsHub(
         val region = SportsCatalog.regionOf(settings)
         val on = viewModel.repo.activeLeagues(settings, follows).size
         val off = SportsCatalog.all.count { region in it.regions && !SportsCatalog.shown(it, settings) && it.id !in mine }
-        (if (on == 1) "Showing 1 league" else "Showing $on leagues") + (if (off > 0) "  ·  $off hidden" else "")
+        (if (on == 1) "Showing 1 league".tr() else LiveTvTexts.trf("Showing {0} leagues", on)) + (if (off > 0) LiveTvTexts.trf("  ·  {0} hidden", off) else "")
     }
     LaunchedEffect(leaguesClosed) {
         if (leaguesClosed == 0) return@LaunchedEffect
@@ -836,7 +838,7 @@ private fun SportsHub(
     val dayBar: @Composable (Modifier) -> Unit = { dm ->
         val lv = leagueView?.let { SportsCatalog.league(it) }
         if (lv != null) {
-            LiveText(com.nuvio.tv.livetv.ui.LiveTvTexts.trf("{0} · the next 7 days", com.nuvio.tv.livetv.ui.LiveTvTexts.tr(lv.name)), color = SportsLook.Dim, size = 12.sp, weight = FontWeight.Bold, modifier = dm.padding(start = 4.dp, top = SportsSpace.RowPad, bottom = SportsSpace.RowPad))
+            LiveText(LiveTvTexts.trf("{0} · the next 7 days", lv.name.tr()), color = SportsLook.Dim, size = 12.sp, weight = FontWeight.Bold, modifier = dm.padding(start = 4.dp, top = SportsSpace.RowPad, bottom = SportsSpace.RowPad))
         } else {
             // A week back to a week ahead; opens on Yesterday and Today, and scrolls.
             val dayFmt = remember { SimpleDateFormat("EEE d", Locale.getDefault()) }
@@ -912,7 +914,7 @@ private fun SportsHub(
             // Everything on, day by day (live games first), with how many are on now.
             item(key = CHIP_ALL) {
                 FilterIcon(
-                    "▦", if (sections.liveCount > 0) "All Events · ${sections.liveCount} live" else "All Events",
+                    "▦", if (sections.liveCount > 0) LiveTvTexts.trf("All Events · {0} live", sections.liveCount) else "All Events",
                     effectiveChip == CHIP_ALL, on(CHIP_ALL).then(upTo), withLabel = true
                 ) { pickChip(CHIP_ALL) }
             }
@@ -931,17 +933,17 @@ private fun SportsHub(
     // A league picked on the league row with nothing this day: say so, and show its next match day.
     val pickedLeague = pageData?.league?.let { SportsCatalog.league(it) }
     val leagueNotice: Pair<String, String>? = pageData?.nextDay?.let { next ->
-        val name = pickedLeague?.name ?: return@let null
-        val whenWord = when (day) {
-            0 -> "today"
-            1 -> "tomorrow"
-            -1 -> "yesterday"
-            else -> "on " + SimpleDateFormat("EEE d MMM", Locale.getDefault()).format(Date(viewModel.repo.dayStart(day) + 12 * 3_600_000L))
+        val name = pickedLeague?.name?.tr() ?: return@let null
+        val none = when (day) {
+            0 -> LiveTvTexts.trf("No {0} games today", name)
+            1 -> LiveTvTexts.trf("No {0} games tomorrow", name)
+            -1 -> LiveTvTexts.trf("No {0} games yesterday", name)
+            else -> LiveTvTexts.trf("No {0} games on {1}", name, SimpleDateFormat("EEE d MMM", Locale.getDefault()).format(Date(viewModel.repo.dayStart(day) + 12 * 3_600_000L)))
         }
         val nextWord = SimpleDateFormat("EEEE d MMMM", Locale.getDefault()).format(Date(viewModel.repo.dayStart(next) + 12 * 3_600_000L))
-        "No $name games $whenWord" to "Showing the next match day: $nextWord"
+        none to LiveTvTexts.trf("Showing the next match day: {0}", nextWord)
     }
-    val leagueEmpty: String? = pickedLeague?.let { "No ${it.name} games this day or in the week ahead." }
+    val leagueEmpty: String? = pickedLeague?.let { LiveTvTexts.trf("No {0} games this day or in the week ahead.", it.name.tr()) }
     val list: @Composable (Modifier) -> Unit = { m ->
         GameList(
             modifier = m,
@@ -1341,8 +1343,8 @@ private fun LeaguesPicker(settings: SportsSettings, followed: Set<String>, onTog
                     val total = groups.first { it.first == sport }.second
                     val on = total.count { it.id in followed || SportsCatalog.shown(it, settings) }
                     SportsMenuRow(
-                        label = (if (isOpen) "▾   " else "▸   ") + "${sport.icon}  ${sport.label}",
-                        detail = if (searching) "${list.size} found" else "$on of ${total.size} on",
+                        label = (if (isOpen) "▾   " else "▸   ") + "${sport.icon}  ${sport.label.tr()}",
+                        detail = if (searching) LiveTvTexts.trf("{0} found", list.size) else LiveTvTexts.trf("{0} of {1} on", on, total.size),
                         modifier = if (gi == 0) Modifier.focusRequester(first) else Modifier,
                         onClick = { if (!searching) open = if (sport in open) open - sport else open + sport }
                     )
@@ -1352,7 +1354,7 @@ private fun LeaguesPicker(settings: SportsSettings, followed: Set<String>, onTog
                         val mine = l.id in followed
                         val on = mine || SportsCatalog.shown(l, settings)
                         SportsMenuRow(
-                            label = (if (on) "✓   " else "      ") + l.name,
+                            label = (if (on) "✓   " else "      ") + l.name.tr(),
                             detail = when {
                                 mine -> "Following"
                                 l.guideOnly -> "From your guide"
@@ -1420,7 +1422,7 @@ private fun NowPlayingPanel(
             OneLine(match?.channel?.name.orEmpty(), Color.White, 11.sp, FontWeight.ExtraBold)
             match?.quality?.let { LiveText(it, color = NuvioTheme.colors.Secondary, size = 9.sp, weight = FontWeight.Black) }
             matches[ev.id]?.firstOrNull { it.channel.key != playingKey }?.let {
-                OneLine("Also on ${it.channel.name}", SportsLook.Dim, 9.sp)
+                OneLine(LiveTvTexts.trf("Also on {0}", it.channel.name), SportsLook.Dim, 9.sp)
             }
         }
     }
@@ -1464,7 +1466,7 @@ internal fun ScoreboardStrip(
                             .then(if (downTo != null && s == sides.last()) Modifier.focusProperties { down = downTo } else Modifier)
                             .then(if (onTeam != null) Modifier.teamSelectable { onTeam(s) } else Modifier),
                         logo = if (big) 44.dp else 30.dp, name = if (big) 19.sp else 13.sp, score = if (big) 34.sp else 22.sp,
-                        extra = listOfNotNull(s.record, if (s.home) "Home" else "Away").joinToString(" · "),
+                        extra = listOfNotNull(s.record, homeAwayWord(s.home)).joinToString(" · "),
                         trailing = preGame?.get(s.team.id)?.takeIf { pre }?.let { t -> @Composable { PreGameTeamStats(t, wide) } }
                     )
                 }
@@ -1590,7 +1592,7 @@ private fun GamePage(
     val vodAddons = viewModel.repo.vodAddons.collectAsStateWithLifecycle().value[ev.id]
     val suggestNuvioSports by viewModel.repo.suggestNuvioSports.collectAsStateWithLifecycle()
     val nuvioSportsTip = if (suggestNuvioSports)
-        " Tip: ${SportsAddonSource.NUVIO_SPORTS_NAME} (${SportsAddonSource.NUVIO_SPORTS_SITE}) has replays of most games: add it in Add-ons." else ""
+        LiveTvTexts.trf(" Tip: {0} ({1}) has replays of most games: add it in Add-ons.", SportsAddonSource.NUVIO_SPORTS_NAME, SportsAddonSource.NUVIO_SPORTS_SITE) else ""
     // A finished game: once replays turn up, put the highlight on the first one (once per visit).
     val firstReplay = remember(ev.id) { FocusRequester() }
     // Back from watching one of them (or it finished): the highlight goes back on that one.
@@ -1663,9 +1665,9 @@ private fun GamePage(
     val stripReq = remember { FocusRequester() }
     val top: @Composable () -> Unit = {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 6.dp)) {
-            LiveText("‹  $backLabel", color = SportsLook.Dim, size = 12.sp, weight = FontWeight.Bold)
+            LiveText("‹  " + backLabel.tr(), color = SportsLook.Dim, size = 12.sp, weight = FontWeight.Bold)
             Spacer(Modifier.width(10.dp))
-            LiveText(listOfNotNull(league?.name, ev.subtitle?.takeIf { sides.size == 2 }).joinToString(" · "), color = SportsLook.Dim, size = 12.sp)
+            LiveText(listOfNotNull(league?.name?.tr(), shownSubtitle(ev.subtitle?.takeIf { sides.size == 2 })).joinToString(" · "), color = SportsLook.Dim, size = 12.sp)
         }
     }
     val scoreboard: @Composable () -> Unit = {
@@ -1704,14 +1706,14 @@ private fun GamePage(
             vodLooked == null || official == null -> LiveText("Looking for replays and highlights…", color = SportsLook.Dim, size = 12.sp,
                 modifier = Modifier.padding(start = 6.dp, bottom = 4.dp))
             vodAddons != null && vodAddons.isEmpty() -> LiveText(
-                "Replays and highlights come from sports add-ons that offer them (HighFly Premium, StremVerse…). " +
-                    "None of your add-ons do yet: install one in Add-ons and they'll show here." + nuvioSportsTip,
+                "Replays and highlights come from sports add-ons that offer them (HighFly Premium, StremVerse…). ".tr() +
+                    "None of your add-ons do yet: install one in Add-ons and they'll show here.".tr() + nuvioSportsTip,
                 color = SportsLook.Dim, size = 12.sp, maxLines = 4, modifier = Modifier.padding(start = 6.dp, bottom = 4.dp)
             )
             else -> LiveText(
-                (vodAddons?.takeIf { it.isNotEmpty() }?.let { "No replay of this game in ${it.joinToString(", ")} yet. " }
-                    ?: "No replay of this game in your sports add-ons yet. ") +
-                    "They're often added a few hours after the game ends." + nuvioSportsTip,
+                (vodAddons?.takeIf { it.isNotEmpty() }?.let { LiveTvTexts.trf("No replay of this game in {0} yet. ", it.joinToString(", ")) }
+                    ?: "No replay of this game in your sports add-ons yet. ".tr()) +
+                    "They're often added a few hours after the game ends.".tr() + nuvioSportsTip,
                 color = SportsLook.Dim, size = 12.sp, maxLines = 4, modifier = Modifier.padding(start = 6.dp, bottom = 4.dp)
             )
         }
@@ -1731,7 +1733,7 @@ private fun GamePage(
                 ) { pickRegion = true }
             }
             if (noneInRegion) LiveText(
-                "None of your ${ChannelRegions.shortName(regionChoice)} channels list this game, so here are all of them.",
+                LiveTvTexts.trf("None of your {0} channels list this game, so here are all of them.", ChannelRegions.shortName(regionChoice)),
                 color = SportsLook.Dim, size = 11.sp, maxLines = 2, modifier = Modifier.padding(start = 6.dp, bottom = 4.dp)
             )
             when {
@@ -1760,8 +1762,8 @@ private fun GamePage(
                     }
                     if (regionChoice.isNotBlank() && !noneInRegion && elsewhere > 0) item(key = "other-regions") {
                         SportsAction(
-                            if (otherRegions) "Only ${ChannelRegions.shortName(regionChoice)} channels"
-                            else "+ $elsewhere from other regions",
+                            if (otherRegions) LiveTvTexts.trf("Only {0} channels", ChannelRegions.shortName(regionChoice))
+                            else LiveTvTexts.trf("+ {0} from other regions", elsewhere),
                             onClick = { otherRegions = !otherRegions }
                         )
                     }
@@ -1770,15 +1772,15 @@ private fun GamePage(
                 !hasChannels -> LiveText("Add a playlist in Live TV settings to watch from here.", color = SportsLook.Dim, size = 12.sp)
                 // Too far off to have been looked for yet: say when it will be.
                 ev.startMs - System.currentTimeMillis() > SportsMatcher.AHEAD_MS -> LiveText(
-                    "Your channels are checked for this game from " +
+                    "Your channels are checked for this game from ".tr() +
                         java.text.SimpleDateFormat(if (use24h) "EEE HH:mm" else "EEE h:mm a", java.util.Locale.getDefault())
                             .format(java.util.Date(ev.startMs - SportsMatcher.AHEAD_MS)) +
-                        ". Know where it's on? Pick a channel now and it's remembered.",
+                        ". Know where it's on? Pick a channel now and it's remembered.".tr(),
                     color = SportsLook.Dim, size = 12.sp, maxLines = 3
                 )
                 else -> LiveText(
-                    "Not in your channels' guides right now. Guides update during the day, so check back closer to the start. " +
-                        "Know where it's on? Pick a channel and it's remembered.",
+                    "Not in your channels' guides right now. Guides update during the day, so check back closer to the start. ".tr() +
+                        "Know where it's on? Pick a channel and it's remembered.".tr(),
                     color = SportsLook.Dim, size = 12.sp, maxLines = 3
                 )
             }
@@ -1906,13 +1908,13 @@ private fun GamePage(
                             SimpleDateFormat("EEEE d MMMM", Locale.getDefault()).format(Date(ev.startMs)) + " · " + startLabel(ev, use24h),
                             size = 14.sp, weight = FontWeight.Bold
                         )
-                        if (ev.broadcasts.isNotEmpty()) LiveText("On TV: " + ev.broadcasts.joinToString(", "), color = SportsLook.Dim, size = 12.sp)
+                        if (ev.broadcasts.isNotEmpty()) LiveText("On TV: ".tr() + ev.broadcasts.joinToString(", "), color = SportsLook.Dim, size = 12.sp)
                     }
                     ev.state == GameState.LIVE && !ev.hasScore -> LiveText(
                         "No live score for this event. The time bar runs from the start time.",
                         color = SportsLook.Dim, size = 12.sp, maxLines = 2
                     )
-                    else -> LiveText(ev.note ?: ev.subtitle ?: league?.name.orEmpty(), color = SportsLook.Dim, size = 12.sp, maxLines = 3)
+                    else -> LiveText(ev.note ?: shownSubtitle(ev.subtitle) ?: league?.name.orEmpty(), color = SportsLook.Dim, size = 12.sp, maxLines = 3)
                 }
                 // What the show or event is (wrestling: from TheSportsDB).
                 ev.about?.let {
@@ -2113,7 +2115,8 @@ private fun periodLine(sides: List<Side>, sport: Sport): String {
         else -> ""
     }
     return (0 until n).joinToString(" · ") { i ->
-        val label = if (prefix.isEmpty()) "${i + 1}" else if (prefix == "Q" && i >= 4) "OT" else if (prefix == "P" && i >= 3) "OT" else "$prefix${i + 1}"
+        val label = if (prefix.isEmpty()) "${i + 1}" else if (prefix == "Q" && i >= 4) "OT".tr() else if (prefix == "P" && i >= 3) "OT".tr()
+            else if (prefix == "H") LiveTvTexts.trf("H{0}", i + 1) else "$prefix${i + 1}"
         "$label ${sides[0].periods.getOrNull(i) ?: "–"}–${sides[1].periods.getOrNull(i) ?: "–"}"
     }
 }
@@ -2220,47 +2223,47 @@ private fun FixChannelDialog(ev: SportsEvent, matches: List<ChannelMatch>, hideS
         if (networks.isEmpty() && teams.isEmpty() && league?.kind != LeagueKind.EVENT) {
             LaunchedEffect(pick.key) {
                 viewModel.repo.pickChannel(ev, pick.key)
-                LiveTvNotice.show("Saved: ${ev.title} on ${pick.name}")
+                LiveTvNotice.show(LiveTvTexts.trf("Saved: {0} on {1}", ev.title, pick.name))
                 onDismiss()
             }
             return
         }
         val first = remember { FocusRequester() }
         SportsDialog(onDismiss = onDismiss, width = 520.dp, header = { GameHeaderBands(ev, hideScores) }) {
-            LiveText("Use ${pick.name} for more games?", size = 18.sp, weight = FontWeight.Bold, maxLines = 2)
+            LiveText(LiveTvTexts.trf("Use {0} for more games?", pick.name), size = 18.sp, weight = FontWeight.Bold, maxLines = 2)
             LiveText(
-                (if (networks.isNotEmpty()) "${ev.title} is on ${networks.joinToString(", ")}. " else "") +
-                    "Pick a network or a team, and their games from now on use ${pick.name} too (a team's own channel, say).",
+                (if (networks.isNotEmpty()) LiveTvTexts.trf("{0} is on {1}. ", ev.title, networks.joinToString(", ")) else "") +
+                    LiveTvTexts.trf("Pick a network or a team, and their games from now on use {0} too (a team's own channel, say).", pick.name),
                 color = SportsLook.Dim, size = 12.sp, maxLines = 3
             )
             Spacer(Modifier.height(10.dp))
             var firstUsed = false
             fun firstMod(): Modifier = if (!firstUsed) { firstUsed = true; Modifier.focusRequester(first) } else Modifier
             networks.distinctBy { SportsMatcher.networkKey(it) }.take(6).forEach { n ->
-                SportsMenuRow("Yes, every $n game", firstMod()) {
+                SportsMenuRow(LiveTvTexts.trf("Yes, every {0} game", n), firstMod()) {
                     viewModel.repo.pickChannel(ev, pick.key, forNetwork = n)
-                    LiveTvNotice.show("Saved: $n games use ${pick.name}")
+                    LiveTvNotice.show(LiveTvTexts.trf("Saved: {0} games use {1}", n, pick.name))
                     onDismiss()
                 }
             }
             // A race series, a golf tour, a fight promotion: every event of it on this channel.
             if (league?.kind == LeagueKind.EVENT) {
-                SportsMenuRow("Yes, every ${league.name} event", firstMod()) {
+                SportsMenuRow(LiveTvTexts.trf("Yes, every {0} event", league.name.tr()), firstMod()) {
                     viewModel.repo.pickChannel(ev, pick.key, forLeague = true)
-                    LiveTvNotice.show("Saved: ${league.name} events use ${pick.name}")
+                    LiveTvNotice.show(LiveTvTexts.trf("Saved: {0} events use {1}", league.name.tr(), pick.name))
                     onDismiss()
                 }
             }
             teams.forEach { t ->
-                SportsMenuRow("Yes, every ${t.name} game", firstMod()) {
+                SportsMenuRow(LiveTvTexts.trf("Yes, every {0} game", t.name), firstMod()) {
                     viewModel.repo.pickChannel(ev, pick.key, forTeam = t)
-                    LiveTvNotice.show("Saved: ${t.name} games use ${pick.name}")
+                    LiveTvNotice.show(LiveTvTexts.trf("Saved: {0} games use {1}", t.name, pick.name))
                     onDismiss()
                 }
             }
             SportsMenuRow("Just this game", firstMod()) {
                 viewModel.repo.pickChannel(ev, pick.key)
-                LiveTvNotice.show("Saved: ${ev.title} on ${pick.name}")
+                LiveTvNotice.show(LiveTvTexts.trf("Saved: {0} on {1}", ev.title, pick.name))
                 onDismiss()
             }
         }
@@ -2269,7 +2272,7 @@ private fun FixChannelDialog(ev: SportsEvent, matches: List<ChannelMatch>, hideS
     }
     if (picking) {
         ChannelPickerDialog(
-            title = "Pick the channel for ${ev.title}",
+            title = LiveTvTexts.trf("Pick the channel for {0}", ev.title),
             initial = "",
             viewModel = viewModel,
             onPick = { chosen = it },
@@ -2290,7 +2293,7 @@ private fun FixChannelDialog(ev: SportsEvent, matches: List<ChannelMatch>, hideS
                     modifier = if (i == 0) Modifier.focusRequester(first) else Modifier,
                     onClick = {
                         viewModel.repo.blockChannel(ev, m.channel.key)
-                        LiveTvNotice.show("${m.channel.name} won't be used for this game")
+                        LiveTvNotice.show(LiveTvTexts.trf("{0} won't be used for this game", m.channel.name))
                     }
                 )
             }

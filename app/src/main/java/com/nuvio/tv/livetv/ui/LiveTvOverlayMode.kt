@@ -785,7 +785,7 @@ private fun ChannelsPanel(
                             LiveText(ch.name, color = colors.text, size = osp(15f), modifier = Modifier.weight(1f, fill = false), marquee = isFocused && i == restingIndex)
                             if (ch.catchup != null) {
                                 Spacer(Modifier.width(4.dp))
-                                Icon(androidx.compose.material.icons.Icons.Default.History, contentDescription = "Catch-up", tint = if (onSolid) Color.White else NuvioTheme.colors.TextSecondary, modifier = Modifier.size(odp(13f)))
+                                Icon(androidx.compose.material.icons.Icons.Default.History, contentDescription = "Catch-up".tr(), tint = if (onSolid) Color.White else NuvioTheme.colors.TextSecondary, modifier = Modifier.size(odp(13f)))
                             }
                             if (ch.key in favorites) LiveText("  ★", color = if (onSolid) Color.White else NuvioTheme.colors.Rating, size = osp(12f))
                         }
@@ -809,7 +809,7 @@ private fun ChannelsPanel(
                         }
                     }
                     if (ch.key == playingKey) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = "Playing", tint = accent, modifier = Modifier.size(odp(20f)))
+                        Icon(Icons.Default.PlayArrow, contentDescription = "Playing".tr(), tint = accent, modifier = Modifier.size(odp(20f)))
                     }
                 }
             }
@@ -1059,7 +1059,7 @@ private fun SchedulePanel(
 private fun DatesPanel(days: List<Long>, index: Int, focused: Boolean, today: Long) {
     val state = rememberLazyListState(initialFirstVisibleItemIndex = (index - 3).coerceAtLeast(0))
     keepVisible(state, index)
-    val fmt = remember { SimpleDateFormat("EEE,\nMMM d", Locale.getDefault()) }
+    val fmt = remember { SimpleDateFormat((if (Locale.getDefault().language == "en") "EEE,\n" else "EEE\n") + localDatePattern("MMMd"), Locale.getDefault()) }
     Column(modifier = Modifier.width(100.dp).fillMaxHeight().background(PanelMid).padding(top = 56.dp)) {
         LazyColumn(state = state, modifier = Modifier.fillMaxSize()) {
             itemsIndexed(days) { i, day ->
@@ -1100,10 +1100,10 @@ private fun dayLabel(dayStart: Long, now: Long): String {
     val today = startOfDay(now)
     val diffDays = Math.round((dayStart - today) / 86_400_000.0).toInt()
     return when (diffDays) {
-        0 -> "Today"
-        -1 -> "Yesterday"
-        1 -> "Tomorrow"
-        else -> SimpleDateFormat("EEEE, MMM d", Locale.getDefault()).format(Date(dayStart))
+        0 -> "Today".tr()
+        -1 -> "Yesterday".tr()
+        1 -> "Tomorrow".tr()
+        else -> SimpleDateFormat(localDatePattern("EEEEMMMd"), Locale.getDefault()).format(Date(dayStart))
     }
 }
 
@@ -1403,7 +1403,7 @@ private fun FlyoutRow(
             }
         }
         if (ch.key == playingKey) {
-            Icon(Icons.Default.PlayArrow, contentDescription = "Playing", tint = accent, modifier = Modifier.size(odp(20f)))
+            Icon(Icons.Default.PlayArrow, contentDescription = "Playing".tr(), tint = accent, modifier = Modifier.size(odp(20f)))
         }
     }
 }

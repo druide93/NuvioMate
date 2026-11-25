@@ -505,5 +505,5 @@ private fun MembershipPanelBack(
 
 private fun formatMembershipDate(rawDate: String): String = runCatching {
     val date = LocalDate.parse(rawDate.substringBefore('T'))
-    date.format(DateTimeFormatter.ofPattern("MMM d, uuuu", Locale.getDefault()))
+    date.format(DateTimeFormatter.ofPattern(com.nuvio.tv.livetv.ui.localDatePattern("yMMMd"), Locale.getDefault()))
 }.getOrDefault(rawDate)

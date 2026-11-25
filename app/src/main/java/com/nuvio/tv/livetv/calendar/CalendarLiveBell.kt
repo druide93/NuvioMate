@@ -57,7 +57,7 @@ fun rememberLiveBell(program: EpgProgram?, channel: LiveChannel?): LiveBell? {
         return LiveBell(on = false, label = "Ring the bell", value = "Off", isMovie = false) {
             scope.launch {
                 val t = repo.liveTitle(program, channel)
-                LiveTvNotice.show(if (t == null) "Couldn't find \"${program.title}\" to follow" else repo.toggleLiveBell(t, program, channel))
+                LiveTvNotice.show(if (t == null) com.nuvio.tv.livetv.ui.LiveTvTexts.trf("Couldn't find \"{0}\" to follow", program.title) else repo.toggleLiveBell(t, program, channel))
             }
         }
     }

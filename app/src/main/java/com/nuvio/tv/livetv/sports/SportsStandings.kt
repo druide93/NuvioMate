@@ -1,5 +1,7 @@
 package com.nuvio.tv.livetv.sports
 
+import com.nuvio.tv.livetv.ui.LiveTvTexts
+import com.nuvio.tv.livetv.ui.tr
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -134,15 +136,15 @@ data class Standings(
         return null
     }
 
-    /** "2nd in Premier League", "1st in AFC West", for a team's row header. */
+    /** "2nd in Premier League", "1st in AFC West", for a team's row header (in the device's language). */
     fun placeText(teamId: String): String? {
         val (g, r) = find(teamId) ?: return null
         val where = when {
-            groups.size == 1 -> SportsCatalog.league(leagueId)?.name ?: g.name
+            groups.size == 1 -> SportsCatalog.league(leagueId)?.name?.tr() ?: g.name
             g.parent == null && g.short != null -> g.short
             else -> shortGroupName(g.name)
         }
-        return ordinal(r.pos) + " in " + where
+        return LiveTvTexts.trf("{0} in {1}", ordinal(r.pos), where)
     }
 
     /**
@@ -169,9 +171,11 @@ data class Standings(
         /** US college leagues (their tables come one per conference). */
         fun isCollegeLeague(leagueId: String): Boolean = "college" in leagueId || ".ncaa." in leagueId
 
+        /** "1st", "2nd", "23rd" (in the device's language: "1er", "2e"…). */
         fun ordinal(n: Int): String {
+            if (n == 1) return "1st".tr()
             val suffix = if (n % 100 in 11..13) "th" else when (n % 10) { 1 -> "st"; 2 -> "nd"; 3 -> "rd"; else -> "th" }
-            return "$n$suffix"
+            return LiveTvTexts.trf("{0}$suffix", n)
         }
 
         /** "American Football Conference" -> "AFC"; "AFC West" stays. */
@@ -395,7 +399,7 @@ data class Standings(
             arr.objs().forEach { t -> val id = t.str("id"); val g = t.str("group"); if (id != null && g != null) groupOf[id] = g }
             val groups = if (groupOf.isEmpty()) listOf(StandingsGroup(league.name, null, ordered(rows)))
             else rows.groupBy { groupOf[it.id] ?: league.name }.toSortedMap().map { (g, list) ->
-                StandingsGroup(if (g.length <= 2) "Group $g" else g, null, ordered(list))
+                StandingsGroup(if (g.length <= 2) LiveTvTexts.trf("Group {0}", g) else g, null, ordered(list))
             }
             val sorted = groups.flatMap { it.rows }
             val columns = listOf(c("gamesPlayed", "P"), c("wins", "W"), c("ties", "D"), c("losses", "L"), c("pointDifferential", "GD"), c("points", "PTS"))

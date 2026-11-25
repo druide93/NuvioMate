@@ -403,7 +403,7 @@ internal fun LiveTvPlayerPanel(
                                 showProgress && timeline != null -> GlassTimeline(timeline, grabbed = focused == PanelControl.TIMELINE, hint = seekHint, showStatus = !full)
                                 // Progress bar off: the times, as words.
                                 timeline != null -> LiveText(
-                                    timeline.leftLabel + " – " + timeline.rightLabel + "  ·  " + timeline.status,
+                                    shownTimeLabel(timeline.leftLabel) + " – " + shownTimeLabel(timeline.rightLabel) + "  ·  " + timeline.status,
                                     size = 12.sp, color = colors.TextSecondary
                                 )
                             }
@@ -830,8 +830,15 @@ private fun RoundButton(icon: ImageVector, focused: Boolean, big: Boolean, conte
             .border(if (focused) 3.dp else 0.dp, if (focused) Color.White.copy(alpha = 0.25f) else Color.Transparent, CircleShape),
         contentAlignment = Alignment.Center
     ) {
-        Icon(icon, contentDescription = contentDescription, tint = if (focused) Color(0xFF111111) else colors.TextPrimary, modifier = Modifier.size(if (big) 18.dp else 15.dp))
+        Icon(icon, contentDescription = contentDescription?.tr(), tint = if (focused) Color(0xFF111111) else colors.TextPrimary, modifier = Modifier.size(if (big) 18.dp else 15.dp))
     }
+}
+
+/** A timeline label as shown: its "From " / "Live " in the device's language (the label itself keeps the English, which [GlassTimeline] strips). */
+private fun shownTimeLabel(label: String): String = when {
+    label.startsWith("From ") -> "From ".tr() + label.removePrefix("From ")
+    label.startsWith("Live ") -> "Live ".tr() + label.removePrefix("Live ")
+    else -> label
 }
 
 /**
@@ -945,8 +952,8 @@ private fun RowTab(tab: PanelRowTab, count: Int, lists: Int, index: Int, backgro
         Spacer(Modifier.width(5.dp))
         LiveText(tab.title, size = 11.sp, weight = FontWeight.SemiBold, color = colors.TextPrimary, modifier = Modifier.widthIn(max = 260.dp))
         LiveText(
-            "  ·  " + if (tab.kind == PanelRowTab.Kind.GAMES) (if (count == 1) "1 game" else "$count games")
-            else if (count == 1) "1 channel" else "$count channels",
+            "  ·  " + if (tab.kind == PanelRowTab.Kind.GAMES) (if (count == 1) "1 game".tr() else LiveTvTexts.trf("{0} games", count))
+            else if (count == 1) "1 channel".tr() else LiveTvTexts.trf("{0} channels", count),
             size = 11.sp, color = colors.TextTertiary
         )
         if (lists > 1) {

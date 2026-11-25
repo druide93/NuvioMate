@@ -29,6 +29,7 @@ import com.nuvio.tv.domain.model.ListMembershipSnapshot
 import com.nuvio.tv.domain.model.SavedLibraryItem
 import com.nuvio.tv.domain.model.LibraryListPrivacy
 import com.nuvio.tv.domain.repository.LibraryRepository
+import com.nuvio.tv.livetv.ui.tr
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -373,13 +374,13 @@ class LibraryRepositoryImpl @Inject constructor(
         keys: List<String> = emptyList()
     ): TrackingListManager {
         val profileId = profileManager.activeProfileId.value
-        check(sourceMode.first() == source) { "Library source changed" }
+        check(sourceMode.first() == source) { "Library source changed".tr() }
         val provider = source.providerId?.let(trackingProviders::provider)
-            ?: throw IllegalStateException("This library does not support list management")
-        check(provider.isAuthenticated.first()) { "Connect the library account first" }
-        require(keys.all(provider::recognizesListKey)) { "Invalid list for the library provider" }
-        check(profileManager.activeProfileId.value == profileId) { "Profile changed" }
-        return provider.listManager ?: throw IllegalStateException("This provider does not support list management")
+            ?: throw IllegalStateException("This library does not support list management".tr())
+        check(provider.isAuthenticated.first()) { "Connect the library account first".tr() }
+        require(keys.all(provider::recognizesListKey)) { "Invalid list for the library provider".tr() }
+        check(profileManager.activeProfileId.value == profileId) { "Profile changed".tr() }
+        return provider.listManager ?: throw IllegalStateException("This provider does not support list management".tr())
     }
 
     override suspend fun refreshNow() {
