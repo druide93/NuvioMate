@@ -510,9 +510,12 @@ internal fun focusedTextColor(focused: Boolean): Color = when {
 }
 
 @Composable
-internal fun focusedSecondaryTextColor(focused: Boolean): Color =
-    if (focused && LocalLiveSolidHighlight.current) NuvioTheme.colors.OnSecondary.copy(alpha = 0.8f)
-    else NuvioTheme.colors.TextSecondary
+internal fun focusedSecondaryTextColor(focused: Boolean): Color = when {
+    // TiviMate: the highlight is a light fill, so a dark grey on it (the usual grey vanished there).
+    focused && LocalGuideTiviMate.current -> TiviMateColors.FocusText.copy(alpha = 0.7f)
+    focused && LocalLiveSolidHighlight.current -> NuvioTheme.colors.OnSecondary.copy(alpha = 0.8f)
+    else -> NuvioTheme.colors.TextSecondary
+}
 
 /** A channel's logo, with the other one it has (playlist's or guide's) behind it. */
 @Composable
