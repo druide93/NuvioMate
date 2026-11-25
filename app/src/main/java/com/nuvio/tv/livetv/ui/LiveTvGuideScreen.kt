@@ -996,9 +996,25 @@ private fun LiveTvGuideScreenBody(
         if (!settings.showPreview || settings.openFullscreenOnSelect || alreadyPreviewing) goFullscreen()
     }
 
+    /**
+     * The replay playing is on [ch], at a moment inside [block]'s show (the one it started on, or
+     * a later one it carried on into).
+     */
+    fun replayingIn(ch: LiveChannel, block: GuideBlock): Boolean {
+        val s = viewModel.catchup.value ?: return false
+        val st = viewModel.playbackState.value
+        if (s.recordingId != null || st.catchupTitle == null || st.channelKey != ch.key || s.channel.key != ch.key) return false
+        val at = s.program.startMs + (viewModel.catchupPositionMs() ?: return false)
+        return at >= block.startMs && at < block.stopMs
+    }
+
     fun activate() {
         if (!ui.hasSources) { onOpenSettings(); return }
         val ch = focusedChannel ?: return
+        // OK on the show being watched as a replay: back to that replay full screen, where it
+        // was. (It used to switch to the channel live when the show is still on air, or start
+        // the replay over when it's over.) On the channel's name, OK still means live.
+        if (!nameFocus) focusedBlock?.let { b -> if (replayingIn(ch, b)) { goFullscreen(); return } }
         if (column == GuideColumn.CHANNEL) { playChannel(ch); return }
         val block = focusedBlock ?: return
         when {
@@ -3653,6 +3669,27 @@ private fun GroupColumn(
         }
     }
     val hasSearch = searchFocusRequester != null && groups.any { it.id == ChannelGroup.SEARCH }
+    // Which list a row belongs to: its playlist (a heading belongs to its own playlist), or null
+    // for the favorites and the groups above the playlists.
+    val groupsById = listed.associateBy { it.id }
+    fun listKeyOf(key: String): String? =
+        if (key.startsWith("header:")) key.removePrefix("header:") else groupsById[key]?.section
+    /**
+     * With several playlists: the row Left goes up to, the first group of the playlist the
+     * highlight is in (or its heading, when that's where the highlight is or the playlist is
+     * folded). Null when there is one playlist, or the highlight is in the groups above the
+     * playlists: Left then goes up to the very top, as before.
+     */
+    fun playlistTop(): Int? {
+        if (listed.mapNotNull { it.sourceId }.distinct().size <= 1) return null
+        val at = focusedKey?.let { rowKeys.indexOf(it) }?.takeIf { it >= 0 } ?: return null
+        val list = listKeyOf(rowKeys[at]) ?: return null
+        var top = at
+        while (top > 0 && !rowKeys[top].startsWith("header:") &&
+            !rowKeys[top - 1].startsWith("header:") && listKeyOf(rowKeys[top - 1]) == list
+        ) top--
+        return top.takeIf { it > 0 }
+    }
     // One focus requester per row, so the row number below can put the highlight on any row.
     val rowRequesters = remember { HashMap<String, FocusRequester>() }
     fun requesterFor(key: String): FocusRequester = rowRequesters.getOrPut(key) { FocusRequester() }
@@ -3767,12 +3804,33 @@ private fun GroupColumn(
                     stepGroup(e)
                 } else false
             }
-            // Left from a group further down: back up to Search at the top (one more Left opens
-            // Nuvio's menu, as before).
+            // Left from a group further down: back up to the top of the list it's in (one more
+            // Left opens Nuvio's menu, as before). With several playlists that's the playlist's
+            // own first group, not Search: the playlist you were in stays on screen.
             .leftJumpsToTop(
-                atTop = { searchFocused || (!hasSearch && focusedKey == rowKeys.firstOrNull()) },
+                atTop = {
+                    val top = playlistTop()
+                    searchFocused ||
+                        (top != null && focusedKey?.let { rowKeys.indexOf(it) } == top) ||
+                        (top == null && !hasSearch && focusedKey == rowKeys.firstOrNull())
+                },
                 toTop = {
+                    val top = playlistTop()
                     stepScope.launch {
+                        if (top != null) {
+                            // Like Up / Down: the list moves only if that row isn't wholly on
+                            // screen (TiviMate: always, so it lines up with the top channel).
+                            val info = listState.layoutInfo
+                            val onScreen = info.visibleItemsInfo.any {
+                                it.index == top && it.offset >= info.viewportStartOffset && it.offset + it.size <= info.viewportEndOffset
+                            }
+                            if (pinPx != null || !onScreen) runCatching { listState.scrollToItem(top) }
+                            androidx.compose.runtime.withFrameNanos { }
+                            val k = rowKeys[top]
+                            focusedKey = k
+                            runCatching { requesterFor(k).requestFocus() }
+                            return@launch
+                        }
                         runCatching { listState.scrollToItem(0) }
                         androidx.compose.runtime.withFrameNanos { }
                         val toSearch = hasSearch && runCatching { searchFocusRequester!!.requestFocus() }.isSuccess
