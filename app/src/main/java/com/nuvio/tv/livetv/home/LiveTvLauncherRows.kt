@@ -345,10 +345,18 @@ object LiveTvLauncherRows {
         for ((id, _, program) in built) {
             runCatching {
                 val old = existing[id]
-                if (old != null) {
-                    helper.updatePreviewProgram(old, program)
+                // Not helper.updatePreviewProgram: it reads the card first and never closes that
+                // read (20 left open per refresh of a row). Same check here, with the read closed.
+                val current = old?.let { programId ->
+                    context.contentResolver.query(TvContractCompat.buildPreviewProgramUri(programId), null, null, null, null)
+                        ?.use { c -> if (c.moveToFirst()) PreviewProgram.fromCursor(c) else null }
+                }
+                if (old != null && current != null) {
+                    if (current.hasAnyUpdatedValues(program)) {
+                        context.contentResolver.update(TvContractCompat.buildPreviewProgramUri(old), program.toContentValues(), null, null)
+                        updated++
+                    }
                     keep += old
-                    updated++
                 } else {
                     keep += helper.publishPreviewProgram(program)
                     added++
