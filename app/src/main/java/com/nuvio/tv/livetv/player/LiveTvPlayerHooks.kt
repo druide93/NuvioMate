@@ -10,6 +10,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -25,6 +26,9 @@ import javax.inject.Singleton
  * need a screen (switching to a backup channel, carrying on a replay) go to the newest Live TV
  * screen still open.
  */
+/** A host found resending replays (see providerResends) is kept this long after it was last seen. */
+private const val RESENDING_KEEP_MS = 30L * 24 * 3_600_000
+
 @Singleton
 class LiveTvPlayerHooks @Inject constructor(
     private val playback: LiveTvPlaybackController,
@@ -93,8 +97,35 @@ class LiveTvPlayerHooks @Inject constructor(
         }
         playback.onCatchupLinkWorked = { sourceId, form ->
             // The "other clock" link can play (an earlier show) even when it's wrong: never put it first.
-            if ("+clock" !in form && catchupForms.put(sourceId, form) != form && form != "hls" && form != "ts") {
-                com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: this provider answers the \"$form\" kind of link; trying it first from now on")
+            if ("+clock" !in form) {
+                val before = catchupForms.put(sourceId, form)
+                if (before != form) {
+                    if (form != "hls" && form != "ts") {
+                        com.nuvio.tv.livetv.model.LiveTvLoadReport.add("Catch-up: this provider answers the \"$form\" kind of link; trying it first from now on")
+                    }
+                    scope.launch { prefs.setCatchupLinkForm(sourceId, form) }
+                }
+            }
+        }
+        // What replays learned in earlier runs: the kind of link each provider answers, and the
+        // hosts that send other bytes when carried on from the middle.
+        onProviderResends = { host -> scope.launch { prefs.markCatchupResendingHost(host, System.currentTimeMillis(), RESENDING_KEEP_MS) } }
+        scope.launch {
+            val forms = prefs.catchupLinkForms()
+            forms.forEach { (sourceId, form) -> catchupForms.putIfAbsent(sourceId, form) }
+            val since = System.currentTimeMillis() - RESENDING_KEEP_MS
+            val hosts = prefs.catchupResendingHosts().filterValues { it >= since }.keys
+            rememberResendingHosts(hosts)
+            if (forms.isNotEmpty() || hosts.isNotEmpty()) {
+                val names = runCatching { prefs.playlists.first().associate { it.id to it.name } }.getOrDefault(emptyMap())
+                com.nuvio.tv.livetv.model.LiveTvLoadReport.add(
+                    "Catch-up: remembered from earlier runs: " +
+                        listOfNotNull(
+                            forms.filterValues { it != "hls" && it != "ts" }.takeIf { it.isNotEmpty() }
+                                ?.entries?.joinToString(", ") { "\"${it.value}\" links first on ${names[it.key] ?: it.key}" },
+                            hosts.takeIf { it.isNotEmpty() }?.joinToString(", ", postfix = " resend other bytes when carried on"),
+                        ).ifEmpty { listOf("plain links") }.joinToString("; ")
+                )
             }
         }
         playback.onCatchupHlsWorks = { sourceId ->

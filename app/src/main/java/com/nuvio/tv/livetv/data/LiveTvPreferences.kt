@@ -253,6 +253,9 @@ class LiveTvPreferences @Inject constructor(
         val reminders = stringPreferencesKey("reminders")
         val channelQuality = stringPreferencesKey("channel_quality")
         val channelAudio = stringPreferencesKey("channel_audio")
+        // This device only (not synced): what replays learned about each provider (see setCatchupLinkForm).
+        val catchupLinkForms = stringPreferencesKey("catchup_link_forms")
+        val catchupResendingHosts = stringPreferencesKey("catchup_resending_hosts")
         val channelCaptions = stringPreferencesKey("channel_captions")
         val vodHiddenCategories = stringSetPreferencesKey("vod_hidden_categories")
         val vodGroupOrder = stringPreferencesKey("vod_group_order")
@@ -1289,6 +1292,40 @@ class LiveTvPreferences @Inject constructor(
             val cur = decodeReminders(p[my(Keys.reminders)])
             val kept = cur.filter { it.startMs + graceMs > now }
             if (kept.size != cur.size) p[my(Keys.reminders)] = encodeReminders(kept)
+        }
+    }
+
+    /**
+     * Per playlist, the kind of catch-up link that last worked there (see CatchupUrlBuilder.linkForm),
+     * kept across restarts: after each restart, the first replay used to go through every kind of
+     * link again (PureTv: 20 to 50 s before the picture). This device only.
+     */
+    suspend fun catchupLinkForms(): Map<String, String> = decodeStringMap(store.data.first()[Keys.catchupLinkForms])
+
+    suspend fun setCatchupLinkForm(sourceId: String, form: String) {
+        store.edit { p ->
+            val m = decodeStringMap(p[Keys.catchupLinkForms]).toMutableMap()
+            if (m[sourceId] == form) return@edit
+            m[sourceId] = form
+            p[Keys.catchupLinkForms] = encodeStringMap(m)
+        }
+    }
+
+    /**
+     * Replay hosts found to send other bytes when a replay is carried on from the middle, with
+     * when that was last seen (see LiveTvTimeshift's providerResends), kept across restarts. This
+     * device only.
+     */
+    suspend fun catchupResendingHosts(): Map<String, Long> =
+        decodeStringMap(store.data.first()[Keys.catchupResendingHosts]).mapNotNull { (h, t) -> t.toLongOrNull()?.let { h to it } }.toMap()
+
+    /** [host] seen resending at [atMs]; hosts not seen for [keepMs] are forgotten. */
+    suspend fun markCatchupResendingHost(host: String, atMs: Long, keepMs: Long) {
+        store.edit { p ->
+            val m = decodeStringMap(p[Keys.catchupResendingHosts])
+                .filterValues { (it.toLongOrNull() ?: 0L) >= atMs - keepMs }.toMutableMap()
+            m[host] = atMs.toString()
+            p[Keys.catchupResendingHosts] = encodeStringMap(m)
         }
     }
 

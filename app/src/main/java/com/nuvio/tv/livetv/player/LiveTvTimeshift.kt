@@ -101,15 +101,30 @@ internal const val NEAR_AIRED_MS = 3L * 60_000
  * Providers (by host) that sent other bytes when a replay was carried on from the middle (see
  * [SPLICE_CHECK_BYTES]): carried on by the stream's clock there, and a new connection for full
  * speed only when the save falls behind playback, a few minutes apart at most (see
- * [RESENDING_BOOST_GAP_MS]). Until the app restarts.
+ * [RESENDING_BOOST_GAP_MS]). Kept across restarts (see [rememberResendingHosts]): learned again
+ * after each one, the first save there reconnected once for speed and got other bytes.
  */
 private val RESENDING_HOSTS: MutableSet<String> = java.util.Collections.synchronizedSet(HashSet())
+
+/** Hosts seen resending since the app started (each one told to [onProviderResends] once). */
+private val RESENDING_SEEN: MutableSet<String> = java.util.Collections.synchronizedSet(HashSet())
+
+/** Told the first time in this run that a host resends, to keep it for the next runs. */
+@Volatile internal var onProviderResends: ((String) -> Unit)? = null
+
+/** Hosts found resending in earlier runs. */
+internal fun rememberResendingHosts(hosts: Collection<String>) { RESENDING_HOSTS += hosts }
 
 private fun hostOf(url: String): String? = runCatching { java.net.URI(url).host?.lowercase() }.getOrNull()
 
 internal fun providerResends(url: String): Boolean = hostOf(url)?.let { it in RESENDING_HOSTS } == true
 
-internal fun markProviderResends(url: String) { hostOf(url)?.let { RESENDING_HOSTS += it } }
+internal fun markProviderResends(url: String) {
+    hostOf(url)?.let { host ->
+        RESENDING_HOSTS += host
+        if (RESENDING_SEEN.add(host)) onProviderResends?.invoke(host)
+    }
+}
 
 /**
  * On a provider that resends (see [providerResends]), new connections for full speed at least
