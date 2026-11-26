@@ -6,7 +6,9 @@
 #      + NuvioMate's own version X.Y; the "beta" in the base is Nuvio's, not ours),
 #      or "1.2.0-beta.2.nuviomate.1.3.beta.1" for a NuvioMate beta (--beta): the betas of 1.3 are
 #      1.3.beta.1, 1.3.beta.2, ... and the stable release they prepare is 1.3,
-#   2. builds the release APKs (signed with the release key, so they update the installed NuvioMate),
+#   2. builds the release APKs, signed with NuvioMate's own key (NUVIO_RELEASE_* in local.properties,
+#      kept outside the repository since 1.2 beta 6; the fork's old key is public in the upstream
+#      history, so the script refuses an APK signed with it),
 #   3. copies them to ../apk-nuviomate/<version>/ with names the updater understands,
 #   4. tags the commit with the version.
 # Then publish the release on GitHub (the script prints the steps).
@@ -132,6 +134,24 @@ for f in app/build/outputs/apk/full/release/*.apk; do
   found=true
 done
 $found || { echo "No APK was built" >&2; exit 1; }
+
+# Never the fork's old key: it is public (in the upstream history), so anyone could sign an app
+# that replaces NuvioMate with it.
+OLD_PUBLIC_KEY=e2c9a67239c6297fb28a28b72a088ad32cff8aeb94e0157b02d22ee7aeb5cbd8
+SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Library/Android/sdk}}"
+APKSIGNER=$(ls -1d "$SDK"/build-tools/*/apksigner 2>/dev/null | sort -V | tail -1)
+if [ -n "$APKSIGNER" ]; then
+  for f in "$OUT"/*.apk; do
+    signer=$("$APKSIGNER" verify --print-certs "$f" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')
+    if [ "$signer" = "$OLD_PUBLIC_KEY" ] || [ -z "$signer" ]; then
+      echo "$(basename "$f") is signed with the old public key (or not at all): check NUVIO_RELEASE_* in local.properties" >&2
+      rm -rf "$OUT"; exit 1
+    fi
+  done
+  echo "Signed with: $signer"
+else
+  echo "apksigner not found: the signing key was not checked" >&2
+fi
 
 git tag -a "$VERSION" -m "NuvioMate $VERSION"
 
