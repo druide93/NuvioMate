@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,6 +34,7 @@ import androidx.compose.ui.Modifier
 import com.nuvio.tv.livetv.ui.okTapOrHold
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -43,6 +45,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nuvio.tv.livetv.ui.LiveText
@@ -53,7 +56,6 @@ import com.nuvio.tv.livetv.ui.liveCorner
 import com.nuvio.tv.ui.theme.NuvioTheme
 import java.util.Locale
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.verticalScroll
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 
@@ -264,29 +266,25 @@ internal fun RecordedShowPage(
             Modifier.fillMaxSize().padding(start = 56.dp, end = 48.dp, top = 32.dp),
             horizontalArrangement = Arrangement.spacedBy(40.dp)
         ) {
-            // Scrolls when every button is there (Mark All as Watched and Move All to…), so none
-            // gets squeezed: the highlighted one is brought into view.
+            // Everything fits without scrolling (a scrolling column jumped as Play took the
+            // highlight): when room is short the thumbnail gives way, the buttons never do.
             Column(
                 Modifier.width(310.dp).fillMaxHeight()
-                    .verticalScroll(androidx.compose.foundation.rememberScrollState())
                     .padding(bottom = 32.dp)
                     .onPreviewKeyEvent { e ->
                         if (e.type == KeyEventType.KeyDown && e.key == Key.DirectionRight) { toEpisodes(); true } else false
                     },
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                LiveText("Recordings".tr() + "  ›  " + show.title, size = 14.sp, color = colors.TextSecondary)
-                ArtThumb(art[newestOf(show).id], newestOf(show).channelLogo, show.title, Modifier.fillMaxWidth(0.85f).aspectRatio(16f / 9f))
-                LiveText(show.title, size = 28.sp, weight = FontWeight.Bold, maxLines = 2)
-                LiveText(
-                    LiveTvTexts.trf("{0} episodes · {1} watched", show.episodes.size, watchedCount) +
-                        (if (freshCount > 0) " · " + (if (freshCount == 1) "1 new".tr() else LiveTvTexts.trf("{0} new", freshCount)) else "") +
-                        "\n" + listOfNotNull(
-                            durationLabel(totalSec).takeIf { totalSec > 0 },
-                            sizeLabel(totalBytes).takeIf { totalBytes > 0 }
-                        ).joinToString(" · "),
-                    size = 14.sp, color = colors.TextSecondary, maxLines = 2
+                // Same height as the Episodes line across, so the thumbnail lines up with the first episode.
+                Box(Modifier.height(HEADER_LINE), contentAlignment = Alignment.CenterStart) {
+                    LiveText("Recordings".tr() + "  ›  " + show.title, size = 14.sp, color = colors.TextSecondary)
+                }
+                ArtThumb(
+                    art[newestOf(show).id], newestOf(show).channelLogo, show.title,
+                    Modifier.weight(1f, fill = false).widthIn(max = 263.dp).aspectRatio(16f / 9f)
                 )
+                LiveText(show.title, size = 28.sp, weight = FontWeight.Bold, maxLines = 2)
                 PillButton(
                     (if (nextResume != null) "Resume " else "Play ").tr() + episodeLabel(next),
                     primary = true,
@@ -310,7 +308,16 @@ internal fun RecordedShowPage(
                     } else false
                 }
             ) {
-                SectionTitle("Episodes")
+                EpisodesHeader(
+                    listOf(
+                        LiveTvTexts.trf("{0} episodes", show.episodes.size),
+                        LiveTvTexts.trf("{0} watched", watchedCount),
+                        (if (freshCount == 1) "1 new".tr() else LiveTvTexts.trf("{0} new", freshCount)).takeIf { freshCount > 0 },
+                        durationLabel(totalSec).takeIf { totalSec > 0 },
+                        sizeLabel(totalBytes).takeIf { totalBytes > 0 }
+                    ).filterNotNull()
+                )
+                Spacer(Modifier.height(12.dp))
                 LazyColumn(
                     state = listState,
                     verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -331,6 +338,37 @@ internal fun RecordedShowPage(
                 }
             }
         }
+    }
+}
+
+private val HEADER_LINE = 22.dp
+
+/**
+ * "EPISODES · 4 episodes · 0 watched · 1 new · 2 h 36 min · 2.5 GB": always one line, always all
+ * of it. When it's too long for the space, the text gets a little smaller until it fits (it isn't
+ * drawn until then, so it never shows cut off).
+ */
+@Composable
+private fun EpisodesHeader(parts: List<String>) {
+    val colors = NuvioTheme.colors
+    var size by remember(parts) { mutableStateOf(13f) }
+    var ready by remember(parts) { mutableStateOf(false) }
+    val text = androidx.compose.ui.text.buildAnnotatedString {
+        withStyle(androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.Bold)) { append("Episodes".tr().uppercase()) }
+        parts.forEach { append("  ·  $it") }
+    }
+    Box(Modifier.fillMaxWidth().height(HEADER_LINE), contentAlignment = Alignment.CenterStart) {
+        androidx.compose.material3.Text(
+            text = text,
+            color = colors.TextSecondary,
+            fontSize = size.sp,
+            maxLines = 1,
+            softWrap = false,
+            onTextLayout = {
+                if (it.didOverflowWidth && size > 8f) size -= 0.5f else ready = true
+            },
+            modifier = Modifier.drawWithContent { if (ready) drawContent() }
+        )
     }
 }
 

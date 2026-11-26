@@ -2234,5 +2234,17 @@
         <item>"Le VPN est activé en mode « Toute l’app » : saisissez l’adresse IP de l’ordinateur (comme 192.168.1.20) pour l’atteindre sans passer par le VPN."</item>
         <item>"Le VPN est activé en mode « Toute l’app », et seules les adresses du réseau local (comme 192.168.x.x) sont atteintes sans passer par lui."</item>
         <item>"Le VPN utilise les mêmes adresses de réseau local que le dossier réseau : le dossier est injoignable tant que le VPN est activé en mode « Toute l’app ». Utilisez plutôt le mode « Flux HTTP + HTTPS »."</item>
+        <item>"Commencer l’enregistrement plus tôt"</item>
+        <item>"Continuer l’enregistrement après"</item>
+        <item>"Commencer l’enregistrement plus tôt : {0}"</item>
+        <item>"Continuer l’enregistrement après : {0}"</item>
+        <item>"Pas de début anticipé"</item>
+        <item>"Pas de prolongation"</item>
+        <item>"+{0} min avant"</item>
+        <item>"+{0} min après"</item>
+        <item>"{0} vus"</item>
+        <item>"commence ce temps-là avant chaque épisode."</item>
+        <item>"continue ce temps-là après chaque épisode, pour les émissions qui débordent souvent."</item>
+        <item>"Les épisodes déjà programmés changent aussi. Par défaut : le réglage de Paramètres › TV en direct › Enregistrements."</item>
     </string-array>
 </resources>

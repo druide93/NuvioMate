@@ -2234,6 +2234,18 @@
         <item>"The VPN is on in Full app mode: type the computer's IP address (like 192.168.1.20) so it can be reached past the VPN."</item>
         <item>"The VPN is on in Full app mode, and only home network addresses (like 192.168.x.x) are reached past it."</item>
         <item>"The VPN uses the same home network addresses as the network folder, so the folder can't be reached while the VPN is on in Full app mode. Use \"HTTP + HTTPS streams\" mode instead."</item>
+        <item>"Start Recording Early"</item>
+        <item>"Keep Recording After"</item>
+        <item>"Start Recording Early: {0}"</item>
+        <item>"Keep Recording After: {0}"</item>
+        <item>"No early start"</item>
+        <item>"No extra after"</item>
+        <item>"+{0} min before"</item>
+        <item>"+{0} min after"</item>
+        <item>"{0} watched"</item>
+        <item>"starts this long before each episode."</item>
+        <item>"keeps going this long after each episode, for shows that often run over."</item>
+        <item>"Episodes already set change too. Default follows Settings › Live TV › Recordings."</item>
     </string-array>
     <string-array name="livetv_texts" tools:ignore="MissingTranslation">
         <item>" · Hold OK: 1 other stream"</item>
@@ -4468,5 +4480,17 @@
         <item>"The VPN is on in Full app mode: type the computer's IP address (like 192.168.1.20) so it can be reached past the VPN."</item>
         <item>"The VPN is on in Full app mode, and only home network addresses (like 192.168.x.x) are reached past it."</item>
         <item>"The VPN uses the same home network addresses as the network folder, so the folder can't be reached while the VPN is on in Full app mode. Use \"HTTP + HTTPS streams\" mode instead."</item>
+        <item>"Start Recording Early"</item>
+        <item>"Keep Recording After"</item>
+        <item>"Start Recording Early: {0}"</item>
+        <item>"Keep Recording After: {0}"</item>
+        <item>"No early start"</item>
+        <item>"No extra after"</item>
+        <item>"+{0} min before"</item>
+        <item>"+{0} min after"</item>
+        <item>"{0} watched"</item>
+        <item>"starts this long before each episode."</item>
+        <item>"keeps going this long after each episode, for shows that often run over."</item>
+        <item>"Episodes already set change too. Default follows Settings › Live TV › Recordings."</item>
     </string-array>
 </resources>
