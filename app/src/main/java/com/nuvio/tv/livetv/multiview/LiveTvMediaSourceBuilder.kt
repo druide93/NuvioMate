@@ -50,8 +50,14 @@ internal class LiveTvMediaSourceBuilder(
             buildDrmMediaSource(url, headers, isLive, protection)?.let { return it }
             check(!strictDrm) { "Protected stream could not be prepared" }
         }
-        val http = stalkerPolicy?.httpFactory() ?: httpFactory(headers)
         val item = buildMediaItem(url, isLive)
+        // A stream read in one go (not HLS or DASH pieces): its connection is closed once done
+        // with, never kept for the next request. PureTv's server sends more than it says: the
+        // leftover of the last stream was read as the next request's answer ("Unexpected status
+        // line"), so the first link of a replay asked right after another stream failed (5 to
+        // 26 s lost, and the kind of link that played next was taken for the one that works).
+        val progressive = item.localConfiguration?.mimeType.let { it != MimeTypes.APPLICATION_M3U8 && it != MimeTypes.APPLICATION_MPD }
+        val http = stalkerPolicy?.httpFactory() ?: httpFactory(if (progressive) headers + ("Connection" to "close") else headers)
         // Closed captions: TV channels usually carry them inside the video (CEA-608/708) without
         // announcing them, so the player never offered them and Subtitles only showed "Off".
         // Look for them anyway, the way TV apps do.

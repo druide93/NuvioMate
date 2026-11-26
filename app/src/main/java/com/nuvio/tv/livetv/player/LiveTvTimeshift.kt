@@ -436,7 +436,9 @@ class LiveTvTimeshift(private val context: Context) {
                     // can be checked against the end of what's saved (see [SavedTail]).
                     val overlap = if (resuming) minOf(tail.filled.toLong(), totalBytes, SPLICE_CHECK_BYTES.toLong()).toInt() else 0
                     val expected = if (overlap > 0) tail.last(overlap) else null
-                    val requestHeaders = if (resuming) headers + ("Range" to "bytes=${totalBytes - overlap}-") else headers
+                    // Closed once done with, never kept for the next request (see LiveTvMediaSourceBuilder.build).
+                    val streamHeaders = headers + ("Connection" to "close")
+                    val requestHeaders = if (resuming) streamHeaders + ("Range" to "bytes=${totalBytes - overlap}-") else streamHeaders
                     // Sent from here on: even a request cut (by [stop]) or failed before the provider
                     // answered counts as a connection the provider has to see go.
                     opened = true
